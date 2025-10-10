@@ -1,0 +1,1 @@
+export { ViewDocumentModal } from './ViewDocumentModal';

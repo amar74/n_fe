@@ -1,0 +1,1 @@
+export { UpdateAccountModal } from './UpdateAccountModal';
