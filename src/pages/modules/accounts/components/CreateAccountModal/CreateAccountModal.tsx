@@ -6,7 +6,7 @@ import { MARKET_SECTORS, CLIENT_TYPES, HOSTING_AREAS, US_STATES, MSA_OPTIONS, ST
 import { CreateAccountModalProps } from './CreateAccountModal.types';
 import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
 import { useAuth } from '@/hooks/useAuth';
-import { useAISuggestions } from '@/hooks/useAISuggestions';
+import { useDataEnrichment } from '@/hooks/useDataEnrichment';
 
 const CLIENT_TYPE_DISPLAY: Record<string, string> = {
   'tier_1': 'Tier 1',
@@ -27,13 +27,11 @@ export function CreateAccountModal({
   const getUserName = () => {
     const email = authState.user?.email || '';
     
-    // If email exists, just return the part before @
     if (email && email.includes('@')) {
       const namePart = email.split('@')[0];
       return namePart; // Return as-is (e.g., "amar74.soft")
     }
     
-    // If no @ symbol, return the whole email/username
     if (email) {
       return email;
     }
@@ -72,11 +70,10 @@ export function CreateAccountModal({
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
   const [appliedSuggestions, setAppliedSuggestions] = useState<string[]>([]);
 
-  const { enhanceAccountData, isLoading: isAILoading, error: aiError } = useAISuggestions({
+  const { enhanceAccountData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,
     confidenceThreshold: 0.85,
     onSuggestionReceived: (suggestion) => {
-      // Apply each suggestion to the form
       suggestion.suggestions.forEach((suggestionItem: any) => {
         applySuggestion(suggestionItem.field, suggestionItem.value);
       });
@@ -113,7 +110,6 @@ export function CreateAccountModal({
     setAppliedSuggestions([]);
 
     try {
-      // Call AI enhancement API
       const result = await enhanceAccountData(websiteUrl, {
         client_name: formData.client_name,
         market_sector: formData.market_sector
@@ -141,7 +137,6 @@ export function CreateAccountModal({
     }
   };
 
-  // Apply AI suggestion
   const applySuggestion = (field: string, value: any) => {
     switch (field) {
       case 'company_name':
@@ -212,7 +207,6 @@ export function CreateAccountModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Update phone values before submitting
     const submitData = {
       ...formData,
       phone: mainPhone || formData.phone,
@@ -228,7 +222,6 @@ export function CreateAccountModal({
   const handleZipCodeChange = (zipCode: string) => {
     const cleanedZip = zipCode.replace(/\D/g, '').slice(0, 5);
     
-    // Update zip code
     setFormData(prev => ({ ...prev, client_address_zip_code: cleanedZip }));
     
     setZipAutoFilled(false);
@@ -242,7 +235,6 @@ export function CreateAccountModal({
       if (result) {
         const stateFullName = STATE_ABBREVIATION_TO_NAME[result.stateCode] || result.stateCode;
         
-        // Load all cities for this state
         const cities = getCitiesByState(result.stateCode);
         setAvailableCities(cities);
         
@@ -268,7 +260,6 @@ export function CreateAccountModal({
   const handleStateChange = (stateFullName: string) => {
     handleInputChange('client_address_state', stateFullName);
     
-    // Find state code from full name
     const stateCode = Object.entries(STATE_ABBREVIATION_TO_NAME)
       .find(([_, fullName]) => fullName === stateFullName)?.[0];
     

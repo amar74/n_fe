@@ -2,7 +2,7 @@ import { memo, useState, useEffect, useCallback } from 'react';
 import { X, Sparkles, Calendar, DollarSign, Building, Target, User, FileText, MapPin } from 'lucide-react';
 import { accountsApi } from '../services/api/accountsApi';
 import { AccountListItem } from '../types/accounts';
-import { useAISuggestions } from '../hooks/useAISuggestions';
+import { useDataEnrichment } from '../hooks/useDataEnrichment';
 
 type CreateOpportunityModalProps = {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
   const [aiEnhancementResults, setAiEnhancementResults] = useState<any>(null);
   const [showEnhancementPanel, setShowEnhancementPanel] = useState(false);
 
-  const { enhanceAccountData, enhanceOpportunityData, isLoading: isAILoading, error: aiError } = useAISuggestions({
+  const { enhanceAccountData, enhanceOpportunityData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,
     confidenceThreshold: 0.7,
     onSuggestionReceived: (suggestion) => {

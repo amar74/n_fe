@@ -176,7 +176,7 @@ function OpportunitiesDashboardPage() {
               className="h-10 px-4 py-2.5 bg-white rounded-lg border border-[#D1D5DB] flex items-center gap-2 hover:bg-gray-50 transition-all shadow-sm"
             >
               <Scan className="w-5 h-5 text-[#374151] stroke-[2]" />
-              <span className="text-[#374151] text-sm font-semibold font-['Inter']">AI Proactive Scan</span>
+                <span className="text-[#374151] text-sm font-semibold font-['Inter']">Auto Discovery</span>
             </button>
           </div>
         </div>
@@ -237,7 +237,7 @@ function OpportunitiesDashboardPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 bg-gradient-to-r from-[#10B981] to-[#059669] rounded-full shadow-sm ring-2 ring-[#10B981]/20" />
                     <span className="text-base font-semibold text-[#374151]">
-                      {activeTab === 'source' && 'AI-Powered Opportunity Discovery'}
+                      {activeTab === 'source' && 'Auto Opportunity Discovery'}
                       {activeTab === 'pipeline' && 'Pipeline Management & Analytics'}
                       {activeTab === 'myOpportunity' && 'Personal Opportunity Dashboard'}
                     </span>
@@ -377,7 +377,7 @@ function OpportunitiesDashboardPage() {
             
             <div className="px-8 py-5 border-b border-[#E5E7EB]">
               <h3 className="text-[#1A1A1A] text-xl font-semibold font-['Outfit'] leading-7 tracking-[-0.3px]">
-                AI Discovered Opportunities
+                Auto Discovered Opportunities
               </h3>
             </div>
 

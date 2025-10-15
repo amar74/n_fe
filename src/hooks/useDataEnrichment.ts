@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { apiClient, aiApiClient } from '@/services/api/client';
 
-interface AISuggestionOptions {
-  autoApply?: boolean;  // Auto-fill if confidence > threshold
-  confidenceThreshold?: number;  // Default 0.8
+interface SuggestionOptions {
+  autoApply?: boolean;
+  confidenceThreshold?: number;
   onSuggestionReceived?: (suggestion: any) => void;
   onError?: (error: string) => void;
 }
@@ -49,7 +49,7 @@ interface IndustrySuggestion {
   reasoning?: string;
 }
 
-export function useAISuggestions(options: AISuggestionOptions = {}) {
+export function useDataEnrichment(options: SuggestionOptions = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -89,9 +89,6 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
     }
   };
   
-  /**
-   * Enhance account data using AI based on website and partial data
-   */
   const enhanceAccountData = async (
     websiteUrl: string, 
     partialData: Record<string, any> = {},
@@ -107,11 +104,8 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
       });
       const result = response.data;
       
-      // Backend sends: {enhanced_data: {...}, processing_time_ms: number, warnings: string[], suggestions_applied: number}
-      // Frontend expects: {suggestions: {...}}
-      
       if (!result || !result.enhanced_data) {
-        throw new Error('not valid AI response: missing enhanced_data');
+        throw new Error('Invalid response: missing enhanced_data');
       }
       
       const suggestions = result.enhanced_data;
@@ -150,7 +144,7 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
       let errorMessage = 'enhance failed data';
       
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-        errorMessage = 'AI processing is taking longer than expected. Please try again.';
+        errorMessage = 'Processing is taking longer than expected. Please try again.';
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.message) {
@@ -165,9 +159,6 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
     }
   };
   
-  /**
-   * Validate address using AI
-   */
   const validateAddress = async (
     address: Record<string, string | null>,
     countryCode: string = 'US'
@@ -193,9 +184,6 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
     }
   };
   
-  /**
-   * Suggest industry based on website, company name, or description
-   */
   const suggestIndustry = async (
     websiteUrl?: string,
     companyName?: string,
@@ -229,9 +217,6 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
     }
   };
   
-  /**
-   * Validate contact information
-   */
   const validateContact = async (
     email?: string,
     phone?: string,
@@ -259,9 +244,6 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
     }
   };
 
-  /**
-   * Enhance opportunity data using AI
-   */
   const enhanceOpportunityData = async (
     websiteUrl: string, 
     partialData: Record<string, any> = {}
@@ -277,7 +259,7 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
       const result = response.data;
       
       if (!result || !result.enhanced_data) {
-        throw new Error('Invalid AI response: missing enhanced_data');
+        throw new Error('Invalid response: missing enhanced_data');
       }
       
       const suggestions = result.enhanced_data;
@@ -373,9 +355,6 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
     }
   };
   
-  /**
-   * Check AI service health
-   */
   const checkAIHealth = async (): Promise<any> => {
     try {
       const response = await apiClient.get('/ai/health');
@@ -394,19 +373,14 @@ export function useAISuggestions(options: AISuggestionOptions = {}) {
     validateContact,
     checkAIHealth,
     
-    // State
     isLoading,
     error,
     clearError,
     
-    // Configuration
     options
   };
 }
 
-/**
- * Hook for progressive enhancement - suggests as user types
- */
 export function useProgressiveEnhancement() {
   const [enhancementData, setEnhancementData] = useState<Record<string, any>>({});
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -416,9 +390,6 @@ export function useProgressiveEnhancement() {
     confidenceThreshold: 0.7
   });
   
-  /**
-   * Progressively enhance data as user provides more information
-   */
   const enhanceWithContext = async (
     websiteUrl: string,
     currentFormData: Record<string, any>
@@ -437,9 +408,6 @@ export function useProgressiveEnhancement() {
     }
   };
   
-  /**
-   * Apply a specific suggestion
-   */
   const applySuggestion = (field: string) => {
     const suggestion = enhancementData[field];
     if (suggestion && suggestion.confidence >= 0.7) {
@@ -448,9 +416,6 @@ export function useProgressiveEnhancement() {
     return null;
   };
   
-  /**
-   * Get all available suggestions
-   */
   const getSuggestions = () => {
     return Object.entries(enhancementData).map(([field, suggestion]) => ({
       field,
@@ -462,9 +427,6 @@ export function useProgressiveEnhancement() {
     }));
   };
   
-  /**
-   * Clear all suggestions
-   */
   const clearSuggestions = () => {
     setEnhancementData({});
   };
@@ -479,9 +441,6 @@ export function useProgressiveEnhancement() {
   };
 }
 
-/**
- * Hook for real-time validation
- */
 export function useRealTimeValidation() {
   const [validationResults, setValidationResults] = useState<Record<string, any>>({});
   // TODO: need to fix this - harsh.pawar
@@ -489,9 +448,6 @@ export function useRealTimeValidation() {
   
   const { validateAddress, validateContact } = useAISuggestions();
   
-  /**
-   * Validate address in real-time
-   */
   const validateAddressRealTime = async (
     address: Record<string, string | null>,
     debounceMs: number = 1000
@@ -512,9 +468,6 @@ export function useRealTimeValidation() {
     }, debounceMs);
   };
   
-  /**
-   * Validate contact in real-time
-   */
   const validateContactRealTime = async (
     email?: string,
     phone?: string,

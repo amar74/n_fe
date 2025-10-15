@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAISuggestions, useProgressiveEnhancement } from '@/hooks/useAISuggestions';
+import { useDataEnrichment, useProgressiveEnhancement } from '@/hooks/useDataEnrichment';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -65,7 +65,7 @@ export function AccountFormWithAI() {
     isLoading, 
     error, 
     clearError 
-  } = useAISuggestions({
+  } = useDataEnrichment({
     autoApply: false, // Manual control
     confidenceThreshold: 0.8,
     onSuggestionReceived: (suggestion) => {
