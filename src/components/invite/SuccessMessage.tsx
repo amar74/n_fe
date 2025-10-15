@@ -2,11 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail } from 'lucide-react';
 
-interface SuccessMessageProps {
+type SuccessMessageProps = {
   email: string;
   onGoToLogin: () => void;
 }
 
+// @author jhalak32
 export function SuccessMessage({ email, onGoToLogin }: SuccessMessageProps) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

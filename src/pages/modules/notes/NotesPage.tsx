@@ -63,7 +63,7 @@ export default function NotesPage() {
 
   return (
     <div className="container mx-auto py-8 space-y-6">
-      {/* Header */}
+      
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold">Meeting Notes</h1>
@@ -79,7 +79,7 @@ export default function NotesPage() {
         </Button>
       </div>
 
-      {/* Search */}
+      
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
@@ -90,7 +90,7 @@ export default function NotesPage() {
         />
       </div>
 
-      {/* Notes Grid */}
+      
       {filteredNotes.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
@@ -124,7 +124,7 @@ export default function NotesPage() {
         </div>
       )}
 
-      {/* Pagination */}
+      
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2">
           <Button
@@ -150,12 +150,13 @@ export default function NotesPage() {
   );
 }
 
-interface NoteCardProps {
+type NoteCardProps = {
   note: Note;
   onDelete: (id: string) => void;
   isDeleting: boolean;
 }
 
+// temp solution by rose11
 function NoteCard({ note, onDelete, isDeleting }: NoteCardProps) {
   const meetingDate = new Date(note.meeting_datetime);
   const createdDate = new Date(note.created_at);

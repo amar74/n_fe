@@ -17,7 +17,7 @@ export default function SignInPage() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 h-screen overflow-x-hidden">
-      {/* Hide default browser password toggle icon */}
+      
       <style>
         {`
           input[type="password"]::-ms-reveal,
@@ -28,7 +28,7 @@ export default function SignInPage() {
         `}
       </style>
 
-      {/* Left: Sign In Form */}
+      
       <div className="flex sm:ml-10 sm:mb-5 items-center justify-center bg-white">
         <Card className="w-full max-w-md shadow-none border-0">
           <CardHeader className="space-y-2">
@@ -47,7 +47,7 @@ export default function SignInPage() {
 
           <CardContent className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
+              
               <div className="space-y-2.5">
                 <Label htmlFor="email">Email *</Label>
                 <div className="relative mt-2">
@@ -69,7 +69,7 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              {/* Password */}
+              
               <div className="space-y-2.5">
                 <Label htmlFor="password" className="text-sm">
                   Password *
@@ -105,7 +105,7 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              {/* Options */}
+              
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="keep-logged" className="border-[#ED8A09]" />
@@ -116,7 +116,7 @@ export default function SignInPage() {
                 <ResetPasswordDialog />
               </div>
 
-              {/* Submit */}
+              
               <Button
                 type="submit"
                 className="w-full bg-black text-white py-2 rounded-xl"
@@ -125,7 +125,7 @@ export default function SignInPage() {
               </Button>
             </form>
 
-            {/* Footer */}
+            
             <p className="text-sm text-gray-500">
               Don’t have an account?{" "}
               <a
@@ -139,7 +139,7 @@ export default function SignInPage() {
         </Card>
       </div>
 
-      {/* Right: Brand Info */}
+      
       <div className="hidden md:flex flex-row justify-end items-center relative overflow-hidden">
         <img
           src={Frame}

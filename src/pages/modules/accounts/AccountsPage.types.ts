@@ -14,5 +14,4 @@ export interface FilterState {
   tier: 'all' | ClientType;
 }
 
-// Re-export from the modal component
 export type { CreateAccountModalProps } from './components/CreateAccountModal/CreateAccountModal.types';

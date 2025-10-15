@@ -1,7 +1,7 @@
 import { Eye, Trash2, MoreVertical } from 'lucide-react';
 import { AccountNoteResponse } from '@/types/accountNotes';
 
-interface NotesListProps {
+type NotesListProps = {
   notes: AccountNoteResponse[];
   onView: (note: AccountNoteResponse) => void;
   onEdit: (note: AccountNoteResponse) => void;

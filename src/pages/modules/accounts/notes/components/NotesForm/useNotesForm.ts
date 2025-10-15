@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { NoteFormData } from '../../NotesTab.types';
 import { AccountNoteResponse } from '@/types/accountNotes';
 
-interface UseNotesFormProps {
+type UseNotesFormProps = {
   initialData?: Partial<AccountNoteResponse>;
   onSubmit: (note: NoteFormData) => Promise<any>;
   onCancel?: () => void;
@@ -15,18 +15,15 @@ interface FormErrors {
 }
 
 const formatDateForInput = (date: string | Date): string => {
-  // Handle string date (from backend)
   if (typeof date === 'string') {
     // Create date in local timezone
     const d = new Date(date);
-    // Get year, month, day in local timezone
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
-  // Handle new Date() for empty state
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -54,7 +51,6 @@ export const useNotesForm = ({ initialData, onSubmit, onCancel }: UseNotesFormPr
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset form when initialData changes
   useEffect(() => {
     setFormData(getInitialFormState(initialData));
     setErrors({});
@@ -86,7 +82,6 @@ export const useNotesForm = ({ initialData, onSubmit, onCancel }: UseNotesFormPr
 
   const handleChange = useCallback((field: keyof NoteFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     setErrors(prev => ({ ...prev, [field]: undefined }));
   }, []);
 
@@ -101,7 +96,6 @@ export const useNotesForm = ({ initialData, onSubmit, onCancel }: UseNotesFormPr
       setIsSubmitting(true);
       await onSubmit(formData);
 
-      // Reset form only if it's a create operation
       if (!initialData) {
         setFormData(getInitialFormState());
       }

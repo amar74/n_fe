@@ -21,13 +21,13 @@ import image from '@/assets/image.png';
 export default function OrganizationDetailsView() {
   return (
     <div className="min-h-screen bg-[#F5F3F2]">
-      {/* Header */}
+      
       <Header2 />
 
-      {/* Main Content */}
+      
       <main className="p-2">
         <div className="max-w-5xl mx-auto px-4 md:px-20">
-          {/* Breadcrumb just above card */}
+          
           <div className="text-sm text-gray-500 mb-3 flex flex-wrap gap-1 items-center">
             <House size={18} className="text-gray-700" />
             <CaretRight size={16} className="text-gray-700" />
@@ -38,7 +38,7 @@ export default function OrganizationDetailsView() {
 
           <Card className="rounded-3xl shadow-sm bg-white border-none">
             <CardContent className="p-6">
-              {/* Top Section */}
+              
               <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 border-b pb-4 border-gray-200 gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-[#EBEBEB] rounded-full flex items-center justify-center">
@@ -72,7 +72,7 @@ export default function OrganizationDetailsView() {
                 </div>
               </div>
 
-              {/* Admin + Created On */}
+              
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
                 <Badge className="bg-[#ED8A091A] text-[#ED8A09] rounded-2xl px-3 py-2 flex items-center gap-1">
                   <ShieldCheckered className="w-4 h-4" />
@@ -85,9 +85,9 @@ export default function OrganizationDetailsView() {
                 </div>
               </div>
 
-              {/* Info + Quick Actions in flex */}
+              
               <div className="flex flex-col md:flex-row gap-8">
-                {/* Left Column */}
+                
                 <div className="w-full flex-1 space-y-4 rounded-3xl p-6 border-gray-200 border">
                   <div className="border-b border-gray-200 pb-2">
                     <h3 className="font-semibold mb-2">Company Website</h3>
@@ -131,7 +131,7 @@ export default function OrganizationDetailsView() {
                   </div>
                 </div>
 
-                {/* Right Column - Quick Actions */}
+                
                 <div className="w-full md:w-1/2 rounded-3xl p-6 border-gray-200 border">
                   <h3 className="font-semibold text-xl mb-4 border-b pb-4 border-gray-200">
                     Quick Actions

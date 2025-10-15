@@ -2,7 +2,7 @@ import { Building, Brain, AlertTriangle, TrendingUp, DollarSign } from 'lucide-r
 import { Card, CardContent } from '@/components/ui/card';
 import { AccountStatsData } from '../../AccountsPage.types';
 
-interface AccountsStatsProps {
+type AccountsStatsProps = {
   stats: AccountStatsData;
   onStatClick?: (statId: string) => void;
 }
@@ -59,12 +59,12 @@ export function AccountsStats({ stats, onStatClick }: AccountsStatsProps) {
             onClick={() => onStatClick?.(config.id)}
           >
             <div className="h-[97px] overflow-clip relative w-full flex items-center p-4">
-              {/* Icon Section */}
+              
               <div className="bg-[#f3f3f3] flex items-center justify-center p-3 rounded-full size-14 flex-shrink-0">
                 <Icon className="size-7 text-orange-500" />
               </div>
               
-              {/* Text Section */}
+              
               <div className="ml-4 flex-1 min-w-0">
                 <div className="font-['Inter:Medium',_sans-serif] font-medium text-[#a7a7a7] text-sm tracking-[-0.28px] truncate">
                   {config.title}
@@ -82,7 +82,7 @@ export function AccountsStats({ stats, onStatClick }: AccountsStatsProps) {
               </div>
             </div>
             
-            {/* Border */}
+            
             <div aria-hidden="true" className="absolute border border-[#6c6c6c] border-solid inset-0 pointer-events-none rounded-[20px]" />
           </div>
         );

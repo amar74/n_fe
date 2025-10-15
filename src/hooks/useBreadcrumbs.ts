@@ -10,18 +10,15 @@ export interface BreadcrumbItem {
 export function useBreadcrumbs() {
   const location = useLocation();
   
-  // Extract account ID from path if present
   const accountIdMatch = location.pathname.match(/\/module\/accounts\/([^\/]+)/);
   const accountId = accountIdMatch ? accountIdMatch[1] : null;
   
-  // Get account data if we're on an account page
   const { accountDetail } = useAccountDetail(accountId || '');
 
   const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const crumbs: BreadcrumbItem[] = [{ label: 'Dashboard' }];
 
-    // Handle different route patterns
     if (pathSegments.includes('module')) {
       const moduleIndex = pathSegments.indexOf('module');
       const moduleType = pathSegments[moduleIndex + 1];
@@ -39,9 +36,7 @@ export function useBreadcrumbs() {
           });
         }
       }
-      // Add more module types as needed
     } else {
-      // Handle direct module routes (without /module prefix)
       const firstSegment = pathSegments[0];
       
       switch (firstSegment) {

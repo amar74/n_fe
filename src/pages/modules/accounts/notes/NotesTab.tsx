@@ -17,6 +17,7 @@ type SubTab = 'notes' | 'documents';
 
 export function NotesTab({ accountId }: NotesTabProps) {
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('notes');
+  // temp solution by jhalak32
   const [showAddModal, setShowAddModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [viewingNote, setViewingNote] = useState<AccountNoteResponse | null>(null);
@@ -50,7 +51,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
     deleteNote,
   } = useNotesTab(accountId);
 
-  // Documents hook
   const {
     documents,
     isLoading: isLoadingDocuments,
@@ -58,7 +58,7 @@ export function NotesTab({ accountId }: NotesTabProps) {
     isDeletingDocument,
     createDocument,
     deleteDocument,
-  } = useAccountDocuments(accountId);
+  } = useAccountDocuments(accountId, { enabled: activeSubTab === 'documents' });
 
   const handleViewNote = (note: AccountNoteResponse) => {
     setViewingNote(note);
@@ -70,7 +70,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
     startEditNote(note);
   };
 
-  // Document handlers
   const handleViewDocument = (document: AccountDocument) => {
     setViewingDocument(document);
     setShowViewDocumentModal(true);
@@ -78,7 +77,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
 
   const handleAddDocument = async (formData: any) => {
     try {
-      // Convert date string to ISO datetime string for backend
       const dateStr = formData.date ? `${formData.date}T00:00:00Z` : new Date().toISOString();
       
       await createDocument({
@@ -90,8 +88,8 @@ export function NotesTab({ accountId }: NotesTabProps) {
         mime_type: formData.file?.type || null,
       });
       setShowAddDocumentModal(false);
-    } catch (error) {
-      console.error('Error creating document:', error);
+    } catch (e) {
+      // Error handled by API
     }
   };
 
@@ -99,13 +97,13 @@ export function NotesTab({ accountId }: NotesTabProps) {
     try {
       await deleteDocument(documentId);
     } catch (error) {
-      console.error('Error deleting document:', error);
+      // Error handled by API
     }
   };
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Sub-Tab Navigation */}
+      
       <div className="w-full h-11 p-0.5 bg-[#FAFAF8] rounded-lg outline outline-1 outline-[#E5E7EB] inline-flex justify-start items-center">
         <button
           onClick={() => setActiveSubTab('notes')}
@@ -129,7 +127,7 @@ export function NotesTab({ accountId }: NotesTabProps) {
         </button>
       </div>
 
-      {/* Client Notes Section */}
+      
       {activeSubTab === 'notes' && (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -143,7 +141,7 @@ export function NotesTab({ accountId }: NotesTabProps) {
             </button>
           </div>
 
-          {/* Notes Table */}
+          
           <NotesList
             notes={notes}
             onView={handleViewNote}
@@ -154,7 +152,7 @@ export function NotesTab({ accountId }: NotesTabProps) {
         </div>
       )}
 
-      {/* Client Document Section */}
+      
       {activeSubTab === 'documents' && (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -170,7 +168,7 @@ export function NotesTab({ accountId }: NotesTabProps) {
             </button>
           </div>
 
-          {/* Documents Table */}
+          
           <DocumentsList
             documents={documents}
             onView={handleViewDocument}
@@ -180,7 +178,7 @@ export function NotesTab({ accountId }: NotesTabProps) {
         </div>
       )}
 
-      {/* Notes Modals */}
+      
       <AddNoteModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -208,7 +206,7 @@ export function NotesTab({ accountId }: NotesTabProps) {
         errors={updateErrors}
       />
 
-      {/* Documents Modals */}
+      
       <AddDocumentModal
         isOpen={showAddDocumentModal}
         onClose={() => setShowAddDocumentModal(false)}

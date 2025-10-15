@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { NoteFormData } from '../../NotesTab.types';
 import { AccountNoteResponse } from '@/types/accountNotes';
 
-interface EditNoteModalProps {
+type EditNoteModalProps = {
   isOpen: boolean;
   note: AccountNoteResponse | null;
   onClose: () => void;
@@ -44,7 +44,7 @@ export function EditNoteModal({
     try {
       await onSave(note.id, formData);
       onClose();
-    } catch (error) {
+    } catch (err) {
       // Error handling is done in the hook
     }
   };
@@ -67,7 +67,7 @@ export function EditNoteModal({
         className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-slate-800 font-['Outfit']">Edit Note</h2>
           <button
@@ -78,11 +78,11 @@ export function EditNoteModal({
           </button>
         </div>
 
-        {/* Form */}
+        
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Row 1: Title + Date */}
+          
           <div className="flex gap-5">
-            {/* Title */}
+            
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2 font-['Outfit']">
                 Note Title <span className="text-red-500">*</span>
@@ -100,7 +100,7 @@ export function EditNoteModal({
               )}
             </div>
 
-            {/* Date */}
+            
             <div className="w-48">
               <label className="block text-sm font-medium text-gray-700 mb-2 font-['Outfit']">
                 Date <span className="text-red-500">*</span>
@@ -118,7 +118,7 @@ export function EditNoteModal({
             </div>
           </div>
 
-          {/* Row 2: Content */}
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 font-['Outfit']">
               Note Content <span className="text-red-500">*</span>
@@ -136,7 +136,7 @@ export function EditNoteModal({
             )}
           </div>
 
-          {/* Action Buttons */}
+          
           <div className="flex items-center justify-end gap-3 pt-4">
             <button
               type="button"

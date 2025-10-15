@@ -5,7 +5,7 @@ import { ContactsList } from './components/ContactsList';
 import { EditContactModal } from './components/EditContactModal';
 import { useContacts } from './useContacts';
 
-export interface ContactsTabProps {
+export type ContactsTabProps = {
   accountId: string;
 }
 
@@ -41,7 +41,7 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Add Contact Button */}
+      
       <div className="flex justify-end">
         <button
           onClick={() => setShowAddModal(true)}
@@ -52,7 +52,7 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
         </button>
       </div>
 
-      {/* Contacts List */}
+      
       <ContactsList
         accountId={accountId}
         contacts={contacts}
@@ -61,7 +61,7 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
         isLoading={isLoading}
       />
 
-      {/* Add Contact Modal */}
+      
       <AddContactModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -70,7 +70,7 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
         errors={createErrors}
       />
 
-      {/* Edit Contact Modal */}
+      
       <EditContactModal
         isOpen={showEditModal}
         contact={editingContact}

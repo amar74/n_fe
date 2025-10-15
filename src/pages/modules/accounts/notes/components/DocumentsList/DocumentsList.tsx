@@ -1,7 +1,7 @@
 import { Eye, Trash2 } from 'lucide-react';
 import { AccountDocument } from '@/services/api/accountDocumentsApi';
 
-interface DocumentsListProps {
+type DocumentsListProps = {
   documents: AccountDocument[];
   onView: (document: AccountDocument) => void;
   onDelete: (documentId: string) => void;

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+// @author rose11
   Card,
   CardContent,
   CardDescription,
@@ -40,7 +41,6 @@ export default function UploadTab() {
   const [pastedText, setPastedText] = useState("");
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
-  // Document categories and their required items
   const documentCategories = {
     client: {
       title: "CLIENT DOCUMENTS",
@@ -187,7 +187,6 @@ export default function UploadTab() {
 
       setUploadedFiles((prev) => [...prev, newFile]);
 
-      // Simulate upload
       setTimeout(() => {
         setUploadedFiles((prev) =>
           prev.map((f) =>
@@ -286,7 +285,7 @@ export default function UploadTab() {
 
   return (
     <div className="space-y-6">
-      {/* Document Categories Checklist */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {Object.entries(documentCategories).map(([key, category]) => (
           <Card key={key} className="border-2">
@@ -342,9 +341,9 @@ export default function UploadTab() {
         ))}
       </div>
 
-      {/* Upload Interface */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* File Upload */}
+        
         <Card className="border-2">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -391,7 +390,7 @@ export default function UploadTab() {
           </CardContent>
         </Card>
 
-        {/* Website Link */}
+        
         <Card className="border-2">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -427,7 +426,7 @@ export default function UploadTab() {
           </CardContent>
         </Card>
 
-        {/* Paste Text */}
+        
         <Card className="border-2">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -464,7 +463,7 @@ export default function UploadTab() {
         </Card>
       </div>
 
-      {/* Uploaded Files List */}
+      
       {uploadedFiles.length > 0 && (
         <Card className="border-2">
           <CardHeader>
@@ -527,7 +526,7 @@ export default function UploadTab() {
         </Card>
       )}
 
-      {/* AI Processing Status */}
+      
       <Card className="border-2 bg-blue-50">
         <CardContent className="pt-6">
           <div className="flex items-center space-x-3">

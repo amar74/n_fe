@@ -341,7 +341,7 @@ export default function ScheduleTab() {
 
   return (
     <div className="space-y-6">
-      {/* Schedule Overview */}
+      
       <Card className="border-2 bg-gradient-to-r from-blue-50 to-purple-50">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -386,7 +386,7 @@ export default function ScheduleTab() {
         </CardContent>
       </Card>
 
-      {/* Date Configuration */}
+      
       <Card className="border-2">
         <CardHeader>
           <CardTitle>Key Dates Configuration</CardTitle>
@@ -421,7 +421,7 @@ export default function ScheduleTab() {
         </CardContent>
       </Card>
 
-      {/* Phase Filter */}
+      
       <Card className="border-2">
         <CardHeader>
           <CardTitle>Schedule Phases</CardTitle>
@@ -443,7 +443,7 @@ export default function ScheduleTab() {
         </CardContent>
       </Card>
 
-      {/* Review Milestones */}
+      
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -516,7 +516,7 @@ export default function ScheduleTab() {
         </CardContent>
       </Card>
 
-      {/* Schedule Timeline */}
+      
       <Card className="border-2">
         <CardHeader>
           <CardTitle>Detailed Schedule</CardTitle>
@@ -579,7 +579,7 @@ export default function ScheduleTab() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
+      
       <Card className="border-2 bg-blue-50">
         <CardContent className="pt-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

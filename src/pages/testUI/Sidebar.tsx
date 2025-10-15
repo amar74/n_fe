@@ -13,7 +13,7 @@ import {
 } from "phosphor-react";
 import { FilePen } from "lucide-react";
 
-interface SidebarProps {
+type SidebarProps = {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Mobile overlay */}
+      
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm z-20 lg:hidden"
@@ -43,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         />
       )}
 
-      {/* Sidebar */}
+      
       <div
         className={`
         fixed lg:static top-0 bottom-0 left-0 z-30 w-64 bg-white border-r-0 border-t-0 rounded-tr-2xl border-gray-200 
@@ -51,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         transition-transform duration-300 ease-in-out flex flex-col
       `}
       >
-        {/* Close button for mobile */}
+        
         <div className="flex items-center justify-end p-4 lg:hidden">
           <button
             onClick={onClose}
@@ -61,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Navigation */}
+        
         <nav className="flex-1 px-4 py-6">
           <ul className="space-y-1">
             {navigationItems.map((item, index) => {
@@ -92,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </ul>
         </nav>
 
-        {/* Logout */}
+        
         <div className="p-4 border-gray-200">
           <button className="w-full flex items-center space-x-3 px-3 py-10 text-black rounded-lg transition-colors">
             <SignOut size={18} weight="bold" className="text-black" />

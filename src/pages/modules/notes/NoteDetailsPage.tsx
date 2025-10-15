@@ -76,7 +76,7 @@ export default function NoteDetailsPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive">Error Loading Note</h1>
           <p className="text-muted-foreground mt-2">
-            {error?.message || 'Failed to load the note. Please try again.'}
+            {error?.message || 'Load failed note. please try again.'}
           </p>
           <Button asChild className="mt-4">
             <Link to="/module/notes">
@@ -95,7 +95,7 @@ export default function NoteDetailsPage() {
 
   return (
     <div className="container mx-auto py-8 max-w-4xl space-y-6">
-      {/* Header with Navigation */}
+      
       <div className="flex items-center justify-between">
         <Button variant="outline" asChild>
           <Link to="/module/notes">
@@ -139,7 +139,7 @@ export default function NoteDetailsPage() {
         </div>
       </div>
 
-      {/* Note Details */}
+      
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
@@ -168,7 +168,7 @@ export default function NoteDetailsPage() {
         <CardContent className="space-y-6">
           <Separator />
           
-          {/* Meeting Notes Content */}
+          
           <div>
             <h3 className="text-lg font-semibold mb-3">Meeting Notes</h3>
             <div className="prose prose-sm max-w-none">
@@ -180,7 +180,7 @@ export default function NoteDetailsPage() {
 
           <Separator />
 
-          {/* Metadata */}
+          
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

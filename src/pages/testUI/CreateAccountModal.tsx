@@ -15,7 +15,7 @@ import { Sparkle,Plus,Globe } from "phosphor-react";
 export default function CreateAccountModal() {
   return (
     <Dialog>
-      {/* Trigger: "+ Create Account" button */}
+      
       <DialogTrigger asChild>
         <Button className="bg-[#0F0901] text-white rounded-2xl">
           <Plus size={16} /> Create Account
@@ -32,7 +32,7 @@ export default function CreateAccountModal() {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Company Website */}
+        
         <div className="mb-2">
             <div className="flex items-center gap-2 mb-2">
              <Sparkle className="bg-[#EEEEEE] text-orange-400 rounded-full p-2 size-8"/>
@@ -49,7 +49,7 @@ export default function CreateAccountModal() {
           </div>
         </div>
 
-        {/* Grid Form */}
+        
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Client Name *</Label>
@@ -75,9 +75,6 @@ export default function CreateAccountModal() {
               <SelectTrigger className="mt-2 rounded-xl text-bold bg-[#F3F3F3] border-[#E6E6E6] focus:bg-white focus:border-[#FF7B00] focus:outline-none focus:ring-0 focus-visible:ring-0">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
-              {/* <SelectContent className="bg-white border-gray-300">
-                <SelectItem value="tech" className="text-gray-500 hover:bg-gray-100 hover:text-orange-400">Technology</SelectItem>
-              </SelectContent> */}
             </Select>
           </div>
           <div>
@@ -86,9 +83,6 @@ export default function CreateAccountModal() {
               <SelectTrigger className="mt-2 rounded-xl text-bold bg-[#F3F3F3] border-[#E6E6E6] focus:bg-white focus:border-[#FF7B00] focus:outline-none focus:ring-0 focus-visible:ring-0">
                 <SelectValue placeholder="Select tier" />
               </SelectTrigger>
-              {/* <SelectContent className="bg-white border-gray-300">
-                <SelectItem value="tier1" className="text-gray-500 hover:bg-gray-100 hover:text-orange-400">Tier 1</SelectItem>
-              </SelectContent> */}
             </Select>
           </div>
 
@@ -98,9 +92,6 @@ export default function CreateAccountModal() {
               <SelectTrigger className="mt-2 rounded-xl text-bold bg-[#F3F3F3] border-[#E6E6E6] focus:bg-white focus:border-[#FF7B00] focus:outline-none focus:ring-0 focus-visible:ring-0">
                 <SelectValue placeholder="Select office" />
               </SelectTrigger>
-              {/* <SelectContent className="bg-white border-gray-300">
-                <SelectItem value="ny" className="text-gray-500 hover:bg-gray-100 hover:text-orange-400">New York</SelectItem>
-              </SelectContent> */}
             </Select>
           </div>
           <div>
@@ -109,14 +100,11 @@ export default function CreateAccountModal() {
               <SelectTrigger className="mt-2 rounded-xl text-bold bg-[#F3F3F3] border-[#E6E6E6] focus:bg-white focus:border-[#FF7B00] focus:outline-none focus:ring-0 focus-visible:ring-0">
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
-              {/* <SelectContent className="bg-white border-gray-300">
-                <SelectItem value="yes" className="text-gray-500 hover:bg-gray-100 hover:text-orange-400">Yes</SelectItem>
-              </SelectContent> */}
             </Select>
           </div>
         </div>
 
-        {/* Footer */}
+        
          <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-between">
             <Button variant="outline" className="px-6 py-2 text-sm order-2 sm:order-1">
                 Cancel

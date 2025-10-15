@@ -4,14 +4,14 @@ import { MagnifyingGlass, Bell, List } from 'phosphor-react';
 import logo from '@/assets/logo.png';
 import john from '@/assets/john.png';
 
-interface HeaderProps {
+type HeaderProps = {
   onMenuClick: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   return (
     <header className="px-6 py-4 flex items-center justify-between relative z-10" style={{ backgroundColor: '#F5F3F2' }}>
-      {/* Left side - Logo and menu button */}
+      
       <div className="flex items-center space-x-4">
         <button 
           onClick={onMenuClick}
@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <img src={logo} alt="Logo" className="w-36 h-10" />
       </div>
 
-      {/* Center - Search bar */}
+      
       <div className="flex-1 max-w-md mx-8">
         <div className="relative">
           <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800" size={16} />
@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         </div>
       </div>
 
-      {/* Right side - Notifications and user */}
+      
       <div className="flex items-center space-x-4 ">
         <button className=" text-gray-600  hover:text-gray-800 relative bg-[#f8f7f6]  rounded-full p-3">
           <Bell  size={20} />

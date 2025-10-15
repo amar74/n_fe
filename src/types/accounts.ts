@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { schemas } from './generated/accounts';
 
-// Re-export base generated types
 export type AccountCreate = z.infer<typeof schemas.AccountCreate>;
 export type AccountUpdate = z.infer<typeof schemas.AccountUpdate>;
 export type ContactCreate = z.infer<typeof schemas.ContactCreate>;
@@ -16,7 +15,6 @@ export type Address = z.infer<typeof schemas.AddressResponse>;
 export type AccountDetailResponse = z.infer<typeof schemas.AccountDetailResponse>;
 export type AccountListItem = z.infer<typeof schemas.AccountListItem>;
 export type AccountListResponse = z.infer<typeof schemas.AccountListResponse>;
-// Consistent Account Detail Response - matches actual API response
 
 // Form data interfaces for UI
 export interface ContactFormData {
@@ -26,7 +24,6 @@ export interface ContactFormData {
   title?: string;
 }
 
-// Zod schema for contact form validation
 export const contactFormSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   email: z
@@ -39,7 +36,6 @@ export const contactFormSchema = z.object({
 
 export type ContactFormValues = z.infer<typeof contactFormSchema>;
 
-// Create account form data
 export interface CreateAccountFormData {
   client_name: string;
   company_website?: string;

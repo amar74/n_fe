@@ -6,13 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Mail, Shield, Building2, Loader2 } from 'lucide-react';
 import type { AcceptInviteResponse } from '@/types/orgs';
 
-interface SignupFormProps {
+type SignupFormProps = {
   inviteData: AcceptInviteResponse;
   isSigningUp: boolean;
   onSubmit: (password: string) => Promise<void>;
 }
 
-// Type guard to ensure invite data is valid
 function isValidInviteData(data: AcceptInviteResponse | null): data is AcceptInviteResponse {
   return !!(data && data.email && data.role && data.org_id);
 }
@@ -20,7 +19,6 @@ function isValidInviteData(data: AcceptInviteResponse | null): data is AcceptInv
 export function SignupForm({ inviteData, isSigningUp, onSubmit }: SignupFormProps) {
   const [password, setPassword] = useState('');
 
-  // Guard clause - early return if invalid invite data
   if (!isValidInviteData(inviteData)) {
     return null;
   }

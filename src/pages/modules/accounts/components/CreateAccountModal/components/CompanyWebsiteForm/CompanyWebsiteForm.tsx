@@ -4,15 +4,16 @@ import { Badge } from '@/components/ui/badge';
 import { Sparkles, Globe } from 'lucide-react';
 import { UIAccountFormData } from '../../CreateAccountModal.types';
 
-interface CompanyWebsiteFormProps {
+type CompanyWebsiteFormProps = {
   value: string | null | undefined;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   isAnalyzing?: boolean;
   showAISuggestions?: boolean;
   error?: string;
 }
 
-export function CompanyWebsiteForm({ value, onChange, isAnalyzing = false, showAISuggestions = false, error }: CompanyWebsiteFormProps) {
+export function CompanyWebsiteForm({ value, onChange, onBlur, isAnalyzing = false, showAISuggestions = false, error }: CompanyWebsiteFormProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4 items-center">
@@ -40,6 +41,7 @@ export function CompanyWebsiteForm({ value, onChange, isAnalyzing = false, showA
           placeholder="https://your-company.com"
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
+          onBlur={(e) => onBlur?.(e.target.value)}
           className={`pl-10 h-12 sm:h-14 bg-[#f3f3f3] border-[#e6e6e6] rounded-xl text-[#2277f6] focus:bg-white focus:border-[#ff7b00] focus:outline-none focus:ring-0 focus-visible:ring-0 ${
             showAISuggestions && value ? 'bg-green-50 border-green-200' : ''
           } ${error ? 'border-red-500' : ''}`}

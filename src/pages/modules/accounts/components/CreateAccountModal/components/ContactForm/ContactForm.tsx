@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { UIAccountFormData } from '../../CreateAccountModal.types';
 
-interface ContactFormProps {
+type ContactFormProps = {
   formData: UIAccountFormData;
   errors: Record<string, string>;
   onChange: (field: string, value: string | object) => void;

@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   House,
   CaretRight,
@@ -24,6 +27,88 @@ import { useMyOrganization, useOrganizations } from '@/hooks/useOrganizations';
 import { useAuth } from '@/hooks/useAuth';
 import type { UpdateOrgFormData } from '@/types/orgs';
 import image from '@/assets/image.png';
+import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
+
+const organizationUpdateSchema = z.object({
+  name: z.string().min(1, 'Organization name is required').max(100, 'Organization name is too long'),
+  website: z.union([
+    z.string().url('Please enter a valid URL (e.g., https://example.com)'),
+    z.literal(''),
+  ]).optional(),
+  address: z.object({
+    line1: z.string().min(1, 'Address line 1 is required'),
+    line2: z.string().optional(),
+    city: z.string().min(1, 'City is required'),
+    state: z.string().min(1, 'State is required'),
+    pincode: z.number().min(10000, 'Zip code must be 5 digits').max(99999, 'Zip code must be 5 digits'),
+  }),
+  contact: z.object({
+    email: z.string().email('Please enter a valid email address'),
+    phone: z.string().optional(),
+  }),
+});
+
+// US States list
+const US_STATES = [
+  { value: 'AL', label: 'Alabama' },
+  { value: 'AK', label: 'Alaska' },
+  { value: 'AZ', label: 'Arizona' },
+  { value: 'AR', label: 'Arkansas' },
+  { value: 'CA', label: 'California' },
+  { value: 'CO', label: 'Colorado' },
+  { value: 'CT', label: 'Connecticut' },
+  { value: 'DE', label: 'Delaware' },
+  { value: 'FL', label: 'Florida' },
+  { value: 'GA', label: 'Georgia' },
+  { value: 'HI', label: 'Hawaii' },
+  { value: 'ID', label: 'Idaho' },
+  { value: 'IL', label: 'Illinois' },
+  { value: 'IN', label: 'Indiana' },
+  { value: 'IA', label: 'Iowa' },
+  { value: 'KS', label: 'Kansas' },
+  { value: 'KY', label: 'Kentucky' },
+  { value: 'LA', label: 'Louisiana' },
+  { value: 'ME', label: 'Maine' },
+  { value: 'MD', label: 'Maryland' },
+  { value: 'MA', label: 'Massachusetts' },
+  { value: 'MI', label: 'Michigan' },
+  { value: 'MN', label: 'Minnesota' },
+  { value: 'MS', label: 'Mississippi' },
+  { value: 'MO', label: 'Missouri' },
+  { value: 'MT', label: 'Montana' },
+  { value: 'NE', label: 'Nebraska' },
+  { value: 'NV', label: 'Nevada' },
+  { value: 'NH', label: 'New Hampshire' },
+  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NM', label: 'New Mexico' },
+  { value: 'NY', label: 'New York' },
+  { value: 'NC', label: 'North Carolina' },
+  { value: 'ND', label: 'North Dakota' },
+  { value: 'OH', label: 'Ohio' },
+  { value: 'OK', label: 'Oklahoma' },
+  { value: 'OR', label: 'Oregon' },
+  { value: 'PA', label: 'Pennsylvania' },
+  { value: 'RI', label: 'Rhode Island' },
+  { value: 'SC', label: 'South Carolina' },
+  { value: 'SD', label: 'South Dakota' },
+  { value: 'TN', label: 'Tennessee' },
+  { value: 'TX', label: 'Texas' },
+  { value: 'UT', label: 'Utah' },
+  { value: 'VT', label: 'Vermont' },
+  { value: 'VA', label: 'Virginia' },
+  { value: 'WA', label: 'Washington' },
+  { value: 'WV', label: 'West Virginia' },
+  { value: 'WI', label: 'Wisconsin' },
+  { value: 'WY', label: 'Wyoming' },
+];
+
+const COUNTRY_CODES = [
+  { value: '+1', label: 'US (+1)', flag: '🇺🇸' },
+  { value: '+91', label: 'IN (+91)', flag: '🇮🇳' },
+  { value: '+44', label: 'UK (+44)', flag: '🇬🇧' },
+  { value: '+61', label: 'AU (+61)', flag: '🇦🇺' },
+  { value: '+86', label: 'CN (+86)', flag: '🇨🇳' },
+];
 
 export default function OrganizationUpdatePage() {
   const navigate = useNavigate();
@@ -38,9 +123,15 @@ export default function OrganizationUpdatePage() {
     pincode: '',
     email: '',
     phone: '',
+    countryCode: '+1', // Default to USA
   });
 
-  // Use centralized hooks following Development.md patterns
+  // Track available cities based on selected state
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  
+  // Track if form has been initialized to prevent infinite loops
+  const initializedOrgId = useRef<string | null>(null);
+
   const organizationQuery = useMyOrganization();
   const { authState } = useAuth();
   const { updateOrganization, isUpdating } = useOrganizations();
@@ -49,14 +140,20 @@ export default function OrganizationUpdatePage() {
   const isLoading = organizationQuery.isLoading;
   const error = organizationQuery.error;
 
-  const form = useForm<UpdateOrgFormData>({
+  type OrganizationUpdateFormData = z.infer<typeof organizationUpdateSchema>;
+
+  const form = useForm<OrganizationUpdateFormData>({
+    resolver: zodResolver(organizationUpdateSchema),
+    mode: 'onBlur', // Validate on blur for better UX
     defaultValues: {
       name: '',
       website: '',
       address: {
         line1: '',
         line2: '',
-        pincode: undefined,
+        city: '',
+        state: '',
+        pincode: 0, // Default to 0 for number field
       },
       contact: {
         phone: '',
@@ -70,10 +167,17 @@ export default function OrganizationUpdatePage() {
     formState: { isSubmitting },
   } = form;
 
-  // Update form when organization data is loaded
+  // Update form when organization data is loaded (only once per organization)
   useEffect(() => {
-    if (organization) {
+    if (organization && organization.id !== initializedOrgId.current) {
+      // Mark this organization as initialized
+      initializedOrgId.current = organization.id;
+      
       // Update both form and formData state
+      // Important: Keep state as string value (not undefined) for proper Select display
+      const stateValue = organization.address?.state;
+      const normalizedState = stateValue && stateValue.trim() !== '' ? stateValue : undefined;
+      
       const organizationData = {
         name: organization.name,
         website: organization.website || '',
@@ -81,8 +185,8 @@ export default function OrganizationUpdatePage() {
           line1: organization.address?.line1 || '',
           line2: organization.address?.line2 || '',
           city: organization.address?.city || '',
-          state: organization.address?.state || '',
-          pincode: organization.address?.pincode || undefined,
+          state: normalizedState, // Use normalized state value
+          pincode: organization.address?.pincode || 0,
         },
         contact: {
           phone: organization.contact?.phone || '',
@@ -92,61 +196,110 @@ export default function OrganizationUpdatePage() {
 
       form.reset(organizationData);
 
+      const phoneNumber = organization.contact?.phone || '';
+      let countryCode = '+1'; // Default to USA
+      let phoneWithoutCode = phoneNumber;
+      
+      if (phoneNumber && phoneNumber.trim()) {
+        if (phoneNumber.startsWith('+')) {
+          const match = phoneNumber.match(/^(\+\d{1,3})\s?(.*)$/);
+          if (match) {
+            countryCode = match[1];
+            phoneWithoutCode = match[2] || '';
+          }
+        } else {
+          phoneWithoutCode = phoneNumber;
+        }
+      }
+
       setFormData({
         organizationName: organization.name,
         website: organization.website || '',
         addressLine1: organization.address?.line1 || '',
         addressLine2: organization.address?.line2 || '',
         city: organization.address?.city || '',
-        state: organization.address?.state || '',
+        state: normalizedState || '', // Use normalized state (empty string for display if no value)
         pincode: organization.address?.pincode?.toString() || '',
         email: organization.contact?.email || '',
-        phone: organization.contact?.phone || '',
+        phone: phoneWithoutCode,
+        countryCode: countryCode,
       });
+      
+      if (normalizedState) {
+        // temp solution by rose11
+        const cities = getCitiesByState(normalizedState);
+        setAvailableCities(cities);
+      }
     }
   }, [organization, form]);
 
-  // Redirect non-admin users
+  // Redirect unauthorized users (vendors and admins can edit, super_admins cannot)
   useEffect(() => {
-    if (!isLoading && authState.user && authState.user.role !== 'admin') {
-      toast.error('Only administrators can edit organization details.');
-      navigate('/organization');
+    if (!isLoading && authState.user && authState.user.role) {
+      const allowedRoles = ['vendor', 'admin'];
+      if (!allowedRoles.includes(authState.user.role)) {
+        toast.error('You do not have permission to edit organization details.');
+        navigate('/');
+      }
     }
-  }, [authState.user, isLoading, navigate, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authState.user, isLoading, navigate]); // Removed 'toast' to prevent infinite loop
 
-  const onSubmit = async (data: UpdateOrgFormData) => {
+  const onSubmit = async (data: OrganizationUpdateFormData) => {
     if (!organization) {
       toast.error('Organization data not loaded');
       return;
     }
 
     try {
-      // Transform data to match the backend expected format
-      const updateData: UpdateOrgFormData = {
+      // Debug logs removed for performance
+
+      let fullPhoneNumber: string | undefined = undefined;
+      if (data.contact?.phone) {
+        const phoneValue = data.contact.phone.trim();
+        if (phoneValue.startsWith('+')) {
+          fullPhoneNumber = phoneValue;
+        } else if (phoneValue) {
+          fullPhoneNumber = `${formData.countryCode} ${phoneValue}`;
+        }
+      }
+
+      const stateValue = data.address?.state || formData.state || undefined;
+      const cityValue = data.address?.city || formData.city || undefined;
+
+      const updateData: any = {
         name: data.name?.trim(),
         website: data.website?.trim() || undefined,
-        address: data.address
-          ? {
-              line1: data.address.line1?.trim(),
-              line2: data.address.line2?.trim() || undefined,
-              pincode: data.address.pincode || undefined,
-            }
-          : undefined,
-        contact: data.contact
-          ? {
-              phone: data.contact.phone?.trim() || undefined,
-              email: data.contact.email?.trim() || undefined,
-            }
-          : undefined,
+        address: {
+          line1: data.address?.line1?.trim(),
+          line2: data.address?.line2?.trim() || undefined,
+          city: cityValue?.trim(),  // Send directly - no conversion
+          state: stateValue?.trim(),  // Send directly - no conversion
+          pincode: data.address?.pincode,
+        },
+        contact: {
+          email: data.contact?.email?.trim(),
+          phone: fullPhoneNumber || undefined,
+        },
       };
 
       await updateOrganization({ orgId: organization.id, data: updateData });
 
-      toast.success('Organization updated successfully.');
+      const { data: updatedOrg } = await organizationQuery.refetch();
+      
+      // Show success message
+      toast.success('Organization updated successfully!', {
+        description: 'Your changes have been saved.',
+      });
 
-      // Navigate back to organization page
-      navigate('/organization');
-    } catch (error: unknown) {
+      // If profile is complete (100%), redirect to dashboard after a short delay
+      if (updatedOrg?.profile_completion === 100) {
+        setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 1000); // 1 second delay to show the success message
+      }
+      // Otherwise, stay on page so user can complete remaining fields
+    } catch (err: unknown) {
       // Error handling is already done in the centralized hook
     }
   };
@@ -168,12 +321,55 @@ export default function OrganizationUpdatePage() {
     } else if (field === 'state') {
       form.setValue('address.state', value);
     } else if (field === 'pincode') {
-      const numValue = value ? parseInt(value) : undefined;
+      const numValue = value ? parseInt(value) : 0;
       form.setValue('address.pincode', numValue);
     } else if (field === 'email') {
       form.setValue('contact.email', value);
     } else if (field === 'phone') {
       form.setValue('contact.phone', value);
+    }
+  };
+
+  const handleZipCodeChange = (zipCode: string) => {
+    // Update the ZIP code field
+    handleFormDataChange('pincode', zipCode);
+    
+    if (zipCode.length === 5) {
+      const result = lookupByZipCode(zipCode);
+      if (result) {
+        form.setValue('address.city', result.city);
+        form.setValue('address.state', result.stateCode);
+        
+        // Update formData
+        setFormData(prev => ({
+          ...prev,
+          city: result.city,
+          state: result.stateCode,
+          pincode: zipCode,
+        }));
+        
+        const cities = getCitiesByState(result.stateCode);
+        setAvailableCities(cities);
+        
+        // Show success toast
+        toast.success('Address Auto-filled', {
+          description: `${result.city}, ${result.stateCode} detected from ZIP code`,
+        });
+      }
+    }
+  };
+
+  const handleStateChange = (stateCode: string) => {
+    form.setValue('address.state', stateCode);
+    handleFormDataChange('state', stateCode);
+    
+    const cities = getCitiesByState(stateCode);
+    setAvailableCities(cities);
+    
+    const currentCity = form.getValues('address.city');
+    if (currentCity && !cities.includes(currentCity)) {
+      form.setValue('address.city', '');
+      handleFormDataChange('city', '');
     }
   };
 
@@ -200,8 +396,8 @@ export default function OrganizationUpdatePage() {
     );
   }
 
-  // Error state or non-admin user
-  if (error || !organization || !authState.user || authState.user.role !== 'admin') {
+  // Error state or unauthorized user (only vendors and admins can access)
+  if (error || !organization || !authState.user || !authState.user.role || !['vendor', 'admin'].includes(authState.user.role)) {
     return (
       <div className="min-h-screen bg-[#F5F3F2] overflow-x-hidden">
         <main className="py-6 px-4 sm:px-6 lg:px-8">
@@ -210,19 +406,21 @@ export default function OrganizationUpdatePage() {
               <CardContent className="p-8 text-center">
                 <div className="text-red-600 mb-4">
                   <h2 className="text-xl font-medium mb-2">
-                    {authState.user?.role !== 'admin' ? 'Access Denied' : 'Organization Not Found'}
+                    {authState.user?.role && !['vendor', 'admin'].includes(authState.user.role) 
+                      ? 'Access Denied' 
+                      : 'Organization Not Found'}
                   </h2>
                   <p className="text-sm">
-                    {authState.user?.role !== 'admin'
-                      ? 'Only administrators can edit organization details.'
+                    {authState.user?.role && !['vendor', 'admin'].includes(authState.user.role)
+                      ? 'Only organization members can edit organization details.'
                       : error?.message || 'Unable to load organization details'}
                   </p>
                 </div>
                 <Button
-                  onClick={() => navigate('/organization')}
+                  onClick={() => navigate('/')}
                   className="bg-[#ED8A09] hover:bg-[#ED8A09]/90 text-white"
                 >
-                  Back to Organization
+                  Back to Dashboard
                 </Button>
               </CardContent>
             </Card>
@@ -234,10 +432,10 @@ export default function OrganizationUpdatePage() {
 
   return (
     <div className="min-h-screen bg-[#F5F3F2] overflow-x-hidden">
-      {/* Main Content */}
+      
       <main className="py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          {/* Breadcrumb */}
+          
           <div className="text-sm text-gray-500 mb-8 flex flex-wrap gap-1 items-center">
             <House size={18} className="text-gray-700" />
             <CaretRight size={16} className="text-gray-700" />
@@ -248,7 +446,7 @@ export default function OrganizationUpdatePage() {
 
           <Card className="w-full max-w-[700px] mx-auto rounded-2xl shadow-sm bg-white border border-gray-200">
             <CardContent className="p-8">
-              {/* Title with subtitle */}
+              
               <div className="w-full mb-8">
                 <div className="flex justify-start items-start gap-3">
                   <div className="flex-1 flex flex-col justify-start items-start gap-3">
@@ -277,12 +475,12 @@ export default function OrganizationUpdatePage() {
                 </div>
               </div>
 
-              {/* Form Fields */}
+              
               <Form {...form}>
                 <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col justify-start items-start gap-5">
-                  {/* Row 1: Company Website + Organization Name */}
+                  
                   <div className="self-stretch flex justify-start items-start gap-5">
-                    {/* Company Website */}
+                    
                     <FormField
                       control={form.control}
                       name="website"
@@ -316,7 +514,7 @@ export default function OrganizationUpdatePage() {
                       )}
                     />
 
-                    {/* Organization Name */}
+                    
                     <FormField
                       control={form.control}
                       name="name"
@@ -345,9 +543,9 @@ export default function OrganizationUpdatePage() {
                     />
                   </div>
 
-                  {/* Row 2: Address 1 + Address 2 */}
+                  
                   <div className="self-stretch flex justify-start items-start gap-5">
-                    {/* Address 1 */}
+                    
                     <FormField
                       control={form.control}
                       name="address.line1"
@@ -375,7 +573,7 @@ export default function OrganizationUpdatePage() {
                       )}
                     />
 
-                    {/* Address 2 */}
+                    
                     <FormField
                       control={form.control}
                       name="address.line2"
@@ -404,9 +602,9 @@ export default function OrganizationUpdatePage() {
                     />
                   </div>
 
-                  {/* Row 3: City + State + Zip Code */}
+                  
                   <div className="self-stretch flex justify-start items-start gap-5">
-                    {/* City */}
+                    
                     <FormField
                       control={form.control}
                       name="address.city"
@@ -415,26 +613,34 @@ export default function OrganizationUpdatePage() {
                           <Label htmlFor="city" className="justify-start text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                             City<span className="text-red-600">*</span>
                           </Label>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              id="city"
-                              value={formData.city}
-                              placeholder="City name"
-                              onChange={e => {
-                                field.onChange(e.target.value);
-                                handleFormDataChange('city', e.target.value);
-                              }}
-                              className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-gray-500 text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
-                              disabled={isSubmitting || isUpdating}
-                            />
-                          </FormControl>
+                          <Select
+                            key={field.value || 'no-city'}
+                            value={field.value || undefined}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleFormDataChange('city', value);
+                            }}
+                            disabled={isSubmitting || isUpdating || availableCities.length === 0}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-[#101828] text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus:ring-0">
+                                <SelectValue placeholder={availableCities.length > 0 ? "Select City" : "Select state first"} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="max-h-60 bg-white">
+                              {availableCities.map((city) => (
+                                <SelectItem key={city} value={city} className="font-outfit">
+                                  {city}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* State */}
+                    
                     <FormField
                       control={form.control}
                       name="address.state"
@@ -443,26 +649,34 @@ export default function OrganizationUpdatePage() {
                           <Label htmlFor="state" className="justify-start text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                             State<span className="text-red-600">*</span>
                           </Label>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              id="state"
-                              value={formData.state}
-                              placeholder="Select State"
-                              onChange={e => {
-                                field.onChange(e.target.value);
-                                handleFormDataChange('state', e.target.value);
-                              }}
-                              className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-[#101828] text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
-                              disabled={isSubmitting || isUpdating}
-                            />
-                          </FormControl>
+                          <Select
+                            key={field.value || 'no-state'}
+                            value={field.value || undefined}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleStateChange(value);
+                            }}
+                            disabled={isSubmitting || isUpdating}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-[#101828] text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus:ring-0">
+                                <SelectValue placeholder="Select State" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="max-h-60 bg-white">
+                              {US_STATES.map((state) => (
+                                <SelectItem key={state.value} value={state.value} className="font-outfit">
+                                  {state.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
 
-                    {/* Zip Code */}
+                    
                     <FormField
                       control={form.control}
                       name="address.pincode"
@@ -470,6 +684,7 @@ export default function OrganizationUpdatePage() {
                         <FormItem className="flex-1 flex flex-col justify-start items-start gap-1.5">
                           <Label htmlFor="pincode" className="justify-start text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                             Zip Code<span className="text-red-600">*</span>
+                            <span className="ml-2 text-xs text-blue-600 font-normal">✨ Auto-fills city & state</span>
                           </Label>
                           <FormControl>
                             <Input
@@ -477,11 +692,12 @@ export default function OrganizationUpdatePage() {
                               id="pincode"
                               type="number"
                               value={formData.pincode}
-                              placeholder="Postal code"
+                              placeholder="Enter 5-digit ZIP code"
+                              maxLength={5}
                               onChange={e => {
-                                const value = e.target.value;
+                                const value = e.target.value.slice(0, 5);
                                 field.onChange(value ? parseInt(value) : undefined);
-                                handleFormDataChange('pincode', value);
+                                handleZipCodeChange(value);
                               }}
                               className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-gray-500 text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
                               disabled={isSubmitting || isUpdating}
@@ -493,9 +709,9 @@ export default function OrganizationUpdatePage() {
                     />
                   </div>
 
-                  {/* Row 4: Email + Phone */}
+                  
                   <div className="self-stretch flex justify-start items-center gap-5">
-                    {/* Email */}
+                    
                     <FormField
                       control={form.control}
                       name="contact.email"
@@ -524,7 +740,7 @@ export default function OrganizationUpdatePage() {
                       )}
                     />
 
-                    {/* Phone */}
+                    
                     <FormField
                       control={form.control}
                       name="contact.phone"
@@ -533,27 +749,53 @@ export default function OrganizationUpdatePage() {
                           <Label htmlFor="phone" className="justify-start text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                             Phone
                           </Label>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              id="phone"
-                              value={formData.phone}
-                              placeholder="(555) 123 4567"
-                              onChange={e => {
-                                field.onChange(e.target.value);
-                                handleFormDataChange('phone', e.target.value);
+                          <div className="self-stretch flex gap-2">
+                            
+                            <Select
+                              value={formData.countryCode}
+                              onValueChange={(value) => {
+                                setFormData(prev => ({ ...prev, countryCode: value }));
                               }}
-                              className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-gray-500 text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
                               disabled={isSubmitting || isUpdating}
-                            />
-                          </FormControl>
+                            >
+                              <SelectTrigger className="w-32 h-11 px-3 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-[#101828] text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus:ring-0">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white">
+                                {COUNTRY_CODES.map((country) => (
+                                  <SelectItem key={country.value} value={country.value} className="font-outfit">
+                                    <span className="flex items-center gap-2">
+                                      <span>{country.flag}</span>
+                                      <span>{country.value}</span>
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            
+                            <FormControl>
+                              <Input
+                                {...field}
+                                id="phone"
+                                value={formData.phone}
+                                placeholder="(555) 123 4567"
+                                onChange={e => {
+                                  field.onChange(e.target.value);
+                                  handleFormDataChange('phone', e.target.value);
+                                }}
+                                className="flex-1 h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-gray-500 text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
+                                disabled={isSubmitting || isUpdating}
+                              />
+                            </FormControl>
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
 
-                  {/* Action Buttons */}
+                  
                   <div className="self-stretch flex justify-start items-start gap-5">
                     <div className="flex-1 flex flex-col justify-start items-start gap-5">
                       <Button

@@ -7,6 +7,7 @@ import { SuccessMessage } from '@/components/invite/SuccessMessage';
 import { ErrorCard } from '@/components/invite/ErrorCard';
 import { Toaster } from '@/components/ui/toaster';
 
+// @author amar74.soft
 export default function AcceptInvitePage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
@@ -25,7 +26,6 @@ export default function AcceptInvitePage() {
     goToLogin,
   } = useInviteAcceptance();
 
-  // Accept invite on component mount - only once
   useEffect(() => {
     if (token && !calledRef.current) {
       calledRef.current = true;
@@ -33,7 +33,6 @@ export default function AcceptInvitePage() {
     }
   }, [token, acceptInvite]);
 
-  // Handle signup submission
   const handleSignup = async (password: string) => {
     if (!inviteData?.email) {
       goToLogin();
@@ -44,15 +43,15 @@ export default function AcceptInvitePage() {
 
   return (
     <>
-      {/* Loading state while accepting invite */}
+      
       {isAcceptingInvite && <LoadingCard message="Accepting invitation..." />}
 
-      {/* Error state - check for errors OR invalid invite data */}
+      
       {(inviteError || !inviteData || !inviteData.email || !inviteData.role) && (
         <ErrorCard error={inviteError} onGoToLogin={goToLogin} />
       )}
 
-      {/* Success message after signup */}
+      
       {signupComplete && inviteData && (
         <SuccessMessage 
           email={inviteData.email} 
@@ -60,7 +59,7 @@ export default function AcceptInvitePage() {
         />
       )}
 
-      {/* Show signup form after invite is accepted */}
+      
       {inviteAccepted && inviteData && !signupComplete && (
         <SignupForm
           inviteData={inviteData}
@@ -69,7 +68,7 @@ export default function AcceptInvitePage() {
         />
       )}
 
-      {/* Include Toaster for notifications since this is a standalone page */}
+      
       <Toaster />
     </>
   );

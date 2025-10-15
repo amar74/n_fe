@@ -4,7 +4,7 @@ import { Edit, Trash2, MoreVertical } from 'lucide-react';
 import { ContactResponse } from '@/types/accounts';
 import { useAccountDetail } from '@/hooks/useAccounts';
 
-interface ContactsListProps {
+type ContactsListProps = {
   contacts: ContactResponse[];
   onEdit: (contact: ContactResponse) => void;
   onDelete: (contactId: string) => void;
@@ -14,7 +14,6 @@ interface ContactsListProps {
 
 export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading = false }: ContactsListProps) {
   const formatPhone = (phone: string) => {
-    // Simple phone formatting
     return phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
   };
   const { accountDetail } = useAccountDetail(accountId);
@@ -50,20 +49,20 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
 
   return (
     <div className="w-full p-8 bg-white rounded-2xl border border-[#E5E7EB] flex flex-col gap-5">
-      {/* Header */}
+      
       <div className="flex justify-between items-center">
         <h3 className="text-slate-800 text-lg font-semibold font-['Outfit'] leading-7">
           Client Contact
         </h3>
       </div>
 
-      {/* Divider */}
+      
       <div className="w-full h-px bg-black/10"></div>
 
-      {/* Table */}
+      
       <div className="w-full overflow-x-auto">
         <table className="w-full">
-          {/* Table Header */}
+          
           <thead>
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 text-[#667085] text-xs font-medium font-['Outfit'] uppercase tracking-wider">
@@ -87,7 +86,7 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
             </tr>
           </thead>
 
-          {/* Table Body */}
+          
           <tbody>
             {contacts.map((contact, index) => {
               const isPrimaryContact = contact.contact_id === accountDetail?.primary_contact?.contact_id;
@@ -98,35 +97,35 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
                   key={contact.contact_id}
                   className={`hover:bg-gray-50 transition-colors ${!isLastRow ? 'border-b border-gray-100' : ''}`}
                 >
-                  {/* Client Name */}
+                  
                   <td className="py-4 px-4">
                     <span className="text-slate-800 text-sm font-medium font-['Outfit']">
                       {contact.name}
                     </span>
                   </td>
 
-                  {/* Role */}
+                  
                   <td className="py-4 px-4">
                     <span className="text-slate-800 text-sm font-normal font-['Outfit']">
                       {isPrimaryContact ? 'Primary Contact' : 'Secondary Contact'}
                     </span>
                   </td>
 
-                  {/* Email */}
+                  
                   <td className="py-4 px-4">
                     <span className="text-slate-800 text-sm font-normal font-['Outfit'] truncate max-w-[200px] inline-block">
                       {contact.email}
                     </span>
                   </td>
 
-                  {/* Phone */}
+                  
                   <td className="py-4 px-4">
                     <span className="text-slate-800 text-sm font-normal font-['Outfit']">
                       {formatPhone(contact.phone)}
                     </span>
                   </td>
 
-                  {/* Tags */}
+                  
                   <td className="py-4 px-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium font-['Outfit'] ${
@@ -139,7 +138,7 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
                     </span>
                   </td>
 
-                  {/* Actions */}
+                  
                   <td className="py-4 px-4">
                     <div className="flex items-center justify-end gap-2">
                       <button

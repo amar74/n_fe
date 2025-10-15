@@ -50,6 +50,7 @@ interface State {
   toasts: ToasterToast[];
 }
 
+// FIXME: this not working properly - abhishek.softication
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
 const addToRemoveQueue = (toastId: string) => {
@@ -171,6 +172,7 @@ function useToast() {
   React.useEffect(() => {
     listeners.push(setState);
     return () => {
+      // rishabh - quick fix, need proper solution
       const index = listeners.indexOf(setState);
       if (index > -1) {
         listeners.splice(index, 1);

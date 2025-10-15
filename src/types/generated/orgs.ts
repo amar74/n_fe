@@ -7,16 +7,20 @@ import { ValidationError } from "./common";
 const AddressCreateResquest = z
   .object({
     line1: z.string(),
-    line2: z.union([z.string(), z.null()]),
-    city: z.union([z.string(), z.null()]),
-    pincode: z.union([z.number(), z.null()]),
+    line2: z.union([z.string(), z.null()]).optional(),
+    city: z.union([z.string(), z.null()]).optional(),
+    state: z.union([z.string(), z.null()]).optional(),
+    pincode: z.union([z.number(), z.null()]).optional(),
   })
   .passthrough();
 const ContactCreateRequest = z
   .object({
+    name: z.union([z.string(), z.null()]),
+    title: z.union([z.string(), z.null()]),
     email: z.union([z.string(), z.null()]),
     phone: z.union([z.string(), z.null()]),
   })
+  .partial()
   .passthrough();
 const OrgCreateRequest = z
   .object({
@@ -26,6 +30,7 @@ const OrgCreateRequest = z
     contact: z.union([ContactCreateRequest, z.null()]).optional(),
   })
   .passthrough();
+// @rishabh - refactor needed
 const OrgCreateResponse = z
   .object({ name: z.string(), id: z.string().uuid() })
   .passthrough();
@@ -47,14 +52,17 @@ const AddressCreateResponse = z
     line1: z.string(),
     line2: z.union([z.string(), z.null()]).optional(),
     city: z.union([z.string(), z.null()]).optional(),
+    state: z.union([z.string(), z.null()]).optional(),
     pincode: z.union([z.number(), z.null()]).optional(),
   })
   .passthrough();
 const CreateContactResponse = z
   .object({
     id: z.string().uuid(),
-    phone: z.union([z.string(), z.null()]).optional(),
+    name: z.union([z.string(), z.null()]).optional(),
+    title: z.union([z.string(), z.null()]).optional(),
     email: z.union([z.string(), z.null()]).optional(),
+    phone: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
 const OrgResponse = z
@@ -66,18 +74,8 @@ const OrgResponse = z
     website: z.union([z.string(), z.null()]).optional(),
     contact: z.union([CreateContactResponse, z.null()]).optional(),
     created_at: z.string().datetime({ offset: true }),
+    profile_completion: z.number().int().optional().default(0),
   })
-  .passthrough();
-const OrgUpdateRequest = z
-  .object({
-    name: z.string(),
-    address: z.union([AddressCreateResquest, z.null()]).optional(),
-    website: z.union([z.string(), z.null()]).optional(),
-    contact: z.union([ContactCreateRequest, z.null()]).optional(),
-  })
-  .passthrough();
-const OrgUpdateResponse = z
-  .object({ message: z.string(), org: OrgCreateResponse })
   .passthrough();
 const InviteResponse = z
   .object({
@@ -104,6 +102,7 @@ const AcceptInviteResponse = z
   })
   .passthrough();
 
+// temp solution by guddy.tech
 export const schemas = {
   AddressCreateResquest,
   ContactCreateRequest,
@@ -115,8 +114,6 @@ export const schemas = {
   AddressCreateResponse,
   CreateContactResponse,
   OrgResponse,
-  OrgUpdateRequest,
-  OrgUpdateResponse,
   InviteResponse,
   InviteCreateRequest,
   AcceptInviteResponse,
@@ -149,29 +146,51 @@ const endpoints = makeApi([
     method: "get",
     path: "/orgs/me",
     alias: "me",
-    description: `Get the organization of the current user`,
+    description: `Get the organization of the current user with profile completion percentage`,
     requestFormat: "json",
     response: OrgResponse,
   },
   {
-    method: "put",
-    path: "/orgs/update/:org_id",
-    alias: "updateOrg",
-    description: `Update an existing organization`,
+    method: "get",
+    path: "/orgs/:org_id",
+    alias: "getOrgById",
+    description: `Get organization by ID (Super Admin or organization member only)`,
     requestFormat: "json",
     parameters: [
-      {
-        name: "body",
-        type: "Body",
-        schema: OrgUpdateRequest,
-      },
       {
         name: "org_id",
         type: "Path",
         schema: z.string().uuid(),
       },
     ],
-    response: OrgUpdateResponse,
+    response: OrgResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "patch",
+    path: "/orgs/:org_id",
+    alias: "patchOrganization",
+    description: `Fast organization update endpoint - accepts raw JSON for maximum flexibility`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({}).partial().passthrough(),
+      },
+      {
+        name: "org_id",
+        type: "Path",
+        schema: z.string(),
+      },
+    ],
+    response: z.object({}).partial().passthrough(),
     errors: [
       {
         status: 422,

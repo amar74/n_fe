@@ -8,7 +8,7 @@ const iconMap = {
   CheckCircle,
 };
 
-interface RecentActivityProps {
+type RecentActivityProps = {
   activities: RecentActivityItem[];
 }
 
@@ -16,7 +16,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
   return (
     <div className="bg-neutral-50 border border-[#f0f0f0] rounded-[28px] py-6 px-0 w-[561px]">
       <div className="flex flex-col gap-6 w-full">
-        {/* Header */}
+        
         <div className="px-6">
           <div className="flex flex-col gap-7">
             <div className="flex flex-col gap-2">
@@ -27,9 +27,10 @@ export function RecentActivity({ activities }: RecentActivityProps) {
           </div>
         </div>
 
-        {/* Activity List */}
+        
         <div className="flex flex-col w-full">
           {activities.map((activity, index) => {
+            // TODO: need to fix this - rose11
             const IconComponent = iconMap[activity.icon as keyof typeof iconMap];
             const isLast = index === activities.length - 1;
             
@@ -40,7 +41,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                   !isLast ? 'border-b border-[#eaeaea]' : ''
                 }`}
               >
-                {/* Icon */}
+                
                 <div className="h-4 w-3 mt-1 flex-shrink-0">
                   <IconComponent 
                     className="h-4 w-4" 
@@ -48,7 +49,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                   />
                 </div>
 
-                {/* Content */}
+                
                 <div className="flex flex-col gap-2 flex-1 min-w-0">
                   <h3 className="font-inter font-semibold text-[#0f0901] text-[18px] leading-normal">
                     {activity.title}

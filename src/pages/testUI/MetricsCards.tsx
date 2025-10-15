@@ -47,9 +47,6 @@ const MetricsCards: React.FC = () => {
               <div>
                 <span className='text-base xl:text-lg font-bold text-orange-400'>{metric.value}</span>
                  <span className=' mx-1.5 text-sm font-semibold text-gray-800'>{metric.subtitle}</span></div>
-              {/* {metric.subtitle && (
-                <div className="text-xs text-gray-400 truncate">{metric.subtitle}</div>
-              )} */}
             </div>
           </div>
         </div>

@@ -10,19 +10,23 @@ export function useAccountDetailsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // State
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [isEditing, setIsEditing] = useState(false);
+  // FIXME: this not working properly - guddy.tech
   const [formData, setFormData] = useState<AccountFormData | null>(null);
 
-  // API calls
   const { accountDetail: account, isAccountDetailLoading: isLoading, accountDetailError: error } = useAccountDetail(id || '');
   const { updateAccount, isUpdating, updateErrors, isUpdateAccountSuccess } = useAccounts();
+  useEffect(() => {
+    if (account && account.custom_id && id === account.account_id) {
+      const newUrl = `/module/accounts/${account.custom_id}`;
+      navigate(newUrl, { replace: true });
+    }
+  }, [account, id, navigate]);
 
-  // Initialize form data when account loads or updates
+
   useEffect(() => {
     if (account) {
-      console.log('Updating formData with account:', account.client_name, account.client_address);
       setFormData({
         client_name: account.client_name || '',
         client_type: account.client_type || '',
@@ -36,7 +40,7 @@ export function useAccountDetailsPage() {
         hosting_area: account.hosting_area || '',
         msa_in_place: account.msa_in_place || false,
         account_approver: account.account_approver || '',
-        approval_date_time: account.approval_date_time || '',
+        approval_date_time: account.approval_date || '',
       });
     }
   }, [account, account?.client_name, account?.client_address?.city, account?.client_address?.state]);
@@ -47,7 +51,6 @@ export function useAccountDetailsPage() {
     }
   }, [isUpdateAccountSuccess]);
 
-  // Computed values
   const statsCards: AccountStatsCard[] = useMemo(() => {
     if (!account) return [];
     
@@ -81,14 +84,12 @@ export function useAccountDetailsPage() {
     ];
   }, [account]);
 
-  // Handlers
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
   };
 
   const handleEditToggle = () => {
     if (isEditing && formData) {
-      // Reset form data when canceling edit
       if (account) {
         setFormData({
           client_name: account.client_name || '',
@@ -103,7 +104,7 @@ export function useAccountDetailsPage() {
           hosting_area: account.hosting_area || '',
           msa_in_place: account.msa_in_place || false,
           account_approver: account.account_approver || '',
-          approval_date_time: account.approval_date_time || '',
+          approval_date_time: account.approval_date || '',
         });
       }
     }
@@ -122,22 +123,26 @@ export function useAccountDetailsPage() {
   const handleSaveChanges = async () => {
     if (!account?.account_id || !formData) return;
 
+    const updateData = {
+      client_name: formData.client_name,
+      client_type: formData.client_type as any,
+      market_sector: formData.market_sector,
+      client_address: {
+        line1: formData.client_address_line1,
+        line2: formData.client_address_line2 || undefined,
+        city: formData.client_address_city || undefined,
+        state: formData.client_address_state && formData.client_address_state !== "" ? formData.client_address_state : undefined,
+        pincode: formData.client_address_zip_code ? parseInt(formData.client_address_zip_code) : undefined,
+      },
+      company_website: formData.company_website || undefined,
+      hosting_area: formData.hosting_area && formData.hosting_area !== "" ? formData.hosting_area : undefined,
+      account_approver: formData.account_approver && formData.account_approver !== "" ? formData.account_approver : undefined,
+      approval_date: formData.approval_date_time && formData.approval_date_time !== "" ? formData.approval_date_time : undefined,
+      notes: undefined,
+    };
     await updateAccount({
       accountId: account.account_id,
-      data: {
-        client_name: formData.client_name,
-        client_type: formData.client_type as any,
-        market_sector: formData.market_sector,
-        client_address: {
-          line1: formData.client_address_line1,
-          line2: formData.client_address_line2 || undefined,
-          city: formData.client_address_city || undefined,
-          state: formData.client_address_state,
-          pincode: formData.client_address_zip_code ? parseInt(formData.client_address_zip_code) : undefined,
-        },
-        company_website: formData.company_website || undefined,
-        notes: undefined,
-      },
+      data: updateData,
     });
   };
 
@@ -146,7 +151,6 @@ export function useAccountDetailsPage() {
   };
 
     return {
-    // Data
     account,
     isLoading,
     error,
@@ -156,17 +160,14 @@ export function useAccountDetailsPage() {
     statsCards,
     recentActivity: MOCK_RECENT_ACTIVITY,
 
-    // Actions
     handleTabChange,
     handleEditToggle,
     handleFormChange,
     handleSaveChanges,
     handleBackToAccounts,
 
-    // Status
     isUpdating,
     
-    // Form Errors
     updateErrors,
   };
 }

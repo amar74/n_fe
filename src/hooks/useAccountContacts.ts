@@ -19,15 +19,23 @@ export function useAccountContacts(accountId: string) {
 		queryKey: accountsQueryKeys.contacts(accountId),
 		queryFn: async () => {
 		if (!accountId) throw new Error('Account ID is required');
-		return accountsApi.getContacts(accountId);
+		const fetchStart = performance.now();
+		try {
+   // TODO: need to fix this - jhalak32
+			const result = await accountsApi.getContacts(accountId);
+			const fetchEnd = performance.now();
+			return result;
+		} catch (error) {
+			const fetchEnd = performance.now();
+			throw error;
+		}
 		},
 		enabled: !!accountId,
-		staleTime: 1000 * 60 * 3, // 3 minutes
+		staleTime: 1000 * 60 * 5, // 5 minutes - contacts don't change very frequently
 	});
 
   const { toast } = useToast();
 
-  // Add contact mutation
   const addContactMutation = useMutation({
     mutationFn: async ({
       accountId,
@@ -39,24 +47,22 @@ export function useAccountContacts(accountId: string) {
       return await accountsApi.addContact(accountId, contact);
     },
     onSuccess: async (data, variables) => {
-      // Force immediate refetch of contacts data
       await queryClient.refetchQueries({ 
         queryKey: accountsQueryKeys.contacts(variables.accountId),
         type: 'active'
       });
       queryClient.invalidateQueries({ queryKey: accountsQueryKeys.detail(variables.accountId) });
       toast.success('Contact Added', {
-        description: data.message || 'Contact added successfully'
+        description: data.message || 'Contact added sucessfully'
       });
     },
     onError: (error: any) => {
       toast.error('Error Adding Contact', {
-        description: error.response?.data?.message || 'Failed to add contact'
+        description: error.response?.data?.message || 'add failed'
       });
     },
   });
 
-  // Update contact mutation
   const updateContactMutation = useMutation({
     mutationFn: async ({
       accountId,
@@ -70,24 +76,22 @@ export function useAccountContacts(accountId: string) {
       return await accountsApi.updateContact(accountId, contactId, contact);
     },
     onSuccess: async (data, variables) => {
-      // Force immediate refetch of contacts data
       await queryClient.refetchQueries({ 
         queryKey: accountsQueryKeys.contacts(variables.accountId),
         type: 'active'
       });
       queryClient.invalidateQueries({ queryKey: accountsQueryKeys.detail(variables.accountId) });
       toast.success('Contact Updated', {
-        description: data.message || 'Contact updated successfully'
+        description: data.message || 'Contact updated sucessfully'
       });
     },
     onError: (error: any) => {
       toast.error('Error Updating Contact', {
-        description: error.response?.data?.message || 'Failed to update contact'
+        description: error.response?.data?.message || 'update failed'
       });
     },
   });
 
-  // Delete contact mutation
   const deleteContactMutation = useMutation({
     mutationFn: async ({
       accountId,
@@ -99,24 +103,22 @@ export function useAccountContacts(accountId: string) {
       return await accountsApi.deleteContact(accountId, contactId);
     },
     onSuccess: async (data, variables) => {
-      // Force immediate refetch of contacts data
       await queryClient.refetchQueries({ 
         queryKey: accountsQueryKeys.contacts(variables.accountId),
         type: 'active'
       });
       queryClient.invalidateQueries({ queryKey: accountsQueryKeys.detail(variables.accountId) });
       toast.success('Contact Deleted', {
-        description: data.message || 'Contact deleted successfully'
+        description: data.message || 'Contact deleted sucessfully'
       });
     },
     onError: (error: any) => {
       toast.error('Error Deleting Contact', {
-        description: error.response?.data?.message || 'Failed to delete contact'
+        description: error.response?.data?.message || 'delete failed'
       });
     },
   });
 
-  // Promote contact to primary mutation
   const promoteContactToPrimaryMutation = useMutation({
     mutationFn: async ({
       accountId,
@@ -128,7 +130,6 @@ export function useAccountContacts(accountId: string) {
       return await accountsApi.promoteContactToPrimary(accountId, contactId);
     },
     onSuccess: async (data, variables) => {
-      // Force immediate refetch of contacts data
       await queryClient.refetchQueries({ 
         queryKey: accountsQueryKeys.contacts(variables.accountId),
         type: 'active'
@@ -136,12 +137,12 @@ export function useAccountContacts(accountId: string) {
       queryClient.invalidateQueries({ queryKey: accountsQueryKeys.detail(variables.accountId) });
       queryClient.invalidateQueries({ queryKey: accountsQueryKeys.list() });
       toast.success('Contact Promoted', {
-        description: data.message || 'Contact has been promoted to primary successfully'
+        description: data.message || 'Contact has been promoted to primary sucessfully'
       });
     },
     onError: (error: any) => {
       toast.error('Error Promoting Contact', {
-        description: error.response?.data?.message || 'Failed to promote contact to primary'
+        description: error.response?.data?.message || 'promote failed to primary'
       });
     },
   });
@@ -153,14 +154,12 @@ export function useAccountContacts(accountId: string) {
     contactsError,
 
 
-    // Contact mutation actions
     addContact: addContactMutation.mutateAsync,
     updateContact: updateContactMutation.mutateAsync,
     deleteContact: deleteContactMutation.mutateAsync,
     promoteContactToPrimary: promoteContactToPrimaryMutation.mutateAsync,
 
    
-    // Contact mutation states
     isAddingContact: addContactMutation.isPending,
     isUpdatingContact: updateContactMutation.isPending,
     isDeletingContact: deleteContactMutation.isPending,

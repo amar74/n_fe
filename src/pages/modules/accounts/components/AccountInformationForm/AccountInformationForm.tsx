@@ -1,12 +1,10 @@
-import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { AccountFormData } from '../../AccountDetailsPage.types';
 import { CLIENT_TYPES, FORM_FIELD_LABELS } from '../../AccountDetailsPage.constants';
-import { MARKET_SECTORS, US_STATES } from '../CreateAccountModal/CreateAccountModal.constants';
-import { UpdateAccountModal } from '../UpdateAccountModal';
-import { accountsQueryKeys, useAccounts } from '@/hooks/useAccounts';
+import { MARKET_SECTORS, US_STATES, HOSTING_AREAS } from '../CreateAccountModal/CreateAccountModal.constants';
+import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
 
-interface AccountInformationFormProps {
+type AccountInformationFormProps = {
   formData: AccountFormData;
   accountId?: string;
   isEditing: boolean;
@@ -27,56 +25,218 @@ export function AccountInformationForm({
   onCancel,
   errors = {},
 }: AccountInformationFormProps) {
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const queryClient = useQueryClient();
-  const { updateAccount, isUpdating: isUpdatingAccount } = useAccounts();
+  const [isZipLoading, setIsZipLoading] = useState(false);
+  const [zipAutoFilled, setZipAutoFilled] = useState(false);
+  const [zipError, setZipError] = useState<string>('');
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const handleUpdate = async (modalData: any) => {
-    if (!accountId) return;
+  const handleZipCodeChange = async (zipCode: string) => {
+    const cleanedZip = zipCode.replace(/\D/g, '').slice(0, 5);
     
+    handleFieldChange('client_address_zip_code', cleanedZip);
+
+    setZipError('');
+    setZipAutoFilled(false);
+
+    if (cleanedZip.length > 0 && cleanedZip.length < 5) {
+      setZipError('USA ZIP code must be 5 digits');
+      setAvailableCities([]);
+      return;
+    }
+
+    if (cleanedZip.length !== 5 || !/^\d{5}$/.test(cleanedZip)) {
+      setAvailableCities([]);
+      return;
+    }
+
+    setIsZipLoading(true);
+
     try {
-      // Directly call the update API with the modal's data
-      await updateAccount({
-        accountId,
-        data: {
-          client_name: modalData.client_name,
-          client_type: modalData.client_type,
-          market_sector: modalData.market_sector,
-          client_address: {
-            line1: modalData.client_address_line1,
-            line2: modalData.client_address_line2 || undefined,
-            city: modalData.client_address_city || undefined,
-            state: modalData.client_address_state || undefined,
-            pincode: modalData.client_address_zip_code ? parseInt(modalData.client_address_zip_code) : undefined,
-          },
-          company_website: modalData.company_website || undefined,
-          notes: undefined,
-        },
-      });
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
       
-      // Force refetch the account detail query to get fresh data
-      await queryClient.refetchQueries({ 
-        queryKey: accountsQueryKeys.detail(accountId),
-        type: 'active'
-      });
-      
-      // Close modal after successful update
-      setIsUpdateModalOpen(false);
-    } catch (error) {
-      console.error('Failed to update account:', error);
-      // Modal will stay open so user can retry
+      if (!apiKey) {
+        const result = lookupByZipCode(zipCode);
+        if (result) {
+          const cities = getCitiesByState(result.stateCode);
+          setAvailableCities(cities);
+          handleFieldChange('client_address_city', result.city);
+          handleFieldChange('client_address_state', result.state);
+          setZipAutoFilled(true);
+        } else {
+          setZipError('ZIP code not found');
+        }
+        setIsZipLoading(false);
+        return;
+      }
+
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${zipCode}&components=country:US&key=${apiKey}`
+      );
+
+      if (!response.ok) {
+        throw new Error('fetch failed Google Maps API');
+      }
+
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results && data.results.length > 0) {
+        const result = data.results[0];
+        const addressComponents = result.address_components;
+
+        let city = '';
+        let state = '';
+        let stateCode = '';
+
+        for (const component of addressComponents) {
+          if (component.types.includes('locality')) {
+            city = component.long_name;
+          }
+          if (component.types.includes('administrative_area_level_1')) {
+            state = component.long_name; // Full state name
+            stateCode = component.short_name; // State abbreviation
+          }
+        }
+
+        if (city && state) {
+          const cities = getCitiesByState(stateCode);
+          setAvailableCities(cities.length > 0 ? cities : [city]);
+
+          handleFieldChange('client_address_city', city);
+          handleFieldChange('client_address_state', state);
+
+          setZipAutoFilled(true);
+          setZipError('');
+        } else {
+          setZipError('couldnt determine city and state from ZIP code');
+          setAvailableCities([]);
+        }
+      } else if (data.status === 'ZERO_RESULTS') {
+        setZipError('ZIP code not found');
+        setAvailableCities([]);
+      } else {
+        throw new Error(data.status);
+      }
+    } catch (err) {
+      setZipError('Error looking up ZIP code. Please enter manually.');
+      setAvailableCities([]);
+    } finally {
+      setIsZipLoading(false);
     }
   };
+
+  const handleFieldChange = (field: keyof AccountFormData, value: any) => {
+    onFormChange(field, value);
+    if (validationErrors[field]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleStateChange = (state: string) => {
+    const stateToCode: Record<string, string> = {
+      Alabama: 'AL', Alaska: 'AK', Arizona: 'AZ', Arkansas: 'AR', California: 'CA',
+      Colorado: 'CO', Connecticut: 'CT', Delaware: 'DE', Florida: 'FL', Georgia: 'GA',
+      Hawaii: 'HI', Idaho: 'ID', Illinois: 'IL', Indiana: 'IN', Iowa: 'IA',
+      Kansas: 'KS', Kentucky: 'KY', Louisiana: 'LA', Maine: 'ME', Maryland: 'MD',
+      Massachusetts: 'MA', Michigan: 'MI', Minnesota: 'MN', Mississippi: 'MS', Missouri: 'MO',
+      Montana: 'MT', Nebraska: 'NE', Nevada: 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+      'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', Ohio: 'OH',
+      Oklahoma: 'OK', Oregon: 'OR', Pennsylvania: 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+      'South Dakota': 'SD', Tennessee: 'TN', Texas: 'TX', Utah: 'UT', Vermont: 'VT',
+      Virginia: 'VA', Washington: 'WA', 'West Virginia': 'WV', Wisconsin: 'WI', Wyoming: 'WY'
+    };
+
+    const stateCode = stateToCode[state];
+    if (stateCode) {
+      const cities = getCitiesByState(stateCode);
+      setAvailableCities(cities);
+    } else {
+      setAvailableCities([]);
+    }
+
+    handleFieldChange('client_address_state', state);
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.client_name?.trim()) {
+      errors.client_name = 'Client name is required';
+    }
+
+    if (!formData.client_address_line1?.trim()) {
+      errors.client_address_line1 = 'Address line 1 is required';
+    }
+
+    if (!formData.client_address_zip_code) {
+      errors.client_address_zip_code = 'ZIP code is required';
+    } else if (!/^\d{5}$/.test(formData.client_address_zip_code)) {
+      errors.client_address_zip_code = 'ZIP code must be exactly 5 digits';
+    }
+
+    if (!formData.client_address_state) {
+      errors.client_address_state = 'State is required';
+    }
+
+    if (!formData.client_address_city?.trim()) {
+      errors.client_address_city = 'City is required';
+    }
+
+    if (formData.company_website?.trim()) {
+      const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+      if (!urlPattern.test(formData.company_website.trim())) {
+        errors.company_website = 'Please enter a valid website URL';
+      }
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSaveWithValidation = () => {
+    if (validateForm()) {
+      onSave();
+    }
+  };
+
+  useEffect(() => {
+    if (formData.client_address_state) {
+      const stateToCode: Record<string, string> = {
+        Alabama: 'AL', Alaska: 'AK', Arizona: 'AZ', Arkansas: 'AR', California: 'CA',
+        Colorado: 'CO', Connecticut: 'CT', Delaware: 'DE', Florida: 'FL', Georgia: 'GA',
+        Hawaii: 'HI', Idaho: 'ID', Illinois: 'IL', Indiana: 'IN', Iowa: 'IA',
+        Kansas: 'KS', Kentucky: 'KY', Louisiana: 'LA', Maine: 'ME', Maryland: 'MD',
+        Massachusetts: 'MA', Michigan: 'MI', Minnesota: 'MN', Mississippi: 'MS', Missouri: 'MO',
+        Montana: 'MT', Nebraska: 'NE', Nevada: 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+        'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', Ohio: 'OH',
+        Oklahoma: 'OK', Oregon: 'OR', Pennsylvania: 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+        'South Dakota': 'SD', Tennessee: 'TN', Texas: 'TX', Utah: 'UT', Vermont: 'VT',
+        Virginia: 'VA', Washington: 'WA', 'West Virginia': 'WV', Wisconsin: 'WI', Wyoming: 'WY'
+      };
+      
+      const stateCode = stateToCode[formData.client_address_state];
+      if (stateCode) {
+        const cities = getCitiesByState(stateCode);
+        setAvailableCities(cities);
+      }
+    }
+  }, [formData.client_address_state]);
+
   return (
     <div className="w-full p-8 bg-white rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E5E7EB] flex flex-col justify-start items-start gap-5">
-      {/* Header */}
+      
       <div className="self-stretch inline-flex justify-between items-start">
         <div className="justify-start text-slate-800 text-lg font-semibold font-['Outfit'] leading-7">
           Account information
         </div>
         {isEditing ? null : (
           <button 
-            onClick={() => setIsUpdateModalOpen(true)}
+            onClick={onCancel}
             className="size-10 p-2.5 bg-white rounded-[50px] outline outline-[0.50px] outline-gray-200 flex justify-center items-center gap-[3px] hover:bg-gray-50 transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -86,19 +246,19 @@ export function AccountInformationForm({
         )}
       </div>
 
-      {/* Divider */}
+      
       <div className="self-stretch h-0 outline outline-1 outline-offset-[-0.50px] outline-black/10"></div>
 
-      {/* Form with social login */}
+      
       <div className="w-full flex flex-col justify-start items-start gap-5">
-        {/* Form element */}
+        
         <div className="self-stretch flex flex-col justify-start items-start gap-5">
-          {/* Inputs */}
+          
           <div className="self-stretch flex flex-col justify-start items-start gap-5">
             
-            {/* Row 1: Account ID + Client Name */}
+            
             <div className="self-stretch flex justify-start items-start gap-5">
-              {/* Account ID */}
+              
               <div className="w-36 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Account Id
@@ -110,24 +270,28 @@ export function AccountInformationForm({
                 </div>
               </div>
 
-              {/* Client Name */}
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
-                  Client name
+                  Client name<span className="text-red-600">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.client_name}
-                  onChange={(e) => onFormChange('client_name', e.target.value)}
+                  onChange={(e) => handleFieldChange('client_name', e.target.value)}
                   disabled={!isEditing}
-                  className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                  className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none disabled:opacity-100 disabled:cursor-not-allowed
+                    ${validationErrors.client_name ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
                 />
+                {validationErrors.client_name && (
+                  <p className="text-xs text-red-600 mt-1">{validationErrors.client_name}</p>
+                )}
               </div>
             </div>
 
-            {/* Row 2: Client Type + Market Sector */}
+            
             <div className="self-stretch flex justify-start items-start gap-5">
-              {/* Client Type */}
+              
               <div className="w-64 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Client type
@@ -139,7 +303,7 @@ export function AccountInformationForm({
                 </div>
               </div>
 
-              {/* Market Sector */}
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Market sector
@@ -164,76 +328,143 @@ export function AccountInformationForm({
               </div>
             </div>
 
-            {/* Row 3: Address 1 */}
-            <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
-              <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
-                Address 1<span className="text-red-600">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.client_address_line1}
-                onChange={(e) => onFormChange('client_address_line1', e.target.value)}
-                disabled={!isEditing}
-                className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            {/* Row 4: City + State + Zip Code */}
+            
             <div className="self-stretch flex justify-start items-start gap-5">
-              {/* City */}
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
-                  City<span className="text-red-600">*</span>
+                  Address 1<span className="text-red-600">*</span>
                 </label>
                 <input
                   type="text"
-                  value={formData.client_address_city || ''}
-                  onChange={(e) => onFormChange('client_address_city', e.target.value)}
+                  value={formData.client_address_line1}
+                  onChange={(e) => handleFieldChange('client_address_line1', e.target.value)}
                   disabled={!isEditing}
-                  placeholder="City name"
-                  className="w-full h-11 px-3.5 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                  placeholder="Enter street address"
+                  className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none disabled:opacity-100 disabled:cursor-not-allowed
+                    ${validationErrors.client_address_line1 ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
                 />
+                {validationErrors.client_address_line1 && (
+                  <p className="text-xs text-red-600 mt-1">{validationErrors.client_address_line1}</p>
+                )}
               </div>
 
-              {/* State */}
+              
+              <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
+                <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
+                  Address 2
+                </label>
+                <input
+                  type="text"
+                  value={formData.client_address_line2 || ''}
+                  onChange={(e) => onFormChange('client_address_line2', e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="Apartment, suite, etc. (optional)"
+                  className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                />
+              </div>
+            </div>
+
+            
+            <div className="self-stretch flex justify-start items-start gap-5">
+              
+              <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
+                <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
+                  ZIP Code (5 digits)<span className="text-red-600">*</span>
+                  {isZipLoading && <span className="text-xs text-blue-600 ml-2">🔍 Looking up...</span>}
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={5}
+                  value={formData.client_address_zip_code || ''}
+                  onChange={(e) => handleZipCodeChange(e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="e.g., 85001 (5 digits)"
+                  className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
+                    ${validationErrors.client_address_zip_code || zipError ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : ''}
+                    ${zipAutoFilled && !validationErrors.client_address_zip_code ? 'bg-green-50 border-green-500 focus:border-green-500 focus:ring-green-100' : 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-indigo-100 hover:border-gray-400'}`}
+                />
+                {validationErrors.client_address_zip_code && <p className="text-xs text-red-600 mt-1">{validationErrors.client_address_zip_code}</p>}
+                {zipError && <p className="text-xs text-red-600 mt-1">{zipError}</p>}
+                {zipAutoFilled && !validationErrors.client_address_zip_code && <p className="text-xs text-green-600 mt-1">✓ City and State auto-filled</p>}
+              </div>
+
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   State<span className="text-red-600">*</span>
                 </label>
                 <div className="relative w-full">
-                  <input
-                    type="text"
-                    placeholder="Select State"
+                  <select
+                    value={formData.client_address_state || ''}
+                    onChange={(e) => handleStateChange(e.target.value)}
                     disabled={!isEditing}
-                    className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
-                  />
+                    className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
+                      ${validationErrors.client_address_state ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-indigo-100'}`}
+                  >
+                    <option value="">Select State</option>
+                    {US_STATES.map((state) => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
+                  </select>
                   <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M4.79199 7.39581L10.0003 12.6041L15.2087 7.39581" stroke="#667085" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
                 </div>
+                {validationErrors.client_address_state && (
+                  <p className="text-xs text-red-600 mt-1">{validationErrors.client_address_state}</p>
+                )}
               </div>
 
-              {/* Zip Code */}
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
-                  Zip Code<span className="text-red-600">*</span>
+                  City<span className="text-red-600">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.client_address_zip_code || ''}
-                  onChange={(e) => onFormChange('client_address_zip_code', e.target.value)}
-                  disabled={!isEditing}
-                  placeholder="Postal code"
-                  className="w-full h-11 px-3.5 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
-                />
+                {availableCities.length > 0 ? (
+                  <div className="relative w-full">
+                    <select
+                      value={formData.client_address_city || ''}
+                      onChange={(e) => handleFieldChange('client_address_city', e.target.value)}
+                      disabled={!isEditing}
+                      className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
+                        ${validationErrors.client_address_city ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-indigo-100'}`}
+                    >
+                      <option value="">Select City</option>
+                      {availableCities.map((city) => (
+                        <option key={city} value={city}>{city}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4.79199 7.39581L10.0003 12.6041L15.2087 7.39581" stroke="#667085" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.client_address_city || ''}
+                    onChange={(e) => handleFieldChange('client_address_city', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Enter city name"
+                    className={`w-full h-11 px-3.5 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-400 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
+                      ${validationErrors.client_address_city ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-100'}`}
+                  />
+                )}
+                {validationErrors.client_address_city && (
+                  <p className="text-xs text-red-600 mt-1">{validationErrors.client_address_city}</p>
+                )}
               </div>
             </div>
 
-            {/* Row 5: Company Website + Hosting Area + MSA */}
+            
             <div className="self-stretch flex justify-start items-start gap-5">
-              {/* Company Website */}
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Company website
@@ -241,26 +472,34 @@ export function AccountInformationForm({
                 <input
                   type="text"
                   value={formData.company_website || ''}
-                  onChange={(e) => onFormChange('company_website', e.target.value)}
+                  onChange={(e) => handleFieldChange('company_website', e.target.value)}
                   disabled={!isEditing}
-                  className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                  placeholder="https://example.com"
+                  className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none disabled:opacity-100 disabled:cursor-not-allowed
+                    ${validationErrors.company_website ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
                 />
+                {validationErrors.company_website && (
+                  <p className="text-xs text-red-600 mt-1">{validationErrors.company_website}</p>
+                )}
               </div>
 
-              {/* Hosting Area */}
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Hosting area
                 </label>
                 <div className="relative w-full">
-                  <input
-                    type="text"
-                    placeholder="Select State"
-                    disabled={!isEditing}
+                  <select
                     value={formData.hosting_area || ''}
                     onChange={(e) => onFormChange('hosting_area', e.target.value)}
-                    className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
-                  />
+                    disabled={!isEditing}
+                    className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select Hosting Area</option>
+                    {HOSTING_AREAS.map((area) => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                  </select>
                   <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M4.79199 7.39581L10.0003 12.6041L15.2087 7.39581" stroke="#667085" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -269,7 +508,7 @@ export function AccountInformationForm({
                 </div>
               </div>
 
-              {/* MSA in place */}
+              
               <div className="w-28 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   MSA in place
@@ -282,34 +521,104 @@ export function AccountInformationForm({
               </div>
             </div>
 
-            {/* Row 6: Account Approver + Approval Date & Time */}
+            
             <div className="self-stretch flex justify-start items-start gap-5">
-              {/* Account Approver */}
+              
+              <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
+                <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
+                  Created By
+                </label>
+                <div className="w-full h-11 px-3.5 py-2.5 bg-gray-100 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 flex items-center">
+                  <span className="text-gray-600 text-sm font-medium font-['Outfit'] leading-tight">
+                    amar74.soft
+                  </span>
+                </div>
+              </div>
+
+              
+              <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
+                <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
+                  Date Created
+                </label>
+                <div className="w-full h-11 px-3.5 py-2.5 bg-gray-100 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 flex items-center">
+                  <span className="text-gray-600 text-sm font-medium font-['Outfit'] leading-tight">
+                    {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            
+            <div className="self-stretch flex justify-start items-start gap-5">
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Account Approver
                 </label>
-                <input
-                  type="text"
-                  value={formData.account_approver || ''}
-                  onChange={(e) => onFormChange('account_approver', e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-[#4361EE] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
-                />
+                {(() => {
+                  const storedApprovals = localStorage.getItem('accountApprovals');
+                  const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
+                  const approvalStatus = accountId ? approvalMap[accountId] : null;
+                  const approvedBy = approvalStatus === 'approved' ? 'amar74.soft' : null;
+
+                  if (!approvedBy) {
+                    return (
+                      <div className="w-full h-11 px-3.5 py-2.5 bg-gray-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-200 flex items-center">
+                        <span className="text-gray-400 text-sm font-normal font-['Outfit'] leading-tight">
+                          Not yet approved
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="w-full h-11 px-3.5 py-2.5 bg-blue-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-blue-200 flex items-center">
+                      <span className="text-[#4361EE] text-sm font-semibold font-['Outfit'] leading-tight">
+                        {approvedBy}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
 
-              {/* Approval Date & Time */}
+              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Approval date & time
                 </label>
-                <input
-                  type="text"
-                  value={formData.approval_date_time || ''}
-                  onChange={(e) => onFormChange('approval_date_time', e.target.value)}
-                  disabled={!isEditing}
-                  className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-[#4361EE] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
-                />
+                {(() => {
+                  // will optimize later - abhishek.softication
+                  const storedApprovals = localStorage.getItem('accountApprovals');
+                  const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
+                  const approvalStatus = accountId ? approvalMap[accountId] : null;
+                  const approvalDate = approvalStatus === 'approved' 
+                    ? new Date().toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : null;
+
+                  if (!approvalDate) {
+                    return (
+                      <div className="w-full h-11 px-3.5 py-2.5 bg-gray-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-200 flex items-center">
+                        <span className="text-gray-400 text-sm font-normal font-['Outfit'] leading-tight">
+                          dd/mm/yyyy, --:-- --
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="w-full h-11 px-3.5 py-2.5 bg-blue-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-blue-200 flex items-center">
+                      <span className="text-slate-700 text-sm font-medium font-['Outfit'] leading-tight">
+                        {approvalDate}
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
@@ -317,7 +626,7 @@ export function AccountInformationForm({
         </div>
         </div>
 
-        {/* Action Buttons */}
+        
         {isEditing && (
           <div className="flex items-center justify-between w-full pt-4">
             <button
@@ -330,7 +639,7 @@ export function AccountInformationForm({
               </span>
             </button>
             <button
-              onClick={onSave}
+              onClick={handleSaveWithValidation}
               disabled={isUpdating}
               className="bg-[#0f0901] rounded-[16px] h-14 flex items-center justify-center px-8 py-2 min-w-[200px] ml-4"
             >
@@ -340,15 +649,6 @@ export function AccountInformationForm({
             </button>
           </div>
         )}
-
-      {/* Update Account Modal */}
-      <UpdateAccountModal
-        isOpen={isUpdateModalOpen}
-        onClose={() => setIsUpdateModalOpen(false)}
-        onUpdate={handleUpdate}
-        accountData={formData}
-        isLoading={isUpdatingAccount}
-      />
     </div>
   );
 }

@@ -16,7 +16,6 @@ class AccountNotesApiService {
     return response.data;
   }
 
-  // Get single note by ID
   async getNote(accountId: string, noteId: string): Promise<AccountNoteResponse> {
     const response = await apiClient.get(`${this.baseURL}/${accountId}/notes/${noteId}`);
     return response.data;

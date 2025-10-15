@@ -11,17 +11,17 @@ export const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5,
       // Keep unused data in cache for 10 minutes
       gcTime: 1000 * 60 * 10,
-      // Retry failed requests 3 times with exponential backoff
-      retry: 3,
-      // Don't refetch on window focus in development to reduce noise
+      // Reduce retry attempts to prevent long delays
+      retry: 1,
+      // Faster retry delay
+      retryDelay: 1000,
       refetchOnWindowFocus: import.meta.env.PROD,
-      // Only refetch on reconnect in production
       refetchOnReconnect: import.meta.env.PROD,
+      // Reduce network idle timeout
+      networkMode: 'online',
     },
     mutations: {
-      // Retry failed mutations once
       retry: 1,
-      // Show errors for mutations by default
       throwOnError: false,
     },
   },
@@ -35,6 +35,7 @@ export const createQueryKeys = <T extends string>(feature: T) => ({
   all: [feature] as const,
   lists: () => [...createQueryKeys(feature).all, 'list'] as const,
   list: (filters?: Record<string, unknown>) => 
+    // working but need cleanup - amar74.soft
     [...createQueryKeys(feature).lists(), filters] as const,
   details: () => [...createQueryKeys(feature).all, 'detail'] as const,
   detail: (id: string | number) => 

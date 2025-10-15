@@ -4,7 +4,7 @@ import { NoteFormData } from '../../NotesTab.types';
 import { DEFAULT_FORM_VALUES } from '../../NotesTab.constants';
 import { AccountNoteResponse } from '@/types/accountNotes';
 
-interface NotesFormProps {
+type NotesFormProps = {
   onSubmit: (note: NoteFormData) => Promise<any>;
   isLoading?: boolean;
   initialData?: Partial<AccountNoteResponse>;
@@ -19,7 +19,6 @@ export function NotesForm({
   onCancel,
   errors = {}
 }: NotesFormProps) {
-  // Initialize form data based on whether initialData is provided
   const [formData, setFormData] = useState<NoteFormData>(() => {
     if (!initialData) {
       return {
@@ -35,7 +34,6 @@ export function NotesForm({
     };
   });
 
-  // Reset form when initialData changes
   useEffect(() => {
     if (!initialData) {
       setFormData({
@@ -62,14 +60,13 @@ export function NotesForm({
     try {
       await onSubmit(formData);
       
-      // Reset form only if it's a create operation (no initial data)
       if (!initialData) {
         setFormData({
           ...DEFAULT_FORM_VALUES,
           date: new Date().toISOString().split('T')[0],
         });
       }
-    } catch (error) {
+    } catch (err) {
       // Error handling is done in the hook
     }
   };
@@ -86,7 +83,7 @@ export function NotesForm({
   return (
     <div className="bg-neutral-50 border border-[#f0f0f0] rounded-[28px] p-6 w-full">
       <div className="flex flex-col gap-6 w-full">
-        {/* Header */}
+        
         <div className="flex flex-col gap-2">
           <h2 className="font-inter font-bold text-[#0f0901] text-[24px] leading-normal flex items-center gap-2">
             <FileText className="h-6 w-6" />
@@ -97,14 +94,14 @@ export function NotesForm({
           </p>
         </div>
 
-        {/* Divider */}
+        
         <div className="h-px w-full bg-[#e6e6e6]" />
 
-        {/* Form */}
+        
         <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full">
-          {/* Row 1: Title + Date */}
+          
           <div className="flex gap-4 w-full">
-            {/* Title */}
+            
             <div className="flex-1 flex flex-col gap-3">
               <label className="font-inter font-medium text-[#a7a7a7] text-[16px] leading-normal">
                 Note Title *
@@ -124,7 +121,7 @@ export function NotesForm({
               </div>
             </div>
 
-            {/* Date */}
+            
             <div className="w-[200px] flex flex-col gap-3">
               <label className="font-inter font-medium text-[#a7a7a7] text-[16px] leading-normal flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -145,7 +142,7 @@ export function NotesForm({
             </div>
           </div>
 
-          {/* Row 2: Content */}
+          
           <div className="flex flex-col gap-3 w-full">
             <label className="font-inter font-medium text-[#a7a7a7] text-[16px] leading-normal">
               Note Content *
@@ -165,7 +162,7 @@ export function NotesForm({
             </div>
           </div>
 
-          {/* Action Buttons */}
+          
           <div className="flex items-center justify-end gap-4 pt-4">
             {onCancel && (
               <button

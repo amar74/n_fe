@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Calendar,
   PencilSimpleLine,
@@ -12,12 +14,13 @@ import {
 import { useToast } from '@/hooks/useToast';
 import { useMyOrganization } from '@/hooks/useOrganizations';
 import { useAuth } from '@/hooks/useAuth';
+import image from '@/assets/image.png';
 
 export default function OrganizationPage() {
   const navigate = useNavigate();
+  // @amar74.soft - refactor needed
   const { toast } = useToast();
 
-  // Use centralized hooks following Development.md patterns
   const organizationQuery = useMyOrganization();
   const { authState } = useAuth();
 
@@ -34,6 +37,7 @@ export default function OrganizationPage() {
   };
 
   const isAdmin = authState.user?.role === 'admin';
+  const canEdit = authState.user?.role === 'admin' || authState.user?.role === 'vendor';
 
   // Loading state
   if (isLoading) {
@@ -77,10 +81,10 @@ export default function OrganizationPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F3F2]">
-      {/* Main Content */}
+      
       <main className="py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          {/* Breadcrumb just above card */}
+          
           <div className="text-sm text-gray-500 mb-8 flex flex-wrap gap-1 items-center">
             <House size={18} className="text-gray-700" />
             <CaretRight size={16} className="text-gray-700" />
@@ -91,9 +95,9 @@ export default function OrganizationPage() {
             <span>Organization Detail</span>
           </div>
 
-          {/* Form area - Main Card */}
+          
           <div className="w-full max-w-[1000px] mx-auto p-6 sm:p-8 lg:p-10 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6 sm:gap-8 shadow-sm">
-            {/* Title with subtitle */}
+            
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
               <div className="flex flex-col gap-3">
                 <h1 className="text-slate-800 text-3xl sm:text-4xl font-semibold font-['Outfit'] leading-tight sm:leading-10">
@@ -106,7 +110,7 @@ export default function OrganizationPage() {
                 </Badge>
               </div>
               <div className="flex gap-3 self-start">
-                {isAdmin && (
+                {canEdit && (
                   <button
                     className="size-10 p-2.5 bg-neutral-100 rounded-[50px] border-[0.5px] border-gray-200 flex justify-center items-center hover:bg-gray-200 transition-colors flex-shrink-0"
                     onClick={() => navigate('/organization/update')}
@@ -128,12 +132,12 @@ export default function OrganizationPage() {
               </div>
             </div>
 
-            {/* Administration Badge + Created on */}
+            
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-2">
               <Badge className="h-6 w-fit pl-1.5 pr-2 py-0.5 bg-[#ED8A09] rounded-[999px] flex items-center gap-1">
                 <ShieldCheckered className="w-4 h-4 text-white" />
                 <span className="text-white text-sm font-medium font-['Outfit'] leading-none">
-                  {isAdmin ? 'Administration' : 'Member'}
+                  {isAdmin ? 'Administration' : authState.user?.role === 'vendor' ? 'Vendor' : 'Member'}
                 </span>
               </Badge>
               <div className="flex items-center gap-2 sm:gap-3">
@@ -145,18 +149,18 @@ export default function OrganizationPage() {
               </div>
             </div>
 
-            {/* Form with social login - Content Area */}
+            
             <div className="flex flex-col gap-6">
-              {/* Text content */}
+              
               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-8 lg:gap-10">
-                {/* Left side - Organization Details */}
+                
                 <div className="flex-1 flex flex-col gap-7">
                   <h2 className="text-slate-800 text-lg font-semibold font-['Outfit'] leading-7">
                     Organization Details
                   </h2>
 
                   <div className="flex flex-col gap-7">
-                    {/* Company Website */}
+                    
                     <div className="flex flex-col gap-2.5">
                       <span className="text-gray-500 text-xs font-normal font-['Outfit'] leading-none">
                         Company Website
@@ -177,7 +181,7 @@ export default function OrganizationPage() {
                       )}
                     </div>
 
-                    {/* Email and Phone */}
+                    
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                       <div className="flex flex-col gap-2.5">
                         <span className="text-gray-500 text-xs font-normal font-['Outfit'] leading-none">
@@ -198,9 +202,9 @@ export default function OrganizationPage() {
                     </div>
                   </div>
 
-                  {/* Address Section */}
+                  
                   <div className="flex flex-col gap-7">
-                    {/* Address Line */}
+                    
                     <div className="flex flex-col gap-2.5">
                       <span className="text-gray-500 text-xs font-normal font-['Outfit'] leading-none">
                         Address
@@ -211,7 +215,7 @@ export default function OrganizationPage() {
                       </span>
                     </div>
 
-                    {/* City/State and Postal Code */}
+                    
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                       <div className="flex flex-col gap-2.5">
                         <span className="text-gray-500 text-xs font-normal font-['Outfit'] leading-none">
@@ -235,7 +239,7 @@ export default function OrganizationPage() {
                   </div>
                 </div>
 
-                {/* Right side - Quick Actions */}
+                
                 <div className="w-full lg:w-72 py-5 bg-neutral-50 rounded-2xl border border-zinc-100 flex flex-col gap-2 flex-shrink-0">
                   <div className="flex flex-col gap-4">
                     <div className="px-6 flex flex-col gap-2">

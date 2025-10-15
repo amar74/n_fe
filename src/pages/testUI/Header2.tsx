@@ -8,7 +8,7 @@ import john from '@/assets/john.png';
 const Header2: React.FC = () => {
   return (
     <header className="px-6 py-4 flex items-center justify-between bg-[#F5F3F2] ">
-      {/* Left side - Logo */}
+      
       <div className="flex items-center">
         <div className="flex items-center gap-3">
           <div>
@@ -17,7 +17,7 @@ const Header2: React.FC = () => {
         </div>
       </div>
 
-      {/* Right side - Notifications and user */}
+      
       <div className="flex items-center gap-4">
         <button className=" text-gray-600  hover:text-gray-800 relative bg-[#f8f7f6]  rounded-full p-3">
                   <Bell  size={20} />

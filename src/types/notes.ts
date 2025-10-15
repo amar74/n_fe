@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { schemas } from './generated/notes';
 
-// Re-export generated types
 export type Note = z.infer<typeof schemas.NoteResponse>;
 export type NoteListResponse = z.infer<typeof schemas.NoteListResponse>;
 export type NoteCreateRequest = z.infer<typeof schemas.NoteCreateRequest>;
@@ -10,7 +9,6 @@ export type NoteUpdateRequest = z.infer<typeof schemas.NoteUpdateRequest>;
 export type NoteUpdateResponse = z.infer<typeof schemas.NoteUpdateResponse>;
 export type NoteDeleteResponse = z.infer<typeof schemas.NoteDeleteResponse>;
 
-// Custom validation schemas for forms
 export const NoteCreateFormSchema = z.object({
   meeting_title: z
     .string()
@@ -83,5 +81,4 @@ export interface NotesListParams {
   limit?: number;
 }
 
-// Export schemas for validation
 export { schemas as NotesSchemas };

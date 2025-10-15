@@ -77,7 +77,6 @@ export default function OrganizationTeamSection() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('member');
 
-  // Use role from proper AuthState structure
   const userRole = authState.user?.role;
   const isAdmin = typeof userRole === 'string' && userRole.toLowerCase() === 'admin';
 
@@ -99,7 +98,7 @@ export default function OrganizationTeamSection() {
         onError: (error: any) => {
           toast({
             title: 'Error',
-            description: error?.response?.data?.message || 'Failed to invite team member.',
+            description: error?.response?.data?.message || 'invite failed member.',
             variant: 'destructive',
           });
         },
@@ -124,7 +123,7 @@ export default function OrganizationTeamSection() {
       <Card className="border border-red-200 bg-red-50 rounded-md shadow-[0_4px_16px_rgba(0,0,0,0.08)] mt-8">
         <CardContent className="p-6">
           <div className="text-center py-8">
-            <p className="text-red-600">Failed to load team members</p>
+            <p className="text-red-600">Load failed members</p>
             <p className="text-red-500 text-sm mt-1">
               {membersError instanceof Error ? membersError.message : 'Unknown error'}
             </p>

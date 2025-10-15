@@ -37,10 +37,10 @@ export const orgsApi = {
   },
 
   /**
-   * Update organization
+   * Update organization (PATCH endpoint - Fast & Simple)
    */
-  async updateOrg(orgId: string, data: UpdateOrgRequest): Promise<OrgUpdate> {
-    const { data: response } = await apiClient.put<OrgUpdate>(`/orgs/update/${orgId}`, data);
+  async patchOrg(orgId: string, data: any): Promise<any> {
+    const { data: response } = await apiClient.patch<any>(`/orgs/${orgId}`, data);
     return response;
   },
 

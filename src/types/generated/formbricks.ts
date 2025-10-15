@@ -14,14 +14,10 @@ const Survey = z
   })
   .passthrough();
 const SurveyListResponse = z.object({ surveys: z.array(Survey) }).passthrough();
-const SurveyLinkResponse = z
-  .object({ url: z.string(), token: z.string() })
-  .passthrough();
 
 export const schemas = {
   Survey,
   SurveyListResponse,
-  SurveyLinkResponse,
 };
 
 const endpoints = makeApi([
@@ -84,7 +80,7 @@ Returns the created survey mapped to our Survey schema.`,
         schema: z.string(),
       },
     ],
-    response: SurveyLinkResponse,
+    response: z.object({ url: z.string() }).passthrough(),
     errors: [
       {
         status: 422,

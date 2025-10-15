@@ -10,7 +10,6 @@ export const authApi = {
       const { data } = await apiClient.post<SignupSuccess>('/auth/onsignup', { email });
       return data;
     } catch (error: any) {
-      // Handle expected signup error response
       if (error.response?.status === 400 && error.response?.data) {
         const errorData = error.response.data as SignupError;
         throw new Error(errorData.message || 'Signup failed');

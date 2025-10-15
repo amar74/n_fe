@@ -7,7 +7,7 @@ interface DocumentFormData {
   file: File | null;
 }
 
-interface AddDocumentModalProps {
+type AddDocumentModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (document: DocumentFormData) => Promise<void>;
@@ -27,7 +27,6 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
     e.preventDefault();
     try {
       await onSubmit(formData);
-      // Reset form and close modal on success
       setFormData({
         name: '',
         category: 'Transportation',
@@ -71,7 +70,7 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
         className="w-[653px] p-8 bg-white rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E5E7EB] inline-flex flex-col justify-start items-start gap-5"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Title with close button */}
+        
         <div className="self-stretch inline-flex justify-between items-center">
           <div className="justify-start text-slate-800 text-3xl font-semibold font-['Outfit'] leading-[48px]">Add Document</div>
           <button onClick={onClose} className="relative cursor-pointer">
@@ -81,12 +80,12 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
           </button>
         </div>
 
-        {/* Divider */}
+        
         <div className="self-stretch h-0 outline outline-1 outline-offset-[-0.50px] outline-black/10"></div>
 
-        {/* Form */}
+        
         <form onSubmit={handleSubmit} className="self-stretch flex flex-col justify-start items-start gap-5">
-          {/* Name Input */}
+          
           <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
             <div className="justify-start">
               <span className="text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Name</span>
@@ -102,9 +101,9 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
             />
           </div>
 
-          {/* Date and Category Row */}
+          
           <div className="self-stretch inline-flex justify-start items-start gap-5">
-            {/* Date Input */}
+            
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
               <div className="justify-start">
                 <span className="text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Date</span>
@@ -119,7 +118,7 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
               />
             </div>
 
-            {/* Category Select */}
+            
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
               <div className="justify-start">
                 <span className="text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Category</span>
@@ -147,7 +146,7 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
             </div>
           </div>
 
-          {/* Attachments Upload Area */}
+          
           <div className="self-stretch inline-flex justify-start items-center gap-5">
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
               <div className="justify-start text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Attachments</div>
@@ -176,7 +175,7 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
             </div>
           </div>
 
-          {/* Action Buttons */}
+          
           <div className="self-stretch inline-flex justify-start items-start gap-5">
             <button
               type="button"

@@ -1,5 +1,6 @@
 import { HTTPValidationError } from "@/types/validationError";
 
+// @author guddy.tech
 type FormErrors = Record<string, string>;
 
 /**
@@ -28,7 +29,6 @@ type FormErrors = Record<string, string>;
  * // Returns: { "name": "String should have at least 1 character, Name contains invalid characters" }
  */
 export function parseBackendErrors(error: HTTPValidationError, fields: string[] = []): FormErrors {
-  // Return early if no error details or fields to check
   const detail = error?.detail || [];
   if (!detail.length || !fields.length) {
     return {};
@@ -36,7 +36,6 @@ export function parseBackendErrors(error: HTTPValidationError, fields: string[] 
 
   const formErrors: FormErrors = {};
 
-  // Group all errors by field
   fields.forEach(field => {
     const fieldErrors = detail
       .filter((err) => err.loc.includes(field))

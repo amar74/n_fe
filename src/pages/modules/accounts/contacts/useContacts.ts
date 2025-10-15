@@ -45,7 +45,6 @@ export function useContacts(accountId: string) {
   };
 
 
-  // Handle create errors
   useEffect(() => {
     if (addContactError && (addContactError as AxiosError)?.response?.data) {
       const errors = parseBackendErrors((addContactError as AxiosError).response?.data as HTTPValidationError, ['name', 'email', 'phone', 'title']);
@@ -55,10 +54,7 @@ export function useContacts(accountId: string) {
     }
   }, [addContactError]);
 
-  // Handle update errors
   useEffect(() => {
-    console.log(updateContactError);
-    
     if (updateContactError && (updateContactError as AxiosError)?.response?.data) {
       const errors = parseBackendErrors((updateContactError as AxiosError).response?.data as HTTPValidationError, ['name', 'email', 'phone', 'title']);
       setUpdateErrors(errors);
@@ -67,7 +63,6 @@ export function useContacts(accountId: string) {
     }
   }, [updateContactError]);
 
-  // Clear errors on success
   useEffect(() => {
     if (addContactSuccess) {
       setCreateErrors({});

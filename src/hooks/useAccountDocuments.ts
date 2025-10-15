@@ -14,17 +14,16 @@ export const accountDocumentsKeys = {
   detail: (accountId: string, documentId: string) => [...accountDocumentsKeys.all(accountId), 'detail', documentId] as const,
 };
 
-export function useAccountDocuments(accountId: string) {
+export function useAccountDocuments(accountId: string, options?: { enabled?: boolean }) {
   const queryClient = useQueryClient();
 
-  // List documents query
   const documentsQuery: UseQueryResult<AccountDocumentListResponse, Error> = useQuery({
     queryKey: accountDocumentsKeys.list(accountId),
     queryFn: () => accountDocumentsApi.listDocuments(accountId),
-    enabled: !!accountId,
+    enabled: options?.enabled !== undefined ? (!!accountId && options.enabled) : !!accountId,
+    staleTime: 1000 * 60 * 5, // 5 minutes - documents don't change frequently
   });
 
-  // Create document mutation
   const createDocumentMutation = useMutation({
     mutationFn: (data: AccountDocumentCreateRequest) => accountDocumentsApi.createDocument(accountId, data),
     onSuccess: async () => {
@@ -32,7 +31,6 @@ export function useAccountDocuments(accountId: string) {
     },
   });
 
-  // Update document mutation
   const updateDocumentMutation = useMutation({
     mutationFn: ({ documentId, data }: { documentId: string; data: AccountDocumentUpdateRequest }) =>
       accountDocumentsApi.updateDocument(accountId, documentId, data),
@@ -42,7 +40,6 @@ export function useAccountDocuments(accountId: string) {
     },
   });
 
-  // Delete document mutation
   const deleteDocumentMutation = useMutation({
     mutationFn: (documentId: string) => accountDocumentsApi.deleteDocument(accountId, documentId),
     onSuccess: async () => {
@@ -55,12 +52,10 @@ export function useAccountDocuments(accountId: string) {
     documents: documentsQuery.data?.documents ?? [],
     total: documentsQuery.data?.total ?? 0,
     
-    // Query states
     isLoading: documentsQuery.isLoading,
     isError: documentsQuery.isError,
     error: documentsQuery.error,
     
-    // Mutation states
     isCreatingDocument: createDocumentMutation.isPending,
     isUpdatingDocument: updateDocumentMutation.isPending,
     isDeletingDocument: deleteDocumentMutation.isPending,

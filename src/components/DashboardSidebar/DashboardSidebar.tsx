@@ -14,7 +14,6 @@ function DashboardSidebar() {
     if (path === '/module/accounts') {
       return location.pathname.startsWith('/module/accounts');
     }
-    // For other routes, use exact match for now (can be extended later)
     return location.pathname === path;
   }, [location.pathname]);
 
@@ -46,7 +45,7 @@ function DashboardSidebar() {
         })}
       </div>
       
-      {/* Logout Button */}
+      
       <button
         onClick={handleLogout}
         className="box-border content-stretch flex gap-3 h-[60px] items-center justify-start px-7 py-5 relative rounded-[19px] shrink-0 w-full transition-colors duration-200 hover:bg-gray-50"

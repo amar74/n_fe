@@ -7,7 +7,7 @@ export default function AccountInformation() {
   return (
     <Card className="w-full bg-white max-w-4xl mx-auto shadow-sm border-none mb-2">
       <CardContent className="p-4 px-6 space-y-1.75">
-        {/* Header */}
+        
         <div className="border-b border-gray-200">
           <h2 className="text-base font-semibold text-[#0F0901]">Account information</h2>
           <p className="text-xs text-[#A7A7A7]">
@@ -15,7 +15,7 @@ export default function AccountInformation() {
           </p>
         </div>
 
-        {/* Row 1 */}
+        
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-1">
             <Label className="text-[11px] text-[#A7A7A7]">Account Id</Label>
@@ -31,7 +31,7 @@ export default function AccountInformation() {
           </div>
         </div>
 
-        {/* Row 2 */}
+        
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-[11px] text-[#A7A7A7]">Client Type</Label>
@@ -43,13 +43,13 @@ export default function AccountInformation() {
           </div>
         </div>
 
-        {/* Row 3 */}
+        
         <div>
           <Label className="text-[11px] text-[#A7A7A7]">Address</Label>
           <Input readOnly placeholder="Transportation" className="bg-[#F3F3F3] h-8 text-xs border-[#E6E6E6] placeholder:text-black font-medium focus:border-[#FF7B00] focus:outline-none focus:ring-0 focus-visible:ring-0" />
         </div>
 
-        {/* Row 4 (3 fields in one line) */}
+        
         <div className="grid grid-cols-5 gap-3">
           <div className="col-span-2">
             <Label className="text-[11px] text-[#A7A7A7]">Website</Label>
@@ -69,7 +69,7 @@ export default function AccountInformation() {
           </div>
         </div>
 
-        {/* Row 5 */}
+        
         <div className="grid grid-cols-2 gap-3">
           <div >
             <Label className="text-[11px] text-[#A7A7A7]">Account Approver</Label>

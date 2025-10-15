@@ -12,10 +12,8 @@ import type {
   AddUserFormData,
 } from '@/types/orgs';
 
-// Query keys following Development.md patterns using centralized query-client
 export const organizationsKeys = createQueryKeys('organizations');
 
-// Additional specific query keys for organizations feature
 export const organizationsQueryKeys = {
   ...organizationsKeys,
   myOrg: () => [...organizationsKeys.all, 'myOrg'] as const,
@@ -40,7 +38,6 @@ export function useOrganizations() {
       queryKey: organizationsQueryKeys.myOrg(),
       queryFn: async (): Promise<Organization> => {
         
-        // Use manual API client with custom validation to handle datetime issues
         const response = await orgsApi.getMyOrg();
         const result = OrganizationCustomSchema.parse(response);
         
@@ -58,9 +55,7 @@ export function useOrganizations() {
       queryKey: organizationsKeys.detail(orgId || ''),
       queryFn: async (): Promise<Organization> => {
         if (!orgId) throw new Error('Organization ID is required');
-        // Note: Backend doesn't have getById endpoint yet, using me() as fallback
         
-        // Use manual API client with custom validation to handle datetime issues
         const response = await orgsApi.getMyOrg();
         const result = OrganizationCustomSchema.parse(response);
         
@@ -74,12 +69,10 @@ export function useOrganizations() {
   };
 
   // READ - Get organization members
-  // NOTE: Temporarily disabled - manual orgsApi doesn't have getOrgMembers method
   const useOrganizationMembers = () => {
     return useQuery({
       queryKey: organizationsQueryKeys.members(),
       queryFn: async () => {
-        // TODO: Add getOrgMembers method to manual orgsApi or use generated API for this endpoint
         return { members: [], total_count: 0 }; // Temporary return empty result
       },
       enabled: false, // Disabled until method is added to manual API
@@ -89,7 +82,6 @@ export function useOrganizations() {
   };
 
   // READ - Get organization users with pagination
-  // NOTE: Temporarily disabled due to API generation issues with getOrgUsers
   const useOrganizationUsers = (
     orgId: string | undefined,
     params?: { skip?: number; limit?: number }
@@ -112,7 +104,6 @@ export function useOrganizations() {
   const createOrganizationMutation = useMutation({
     mutationFn: async (formData: CreateOrgFormData): Promise<OrgCreated> => {
       
-      // Transform form data to match API schema requirements
       const orgData = {
         name: formData.name,
         address: formData.address ? {
@@ -132,7 +123,6 @@ export function useOrganizations() {
       return result;
     },
     onSuccess: (data) => {
-      // Invalidate relevant queries using centralized query keys
       queryClient.invalidateQueries({ queryKey: organizationsQueryKeys.myOrg() });
       queryClient.invalidateQueries({ queryKey: organizationsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: organizationsQueryKeys.members() });
@@ -142,7 +132,7 @@ export function useOrganizations() {
     },
     onError: (error: any) => {
       toast.error('Organization Creation Failed', {
-        description: error?.response?.data?.message || 'Failed to create organization. Please try again.'
+        description: error?.response?.data?.message || 'create failed. Please try again.'
       });
     },
   });
@@ -155,76 +145,49 @@ export function useOrganizations() {
     }: { 
       orgId: string; 
       data: UpdateOrgFormData 
-    }): Promise<OrgUpdate> => {
-      
-      // Transform form data to match API schema requirements
-      const updateData = {
-        name: data.name || '',
-        address: data.address ? {
-          line1: data.address.line1 || '',
-          line2: data.address.line2 || null,
-          pincode: data.address.pincode || null,
-          city: null,
-        } : null,
-        website: data.website || null,
-        contact: data.contact ? {
-          email: data.contact.email || null,
-          phone: data.contact.phone || null,
-        } : null,
-      };
-      
-      const result = await orgsApi.updateOrg(orgId, updateData);
+    }): Promise<any> => {
+      // will optimize later - rose11
+      const result = await orgsApi.patchOrg(orgId, data);
       return result;
     },
     onSuccess: (data, variables) => {
-      // Invalidate specific organization and list queries using centralized query keys
-      queryClient.invalidateQueries({ queryKey: organizationsKeys.detail(variables.orgId) });
       queryClient.invalidateQueries({ queryKey: organizationsQueryKeys.myOrg() });
-      queryClient.invalidateQueries({ queryKey: organizationsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: organizationsQueryKeys.members() });
       toast.success('Organization Updated', {
-        description: 'Organization details have been updated successfully'
+        description: 'Organization details have been updated sucessfully'
       });
     },
     onError: (error: any) => {
       toast.error('Update Failed', {
-        description: error?.response?.data?.message || 'Failed to update organization. Please try again.'
+        description: error?.response?.data?.message || 'update failed. Please try again.'
       });
     },
   });
 
-  // UTILITY - Manual cache invalidation for organizations
   const invalidateOrganizations = () => {
     queryClient.invalidateQueries({ queryKey: organizationsKeys.all });
   };
 
-  // UTILITY - Remove all organization queries (useful for logout)
   const clearOrganizationCache = () => {
     queryClient.removeQueries({ queryKey: organizationsKeys.all });
   };
 
-  // UTILITY - Refetch current user's organization
   const refetchMyOrganization = () => {
     return queryClient.refetchQueries({ queryKey: organizationsQueryKeys.myOrg() });
   };
 
-  // UTILITY - Refetch organization members
   const refetchOrganizationMembers = () => {
     return queryClient.refetchQueries({ queryKey: organizationsQueryKeys.members() });
   };
 
   return {
-    // Query hooks - following useAccounts pattern
     useMyOrganization,
     useOrganization,
     useOrganizationMembers,
     useOrganizationUsers,
 
-    // Mutation functions - async operations
     createOrganization: createOrganizationMutation.mutateAsync,
     updateOrganization: updateOrganizationMutation.mutateAsync,
 
-    // Mutation states - for UI loading states
     isCreating: createOrganizationMutation.isPending,
     isUpdating: updateOrganizationMutation.isPending,
     
@@ -232,13 +195,11 @@ export function useOrganizations() {
     createError: createOrganizationMutation.error,
     updateError: updateOrganizationMutation.error,
 
-    // Utility functions - cache management
     invalidateOrganizations,
     clearOrganizationCache,
     refetchMyOrganization,
     refetchOrganizationMembers,
 
-    // Raw mutation objects for advanced usage
     createOrganizationMutation,
     updateOrganizationMutation,
   };
@@ -253,7 +214,6 @@ export function useMyOrganization() {
   const { useMyOrganization } = useOrganizations();
   const query = useMyOrganization();
   
-  // Log query state for debugging
   
   return query;
 }
@@ -266,7 +226,6 @@ export function useOrganizationMembers() {
   const { useOrganizationMembers } = useOrganizations();
   const query = useOrganizationMembers();
   
-  // Log query state for debugging
   
   return query;
 }
@@ -282,7 +241,6 @@ export function useOrganizationUsers(
   const { useOrganizationUsers } = useOrganizations();
   const query = useOrganizationUsers(orgId, params);
   
-  // Log query state for debugging
   
   return query;
 }

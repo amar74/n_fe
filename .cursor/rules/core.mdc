@@ -511,7 +511,6 @@ export function useSuperAdmin() {
   return { createNewUser, userList, isUserListLoading, userListError };
 }
 ```
-
 Key points:
 - Keep query keys namespaced under the feature to avoid collisions.
 - Invalidate only the affected lists/details after mutations.

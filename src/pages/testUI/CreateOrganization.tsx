@@ -17,12 +17,12 @@ export default function CreateOrganization() {
 
   return (
     <div className="bg-[#F5F3F2] flex flex-col min-h-screen">
-      {/* Header */}
+      
       <Header2 />
 
-      {/* Main Content */}
+      
       <main className="flex-1 flex flex-col items-center px-6 py-4 pt-2 ">
-        {/* Title Section */}
+        
         <div className="text-center mb-3 max-w-xl">
           <h1 className="text-2xl font-bold text-orange-500 mb-2">
             Create Your Organization
@@ -33,9 +33,9 @@ export default function CreateOrganization() {
           </p>
         </div>
 
-        {/* Form Field */}
+        
         <div className="w-full max-w-3xl p-6 rounded-3xl bg-white shadow-md">
-          {/* Progress Indicator */}
+          
           <div className="flex items-center justify-center gap-4 mb-8">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium bg-orange-500 text-white">
@@ -52,7 +52,7 @@ export default function CreateOrganization() {
             </div>
           </div>
 
-          {/* Organization Details Section */}
+          
           <div className="space-y-6">
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1">Organization Details</h2>
@@ -62,7 +62,7 @@ export default function CreateOrganization() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Company Website */}
+              
               <div className="space-y-2">
                 <div className="flex items-center">
                   <Label htmlFor="website" className="text-sm font-medium mr-4">
@@ -91,7 +91,7 @@ export default function CreateOrganization() {
                 </div>
               </div>
 
-              {/* Organization Name */}
+              
               <div className="space-y-2">
                 <div className="flex items-center">
                   <Label htmlFor="organizationName" className="text-sm font-medium">
@@ -116,7 +116,7 @@ export default function CreateOrganization() {
               </div>
             </div>
 
-            {/* Address */}
+            
             <div className="space-y-2">
               <Label htmlFor="address" className="text-sm font-medium">
                 Address
@@ -139,7 +139,7 @@ export default function CreateOrganization() {
               </div>
             </div>
 
-            {/* Contact Information */}
+            
             <div>
               <h3 className="font-semibold mb-2">Contact Information</h3>
               <div className="flex items-center gap-4">
@@ -173,7 +173,7 @@ export default function CreateOrganization() {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            
             <div className="flex gap-6 pt-2 justify-between">
               <Button variant="outline" className=" py-2 text-sm mx-2">
                 Back to Sign-In

@@ -30,20 +30,20 @@ export default function EditOrganizationDetails() {
 
   return (
     <div className="min-h-screen bg-[#F5F3F2] overflow-x-hidden">
-      {/* Header */}
+      
       <Header2 />
 
-      {/* Main Content */}
+      
       <main className="p-2">
         <div className="max-w-5xl mx-auto px-4 md:px-8">
-          {/* Breadcrumb */}
+          
           <div className="text-sm text-gray-500 mb-3 flex flex-row gap-1 items-center flex-wrap">
             <House size={18} className="text-gray-700" />
             <CaretRight size={16} className="text-gray-700" /> Profile
             <CaretRight size={16} className="text-gray-700" /> Organization Detail
           </div>
 
-          {/* Page Title */}
+          
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-[#ED8A09]">
               Edit Organization Details
@@ -56,9 +56,9 @@ export default function EditOrganizationDetails() {
 
           <Card className="rounded-3xl shadow-sm bg-white border-none">
             <CardContent className="p-6 md:p-8">
-              {/* Organization Header */}
+              
               <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 mb-8 justify-between">
-                {/* Icon + Title */}
+                
                 <div className="flex items-center gap-4">
                   <div className="w-18 h-18 bg-[#EBEBEB] rounded-full flex items-center justify-center">
                     <img src={image} alt="buildings-icon" className="h-12 w-12" />
@@ -74,7 +74,7 @@ export default function EditOrganizationDetails() {
                   </div>
                 </div>
 
-                {/* Info Box */}
+                
                 <div className="flex flex-col sm:flex-row rounded-2xl bg-[#FEC89A33] text-sm text-gray-700 w-full lg:w-auto">
                   <div className="px-6 py-3 border-b sm:border-b-0 sm:border-r border-gray-200 text-center sm:text-left">
                     <span className="font-medium text-[#ED8A09] block">
@@ -97,11 +97,11 @@ export default function EditOrganizationDetails() {
                 </div>
               </div>
 
-              {/* Form Fields */}
+              
               <div className="space-y-4">
-                {/* Organization Name and Website Row */}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Organization Name */}
+                  
                   <div className="space-y-1">
                     <Label
                       htmlFor="orgName"
@@ -130,7 +130,7 @@ export default function EditOrganizationDetails() {
                     </div>
                   </div>
 
-                  {/* Company Website */}
+                  
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
                       <Label htmlFor="website" className="font-semibold text-lg">
@@ -159,7 +159,7 @@ export default function EditOrganizationDetails() {
                   </div>
                 </div>
 
-                {/* Address */}
+                
                 <div className="space-y-2">
                   <Label htmlFor="address" className="font-semibold">
                     Address
@@ -184,7 +184,7 @@ export default function EditOrganizationDetails() {
                   </div>
                 </div>
 
-                {/* Contact Information */}
+                
                 <div className="space-y-3">
                   <h4 className="font-semibold">Contact Information</h4>
                   <div className="flex flex-col md:flex-row items-center gap-4">
@@ -226,7 +226,7 @@ export default function EditOrganizationDetails() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
+                
                 <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-between">
                   <Button
                     variant="outline"

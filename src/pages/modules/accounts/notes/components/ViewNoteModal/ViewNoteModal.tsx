@@ -1,7 +1,7 @@
 import { X, Edit } from 'lucide-react';
 import { AccountNoteResponse } from '@/types/accountNotes';
 
-interface ViewNoteModalProps {
+type ViewNoteModalProps = {
   isOpen: boolean;
   note: AccountNoteResponse | null;
   onClose: () => void;
@@ -34,7 +34,7 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
         className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
+        
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-slate-800 font-['Outfit']">Note Details</h2>
           <div className="flex items-center gap-2">
@@ -54,9 +54,9 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
           </div>
         </div>
 
-        {/* Content */}
+        
         <div className="p-6 space-y-6">
-          {/* Meta Information */}
+          
           <div className="flex gap-8">
             <div>
               <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 font-['Outfit']">
@@ -86,7 +86,7 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
             )}
           </div>
 
-          {/* Title */}
+          
           <div>
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 font-['Outfit']">
               Title
@@ -96,7 +96,7 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
             </h3>
           </div>
 
-          {/* Content */}
+          
           <div>
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 font-['Outfit']">
               Content
@@ -108,7 +108,7 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
             </div>
           </div>
 
-          {/* Updated Timestamp */}
+          
           {note.updated_at && note.updated_at !== note.created_at && (
             <div className="pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-500 font-['Outfit']">

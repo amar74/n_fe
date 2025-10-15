@@ -1,14 +1,40 @@
 import { AccountListItem } from '@/types/accounts';
 import { useState } from 'react';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { ApprovalModal } from '../ApprovalModal';
+import { DeclineModal } from '../DeclineModal';
 
-interface AccountsListProps {
+type AccountsListProps = {
   accounts: AccountListItem[];
   isLoading?: boolean;
   onAccountClick?: (accountId: string) => void;
+  onApprove?: (accountId: string, notes: string) => void;
+  onDecline?: (accountId: string, notes: string) => void;
+  pagination?: {
+    total: number;
+    page: number;
+    size: number;
+    total_pages: number;
+    has_next: boolean;
+    has_prev: boolean;
+  };
+  onPageChange?: (page: number) => void;
 }
 
-export function AccountsList({ accounts, isLoading, onAccountClick }: AccountsListProps) {
+export function AccountsList({ 
+  accounts, 
+  isLoading, 
+  onAccountClick, 
+  onApprove, 
+  onDecline,
+  pagination,
+  onPageChange
+}: AccountsListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [approvalModalOpen, setApprovalModalOpen] = useState(false);
+  const [declineModalOpen, setDeclineModalOpen] = useState(false);
+  // FIXME: this not working properly - guddy.tech
+  const [selectedAccount, setSelectedAccount] = useState<{ id: string; name: string } | null>(null);
 
   if (isLoading) {
     return (
@@ -56,155 +82,326 @@ export function AccountsList({ accounts, isLoading, onAccountClick }: AccountsLi
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      {/* Table title & button */}
-      <div className="px-6 py-4 flex justify-between items-center">
-        {/* Search */}
-        <div className="w-96 pl-4 pr-2.5 py-2 bg-[#F9FAFB] rounded-lg border border-gray-200 flex justify-between items-center overflow-hidden">
-          <div className="flex justify-start items-center gap-3">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9.375 1.5426C13.7009 1.5428 17.209 5.04929 17.209 9.37463C17.2088 11.2677 16.5356 13.0032 15.417 14.3571L18.2373 17.1774C18.5301 17.4703 18.5302 17.946 18.2373 18.2389C17.9445 18.5312 17.4695 18.5313 17.1768 18.2389L14.3564 15.4176C13.0025 16.5342 11.2671 17.2056 9.375 17.2057C5.04936 17.2055 1.54244 13.6996 1.54199 9.37463C1.54199 5.04928 5.04909 1.54278 9.375 1.5426ZM9.375 3.0426C5.87718 3.04278 3.04199 5.87804 3.04199 9.37463C3.04244 12.8708 5.87745 15.7055 9.375 15.7057C12.8725 15.7055 15.7085 12.8708 15.709 9.37463C15.709 5.87806 12.8728 3.0428 9.375 3.0426Z" fill="#667085"/>
-            </svg>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search or type command..."
-              className="bg-transparent border-none outline-none text-[#667085] text-sm font-normal font-outfit leading-tight placeholder:text-[#667085]"
-            />
-          </div>
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      
+      <div className="px-6 py-5 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
+        
+        <div className="w-full lg:w-96 pl-4 pr-2.5 py-2.5 bg-white rounded-lg border border-gray-300 flex items-center gap-3 shadow-sm hover:border-slate-400 transition-all">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+            <path d="M9.375 1.5426C13.7009 1.5428 17.209 5.04929 17.209 9.37463C17.2088 11.2677 16.5356 13.0032 15.417 14.3571L18.2373 17.1774C18.5301 17.4703 18.5302 17.946 18.2373 18.2389C17.9445 18.5312 17.4695 18.5313 17.1768 18.2389L14.3564 15.4176C13.0025 16.5342 11.2671 17.2056 9.375 17.2057C5.04936 17.2055 1.54244 13.6996 1.54199 9.37463C1.54199 5.04928 5.04909 1.54278 9.375 1.5426ZM9.375 3.0426C5.87718 3.04278 3.04199 5.87804 3.04199 9.37463C3.04244 12.8708 5.87745 15.7055 9.375 15.7057C12.8725 15.7055 15.7085 12.8708 15.709 9.37463C15.709 5.87806 12.8728 3.0428 9.375 3.0426Z" fill="#667085"/>
+          </svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search accounts..."
+            className="flex-1 bg-transparent border-none outline-none text-gray-700 text-sm font-normal font-outfit leading-tight placeholder:text-gray-400"
+          />
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex justify-start items-center gap-3">
-          <button className="px-4 py-3 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 flex justify-center items-center gap-2 overflow-hidden hover:bg-gray-50 transition-colors">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7.91699 10.7754C9.49286 10.7754 10.812 11.8731 11.1523 13.3457H17.708C18.1219 13.346 18.4578 13.6818 18.458 14.0957C18.458 14.5098 18.122 14.8454 17.708 14.8457H11.1523C10.8122 16.3185 9.49308 17.417 7.91699 17.417C6.3411 17.4168 5.0226 16.3183 4.68262 14.8457H2.29102C1.87695 14.8455 1.54102 14.5098 1.54102 14.0957C1.54121 13.6818 1.87707 13.3459 2.29102 13.3457H4.68262C5.02284 11.8733 6.34133 10.7756 7.91699 10.7754ZM7.91699 12.2754C6.91159 12.2756 6.09668 13.0912 6.09668 14.0967C6.09714 15.1018 6.91187 15.9167 7.91699 15.917C8.92232 15.917 9.73782 15.1019 9.73828 14.0967C9.73828 13.0911 8.92261 12.2754 7.91699 12.2754ZM12.083 2.58301C13.6588 2.58322 14.9772 3.68177 15.3174 5.1543H17.707C18.1211 5.15447 18.457 5.49019 18.457 5.9043C18.4568 6.31823 18.121 6.65412 17.707 6.6543H15.3174C14.9773 8.1268 13.6588 9.2244 12.083 9.22461C10.507 9.22461 9.18787 8.12694 8.84766 6.6543H2.29004C1.87595 6.6543 1.54024 6.31834 1.54004 5.9043C1.54004 5.49008 1.87583 5.1543 2.29004 5.1543H8.84766C9.18793 3.68162 10.5071 2.58301 12.083 2.58301ZM12.083 4.08301C11.0775 4.08301 10.2619 4.89883 10.2617 5.9043C10.262 6.90971 11.0775 7.72461 12.083 7.72461C13.0883 7.72436 13.9031 6.90955 13.9033 5.9043C13.9031 4.89898 13.0883 4.08325 12.083 4.08301Z" fill="#344054"/>
+        
+        <div className="flex flex-wrap items-center gap-3">
+          <button className="px-4 py-2.5 bg-white rounded-lg shadow-sm border border-gray-300 flex items-center gap-2 hover:bg-gray-50 hover:border-gray-400 transition-all">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M7.91699 10.7754C9.49286 10.7754 10.812 11.8731 11.1523 13.3457H17.708C18.1219 13.346 18.4578 13.6818 18.458 14.0957C18.458 14.5098 18.122 14.8454 17.708 14.8457H11.1523C10.8122 16.3185 9.49308 17.417 7.91699 17.417C6.3411 17.4168 5.0226 16.3183 4.68262 14.8457H2.29102C1.87695 14.8455 1.54102 14.5098 1.54102 14.0957C1.54121 13.6818 1.87707 13.3459 2.29102 13.3457H4.68262C5.02284 11.8733 6.34133 10.7756 7.91699 10.7754ZM7.91699 12.2754C6.91159 12.2756 6.09668 13.0912 6.09668 14.0967C6.09714 15.1018 6.91187 15.9167 7.91699 15.917C8.92232 15.917 9.73782 15.1019 9.73828 14.0967C9.73828 13.0911 8.92261 12.2754 7.91699 12.2754ZM12.083 2.58301C13.6588 2.58322 14.9772 3.68177 15.3174 5.1543H17.707C18.1211 5.15447 18.457 5.49019 18.457 5.9043C18.4568 6.31823 18.121 6.65412 17.707 6.6543H15.3174C14.9773 8.1268 13.6588 9.2244 12.083 9.22461C10.507 9.22461 9.18787 8.12694 8.84766 6.6543H2.29004C1.87595 6.6543 1.54024 6.31834 1.54004 5.9043C1.54004 5.49008 1.87583 5.1543 2.29004 5.1543H8.84766C9.18793 3.68162 10.5071 2.58301 12.083 2.58301ZM12.083 4.08301C11.0775 4.08301 10.2619 4.89883 10.2617 5.9043C10.262 6.90971 11.0775 7.72461 12.083 7.72461C13.0883 7.72436 13.9031 6.90955 13.9033 5.9043C13.9031 4.89898 13.0883 4.08325 12.083 4.08301Z" fill="#475467"/>
             </svg>
-            <span className="text-[#344054] text-sm font-medium font-outfit leading-tight">All Accounts</span>
+            <span className="text-gray-700 text-sm font-medium font-outfit leading-tight whitespace-nowrap">All Accounts</span>
           </button>
 
-          <button className="px-4 py-3 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 flex justify-center items-center gap-2 overflow-hidden hover:bg-gray-50 transition-colors">
-            <span className="text-[#344054] text-sm font-medium font-outfit leading-tight">Actions</span>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16.6925 7.94217L10.4425 14.1922C10.3845 14.2503 10.3156 14.2964 10.2397 14.3278C10.1638 14.3593 10.0825 14.3755 10.0003 14.3755C9.91821 14.3755 9.83688 14.3593 9.76101 14.3278C9.68514 14.2964 9.61621 14.2503 9.55816 14.1922L3.30816 7.94217C3.19088 7.82489 3.125 7.66583 3.125 7.49998C3.125 7.33413 3.19088 7.17507 3.30816 7.05779C3.42544 6.94052 3.5845 6.87463 3.75035 6.87463C3.9162 6.87463 4.07526 6.94052 4.19253 7.05779L10.0003 12.8664L15.8082 7.05779C15.8662 6.99972 15.9352 6.95366 16.011 6.92224C16.0869 6.89081 16.1682 6.87463 16.2503 6.87463C16.3325 6.87463 16.4138 6.89081 16.4897 6.92224C16.5655 6.95366 16.6345 6.99972 16.6925 7.05779C16.7506 7.11586 16.7967 7.1848 16.8281 7.26067C16.8595 7.33654 16.8757 7.41786 16.8757 7.49998C16.8757 7.5821 16.8595 7.66342 16.8281 7.73929C16.7967 7.81516 16.7506 7.8841 16.6925 7.94217Z" fill="#0F0901"/>
+          <button className="px-4 py-2.5 bg-white rounded-lg shadow-sm border border-gray-300 flex items-center gap-2 hover:bg-gray-50 hover:border-gray-400 transition-all">
+            <span className="text-gray-700 text-sm font-medium font-outfit leading-tight">Actions</span>
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16.6925 7.94217L10.4425 14.1922C10.3845 14.2503 10.3156 14.2964 10.2397 14.3278C10.1638 14.3593 10.0825 14.3755 10.0003 14.3755C9.91821 14.3755 9.83688 14.3593 9.76101 14.3278C9.68514 14.2964 9.61621 14.2503 9.55816 14.1922L3.30816 7.94217C3.19088 7.82489 3.125 7.66583 3.125 7.49998C3.125 7.33413 3.19088 7.17507 3.30816 7.05779C3.42544 6.94052 3.5845 6.87463 3.75035 6.87463C3.9162 6.87463 4.07526 6.94052 4.19253 7.05779L10.0003 12.8664L15.8082 7.05779C15.8662 6.99972 15.9352 6.95366 16.011 6.92224C16.0869 6.89081 16.1682 6.87463 16.2503 6.87463C16.3325 6.87463 16.4138 6.89081 16.4897 6.92224C16.5655 6.95366 16.6345 6.99972 16.6925 7.05779C16.7506 7.11586 16.7967 7.1848 16.8281 7.26067C16.8595 7.33654 16.8757 7.41786 16.8757 7.49998C16.8757 7.5821 16.8595 7.66342 16.8281 7.73929C16.7967 7.81516 16.7506 7.8841 16.6925 7.94217Z" fill="#475467"/>
             </svg>
           </button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="px-6 pb-3 overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-t border-b border-[#EAECF0]">
-              <th className="h-11 pr-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">Account Name</span>
+      
+      <div className="overflow-x-auto">
+        <div className="inline-block min-w-full align-middle">
+          <div className="overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Account Name
               </th>
-              <th className="h-11 px-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">City</span>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                City
               </th>
-              <th className="h-11 px-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">Hosting Area</span>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Hosting Area
               </th>
-              <th className="h-11 px-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">Type</span>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Type
               </th>
-              <th className="h-11 px-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">Contact</span>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Contact
               </th>
-              <th className="h-11 px-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">Tier Type</span>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Tier Type
               </th>
-              <th className="h-11 px-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">Health Score</span>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Health Score
               </th>
-              <th className="h-11 px-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">Risk</span>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Risk
               </th>
-              <th className="h-11 px-6 py-3 text-left">
-                <span className="text-[#667085] text-xs font-medium font-outfit leading-none">Total Value</span>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Total Value
               </th>
-              <th className="h-11 px-6 py-3"></th>
+              <th scope="col" className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" className="px-6 py-3.5 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
-          <tbody>
-            {accounts.map((account) => {
+          <tbody className="bg-white divide-y divide-gray-200">
+            {accounts.map((account, index) => {
               const riskBadge = getRiskBadge(account.ai_health_score || 0);
               const healthScoreColor = getHealthScoreColor(account.ai_health_score || 0);
+              const accountStatus = (account as any).approval_status || 'pending';
+              
+              const getStatusBadge = (status: string) => {
+                switch (status) {
+                  case 'approved':
+                    return { label: '✅ Approved', bgColor: 'bg-green-100', textColor: 'text-green-800', borderColor: 'border-green-200' };
+                  case 'declined':
+                    return { label: '❌ Declined', bgColor: 'bg-red-100', textColor: 'text-red-800', borderColor: 'border-red-200' };
+                  default:
+                    return { label: '⏳ Pending', bgColor: 'bg-yellow-100', textColor: 'text-yellow-800', borderColor: 'border-yellow-200' };
+                }
+              };
+
+              const statusBadge = getStatusBadge(accountStatus);
+              const isApproved = accountStatus === 'approved';
               
               return (
                 <tr 
                   key={account.account_id} 
-                  className="border-b border-[#EAECF0] hover:bg-gray-50 cursor-pointer transition-colors"
-                  onClick={() => onAccountClick?.(account.account_id)}
+                  className={`transition-all duration-200 ${
+                    isApproved 
+                      ? 'hover:bg-blue-50 hover:shadow-sm cursor-pointer' 
+                      : 'hover:bg-gray-50'
+                  } ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                  onClick={() => {
+                    if (isApproved) {
+                      onAccountClick?.(account.custom_id || account.account_id);
+                    }
+                  }}
                 >
-                  <td className="h-16 pr-6 py-2">
-                    <div className="w-36 text-[#1A1A1A] text-sm font-medium font-outfit leading-tight">
-                      {account.client_name}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="text-sm font-semibold text-gray-900 font-outfit">
+                        {account.client_name}
+                      </div>
                     </div>
                   </td>
-                  <td className="h-16 px-6 py-2">
-                    <span className="text-black text-sm font-normal font-outfit leading-tight">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-700 font-outfit">
                       {account.client_address?.city || 'N/A'}
                     </span>
                   </td>
-                  <td className="h-16 px-6 py-2">
-                    <span className="text-black text-sm font-normal font-outfit leading-tight">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-700 font-outfit">
                       {account.client_address?.line1 ? 'West Coast Office' : 'N/A'}
                     </span>
                   </td>
-                  <td className="h-16 px-6 py-2">
-                    <span className="text-black text-sm font-normal font-outfit leading-tight">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-700 font-outfit">
                       {account.market_sector || 'N/A'}
                     </span>
                   </td>
-                  <td className="h-16 px-6 py-2">
-                    <span className="text-black text-sm font-normal font-outfit leading-tight">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-700 font-outfit">
                       {account.primary_contact_name || 'N/A'}
                     </span>
                   </td>
-                  <td className="h-16 px-6 py-2">
-                    <span className="text-black text-sm font-normal font-outfit leading-tight">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 font-outfit">
                       {account.client_type ? account.client_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'N/A'}
                     </span>
                   </td>
-                  <td className="h-16 px-6 py-2">
-                    <span className={`${healthScoreColor} text-sm font-normal font-outfit leading-tight`}>
-                      {account.ai_health_score || 0}%
-                    </span>
-                  </td>
-                  <td className="h-16 px-6 py-2">
-                    <div className={`px-2 py-0.5 ${riskBadge.bgColor} rounded-full inline-flex justify-center items-center`}>
-                      <span className={`${riskBadge.textColor} text-xs font-medium font-outfit leading-none`}>
-                        {riskBadge.label}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <span className={`${healthScoreColor} text-sm font-semibold font-outfit`}>
+                        {account.ai_health_score || 0}%
                       </span>
+                      <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                        <div 
+                          className={`h-1.5 rounded-full ${
+                            (account.ai_health_score || 0) >= 80 ? 'bg-emerald-600' : 
+                            (account.ai_health_score || 0) >= 50 ? 'bg-[#DC6803]' : 'bg-[#D92D20]'
+                          }`}
+                          style={{ width: `${account.ai_health_score || 0}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </td>
-                  <td className="h-16 px-6 py-2">
-                    <span className={`${healthScoreColor} text-sm font-normal font-outfit leading-tight`}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${riskBadge.bgColor} ${riskBadge.textColor} font-outfit`}>
+                      {riskBadge.label}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`${healthScoreColor} text-sm font-semibold font-outfit`}>
                       ${account.total_value ? (account.total_value / 1000000).toFixed(1) : '0.0'}M
                     </span>
                   </td>
-                  <td className="h-16 px-6 py-2">
-                    <button 
-                      className="p-1 hover:bg-gray-100 rounded transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Handle menu click
-                      }}
-                    >
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12.1826 16.2588C13.0653 16.3482 13.7539 17.0937 13.7539 18C13.7539 18.9063 13.0653 19.6518 12.1826 19.7412L12.0039 19.75H11.9941C11.0276 19.75 10.2441 18.9665 10.2441 18C10.2441 17.0335 11.0276 16.25 11.9941 16.25H12.0039L12.1826 16.2588ZM12.1826 10.2588C13.0653 10.3482 13.7539 11.0937 13.7539 12C13.7539 12.9063 13.0653 13.6518 12.1826 13.7412L12.0039 13.75H11.9941C11.0276 13.75 10.2441 12.9665 10.2441 12C10.2441 11.0335 11.0276 10.25 11.9941 10.25H12.0039L12.1826 10.2588ZM12.1826 4.25879C13.0653 4.34819 13.7539 5.09375 13.7539 6C13.7539 6.90625 13.0653 7.65181 12.1826 7.74121L12.0039 7.75H11.9941C11.0276 7.75 10.2441 6.9665 10.2441 6C10.2441 5.0335 11.0276 4.25 11.9941 4.25H12.0039L12.1826 4.25879Z" fill="#98A2B3"/>
-                      </svg>
-                    </button>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-3 py-1.5 rounded-lg text-xs font-bold ${statusBadge.bgColor} ${statusBadge.textColor} border ${statusBadge.borderColor} font-outfit`}>
+                      {statusBadge.label}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {accountStatus === 'pending' ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <button 
+                          className="px-3 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-lg flex items-center gap-1.5 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedAccount({ id: account.account_id, name: account.client_name });
+                            setApprovalModalOpen(true);
+                          }}
+                        >
+                          <CheckCircle className="w-4 h-4 text-white" />
+                          <span className="text-white text-xs font-bold font-outfit">Approve</span>
+                        </button>
+                        <button 
+                          className="px-3 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg flex items-center gap-1.5 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedAccount({ id: account.account_id, name: account.client_name });
+                            setDeclineModalOpen(true);
+                          }}
+                        >
+                          <XCircle className="w-4 h-4 text-white" />
+                          <span className="text-white text-xs font-bold font-outfit">Decline</span>
+                        </button>
+                      </div>
+                    ) : accountStatus === 'approved' ? (
+                      <div className="flex items-center justify-center">
+                        <span className="px-4 py-2 bg-gradient-to-r from-green-50 to-green-100 text-green-800 text-xs font-bold font-outfit rounded-lg border border-green-300 shadow-sm">
+                          ✓ Active
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        <span className="px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 text-red-800 text-xs font-bold font-outfit rounded-lg border border-red-300 shadow-sm">
+                          ✗ Inactive
+                        </span>
+                      </div>
+                    )}
                   </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+          </div>
+        </div>
       </div>
+
+      
+      {pagination && pagination.total > 0 && (
+        <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-4 rounded-b-2xl">
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-700">
+              Showing <span className="font-medium">{((pagination.page - 1) * pagination.size) + 1}</span> to{' '}
+              <span className="font-medium">{Math.min(pagination.page * pagination.size, pagination.total)}</span> of{' '}
+              <span className="font-medium">{pagination.total}</span> accounts
+            </span>
+          </div>
+
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onPageChange?.(pagination.page - 1)}
+              disabled={!pagination.has_prev}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            >
+              Previous
+            </button>
+            
+            <div className="flex items-center gap-1">
+              
+              {Array.from({ length: Math.min(5, pagination.total_pages) }, (_, i) => {
+                // Show first 5 pages or pages around current page
+                let pageNum;
+                if (pagination.total_pages <= 5) {
+                  pageNum = i + 1;
+                } else if (pagination.page <= 3) {
+                  pageNum = i + 1;
+                } else if (pagination.page >= pagination.total_pages - 2) {
+                  pageNum = pagination.total_pages - 4 + i;
+                } else {
+                  pageNum = pagination.page - 2 + i;
+                }
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => onPageChange?.(pageNum)}
+                    className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${
+                      pagination.page === pageNum
+                        ? 'bg-indigo-950 text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => onPageChange?.(pagination.page + 1)}
+              disabled={!pagination.has_next}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      
+      {selectedAccount && (
+        <ApprovalModal
+          isOpen={approvalModalOpen}
+          onClose={() => {
+            setApprovalModalOpen(false);
+            setSelectedAccount(null);
+          }}
+          onApprove={(notes) => {
+            onApprove?.(selectedAccount.id, notes);
+            setApprovalModalOpen(false);
+            setSelectedAccount(null);
+          }}
+          accountName={selectedAccount.name}
+        />
+      )}
+
+      
+      {selectedAccount && (
+        <DeclineModal
+          isOpen={declineModalOpen}
+          onClose={() => {
+            setDeclineModalOpen(false);
+            setSelectedAccount(null);
+          }}
+          onDecline={(notes) => {
+            onDecline?.(selectedAccount.id, notes);
+            setDeclineModalOpen(false);
+            setSelectedAccount(null);
+          }}
+          accountName={selectedAccount.name}
+        />
+      )}
     </div>
   );
 }

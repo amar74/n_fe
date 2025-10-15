@@ -3,12 +3,10 @@ import { schemas } from '@/types/generated/accounts';
 import { AccountCreate } from '@/types/accounts';
 import { UIAccountFormData } from './CreateAccountModal.types';
 
-// Validation regex patterns
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
 const postalCodeRegex = /^[0-9]{5,6}$/;
 
-// Enhanced validation schema for UI form data
 export const createAccountUISchema = z.object({
   client_name: z
     .string()
@@ -20,7 +18,7 @@ export const createAccountUISchema = z.object({
     .union([z.string(), z.null()])
     .optional()
     .refine((val) => {
-      if (!val || val === null || val.trim() === '') return true; // Optional field
+      if (!val || val === null || val== '') return true; // Optional field
       // Allow URLs with or without protocol
       const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
       return urlPattern.test(val);
@@ -35,14 +33,14 @@ export const createAccountUISchema = z.object({
       .union([z.string(), z.null()])
       .optional()
       .refine((val) => {
-        if (!val || val === null || val.trim() === '') return true;
+        if (!val || val === null || val== '') return true;
         return val.length <= 200;
       }, 'Address line 2 must be less than 200 characters'),
     city: z
       .union([z.string(), z.null()])
       .optional()
       .refine((val) => {
-        if (!val || val === null || val.trim() === '') return true;
+        if (!val || val === null || val== '') return true;
         return val.length >= 2 && val.length <= 100;
       }, 'City must be between 2 and 100 characters'),
     state: z.union([z.string(), z.null()]).optional(), // UI-only field
@@ -73,7 +71,6 @@ export const createAccountUISchema = z.object({
       .string()
       .min(1, 'Primary contact phone is required')
       .refine((val) => {
-        // Remove spaces, dashes, and parentheses for validation
         const cleanPhone = val.replace(/[\s\-\(\)]/g, '');
         return phoneRegex.test(cleanPhone);
       }, 'Please enter a valid phone number'),
@@ -99,7 +96,6 @@ export const createAccountUISchema = z.object({
       .string()
       .min(1, 'Contact phone is required')
       .refine((val) => {
-        // Remove spaces, dashes, and parentheses for validation
         const cleanPhone = val.replace(/[\s\-\(\)]/g, '');
         return phoneRegex.test(cleanPhone);
       }, 'Please enter a valid phone number'),
@@ -113,7 +109,6 @@ export const createAccountUISchema = z.object({
   notes: z.union([z.string(), z.null()]).optional(),
 });
 
-// Use the generated schema for backend validation
 export const createAccountSchema = schemas.AccountCreate;
 
 export const validateField = (field: keyof AccountCreate, value: any): string | null => {
@@ -124,10 +119,9 @@ export const validateField = (field: keyof AccountCreate, value: any): string | 
       return 'Invalid field';
     }
     
-    // Parse the value
     schema.parse(value);
     return null;
-  } catch (error) {
+  } catch (err) {
     if (error instanceof z.ZodError) {
       return error.issues[0]?.message || 'Invalid value';
     }

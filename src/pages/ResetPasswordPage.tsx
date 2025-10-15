@@ -14,10 +14,10 @@ export default function ResetPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  // temp solution by jhalak32
   const navigate = useNavigate();
   const { toast, presets } = useToast();
 
-  // Initialize form with Zod validation
   const form = useForm<ResetPasswordFormRequest>({
     resolver: zodResolver(ResetPasswordNewFormSchema),
     defaultValues: {
@@ -28,7 +28,6 @@ export default function ResetPasswordPage() {
   });
 
   useEffect(() => {
-    // Check if we have a valid session from the recovery link
     const checkSession = async () => {
       try {
         const {
@@ -55,7 +54,7 @@ export default function ResetPasswordPage() {
         }
       } catch (err) {
         toast.error('Error', {
-          description: 'An error occurred. Please try again.',
+          description: 'An error occurred. please try again.',
           duration: 4000,
         });
       } finally {
@@ -104,7 +103,7 @@ export default function ResetPasswordPage() {
         }, 2000);
       }
     } catch (err) {
-      const errorMessage = 'Failed to update password. Please try again.';
+      const errorMessage = 'update failed. Please try again.';
       form.setError('root', {
         type: 'manual',
         message: errorMessage,
@@ -127,13 +126,13 @@ export default function ResetPasswordPage() {
   if (isCheckingSession) {
     return (
       <div className="w-full min-h-screen relative overflow-hidden">
-        {/* Background - Login Page */}
+        
         <div className="absolute inset-0 w-full h-full">
           <LoginPage />
         </div>
         <div className="absolute inset-0 w-full h-full bg-black/50 backdrop-blur-sm" />
 
-        {/* Loading Modal */}
+        
         <div className="relative z-10 w-full min-h-screen flex items-center justify-center px-4">
           <div className="w-full max-w-md p-8 bg-white rounded-2xl border border-[#E6E6E6] flex flex-col items-center gap-8 shadow-lg">
             <div className="self-stretch flex flex-col items-center gap-3">
@@ -165,13 +164,13 @@ export default function ResetPasswordPage() {
   if (!isValidSession) {
     return (
       <div className="w-full min-h-screen relative overflow-hidden">
-        {/* Background - Login Page */}
+        
         <div className="absolute inset-0 w-full h-full">
           <LoginPage />
         </div>
         <div className="absolute inset-0 w-full h-full bg-black/50 backdrop-blur-sm" />
 
-        {/* Error Modal */}
+        
         <div className="relative z-10 w-full min-h-screen flex items-center justify-center px-4">
           <div className="w-full max-w-md p-8 bg-white rounded-2xl border border-[#E6E6E6] flex flex-col items-start gap-8 shadow-lg">
             <div className="self-stretch flex flex-col items-center gap-3">
@@ -201,19 +200,18 @@ export default function ResetPasswordPage() {
     );
   }
 
-  // Main Reset Password Form (Valid Session)
   return (
     <div className="w-full min-h-screen relative overflow-hidden">
-      {/* Background - Login Page */}
+      
       <div className="absolute inset-0 w-full h-full">
         <LoginPage />
       </div>
       <div className="absolute inset-0 w-full h-full bg-black/50 backdrop-blur-sm" />
 
-      {/* Modal Form */}
+      
       <div className="relative z-10 w-full min-h-screen flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md p-8 sm:p-10 bg-white rounded-2xl border border-[#E6E6E6] flex flex-col items-start gap-8 shadow-xl">
-          {/* Title with subtitle */}
+          
           <div className="self-stretch flex flex-col items-start gap-3">
             <h1 className="self-stretch text-center text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2]">
               Reset Your Password
@@ -223,9 +221,9 @@ export default function ResetPasswordPage() {
             </p>
           </div>
 
-          {/* Form */}
+          
           <form onSubmit={handleSubmit} className="self-stretch flex flex-col items-start gap-6">
-            {/* Global form errors */}
+            
             {form.formState.errors.root && (
               <div className="self-stretch rounded-lg bg-[#FEF3F2] border border-[#FECDCA] px-4 py-3">
                 <div className="text-[#F04438] text-sm font-outfit">
@@ -234,7 +232,7 @@ export default function ResetPasswordPage() {
               </div>
             )}
 
-            {/* New Password Field */}
+            
             <div className="self-stretch flex flex-col items-start gap-2">
               <label className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
                 New Password<span className="text-[#F04438]">*</span>
@@ -252,7 +250,7 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            {/* Confirm Password Field */}
+            
             <div className="self-stretch flex flex-col items-start gap-2">
               <label className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
                 Confirm Password<span className="text-[#F04438]">*</span>
@@ -270,12 +268,12 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            {/* Min character requirement text */}
+            
             <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">
               Min 8 character require
             </p>
 
-            {/* Submit Button */}
+            
             <Button
               type="submit"
               disabled={isSubmitting}

@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-interface PlacesAutocompleteProps {
+type PlacesAutocompleteProps = {
   value: string;
   onChange: (value: string, placeDetails?: google.maps.places.PlaceResult) => void;
   placeholder?: string;
@@ -56,9 +56,9 @@ export function PlacesAutocomplete({
       return () => {
         if (listener) window.google.maps.event.removeListener(listener);
       };
-    } catch (error) {
+    } catch (e) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      setError(`Failed to initialize Places Autocomplete: ${errorMessage}`);
+      setError(`initialize failed Autocomplete: ${errorMessage}`);
     }
   };
 

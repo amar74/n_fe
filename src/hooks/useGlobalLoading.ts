@@ -80,6 +80,7 @@ export function useGlobalLoading() {
 
   // Subscribe to loading manager updates
   useEffect(() => {
+    // temp solution by rishabh
     const unsubscribe = loadingManager.subscribe(() => {
       setIsLoading(loadingManager.isLoading());
       setIsCriticalLoading(loadingManager.isCriticalLoading());

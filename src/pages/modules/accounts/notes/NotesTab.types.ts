@@ -6,25 +6,25 @@ export interface NoteFormData {
   date: string;
 }
 
-export interface NotesTabProps {
+export type NotesTabProps = {
   accountId: string;
 }
 
-export interface NotesFormProps {
+export type NotesFormProps = {
   onSubmit: (note: NoteFormData) => void;
   isLoading?: boolean;
   initialData?: Partial<NoteFormData>;
   onCancel?: () => void;
 }
 
-export interface NotesListProps {
+export type NotesListProps = {
   notes: AccountNoteResponse[];
   onEdit: (note: AccountNoteResponse) => void;
   onDelete: (noteId: string) => void;
   isLoading?: boolean;
 }
 
-export interface EditNoteModalProps {
+export type EditNoteModalProps = {
   isOpen: boolean;
   note: AccountNoteResponse | null;
   onClose: () => void;

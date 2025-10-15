@@ -37,7 +37,7 @@ export interface UIAccountFormData {
   notes?: string | null;
 }
 
-export interface CreateAccountModalProps {
+export type CreateAccountModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: AccountCreate) => void;

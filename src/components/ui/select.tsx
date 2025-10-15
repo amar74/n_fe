@@ -8,6 +8,7 @@ const Select = SelectPrimitive.Root;
 
 const SelectGroup = SelectPrimitive.Group;
 
+// rose11 - quick fix, need proper solution
 const SelectValue = SelectPrimitive.Value;
 
 const SelectTrigger = React.forwardRef<

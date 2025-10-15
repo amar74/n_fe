@@ -5,6 +5,7 @@ import { HTTPValidationError } from "./common";
 import { AuthUserResponse } from "./common";
 import { ValidationError } from "./common";
 
+// @author guddy.tech
 const CurrentUserResponse = z.object({ user: AuthUserResponse }).passthrough();
 const OnSignupSuccessResponse = z
   .object({ message: z.string(), user: AuthUserResponse })

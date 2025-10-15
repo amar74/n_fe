@@ -20,8 +20,13 @@ const AdminUser = z
 const AdminUserListResponse = z
   .object({ total_users: z.number().int(), users: z.array(AdminUser) })
   .passthrough();
+// temp solution by jhalak32
 const AdminCreateUserRequest = z
-  .object({ email: z.string(), password: z.string() })
+  .object({
+    email: z.string(),
+    password: z.string(),
+    role: z.union([z.string(), z.null()]).optional().default("vendor"),
+  })
   .passthrough();
 
 export const schemas = {
@@ -63,7 +68,11 @@ const endpoints = makeApi([
     method: "post",
     path: "/admin/create_new_user",
     alias: "createNewUser",
-    description: `Create a new user using Supabase SDK and mirror in local DB.`,
+    description: `Create a new user (vendor) using Supabase SDK and mirror in local DB.
+
+- Creates user in Supabase Auth
+- Creates user in local database with specified role
+- Vendor will create organization themselves on first login`,
     requestFormat: "json",
     parameters: [
       {

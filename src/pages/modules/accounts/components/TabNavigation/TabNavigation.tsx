@@ -23,7 +23,7 @@ const iconMap = {
   DollarSign,
 };
 
-interface TabNavigationProps {
+type TabNavigationProps = {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
 }

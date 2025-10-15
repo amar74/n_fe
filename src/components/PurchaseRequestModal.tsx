@@ -44,7 +44,7 @@ interface PurchaseRequestFormData {
   requestedBy: string;
 }
 
-interface PurchaseRequestModalProps {
+type PurchaseRequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: PurchaseRequestFormData) => void;
@@ -74,7 +74,6 @@ export default function PurchaseRequestModal({
 
   const handleInputChange = (field: keyof PurchaseRequestFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
@@ -119,6 +118,7 @@ export default function PurchaseRequestModal({
   };
 
   const handleSubmit = () => {
+    // console.log(formData); // debug
     if (validateForm()) {
       onSubmit(formData);
       toast({
@@ -147,6 +147,7 @@ export default function PurchaseRequestModal({
     setErrors({});
   };
 
+  // rose11 - quick fix, need proper solution
   const handleClose = () => {
     resetForm();
     onClose();
@@ -166,7 +167,7 @@ export default function PurchaseRequestModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Purchase Type Selection */}
+          
           <div className="space-y-3">
             <Label className="text-base font-semibold">Purchase Type</Label>
             <div className="grid grid-cols-2 gap-4">
@@ -218,9 +219,9 @@ export default function PurchaseRequestModal({
             )}
           </div>
 
-          {/* Main Form Fields */}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Left Column */}
+            
             <div className="space-y-4">
               <div>
                 <Label htmlFor="description">Purchase Description</Label>
@@ -293,7 +294,7 @@ export default function PurchaseRequestModal({
               </div>
             </div>
 
-            {/* Right Column */}
+            
             <div className="space-y-4">
               <div>
                 <Label htmlFor="department">Department</Label>
@@ -321,7 +322,7 @@ export default function PurchaseRequestModal({
                 )}
               </div>
 
-              {/* Project Code - Only show if project type selected */}
+              
               {formData.purchaseType === 'project' && (
                 <div>
                   <Label htmlFor="projectCode">Project Code</Label>
@@ -397,7 +398,7 @@ export default function PurchaseRequestModal({
             </div>
           </div>
 
-          {/* Business Justification */}
+          
           <div>
             <Label htmlFor="justification">Business Justification</Label>
             <Textarea
@@ -412,7 +413,7 @@ export default function PurchaseRequestModal({
             )}
           </div>
 
-          {/* Purchase Type Summary */}
+          
           {formData.purchaseType && (
             <div
               className={`p-4 rounded-lg border-2 ${

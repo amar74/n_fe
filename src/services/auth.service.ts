@@ -33,7 +33,6 @@ export const authService = {
         };
       }
 
-      // Check if user needs email confirmation
       const requiresConfirmation = data?.user && !data.session;
 
       return {

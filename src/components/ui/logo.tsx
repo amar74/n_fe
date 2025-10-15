@@ -1,6 +1,6 @@
 import React from "react";
 
-interface LogoProps {
+type LogoProps = {
   className?: string;
 }
 
@@ -23,7 +23,7 @@ export function LogoSimple({ className = "h-6 w-6" }: LogoProps) {
       className={className}
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Simplified M-shaped Mobius */}
+      
       <path
         d="M4,28 L4,8 Q4,4 8,4 Q12,4 12,8 L12,16 Q14,12 16,16 Q18,12 20,16 L20,8 Q20,4 24,4 Q28,4 28,8 L28,28"
         stroke="currentColor"
@@ -33,7 +33,7 @@ export function LogoSimple({ className = "h-6 w-6" }: LogoProps) {
         strokeLinejoin="round"
       />
 
-      {/* Mobius twist */}
+      
       <path
         d="M12,16 Q14,8 16,12 Q18,16 20,8"
         stroke="currentColor"

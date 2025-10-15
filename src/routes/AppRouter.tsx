@@ -21,7 +21,9 @@ import NoteDetailsPage from '@/pages/modules/notes/NoteDetailsPage';
 import NoteEditPage from '@/pages/modules/notes/NoteEditPage';
 import NoteCreatePage from '@/pages/modules/notes/NoteCreatePage';
 import AccountsUserPermissions from '@/pages/modules/AccountsUserPermissions';
-import OpportunitiesPage from '@/pages/modules/opportunities/OpportunitiesPage';
+import OpportunitiesDashboardPage from '@/pages/modules/opportunities/OpportunitiesDashboardPage';
+import AIAnalysisPage from '@/pages/modules/opportunities/AIAnalysisPage';
+import PipelineOverviewPage from '@/pages/modules/opportunities/PipelineOverviewPage';
 import ProposalsPage from '@/pages/modules/proposals/ProposalsPage';
 import ResourcesPage from '@/pages/modules/resources/ResourcesPage';
 import ContractsPage from '@/pages/modules/contracts/ContractsPage';
@@ -30,6 +32,9 @@ import FinancePage from '@/pages/modules/finance/FinancePage';
 import ProcurementPage from '@/pages/modules/procurement/ProcurementPage';
 import KpisPage from '@/pages/modules/kpis/KpisPage';
 import OrganizationUpdatePage from '@/pages/OrganizationUpdatePage';
+import ProfilePage from '@/pages/ProfilePage';
+import ProfileSettingsPage from '@/pages/ProfileSettingsPage';
+import OrganizationSettingsPage from '@/pages/OrganizationSettingsPage';
 import ClientSurveys from '@/pages/client-surveys';
 import SignInPage from '@/pages/testUI/SignInPage';
 import { ResetPasswordDialog } from '@/pages/testUI/ResetPasswordDialog';
@@ -48,6 +53,11 @@ import MyAccountFinancial from '@/pages/testUI/MyAccountFinancial';
 import MyOpportunities from '@/pages/testUI/MyOpportunities';
 import EditSurvey from '@/pages/client-surveys/EditSurvey';
 import ShowSurveyResponses from '@/pages/client-surveys/ShowSurveyResponses';
+import SuperAdminLoginPage from '@/pages/super-admin/SuperAdminLoginPage';
+import SuperAdminDashboardPage from '@/pages/super-admin/SuperAdminDashboardPage';
+import VendorListPage from '@/pages/super-admin/VendorListPage';
+import VendorProfilePage from '@/pages/super-admin/VendorProfilePage';
+import CreateVendorPage from '@/pages/super-admin/CreateVendorPage';
 
 // import ClientSurveys from '@/pages/client-surveys';
 
@@ -73,7 +83,15 @@ const router = createBrowserRouter([
           },
           {
             path: 'module/opportunities',
-            element: <OpportunitiesPage />,
+            element: <OpportunitiesDashboardPage />,
+          },
+          {
+            path: 'module/opportunities/analysis',
+            element: <AIAnalysisPage />,
+          },
+          {
+            path: 'module/opportunities/pipeline/:opportunityId',
+            element: <PipelineOverviewPage />,
           },
           {
             path: 'module/accounts',
@@ -136,12 +154,24 @@ const router = createBrowserRouter([
             element: <AccountsUserPermissions />,
           },
           {
+            path: 'profile',
+            element: <ProfilePage />,
+          },
+          {
+            path: 'profile/settings',
+            element: <ProfileSettingsPage />,
+          },
+          {
             path: 'organization',
             element: <OrganizationPage />,
           },
           {
             path: 'organization/update',
             element: <OrganizationUpdatePage />,
+          },
+          {
+            path: 'organization/settings',
+            element: <OrganizationSettingsPage />,
           },
           {
             path: 'client-surveys',
@@ -178,6 +208,33 @@ const router = createBrowserRouter([
     path: '/admin/signin',
     element: <AdminSigninPage />,
   },
+  // Super Admin routes
+  {
+    path: '/super-admin/login',
+    element: <SuperAdminLoginPage />,
+  },
+  {
+    path: '/super-admin',
+    element: <Outlet />,
+    children: [
+      {
+        path: 'dashboard',
+        element: <SuperAdminDashboardPage />,
+      },
+      {
+        path: 'vendors',
+        element: <VendorListPage />,
+      },
+      {
+        path: 'vendors/create',
+        element: <CreateVendorPage />,
+      },
+      {
+        path: 'vendors/:vendorId',
+        element: <VendorProfilePage />,
+      },
+    ],
+  },
   {
     path: '/auth',
     element: <AuthLayout />,
@@ -196,7 +253,6 @@ const router = createBrowserRouter([
       },
     ],
   },
-  // Reset password as standalone route (not under AuthLayout)
   {
     path: '/auth/reset-password',
     element: <ResetPasswordPage />,
@@ -206,7 +262,6 @@ const router = createBrowserRouter([
     path: '/forgot-password',
     element: <ForgotPasswordPage />,
   },
-  // Accept invite route (standalone, not under any layout)
   {
     path: '/invite/accept',
     element: <AcceptInvitePage />,
@@ -245,10 +300,10 @@ const router = createBrowserRouter([
         path: 'my-account',
         element: <Dashboard/>
       },
-      {
-        path: 'create-account',
-        element: <CreateAccountModal/>
-      },
+        {
+          path: 'create-account',
+          element: <CreateAccountModal/>
+        },
       {
         path: 'my-account-overview',
         element: <AccountOverview/>

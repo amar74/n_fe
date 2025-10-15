@@ -15,7 +15,6 @@ export function AccountNotesAndDocuments() {
   const toggleDateButton = () => setDateButton((prev) => !prev);
 
 
-  // format date as DD/MM/YYYY
   const formatDate = (d?: Date) => {
     if (!d) return "DD/MM/YYYY";
     const dd = String(d.getDate()).padStart(2, "0");
@@ -39,25 +38,25 @@ export function AccountNotesAndDocuments() {
 
   return (
     <div className="flex flex-col gap-3 mt-2">
-      {/* Account Notes */}
+      
       <Card className="rounded-xl shadow-sm border border-gray-200 bg-white">
         <CardHeader className="py-2 px-4">
           <CardTitle className="text-base font-semibold">Account Notes</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-3 py-2 px-4">
-          {/* Top Row */}
+          
           <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
             <Input placeholder="Title for the note..." className="flex-1 h-9 text-sm bg-[#F3F3F3] border-[#E6E6E6]  focus:border-[#FF7B00] focus:outline-none focus:ring-0 focus-visible:ring-0" />
 
-            {/* Category Select */}
+            
             <Select>
               <SelectTrigger className="w-40 h-9 bg-[#ED8A09] text-white text-sm font-medium rounded-md">
                 <SelectValue placeholder="Select Category" />
               </SelectTrigger>
             </Select>
 
-            {/* Date Picker */}
+            
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -102,7 +101,7 @@ export function AccountNotesAndDocuments() {
             </Popover>
           </div>
 
-          {/* Notes Textarea */}
+          
           <Textarea
             placeholder="Add strategic notes, relationship insights, and important observations..."
             rows={2}
@@ -111,7 +110,7 @@ export function AccountNotesAndDocuments() {
         </CardContent>
       </Card>
 
-      {/* Account Documents */}
+      
       <Card className="rounded-xl shadow-sm border border-gray-200 bg-white">
         <CardHeader className="py-2 px-4">
           <div className="flex items-center justify-between border-b border-gray-200 pb-2">

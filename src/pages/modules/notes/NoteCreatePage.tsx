@@ -38,7 +38,6 @@ export default function NoteCreatePage() {
   });
 
   const onSubmit = (data: NoteCreateFormData) => {
-    // Convert local datetime to ISO format for API
     const createData = {
       ...data,
       meeting_datetime: new Date(data.meeting_datetime).toISOString(),
@@ -63,7 +62,7 @@ export default function NoteCreatePage() {
 
   return (
     <div className="container mx-auto py-8 max-w-4xl space-y-6">
-      {/* Header */}
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Create New Note</h1>
@@ -75,7 +74,7 @@ export default function NoteCreatePage() {
         </Button>
       </div>
 
-      {/* Form */}
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -89,7 +88,7 @@ export default function NoteCreatePage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Meeting Title */}
+              
               <FormField
                 control={form.control}
                 name="meeting_title"
@@ -111,7 +110,7 @@ export default function NoteCreatePage() {
                 )}
               />
 
-              {/* Meeting Date and Time */}
+              
               <FormField
                 control={form.control}
                 name="meeting_datetime"
@@ -137,7 +136,7 @@ export default function NoteCreatePage() {
                 )}
               />
 
-              {/* Meeting Notes */}
+              
               <FormField
                 control={form.control}
                 name="meeting_notes"
@@ -169,7 +168,7 @@ Be as detailed as necessary for future reference.`}
                 )}
               />
 
-              {/* Form Actions */}
+              
               <div className="flex items-center justify-end gap-4 pt-6">
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Cancel
@@ -193,7 +192,7 @@ Be as detailed as necessary for future reference.`}
         </CardContent>
       </Card>
 
-      {/* Helper Card */}
+      
       <Card className="bg-muted/50">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">

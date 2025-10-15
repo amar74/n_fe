@@ -21,7 +21,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { toast, presets } = useToast();
 
-  // Initialize form with Zod validation
   const form = useForm<LoginFormData>({
     resolver: zodResolver(LoginFormSchema),
     defaultValues: {
@@ -35,7 +34,6 @@ export default function LoginPage() {
   const onSubmit = form.handleSubmit(async (data: LoginFormData) => {
     setIsSubmitting(true);
 
-    // Clear any previous errors
     form.clearErrors();
 
     try {
@@ -48,7 +46,6 @@ export default function LoginPage() {
 
       if (error) {
 
-        // Check if it's invalid credentials error
         const isInvalidCredentials =
           error.message.toLowerCase().includes('invalid') ||
           error.message.toLowerCase().includes('credentials') ||
@@ -81,19 +78,17 @@ export default function LoginPage() {
           });
         }
       } else {
-        // Handle "remember me" functionality if needed
         if (data.rememberMe) {
           localStorage.setItem(STORAGE_CONSTANTS.REMEMBER_ME, 'true');
         }
 
 
-        // Show success toast using global service - will persist across navigation
         presets.authSuccess('Welcome back!');
 
 
-        // Add a small delay to allow the toast to show before navigation
+        // Navigate to root - MainLayout will handle redirects based on org_id
         setTimeout(() => {
-          navigate('/organization/create', { replace: true });
+          navigate('/', { replace: true });
         }, 500); // 0.5 seconds delay - enough for toast to show
       }
     } catch (err) {
@@ -115,11 +110,11 @@ export default function LoginPage() {
 
   return (
     <div className="w-full min-h-screen relative bg-white flex flex-col lg:flex-row">
-      {/* Left Side - Form Area (Responsive for all devices) */}
+      
       <div className="flex-1 relative min-h-screen flex items-center justify-center px-4 py-20 sm:py-24 lg:py-0 lg:px-0">
-        {/* Container for proper alignment on all screens */}
+        
         <div className="w-full max-w-[650px] lg:max-w-none lg:w-auto relative flex flex-col items-center lg:items-start justify-center lg:pl-[156px] lg:pr-16 xl:pr-20">
-          {/* Back to dashboard - Responsive positioning */}
+          
           <button
             onClick={() => navigate('/')}
             className="absolute top-[-60px] left-0 sm:top-[-80px] lg:top-[-94px] lg:left-[156px] inline-flex justify-start items-center gap-1.5 z-10 transition-all duration-200 hover:opacity-70 hover:gap-2"
@@ -130,9 +125,9 @@ export default function LoginPage() {
             <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Back to dashboard</span>
           </button>
 
-          {/* Sign In Form - Enhanced and polished */}
+          
           <div className="w-full max-w-[440px] sm:max-w-[480px] lg:w-[460px] xl:w-[480px] p-8 sm:p-10 lg:p-12 rounded-2xl border border-[#E6E6E6] bg-white flex flex-col justify-start items-start gap-8 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] transition-shadow duration-300">
-            {/* Title with subtitle */}
+            
             <div className="self-stretch flex flex-col justify-start items-start gap-3">
               <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2]">Sign In</h1>
               <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed">
@@ -140,10 +135,10 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Form */}
+            
             <Form {...form}>
               <form onSubmit={onSubmit} className="self-stretch flex flex-col justify-start items-start gap-6">
-                {/* Email Field */}
+                
                 <FormField
                   control={form.control}
                   name="email"
@@ -166,7 +161,7 @@ export default function LoginPage() {
                   )}
                 />
 
-                {/* Password Field */}
+                
                 <FormField
                   control={form.control}
                   name="password"
@@ -188,7 +183,7 @@ export default function LoginPage() {
                   )}
                 />
 
-                {/* Remember Me and Forgot Password */}
+                
                 <div className="self-stretch flex justify-between items-center">
                   <FormField
                     control={form.control}
@@ -217,14 +212,14 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                {/* Global form errors */}
+                
                 {form.formState.errors.root && (
                   <div className="text-[#F04438] text-sm text-center self-stretch bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-outfit">
                     {form.formState.errors.root.message}
                   </div>
                 )}
 
-                {/* Submit Button */}
+                
                 <Button
                   type="submit"
                   className="self-stretch h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-outfit leading-tight hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
@@ -233,7 +228,7 @@ export default function LoginPage() {
                   {isSubmitting ? 'Signing in...' : 'Sign In'}
                 </Button>
 
-                {/* Footer */}
+                
                 <p className="self-stretch text-center text-sm font-normal font-outfit leading-tight">
                   <span className="text-[#667085]">Don't have an account? </span>
                   <button
@@ -250,16 +245,16 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right: Brand Panel (Hidden on mobile/tablet, visible on large screens) */}
+      
       <div className="hidden lg:flex lg:w-[50%] flex-shrink-0 relative items-center justify-center overflow-hidden min-h-screen">
-        {/* Background Shape - Rectangle 5158 */}
+        
         <div className="absolute inset-0 w-full h-full">
           <svg width="100%" height="100%" viewBox="0 0 700 800" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
             <path d="M0 -3.98999H702.062V800H108C48.3532 800 0 751.647 0 692V-3.98999Z" fill="#161950"/>
           </svg>
         </div>
         
-        {/* Background Grid Vectors */}
+        
         <img 
           src={VectorGrid1} 
           alt="" 
@@ -271,7 +266,7 @@ export default function LoginPage() {
           className="absolute left-[2%] bottom-[68px] w-[450px] h-[255px] opacity-30 pointer-events-none"
         />
         
-        {/* Top Right Corner Decorations */}
+        
         <svg 
           width="52" 
           height="53" 
@@ -293,7 +288,7 @@ export default function LoginPage() {
           <path d="M51.1538 0.70166L0.609253 0.701656L0.609248 52.5575C28.5242 52.5575 51.1538 29.9279 51.1538 2.01293L51.1538 0.70166Z" fill="white" fillOpacity="0.08"/>
         </svg>
 
-        {/* Bottom Left Corner Decorations */}
+        
         <svg 
           width="52" 
           height="53" 
@@ -315,7 +310,7 @@ export default function LoginPage() {
           <path d="M0.783691 52.2883L51.3282 52.2883L51.3282 0.432526C23.4133 0.432526 0.783691 23.0621 0.783691 50.9771L0.783691 52.2883Z" fill="white" fillOpacity="0.08"/>
         </svg>
 
-        {/* Logo with text - Centered */}
+        
         <div className="relative z-10 inline-flex flex-col justify-start items-center gap-6">
           <div className="inline-flex justify-start items-center gap-5">
             <img src={LogoIcon} alt="Megapolis Logo" className="w-[88px] h-[88px]" />

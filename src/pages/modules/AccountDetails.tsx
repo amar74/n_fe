@@ -74,7 +74,6 @@ const AccountDetails: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Use the new useAccounts hook
   const {
     deleteAccount,
     deleteContact,
@@ -86,17 +85,14 @@ const AccountDetails: React.FC = () => {
     isPromotingContact,
   } = useAccounts();
 
-  // Use the account data from the hook
   const { accountDetail: account, isAccountDetailLoading: isLoading, accountDetailError: error } = useAccountDetail(id || '');
   const { accountContacts: contactsResponse } = useAccountContacts(id || '');
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // Contact management state
   const [showEditContactModal, setShowEditContactModal] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
 
-  // React Hook Form for contact editing with Zod validation
   const contactForm = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
@@ -110,10 +106,11 @@ const AccountDetails: React.FC = () => {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'e' && (event.metaKey || event.ctrlKey) && account?.account_id) {
-        event.preventDefault();
-        navigate(`/module/accounts/${account.account_id}/edit`);
-      }
+  if (event.key === 'e' && (event.metaKey || event.ctrlKey) && account?.account_id) {
+    event.preventDefault();
+    const urlId = account?.custom_id || account.account_id;
+    navigate(`/module/accounts/${urlId}/edit`);
+  }
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -121,6 +118,7 @@ const AccountDetails: React.FC = () => {
   }, [account?.account_id, navigate]);
 
   const handleDeleteAccount = async () => {
+  // TODO: add better error handling
     if (!account?.account_id) return;
 
     try {
@@ -133,14 +131,13 @@ const AccountDetails: React.FC = () => {
 
       // Navigate back to accounts list
       navigate('/module/accounts');
-    } catch (error: any) {
-      console.error('Error deleting account:', error);
+    } catch (e: any) {
+      // Error handled
     } finally {
       setShowDeleteDialog(false);
     }
   };
 
-  // Contact management handlers
   const handleEditContact = (contact: any) => {
     contactForm.reset({
       name: contact.name || '',
@@ -153,7 +150,6 @@ const AccountDetails: React.FC = () => {
   };
 
   const submitEditContact = async (values: ContactFormValues) => {
-    // Validation is already handled by Zod schema
     if (!account?.account_id || !selectedContactId) {
       toast({
         title: 'Error',
@@ -182,12 +178,11 @@ const AccountDetails: React.FC = () => {
 
       setShowEditContactModal(false);
       contactForm.reset();
-    } catch (error: any) {
-      console.error('Error updating contact:', error);
+    } catch (err: any) {
       toast({
         title: 'Error',
         description:
-          error.response?.data?.detail?.message || 'Failed to update contact. Please try again.',
+          error.response?.data?.detail?.message || 'update failed. Please try again.',
         variant: 'destructive',
       });
     }
@@ -220,41 +215,13 @@ const AccountDetails: React.FC = () => {
         contactId: contactId,
       });
     } catch (error: any) {
-      console.error('Error promoting contact:', error);
-      // Error toast is handled by the mutation
-    }
-  };
-
-  const getClientTypeColor = (type: string) => {
-    switch (type) {
-      case 'tier_1':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'tier_2':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'tier_3':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getClientTypeLabel = (type: string) => {
-    switch (type) {
-      case 'tier_1':
-        return 'Tier 1 - Premium';
-      case 'tier_2':
-        return 'Tier 2 - Standard';
-      case 'tier_3':
-        return 'Tier 3 - Basic';
-      default:
-        return type;
     }
   };
 
   if (isLoading || (!account && !error)) {
     return (
       <div className="min-h-screen">
-        {/* Navigation Header */}
+        
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -270,7 +237,7 @@ const AccountDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Loading State */}
+        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -285,7 +252,7 @@ const AccountDetails: React.FC = () => {
   if (error && !isLoading) {
     return (
       <div className="min-h-screen">
-        {/* Navigation Header */}
+        
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -301,7 +268,7 @@ const AccountDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Error State */}
+        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="mx-auto h-12 w-12 text-red-500 mb-4">
@@ -322,7 +289,7 @@ const AccountDetails: React.FC = () => {
   if (!account) {
     return (
       <div className="min-h-screen">
-        {/* Navigation Header */}
+        
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -338,7 +305,7 @@ const AccountDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Loading State */}
+        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -351,7 +318,7 @@ const AccountDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Navigation Header */}
+      
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -371,7 +338,7 @@ const AccountDetails: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Link to={`/module/accounts/${account.account_id}/edit`}>
+            <Link to={`/module/accounts/${account?.custom_id || account.account_id}/edit`}>
               <Button variant="outline" size="sm">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
@@ -404,12 +371,12 @@ const AccountDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+      
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Account Information */}
+          
           <div className="lg:col-span-2 space-y-6">
-            {/* Account Overview Card */}
+            
             <Card>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -477,13 +444,13 @@ const AccountDetails: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  {/* Primary contact is now shown in the dedicated Contacts Card below per API.md */}
-                  {/* Contact email is shown in primary contact section per API.md */}
+                  
+                  
                 </div>
               </CardContent>
             </Card>
 
-            {/* Contacts Card - Updated to show primary and secondary contacts per API.md */}
+            
             {(account.primary_contact || contactsResponse?.contacts) &&
               (account.primary_contact ||
                 (contactsResponse?.contacts && contactsResponse.contacts.length > 0)) && (
@@ -502,7 +469,7 @@ const AccountDetails: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {/* Primary Contact - Cannot be deleted, can be updated */}
+                      
                       {account.primary_contact && (
                         <div className="flex items-center space-x-4 p-4 border rounded-lg bg-blue-50 border-blue-200">
                           <Avatar>
@@ -564,12 +531,12 @@ const AccountDetails: React.FC = () => {
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            {/* Primary contact cannot be deleted */}
+                            
                           </div>
                         </div>
                       )}
 
-                      {/* Secondary Contacts - Can be updated and deleted */}
+                      
                       {contactsResponse?.contacts &&
                         contactsResponse.contacts.length > 0 &&
                         contactsResponse.contacts
@@ -679,13 +646,12 @@ const AccountDetails: React.FC = () => {
                                           description:
                                             'Secondary contact has been deleted successfully.',
                                         });
-                                      } catch (error: any) {
-                                        console.error('Failed to delete contact:', error);
+                                      } catch (e: any) {
                                         toast({
                                           title: 'Error',
                                           description:
                                             error.response?.data?.detail?.message ||
-                                            'Failed to delete contact. Please try again.',
+                                            'delete failed. Please try again.',
                                           variant: 'destructive',
                                         });
                                       }
@@ -703,7 +669,7 @@ const AccountDetails: React.FC = () => {
                 </Card>
               )}
 
-            {/* Notes Card */}
+            
             {account.notes && (
               <Card>
                 <CardHeader>
@@ -716,9 +682,9 @@ const AccountDetails: React.FC = () => {
             )}
           </div>
 
-          {/* Sidebar */}
+          
           <div className="space-y-6">
-            {/* Account Stats */}
+            
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -763,7 +729,7 @@ const AccountDetails: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Account Timeline */}
+            
             <Card>
               <CardHeader>
                 <CardTitle>Account Timeline</CardTitle>
@@ -777,9 +743,53 @@ const AccountDetails: React.FC = () => {
                       <p className="text-xs text-gray-600">
                         {new Date(account.created_at).toLocaleDateString()}
                       </p>
+                      
+                      <p className="text-xs text-gray-500 mt-1">
+                        Created by: {(account as any).created_by || 'amar74.soft'}
+                      </p>
                     </div>
                   </div>
                 )}
+                
+                
+                {(() => {
+                  const storedApprovals = localStorage.getItem('accountApprovals');
+                  const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
+                  const approvalStatus = approvalMap[account.account_id] || 'pending';
+                  
+                  if (approvalStatus === 'approved') {
+                    const approvalDate = new Date().toLocaleDateString();
+                    return (
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <div>
+                          <p className="text-sm font-medium text-emerald-900">✅ Account Approved</p>
+                          <p className="text-xs text-gray-600">{approvalDate}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Approved by: amar74.soft
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  } else if (approvalStatus === 'declined') {
+                    // TODO: need to fix this - abhishek.softication
+                    const declineDate = new Date().toLocaleDateString();
+                    return (
+                      <div className="flex items-center space-x-3">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <div>
+                          <p className="text-sm font-medium text-red-900">❌ Account Declined</p>
+                          <p className="text-xs text-gray-600">{declineDate}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Declined by: amar74.soft
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+                
                 {account.updated_at && account.updated_at !== account.created_at && (
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -797,7 +807,7 @@ const AccountDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -827,7 +837,7 @@ const AccountDetails: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Contact Edit Modal */}
+      
       <Dialog open={showEditContactModal} onOpenChange={setShowEditContactModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

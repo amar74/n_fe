@@ -45,7 +45,7 @@ interface Message {
   module?: string;
 }
 
-interface ChatbotProps {
+type ChatbotProps = {
   currentModule?: string;
 }
 
@@ -191,7 +191,6 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate typing delay
     setTimeout(() => {
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
@@ -233,7 +232,7 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
 
   return (
     <>
-      {/* Floating Chat Button */}
+      
       <div className="fixed top-20 right-6 z-50">
         <TooltipProvider>
           <Tooltip>
@@ -257,7 +256,7 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
         )}
       </div>
 
-      {/* Chat Dialog */}
+      
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className={`${isMinimized ? 'max-w-sm' : 'max-w-2xl'} transition-all duration-300`}>
           <DialogHeader>
@@ -291,7 +290,7 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
 
           {!isMinimized && (
             <div className="space-y-4">
-              {/* Quick Actions */}
+              
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-gray-700 flex items-center gap-2">
                   <Lightbulb className="h-4 w-4" />
@@ -312,7 +311,7 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
                 </div>
               </div>
 
-              {/* Chat Messages */}
+              
               <Card className="h-96 flex flex-col">
                 <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
                   {messages.map((message) => (
@@ -373,7 +372,7 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
                   <div ref={messagesEndRef} />
                 </CardContent>
 
-                {/* Message Input */}
+                
                 <div className="border-t p-4">
                   <div className="flex gap-2">
                     <Input
@@ -394,7 +393,7 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
                 </div>
               </Card>
 
-              {/* Help Footer */}
+              
               <div className="text-center">
                 <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
                   <HelpCircle className="h-3 w-3" />

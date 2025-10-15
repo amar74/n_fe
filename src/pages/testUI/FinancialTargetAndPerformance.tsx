@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 export function FinancialTargetAndPerformance() {
   return (
     <div className="flex flex-col gap-3 mt-2">
-      {/* Financial Target & Performance */}
+      
       <Card className="rounded-xl shadow-sm border border-gray-200 bg-white">
         <CardHeader className="py-2 px-4 ">
           <CardTitle className="text-xl font-bold">
@@ -16,7 +16,7 @@ export function FinancialTargetAndPerformance() {
         </CardHeader>
 
         <CardContent className="grid grid-cols-1 md:grid-cols-4 gap-4 py-3 px-4">
-          {/* Annual Revenue Target */}
+          
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-700">
               Annual Revenue Target
@@ -28,7 +28,7 @@ export function FinancialTargetAndPerformance() {
             />
           </div>
 
-          {/* Quarterly Target */}
+          
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-700">
               Quarterly Target
@@ -40,7 +40,7 @@ export function FinancialTargetAndPerformance() {
             />
           </div>
 
-          {/* Current Year Actual */}
+          
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-700">
               Current Year Actual
@@ -52,7 +52,7 @@ export function FinancialTargetAndPerformance() {
             />
           </div>
 
-          {/* Growth Target */}
+          
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-700">
               Growth Target
@@ -65,7 +65,7 @@ export function FinancialTargetAndPerformance() {
         </CardContent>
       </Card>
 
-      {/* Account Documents */}
+      
       <Card className="rounded-xl shadow-sm border border-gray-200 bg-white">
         <CardHeader className="py-2 px-4">
           <CardTitle className="text-xl font-bold">Account Documents</CardTitle>

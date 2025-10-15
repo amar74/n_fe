@@ -5,7 +5,7 @@ import { PlacesAutocomplete } from '@/components/ui/places-autocomplete';
 import { UIAccountFormData, UIAddressData } from '../../CreateAccountModal.types';
 import { US_STATES } from '../../CreateAccountModal.constants';
 
-interface AddressFormProps {
+type AddressFormProps = {
   formData: UIAccountFormData;
   errors: Record<string, string>;
   onChange: (field: string, value: string | object) => void;
@@ -22,7 +22,7 @@ export function AddressForm({ formData, errors, onChange, onAddressChange, onPla
 
   return (
     <>
-      {/* Client Name */}
+      
       <div className="flex flex-col gap-3">
         <Label className="text-base sm:text-lg font-medium text-[#0f0901] capitalize">
           Client Name *
@@ -40,7 +40,7 @@ export function AddressForm({ formData, errors, onChange, onAddressChange, onPla
         )}
       </div>
 
-      {/* Address Fields */}
+      
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-7">
         <div className="flex-1 flex flex-col gap-3">
           <Label className="text-base sm:text-lg font-medium text-[#0f0901] capitalize">
@@ -74,7 +74,7 @@ export function AddressForm({ formData, errors, onChange, onAddressChange, onPla
         </div>
       </div>
 
-      {/* City, State, Zip */}
+      
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-7">
         <div className="flex-1 flex flex-col gap-3">
           <Label className="text-base sm:text-lg font-medium text-[#0f0901] capitalize">

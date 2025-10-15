@@ -10,8 +10,6 @@ export default function AuthLayout() {
   const location = useLocation();
 
   useEffect(() => {
-    // If user is already authenticated, redirect to main app immediately
-    // Global toast service will ensure toasts persist across navigation
     if (user && location.pathname === '/auth/login') {
       navigate('/');
     }

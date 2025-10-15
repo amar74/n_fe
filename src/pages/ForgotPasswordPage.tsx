@@ -37,10 +37,10 @@ export default function ForgotPasswordPage() {
   if (success) {
     return (
       <div className="w-full min-h-screen relative bg-white flex flex-col lg:flex-row">
-        {/* Left Side - Success Message */}
+        
         <div className="flex-1 relative min-h-screen flex items-center justify-center px-4 py-20 sm:py-24 lg:py-0 lg:px-0">
           <div className="w-full max-w-[650px] lg:max-w-none lg:w-auto relative flex flex-col items-center lg:items-start justify-center lg:pl-[156px] lg:pr-16 xl:pr-20">
-            {/* Back to Sign-in */}
+            
             <button
               onClick={() => navigate('/auth/login')}
               className="mb-8 lg:mb-0 lg:absolute lg:top-[-94px] lg:left-[156px] inline-flex justify-start items-center gap-1.5 z-10 transition-all duration-200 hover:opacity-70 hover:gap-2"
@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Back to Sign-in</span>
             </button>
 
-            {/* Success Card */}
+            
             <div className="w-full max-w-[440px] sm:max-w-[480px] lg:w-[460px] xl:w-[480px] p-8 sm:p-10 lg:p-12 rounded-2xl border border-[#E6E6E6] bg-white flex flex-col justify-start items-start gap-8 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)]">
               <div className="self-stretch flex flex-col justify-start items-start gap-3">
                 <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2]">Check Your Email</h1>
@@ -76,16 +76,16 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
 
-        {/* Right: Brand Panel (Hidden on mobile/tablet, visible on large screens) */}
+        
         <div className="hidden lg:flex lg:w-[50%] flex-shrink-0 relative items-center justify-center overflow-hidden min-h-screen">
-          {/* Background Shape */}
+          
           <div className="absolute inset-0 w-full h-full">
             <svg width="100%" height="100%" viewBox="0 0 700 800" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
               <path d="M0 -3.98999H702.062V800H108C48.3532 800 0 751.647 0 692V-3.98999Z" fill="#161950"/>
             </svg>
           </div>
           
-          {/* Background Grid Vectors */}
+          
           <img 
             src={VectorGrid1} 
             alt="" 
@@ -97,7 +97,7 @@ export default function ForgotPasswordPage() {
             className="absolute left-[2%] bottom-[68px] w-[450px] h-[255px] opacity-30 pointer-events-none"
           />
           
-          {/* Top Right Corner Decorations */}
+          
           <svg 
             width="52" 
             height="53" 
@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
             <path d="M51.1538 0.70166L0.609253 0.701656L0.609248 52.5575C28.5242 52.5575 51.1538 29.9279 51.1538 2.01293L51.1538 0.70166Z" fill="white" fillOpacity="0.08"/>
           </svg>
 
-          {/* Bottom Left Corner Decorations */}
+          
           <svg 
             width="52" 
             height="53" 
@@ -141,7 +141,7 @@ export default function ForgotPasswordPage() {
             <path d="M0.783691 52.2883L51.3282 52.2883L51.3282 0.432526C23.4133 0.432526 0.783691 23.0621 0.783691 50.9771L0.783691 52.2883Z" fill="white" fillOpacity="0.08"/>
           </svg>
 
-          {/* Logo with text - Centered */}
+          
           <div className="relative z-10 inline-flex flex-col justify-start items-center gap-6">
             <div className="inline-flex justify-start items-center gap-5">
               <img src={LogoIcon} alt="Megapolis Logo" className="w-[88px] h-[88px]" />
@@ -158,10 +158,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="w-full min-h-screen relative bg-white flex flex-col lg:flex-row">
-      {/* Left Side - Form Area */}
+      
       <div className="flex-1 relative min-h-screen flex items-center justify-center px-4 py-20 sm:py-24 lg:py-0 lg:px-0">
         <div className="w-full max-w-[650px] lg:max-w-none lg:w-auto relative flex flex-col items-center lg:items-start justify-center lg:pl-[156px] lg:pr-16 xl:pr-20">
-          {/* Back to Sign-in */}
+          
           <button
             onClick={() => navigate('/auth/login')}
             className="mb-8 lg:mb-0 lg:absolute lg:top-[-94px] lg:left-[156px] inline-flex justify-start items-center gap-1.5 z-10 transition-all duration-200 hover:opacity-70 hover:gap-2"
@@ -172,9 +172,9 @@ export default function ForgotPasswordPage() {
             <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Back to Sign-in</span>
           </button>
 
-          {/* Forgot Password Form */}
+          
           <div className="w-full max-w-[440px] sm:max-w-[480px] lg:w-[460px] xl:w-[480px] p-8 sm:p-10 lg:p-12 rounded-2xl border border-[#E6E6E6] bg-white flex flex-col justify-start items-start gap-8 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] transition-shadow duration-300">
-            {/* Title with subtitle */}
+            
             <div className="self-stretch flex flex-col justify-start items-start gap-3">
               <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2]">Forgot Your Password ?</h1>
               <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed">
@@ -182,16 +182,16 @@ export default function ForgotPasswordPage() {
               </p>
             </div>
 
-            {/* Form */}
+            
             <form onSubmit={handleSubmit} className="self-stretch flex flex-col justify-start items-start gap-6">
-              {/* Error Message */}
+              
               {error && (
                 <div className="self-stretch rounded-lg bg-[#FEF3F2] border border-[#FECDCA] px-4 py-3">
                   <div className="text-[#F04438] text-sm font-outfit">{error}</div>
                 </div>
               )}
 
-              {/* Email Field */}
+              
               <div className="self-stretch flex flex-col justify-start items-start gap-2">
                 <label className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
                   Email address<span className="text-[#F04438]">*</span>
@@ -206,7 +206,7 @@ export default function ForgotPasswordPage() {
                 />
               </div>
 
-              {/* Submit Button */}
+              
               <Button
                 type="submit"
                 disabled={isSubmitting}
@@ -215,7 +215,7 @@ export default function ForgotPasswordPage() {
                 {isSubmitting ? 'Sending reset link...' : 'Send Reset Link'}
               </Button>
 
-              {/* Footer */}
+              
               <p className="self-stretch text-center text-sm font-normal font-outfit leading-tight">
                 <span className="text-[#667085]">Don't have an account? </span>
                 <button
@@ -231,16 +231,16 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
 
-      {/* Right: Brand Panel (Hidden on mobile/tablet, visible on large screens) */}
+      
       <div className="hidden lg:flex lg:w-[50%] flex-shrink-0 relative items-center justify-center overflow-hidden min-h-screen">
-        {/* Background Shape */}
+        
         <div className="absolute inset-0 w-full h-full">
           <svg width="100%" height="100%" viewBox="0 0 700 800" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
             <path d="M0 -3.98999H702.062V800H108C48.3532 800 0 751.647 0 692V-3.98999Z" fill="#161950"/>
           </svg>
         </div>
         
-        {/* Background Grid Vectors */}
+        
         <img 
           src={VectorGrid1} 
           alt="" 
@@ -252,7 +252,7 @@ export default function ForgotPasswordPage() {
           className="absolute left-[2%] bottom-[68px] w-[450px] h-[255px] opacity-30 pointer-events-none"
         />
         
-        {/* Top Right Corner Decorations */}
+        
         <svg 
           width="52" 
           height="53" 
@@ -274,7 +274,7 @@ export default function ForgotPasswordPage() {
           <path d="M51.1538 0.70166L0.609253 0.701656L0.609248 52.5575C28.5242 52.5575 51.1538 29.9279 51.1538 2.01293L51.1538 0.70166Z" fill="white" fillOpacity="0.08"/>
         </svg>
 
-        {/* Bottom Left Corner Decorations */}
+        
         <svg 
           width="52" 
           height="53" 
@@ -296,7 +296,7 @@ export default function ForgotPasswordPage() {
           <path d="M0.783691 52.2883L51.3282 52.2883L51.3282 0.432526C23.4133 0.432526 0.783691 23.0621 0.783691 50.9771L0.783691 52.2883Z" fill="white" fillOpacity="0.08"/>
         </svg>
 
-        {/* Logo with text - Centered */}
+        
         <div className="relative z-10 inline-flex flex-col justify-start items-center gap-6">
           <div className="inline-flex justify-start items-center gap-5">
             <img src={LogoIcon} alt="Megapolis Logo" className="w-[88px] h-[88px]" />

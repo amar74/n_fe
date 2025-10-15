@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { scraperApi, ApiError } from '@/services/api/scraperApi';
+import { useAISuggestions } from '@/hooks/useAISuggestions';
 import { supabase } from '@/lib/supabase';
 import { apiClient } from '@/services/api/client';
 import { authApi } from '@/services/api/authApi';
@@ -14,6 +14,7 @@ import { CreateOrgFormData } from '@/types/orgs';
 import { FORM_DEFAULT_VALUES, WEBSITE_ANALYSIS_DELAY } from './CreateOrganizationPage.constants';
 import { CreateOrganizationSchema, CreateOrganizationFormData } from './CreateOrganizationPage.schema';
 
+// @author amar74.soft
 export function useCreateOrganizationPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -22,8 +23,22 @@ export function useCreateOrganizationPage() {
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<any>(null);
+  const [appliedSuggestions, setAppliedSuggestions] = useState<string[]>([]);
+
+  const { enhanceAccountData, isLoading: isAILoading, error: aiError } = useAISuggestions({
+    autoApply: true,
+    confidenceThreshold: 0.85,
+    onSuggestionReceived: (suggestion) => {
+      // Apply each suggestion to the form
+      suggestion.suggestions.forEach((suggestionItem: any) => {
+        applySuggestion(suggestionItem.field, suggestionItem.value);
+      });
+    },
+    onError: (error) => {
+    }
+  });
   
-  // Use refs to prevent unnecessary re-renders and debounce API calls
   const analysisTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentWebsiteRef = useRef<string>('');
 
@@ -43,6 +58,71 @@ export function useCreateOrganizationPage() {
 
   const websiteValue = watch('website');
 
+  // Apply AI suggestion to form fields
+  const applySuggestion = useCallback((field: string, value: any) => {
+    switch (field) {
+      case 'company_name':
+        setValue('name', value, { shouldValidate: true });
+        break;
+        
+      case 'primary_contact':
+        if (typeof value === 'object') {
+          if (value.email) {
+            setValue('contact.email', value.email, { shouldValidate: true });
+          }
+          if (value.phone) {
+            setValue('contact.phone', value.phone, { shouldValidate: true });
+          }
+        }
+        break;
+        
+      case 'address':
+        if (typeof value === 'object') {
+          if (value.line1 || value.street) {
+            setValue('address.line1', value.line1 || value.street, { shouldValidate: true });
+          }
+          if (value.line2) {
+            setValue('address.line2', value.line2, { shouldValidate: true });
+          }
+          if (value.city) {
+            setValue('address.city', value.city, { shouldValidate: true });
+          }
+          if (value.state) {
+            setValue('address.state', value.state, { shouldValidate: true });
+          }
+          if (value.pincode || value.zip) {
+            setValue('address.pincode', Number(value.pincode || value.zip), { shouldValidate: true });
+          }
+        }
+        break;
+        
+      case 'industry':
+        break;
+        
+      // Legacy field names for backward compatibility
+      case 'client_address':
+        if (typeof value === 'object') {
+          setValue('address', {
+            line1: value.line1 || '',
+            line2: value.line2 || '',
+            city: value.city || '',
+            pincode: value.pincode ? Number(value.pincode) : undefined,
+          }, { shouldValidate: true });
+        }
+        break;
+        
+      case 'email':
+        setValue('contact.email', value, { shouldValidate: true });
+        break;
+        
+      case 'phone':
+        setValue('contact.phone', value, { shouldValidate: true });
+        break;
+        
+      default:
+    }
+  }, [setValue]);
+
   const analyzeWebsite = useCallback(async (website: string) => {
     if (!website || !website.includes('.')) return;
 
@@ -53,69 +133,66 @@ export function useCreateOrganizationPage() {
 
     currentWebsiteRef.current = website;
     setIsAnalyzing(true);
+    setShowAISuggestions(false);
+    setAiSuggestions(null);
+    setAppliedSuggestions([]);
 
     try {
-      const scrapeResult = await scraperApi.scraper([website]);
-      const result = scrapeResult.results[0];
-
-      if (result.error) {
-        throw new Error(`Scraping failed: ${result.error}`);
-      }
-
-      const info = result.info;
-
-      if (info?.address) {
-        const { line1, line2, city, state, pincode } = info.address;
-        setValue(
-          'address',
-          {
-            line1: line1 || '',
-            line2: line2 || '',
-            city: city || state || '',
-            pincode: pincode ? Number(pincode) : undefined,
-          },
-          { shouldValidate: true }
-        );
-      }
-
-      if (info?.name) {
-        setValue('name', info.name, { shouldValidate: true });
-      }
-
-      setShowAISuggestions(true);
-      toast({
-        title: '🔍 Website Analysis Complete',
-        description: 'We auto-filled fields using real data from the website.',
+      // Call AI enhancement API
+      const result = await enhanceAccountData(website, {
+        client_name: form.getValues('name'),
+        market_sector: 'Organization'
       });
-    } catch (error) {
-      console.error('❌ CreateOrganizationPage: Website analysis failed:', error);
-      if (error instanceof ApiError) {
+      setAiSuggestions(result);
+      setShowAISuggestions(true);
+
+      const autoApplied: string[] = [];
+      Object.entries(result.suggestions).forEach(([field, suggestion]: [string, any]) => {
+        if (suggestion.confidence >= 0.85) {
+          applySuggestion(field, suggestion.value);
+          autoApplied.push(field);
+        }
+      });
+
+      if (autoApplied.length > 0) {
+        setAppliedSuggestions(autoApplied);
         toast({
-          title: 'Scraper Error',
-          description: `API error: ${error.detail?.[0]?.msg || 'Unknown error'}`,
-          variant: 'destructive',
+          title: '🎉 AI Enhancement Complete',
+          description: `Auto-filled ${autoApplied.length} fields with high confidence data from your website.`,
         });
       } else {
         toast({
-          title: 'Analysis Failed',
-          description: (error as Error).message || 'An unknown error occurred.',
-          variant: 'destructive',
+          title: '🔍 AI Analysis Complete',
+          description: 'Found suggestions for your organization. Review them below.',
         });
       }
+
+    } catch (error) {
+      let errorMessage = 'analyze failed';
+      
+      if (aiError) {
+        errorMessage = aiError;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: 'AI Analysis Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      });
     } finally {
       setIsAnalyzing(false);
     }
-  }, [setValue, toast]);
+  }, [enhanceAccountData, applySuggestion, toast, form, aiError]);
 
   const handleWebsiteChange = useCallback((value: string) => {
     setValue('website', value, { shouldValidate: true });
 
-    // Clear any existing timeout
     if (analysisTimeoutRef.current) {
       clearTimeout(analysisTimeoutRef.current);
     }
 
-    // Reset suggestions when website changes
     if (value !== currentWebsiteRef.current) {
       setShowAISuggestions(false);
     }
@@ -158,8 +235,6 @@ export function useCreateOrganizationPage() {
 
       await createOrganization(organizationData);
       
-      // Refresh backend user data to get updated org_id
-      // This is needed because MainLayout checks backendUser.org_id for routing
       try {
         const updatedUserData = await authApi.getMe();
         authManager.setAuthState(true, updatedUserData);
@@ -168,12 +243,9 @@ export function useCreateOrganizationPage() {
         // Navigate after state is updated
         navigate('/', { replace: true });
       } catch (error) {
-        console.error('❌ Failed to refresh user data after org creation:', error);
-        // Fallback to page reload if refresh fails
         window.location.href = '/';
       }
     } catch (error) {
-      console.error('❌ CreateOrganizationPage: Organization creation failed:', error);
       // Error handling is done in the centralized hook
     }
   }, [createOrganization]);
@@ -185,13 +257,33 @@ export function useCreateOrganizationPage() {
       delete apiClient.defaults.headers.common['Authorization'];
       navigate('/auth/login', { replace: true });
     } catch (error) {
-      console.error('❌ CreateOrganizationPage: Sign out failed:', error);
       // Still navigate to login even if sign out fails
       navigate('/auth/login', { replace: true });
     }
   }, [navigate]);
 
-  // Cleanup timeout on unmount
+  // Event listeners for suggestions panel
+  useEffect(() => {
+    const handleHideSuggestions = () => {
+      setShowAISuggestions(false);
+    };
+
+    const handleApplySuggestion = (event: CustomEvent) => {
+      const { field, suggestion } = event.detail;
+      if (!appliedSuggestions.includes(field)) {
+        setAppliedSuggestions(prev => [...prev, field]);
+      }
+    };
+
+    window.addEventListener('hideAISuggestions', handleHideSuggestions as EventListener);
+    window.addEventListener('applySuggestion', handleApplySuggestion as EventListener);
+
+    return () => {
+      window.removeEventListener('hideAISuggestions', handleHideSuggestions as EventListener);
+      window.removeEventListener('applySuggestion', handleApplySuggestion as EventListener);
+    };
+  }, [appliedSuggestions]);
+
   useEffect(() => {
     return () => {
       if (analysisTimeoutRef.current) {
@@ -207,17 +299,19 @@ export function useCreateOrganizationPage() {
     errors,
     websiteValue,
     isSubmitting,
-    isAnalyzing,
+    isAnalyzing: isAnalyzing || isAILoading,
     showAISuggestions,
+    aiSuggestions,
+    appliedSuggestions,
     user,
 
     // Auth state
     isAuthLoading: !initialAuthComplete,
     isAuthenticated,
 
-    // Form handlers
     handleSubmit: handleSubmit(handleSubmitForm),
     handleWebsiteChange,
     handleSignOut,
+    applySuggestion,
   };
 }

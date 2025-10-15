@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { BreadcrumbItem } from '../../AccountDetailsPage.types';
 
-interface BreadcrumbProps {
+type BreadcrumbProps = {
   items: BreadcrumbItem[];
 }
 

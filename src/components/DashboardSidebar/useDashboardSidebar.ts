@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { apiClient } from '@/services/api/client';
 
+// @author guddy.tech
 export function useDashboardSidebar() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -17,12 +18,11 @@ export function useDashboardSidebar() {
       
       toast({
         title: 'Logged Out',
-        description: 'You have been successfully logged out.',
+        description: 'You have been sucessfully logged out.',
       });
       
       navigate('/auth/login', { replace: true });
     } catch (error) {
-      console.error('❌ DashboardSidebar: Logout failed:', error);
       toast({
         title: 'Logout Error',
         description: 'There was an issue logging out. Please try again.',

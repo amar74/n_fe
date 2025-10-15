@@ -13,10 +13,10 @@ const MyAccountFinancial: React.FC = () => {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#F5F3F2' }}>
-      {/* Fixed Header */}
+      
       <Header2  />
       
-      {/* Main layout below header */}
+      
       <div className="flex flex-1 min-h-0">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="flex-1 overflow-y-auto overflow-x-hidden">
@@ -27,7 +27,7 @@ const MyAccountFinancial: React.FC = () => {
           <AccountOverviewHeader />
           <OverviewMetrics />
           <AccountOverviewMenu /> 
-          {/* Financial Target & Performance and Account Documents */}
+          
           <FinancialTargetAndPerformance/>
 
         </div>

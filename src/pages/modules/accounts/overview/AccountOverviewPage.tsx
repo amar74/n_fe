@@ -67,9 +67,9 @@ function AccountDetailsPage() {
   return (
     <div className="w-full h-full bg-[#f5f3f2] font-inter">
       <div className="flex flex-col gap-7 w-full px-7 pt-2 pb-4">
-        {/* Header Section */}
+        
         <div className="flex flex-col gap-2 items-center justify-start w-full">
-          {/* Title and Edit Button */}
+          
           <div className="flex flex-col h-[85px] items-start justify-between w-full">
             <div className="flex items-end justify-between w-full">
               <div className="flex flex-col gap-2 items-start justify-start w-[1120px]">
@@ -95,18 +95,18 @@ function AccountDetailsPage() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
+        
         <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-        {/* Stats Cards */}
+        
         <AccountStatsCards stats={statsCards} />
 
-        {/* Main Content */}
+        
         <div className="flex gap-7 items-start justify-start w-full">
-          {/* Account Information Form */}
+          
           <AccountInformationForm
             formData={formData}
-            accountId={account.account_id}
+            accountId={account.custom_id || account.account_id}
             isEditing={isEditing}
             isUpdating={isUpdating}
             onFormChange={handleFormChange}
@@ -114,7 +114,7 @@ function AccountDetailsPage() {
             onCancel={handleEditToggle}
           />
 
-          {/* Recent Activity Sidebar */}
+          
           <RecentActivity activities={recentActivity} />
         </div>
       </div>

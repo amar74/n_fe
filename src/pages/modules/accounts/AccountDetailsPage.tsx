@@ -5,9 +5,11 @@ import { AccountInformationForm } from './components/AccountInformationForm';
 import { RecentActivity } from './components/RecentActivity';
 import { NotesTab } from './notes';
 import { ContactsTab } from './contacts';
+import { OpportunitiesTab } from './opportunities';
 import { useAccountDetailsPage } from './useAccountDetailsPage';
 
 function AccountDetailsPage() {
+  // TODO: need to fix this - rose11
   const {
     account,
     isLoading,
@@ -71,7 +73,7 @@ function AccountDetailsPage() {
     <div className="w-full min-h-screen bg-[#F5F3F2] overflow-x-hidden">
       <main className="py-6 px-6 lg:px-8">
         <div className="w-full">
-          {/* Breadcrumb */}
+          
           <div className="inline-flex justify-start items-center gap-1 mb-4">
             <div className="justify-start text-neutral-400 text-xs font-medium font-['Inter']">Dashboard</div>
             <div className="relative">
@@ -82,22 +84,22 @@ function AccountDetailsPage() {
             <div className="justify-start text-slate-800 text-xs font-medium font-['Inter']">Accounts</div>
           </div>
 
-          {/* Account Title */}
+          
           <h1 className="text-slate-800 text-[32px] sm:text-4xl font-semibold font-['Outfit'] mb-5 truncate">
             {account.client_name}
           </h1>
 
-          {/* Tab Navigation */}
+          
           <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-          {/* Main Content */}
+          
           <div className={`w-full mt-6 ${activeTab === 'overview' ? 'flex gap-7 items-start justify-start' : ''}`}>
-            {/* Left Side - Tab Content */}
+            
             <div className={activeTab === 'overview' ? 'flex-1 min-w-0' : 'w-full'}>
               {activeTab === 'overview' && (
                 <AccountInformationForm
                   formData={formData}
-                  accountId={account.account_id}
+                  accountId={account.custom_id || account.account_id}
                   isEditing={isEditing}
                   isUpdating={isUpdating}
                   onFormChange={handleFormChange}
@@ -115,8 +117,12 @@ function AccountDetailsPage() {
                 <ContactsTab accountId={account.account_id} />
               )}
               
-              {/* Placeholder for other tabs */}
-              {!['overview', 'notes', 'contacts'].includes(activeTab) && (
+              {activeTab === 'opportunities' && (
+                <OpportunitiesTab accountId={account.account_id} />
+              )}
+              
+              
+              {!['overview', 'notes', 'contacts', 'opportunities'].includes(activeTab) && (
                 <div className="bg-neutral-50 border border-[#f0f0f0] rounded-[28px] p-6 w-full">
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <h3 className="font-inter font-semibold text-[#0f0901] text-[18px] mb-2">
@@ -130,13 +136,13 @@ function AccountDetailsPage() {
               )}
             </div>
 
-            {/* Right Sidebar - Analytics + Recent Activity (Only on Overview tab) */}
+            
             {activeTab === 'overview' && (
               <div className="flex flex-col gap-7 flex-shrink-0 w-full max-w-[501px]">
-                {/* Analytics Cards */}
+                
                 <AccountStatsCards stats={statsCards} />
                 
-                {/* Recent Activity */}
+                
                 <RecentActivity activities={recentActivity} />
               </div>
             )}

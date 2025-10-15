@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NoteFormData } from '../../NotesTab.types';
 
-interface AddNoteModalProps {
+type AddNoteModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (note: NoteFormData) => Promise<void>;
@@ -21,7 +21,6 @@ export function AddNoteModal({ isOpen, onClose, onSubmit, isLoading = false, err
     e.preventDefault();
     try {
       await onSubmit(formData);
-      // Reset form and close modal on success
       setFormData({
         title: '',
         content: '',
@@ -52,7 +51,7 @@ export function AddNoteModal({ isOpen, onClose, onSubmit, isLoading = false, err
         className="w-[650.73px] p-8 bg-white rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E5E7EB] inline-flex flex-col justify-start items-start gap-5"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Title with close button */}
+        
         <div className="self-stretch inline-flex justify-between items-center">
           <div className="justify-start text-slate-800 text-3xl font-semibold font-['Outfit'] leading-[47.83px]">Add Notes</div>
           <button onClick={onClose} className="relative cursor-pointer">
@@ -62,12 +61,12 @@ export function AddNoteModal({ isOpen, onClose, onSubmit, isLoading = false, err
           </button>
         </div>
 
-        {/* Divider */}
+        
         <div className="self-stretch h-0 outline outline-1 outline-offset-[-0.50px] outline-black/10"></div>
 
-        {/* Form */}
+        
         <form onSubmit={handleSubmit} className="self-stretch flex flex-col justify-start items-start gap-5">
-          {/* Title Input */}
+          
           <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
             <div className="justify-start">
               <span className="text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Title</span>
@@ -86,9 +85,9 @@ export function AddNoteModal({ isOpen, onClose, onSubmit, isLoading = false, err
             )}
           </div>
 
-          {/* Date and Category Row */}
+          
           <div className="self-stretch inline-flex justify-start items-start gap-5">
-            {/* Date Input */}
+            
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
               <div className="justify-start">
                 <span className="text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Date</span>
@@ -106,7 +105,7 @@ export function AddNoteModal({ isOpen, onClose, onSubmit, isLoading = false, err
               )}
             </div>
 
-            {/* Category Select */}
+            
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
               <div className="justify-start">
                 <span className="text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Category</span>
@@ -134,7 +133,7 @@ export function AddNoteModal({ isOpen, onClose, onSubmit, isLoading = false, err
             </div>
           </div>
 
-          {/* Content Textarea */}
+          
           <div className="self-stretch inline-flex justify-start items-center gap-5">
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
               <div className="justify-start text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Content</div>
@@ -152,7 +151,7 @@ export function AddNoteModal({ isOpen, onClose, onSubmit, isLoading = false, err
             </div>
           </div>
 
-          {/* Action Buttons */}
+          
           <div className="self-stretch inline-flex justify-start items-start gap-5">
             <button
               type="button"

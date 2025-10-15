@@ -21,11 +21,10 @@ interface Account {
   accName:string;
 }
 
-interface AccountCardProps {
+type AccountCardProps = {
   account: Account;
 }
 
-// Helper function to get border color based on risk level
 const getBorderColor = (riskLevel: string): string => {
   switch (riskLevel.toLowerCase()) {
     case 'low risk':
@@ -45,7 +44,7 @@ const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
       className="bg-white rounded-2xl p-4 hover:shadow-lg transition-all duration-200 cursor-pointer relative overflow-hidden border-b-4"
       style={{ borderBottomColor: getBorderColor(account.riskLevel) }}
     >
-      {/* Header with title and star */}
+      
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-lg xl:text-lg font-bold text-gray-900 leading-tight pr-6">
           {account.name}
@@ -55,7 +54,7 @@ const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
         </div>
       </div>
 
-      {/* Score and Risk badges */}
+      
         <div className="flex items-center space-x-2 mb-2">
         <div
           className={`flex items-center space-x-2 px-2 py-0.5 rounded-full border ${account.borderColor} ${account.growthBg}`}
@@ -77,7 +76,7 @@ const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
         </div>
       </div>
 
-      {/* Contact and location info */}
+      
       <div className="flex items-center space-x-1 mb-3 text-gray-400 text-xs">
         <div className="flex items-center space-x-0 border-r border-gray-200 pr-2">
           <User size={16} className="text-gray-400" />
@@ -93,17 +92,17 @@ const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
         </div>
       </div>
 
-      {/* Tier and category */}
+      
       <div className="flex items-center space-x-3 mb-3">
         <span className={`font-semibold text-sm ${account.growthColor}`}>{account.tier}</span>
         <span className="text-gray-300">|</span>
         <span className="text-gray-900 font-semibold text-sm">{account.category}</span>
       </div>
 
-      {/* Divider */}
+      
       <div className="border-t border-gray-200 mb-2"></div>
 
-      {/* Value and growth section */}
+      
       <div className="flex items-end justify-between">
         <div>
           <div className={`text-xl xl:text-xl font-bold mb-1 ${account.valueColor}`}>

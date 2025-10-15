@@ -34,6 +34,7 @@ import { Button } from '@/components/ui/button';
 export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDashboard }: { dashboards: any[]; currentDashboard: number; setCurrentDashboard: Dispatch<SetStateAction<number>>; }) {
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  // TODO: need to fix this - jhalak32
   const nextDashboard = () => {
     setCurrentDashboard(prev => (prev + 1) % dashboards.length);
   };
@@ -46,7 +47,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
     setIsAutoScrolling(prev => !prev);
   };
 
-  // Auto-scroll effect
   useEffect(() => {
     if (isAutoScrolling) {
       intervalRef.current = setInterval(() => {
@@ -59,7 +59,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
       }
     }
 
-    // Cleanup interval on component unmount
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -67,7 +66,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
     };
   }, [isAutoScrolling, dashboards.length]);
 
-  // Clear auto-scroll when user manually navigates
   const handleManualNavigation = (direction: 'next' | 'prev') => {
     if (isAutoScrolling) {
       setIsAutoScrolling(false);
@@ -82,7 +80,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
   return (
     <>
       <div className="relative">
-        {/* Dashboard Header with Navigation */}
+        
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
             {React.createElement(dashboards[currentDashboard].icon, {
@@ -140,7 +138,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
           </div>
         </div>
 
-        {/* Dashboard Content */}
+        
         <div className="min-h-[500px]">
           {currentDashboard === 1 && (
             // Accounts Dashboard Content
@@ -470,7 +468,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              {/* Business Performance Metrics */}
+              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -571,7 +569,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              {/* Predictive Analytics and Benchmarking */}
+              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2 border-blue-200 bg-blue-50">
                   <CardHeader>
@@ -820,7 +818,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              {/* AI Risk Analysis Summary */}
+              
               <Card className="border-2 border-blue-200 bg-blue-50">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -852,7 +850,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </CardContent>
               </Card>
 
-              {/* Recent Contract Activity */}
+              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -965,7 +963,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              {/* Clause Library & Workflow Status */}
+              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -1042,7 +1040,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              {/* Quick Actions */}
+              
               <Card className="border-2 border-emerald-200 bg-emerald-50">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -1139,7 +1137,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              {/* Vendor Performance and Budget Breakdown */}
+              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -1265,7 +1263,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              {/* Recent Activity and Policy Alerts */}
+              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -1395,7 +1393,7 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              {/* Quick Actions */}
+              
               <Card className="border-2 border-amber-200 bg-amber-50">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">

@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/useToast';
 import type { ResetPasswordRequest } from '@/types/auth';
 import { ResetPasswordFormSchema } from '@/types/auth';
 
+// TODO: need to fix this - amar74.soft
 export function ResetPasswordDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +26,6 @@ export function ResetPasswordDialog() {
   const { resetPassword } = useAuth();
   const { toast, presets } = useToast();
 
-  // Initialize form with Zod validation
   const form = useForm<ResetPasswordRequest>({
     resolver: zodResolver(ResetPasswordFormSchema),
     defaultValues: {
@@ -41,9 +41,6 @@ export function ResetPasswordDialog() {
       const { error } = await resetPassword(data.email);
 
       if (error) {
-        console.info('Password reset error:', error.message);
-
-        // Set form error
         form.setError('email', {
           type: 'manual',
           message: error.message,
@@ -55,15 +52,11 @@ export function ResetPasswordDialog() {
           duration: 4000,
         });
       } else {
-        console.info('Password reset email sent successfully');
-
         // Show success toast using global service
         presets.authSuccess('Reset link sent! Check your email.');
 
-        // Set success state
         setSuccess(true);
 
-        // Reset form
         form.reset();
       }
     } catch (err) {
@@ -83,11 +76,9 @@ export function ResetPasswordDialog() {
     }
   });
 
-  // Reset states when dialog opens/closes
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      // Reset all states when closing
       setSuccess(false);
       form.reset();
       form.clearErrors();
@@ -120,7 +111,6 @@ export function ResetPasswordDialog() {
     </DialogContent>
   );
 
-  // Main form content
   const renderFormContent = () => (
     <DialogContent className="sm:max-w-md bg-white !rounded-3xl items-center justify-center p-8">
       <DialogHeader>
@@ -133,7 +123,7 @@ export function ResetPasswordDialog() {
       </DialogHeader>
 
       <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
-        {/* Email Input */}
+        
         <Form {...form}>
           <FormField
             control={form.control}
@@ -170,7 +160,7 @@ export function ResetPasswordDialog() {
           />
         </Form>
 
-        {/* Buttons */}
+        
         <div className="flex flex-col space-y-3">
           <Button
             type="submit"
@@ -194,14 +184,14 @@ export function ResetPasswordDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      {/* Trigger: "Forgot Password?" link */}
+      
       <DialogTrigger asChild>
         <button className="text-[#ED8A09] hover:underline text-sm font-semibold">
           Forgot Password?
         </button>
       </DialogTrigger>
 
-      {/* Modal Content */}
+      
       {success ? renderSuccessContent() : renderFormContent()}
     </Dialog>
   );

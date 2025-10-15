@@ -8,11 +8,9 @@ import type { CurrentUser } from '@/types/auth';
  * Clear all authentication data from localStorage and API client
  */
 export const clearAuthData = () => {
-  // Clear localStorage
   localStorage.removeItem(STORAGE_CONSTANTS.AUTH_TOKEN);
   localStorage.removeItem(STORAGE_CONSTANTS.USER_INFO);
   
-  // Clear API client headers
   delete apiClient.defaults.headers.common['Authorization'];
   
   // Update global auth state
@@ -55,7 +53,6 @@ export const authenticateWithBackend = async (
     return false;
   }
 
-  // Check if already authenticated with valid user data
   const { isAuthenticated: globalAuth, backendUser: globalUser } = authManager.getAuthState();
   if (globalAuth && globalUser) {
     return true;
@@ -80,7 +77,6 @@ export const authenticateWithBackend = async (
     localStorage.setItem(STORAGE_CONSTANTS.AUTH_TOKEN, authToken);
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
 
-    // Step 3: Get fresh user info from /auth/me endpoint
     const userData = await authApi.getMe();
     if (!userData) {
       throw new Error('No user data received from backend');
@@ -103,7 +99,6 @@ export const authenticateWithBackend = async (
       error.response?.data?.message || error.message || 'Authentication failed';
     setError(errorMessage);
 
-    // Clear backend-specific data on failure
     localStorage.removeItem(STORAGE_CONSTANTS.AUTH_TOKEN);
     localStorage.removeItem(STORAGE_CONSTANTS.USER_INFO);
     delete apiClient.defaults.headers.common['Authorization'];

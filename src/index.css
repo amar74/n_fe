@@ -1,5 +1,44 @@
 @import 'tailwindcss';
 
+/* Typography - Inter as default font with enhanced features */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Enhanced heading styles */
+h1 {
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  font-size: 1.75rem;
+  letter-spacing: -0.03em;
+}
+
+h3 {
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+/* Better paragraph spacing */
+p {
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+}
+
 /* Global Sonner toast styles - applied to the main.tsx instance */
 [data-sonner-toaster] {
   z-index: 9999 !important;
@@ -9,6 +48,28 @@
 [data-sonner-toast] {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10000 !important;
+}
+
+/* Line clamp utilities for text truncation */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 /* Success toast styling for authentication */
@@ -26,4 +87,12 @@ button {
 /* Smooth scroll behavior */
 * {
   scroll-behavior: smooth;
+}
+
+/* Custom text gradient utility */
+.text-gradient {
+  background: linear-gradient(135deg, #161950 0%, #2d3b8f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

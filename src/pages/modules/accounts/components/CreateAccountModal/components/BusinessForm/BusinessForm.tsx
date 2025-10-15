@@ -4,7 +4,7 @@ import { ClientType } from '@/types/accounts';
 import { UIAccountFormData } from '../../CreateAccountModal.types';
 import { MARKET_SECTORS, CLIENT_TYPES, CLIENT_TYPE_DISPLAY } from '../../CreateAccountModal.constants';
 
-interface BusinessFormProps {
+type BusinessFormProps = {
   formData: UIAccountFormData;
   errors: Record<string, string>;
   onChange: (field: string, value: string) => void;
@@ -13,7 +13,7 @@ interface BusinessFormProps {
 export function BusinessForm({ formData, errors, onChange }: BusinessFormProps) {
   return (
     <>
-      {/* Market Sector and Client Type */}
+      
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-7">
         <div className="flex-1 flex flex-col gap-3">
           <Label className="text-base sm:text-lg font-medium text-[#0f0901] capitalize">

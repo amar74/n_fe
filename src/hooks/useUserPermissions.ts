@@ -10,10 +10,8 @@ import type {
   ListUserPermissionsResponse,
 } from '@/types/userPermissions';
 
-// Query keys following Development.md patterns
 export const userPermissionsKeys = createQueryKeys('userPermissions');
 
-// Initialize the generated API client
 const userPermissionsApi = createApiClient(import.meta.env.VITE_API_BASE_URL, { axiosInstance: apiClient });
 
 /**
@@ -66,7 +64,6 @@ export function useUserPermissions() {
       // Invalidate permissions list to show new permissions
       queryClient.invalidateQueries({ queryKey: userPermissionsKeys.lists() });
       
-      // Set the new permissions in cache
       queryClient.setQueryData(userPermissionsKeys.detail(data.userid), data);
       
       toast({
@@ -77,7 +74,7 @@ export function useUserPermissions() {
     onError: (error: any) => {
       toast({
         title: 'Error Creating Permissions',
-        description: error.response?.data?.message || 'Failed to create user permissions',
+        description: error.response?.data?.message || 'create failed permissions',
         variant: 'destructive',
       });
     },
@@ -132,7 +129,7 @@ export function useUserPermissions() {
     onError: (error: any) => {
       toast({
         title: 'Error Updating Permissions',
-        description: error.response?.data?.message || 'Failed to update user permissions',
+        description: error.response?.data?.message || 'update failed permissions',
         variant: 'destructive',
       });
     },
@@ -160,28 +157,24 @@ export function useUserPermissions() {
     onError: (error: any) => {
       toast({
         title: 'Error Deleting Permissions',
-        description: error.response?.data?.message || 'Failed to delete user permissions',
+        description: error.response?.data?.message || 'delete failed permissions',
         variant: 'destructive',
       });
     },
   });
 
   return {
-    // Query hooks
     useUserPermissionsList,
     useUserPermission,
 
-    // Mutation actions
     createUserPermission: createUserPermissionMutation.mutateAsync,
     updateUserPermission: updateUserPermissionMutation.mutateAsync,
     deleteUserPermission: deleteUserPermissionMutation.mutateAsync,
 
-    // Mutation state
     isCreating: createUserPermissionMutation.isPending,
     isUpdating: updateUserPermissionMutation.isPending,
     isDeleting: deleteUserPermissionMutation.isPending,
 
-    // Utility functions
     invalidateUserPermissionsList: () => queryClient.invalidateQueries({ queryKey: userPermissionsKeys.lists() }),
     invalidateUserPermission: (userid: string) => 
       queryClient.invalidateQueries({ queryKey: userPermissionsKeys.detail(userid) }),

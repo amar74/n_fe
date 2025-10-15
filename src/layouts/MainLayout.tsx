@@ -4,11 +4,17 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '@components/Navigation';
 import { Toaster } from '@/components/ui/toaster';
+import { useMyOrganization } from '@/hooks/useOrganizations';
 
+// @author abhishek.softication
 export default function MainLayout() {
   const { user, backendUser, isAuthenticated, initialAuthComplete } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  const { data: organization, isLoading: isOrgLoading } = useMyOrganization({
+    enabled: !!backendUser?.org_id, // Only fetch if user has org_id
+  });
 
   useEffect(() => {
     // Only handle redirects after initial auth is complete
@@ -25,7 +31,6 @@ export default function MainLayout() {
     if (!backendUser) return;
     if (!isAuthenticated) return;
 
-    // Check for organization requirement after backend authentication is complete
     const currentPath = location.pathname;
 
     // If user doesn't have org_id and isn't already on org creation or auth pages
@@ -34,18 +39,35 @@ export default function MainLayout() {
       !currentPath.startsWith('/organization/create') &&
       !currentPath.startsWith('/auth/')
     ) {
-      console.info('User has no organization, redirecting to organization creation');
       navigate('/organization/create', { replace: true });
       return;
     }
 
-    // If user has org_id but is on organization create page, redirect to home
+    // If user has org_id but is on organization create page, redirect to dashboard
+    // This handles the case where user just created an organization and should go to dashboard
     if (backendUser.org_id && currentPath.startsWith('/organization/create')) {
-      console.info('User already has organization, redirecting to home');
       navigate('/', { replace: true });
       return;
     }
-  }, [user, isAuthenticated, backendUser, initialAuthComplete, navigate, location.pathname]);
+    
+    // If user has org_id and is not on profile update or org create page, check profile completion
+    if (
+      backendUser.org_id &&
+      !currentPath.startsWith('/organization/update') &&
+      !currentPath.startsWith('/organization/create') &&
+      !currentPath.startsWith('/auth/')
+    ) {
+      // Wait for organization data to load
+      if (isOrgLoading) return;
+      
+      // Only redirect to profile update if profile is significantly incomplete (< 50%)
+      // This allows users with mostly complete profiles to access the dashboard
+      if (organization && organization.profile_completion < 50) {
+        navigate('/organization/update', { replace: true });
+        return;
+      }
+    }
+  }, [user, isAuthenticated, backendUser, initialAuthComplete, organization, isOrgLoading, navigate, location.pathname]);
 
   // Show loading only during initial auth check
   if (!initialAuthComplete) {

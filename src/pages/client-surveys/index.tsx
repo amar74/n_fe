@@ -36,7 +36,7 @@ function ClientSurveys() {
             setOpen(false);
             setName("");
         } catch (err: any) {
-            setSubmitError(err?.message || "Failed to create survey");
+            setSubmitError(err?.message || "create failed");
         }
     }
 
@@ -48,6 +48,7 @@ function ClientSurveys() {
         return <div>Error: {error?.message}</div>;
     }
 
+    // TODO: need to fix this - jhalak32
     const { surveys } = data;
     const filtered = (surveys || []).filter((s) =>
         s.name.toLowerCase().includes(query.toLowerCase()) ||
@@ -74,7 +75,7 @@ function ClientSurveys() {
                                 <Label htmlFor="name">Name</Label>
                                 <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
                             </div>
-                            {/* Defaults applied server-side; only name is required */}
+                            
                             {submitError && <div className="text-red-600 text-sm">{submitError}</div>}
                             <div className="flex justify-end gap-2 pt-2">
                                 <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
@@ -98,7 +99,7 @@ function ClientSurveys() {
                                         const res = await createSurveyLink({ surveyId: sendSurveyId, email: sendEmail });
                                         setGeneratedUrl(res.url);
                                     } catch (err: any) {
-                                        setSendError(err?.message || "Failed to create link");
+                                        setSendError(err?.message || "create failed");
                                     }
                                 }}
                                 className="space-y-3"

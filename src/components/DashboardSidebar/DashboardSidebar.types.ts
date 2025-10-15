@@ -7,7 +7,7 @@ export interface NavigationItem {
   icon: LucideIcon;
 }
 
-export interface DashboardSidebarProps {
+export type DashboardSidebarProps = {
   className?: string;
 }
 

@@ -63,12 +63,12 @@ const PastPerformanceCard: React.FC = () => {
                 key={idx}
                 className="p-4 py-6 rounded-xl border border-[#0F0901]"
               >
-                {/* Icon inside circle */}
+                
                 <div className="w-12 h-12 rounded-full bg-[#F3F3F3] flex items-center justify-center mb-4 border border-[#E6E6E6]">
                   <Icon size={22} weight="fill" className="text-orange-400" />
                 </div>
 
-                {/* Value and SubLabel */}
+                
                 <p className="text-xl font-bold text-gray-900">
                   {metric.value}
                   {metric.subLabel && (
@@ -79,7 +79,7 @@ const PastPerformanceCard: React.FC = () => {
                   )}
                 </p>
 
-                {/* Label */}
+                
                 <p className="text-xs font-semibold mt-1 text-[#9C9C9C]">{metric.label}</p>
 
                 

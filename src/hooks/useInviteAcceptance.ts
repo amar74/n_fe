@@ -63,7 +63,6 @@ export function useInviteAcceptance() {
       
       // Validate response data
       if (!response || !response.email || !response.role || !response.org_id) {
-        console.error('Invalid response structure:', response);
         throw new Error('Invalid response from invite acceptance API');
       }
 
@@ -81,17 +80,10 @@ export function useInviteAcceptance() {
       });
 
     } catch (error: any) {
-      console.error('Accept invite error:', error);
-      console.error('Error response:', error?.response);
-      console.error('Error response data:', error?.response?.data);
-      
       const errorMessage = error?.response?.data?.detail?.error?.details || 
                           error?.response?.data?.message ||
                           error?.message ||
-                          'Failed to accept invite.';
-      
-      console.error('Processed error message:', errorMessage);
-      
+                          'accept failed.';
       setInviteState(prev => ({
         ...prev,
         isAcceptingInvite: false,
@@ -176,7 +168,6 @@ export function useInviteAcceptance() {
   }, [navigate]);
 
   return {
-    // Invite state
     isAcceptingInvite: inviteState.isAcceptingInvite,
     inviteData: inviteState.inviteData,
     inviteAccepted: inviteState.inviteAccepted,

@@ -3,6 +3,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PlacesAutocomplete } from '@/components/ui/places-autocomplete';
 import { useFormContext } from 'react-hook-form';
+import { useState } from 'react';
+import { useToast } from '@/hooks/useToast';
+import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
 import type { AddressFormProps } from '../../CreateOrganizationPage.types';
 
 const US_STATES = [
@@ -60,12 +63,44 @@ const US_STATES = [
 
 export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFormProps, 'control'>) {
   const { control, setValue } = useFormContext();
+  const { toast } = useToast();
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  
+  const handleZipCodeChange = (zipCode: string) => {
+    if (zipCode.length === 5) {
+      const result = lookupByZipCode(zipCode);
+      if (result) {
+        setValue('address.city', result.city);
+        setValue('address.state', result.stateCode);
+        
+        const cities = getCitiesByState(result.stateCode);
+        setAvailableCities(cities);
+        
+        // Show success toast
+        toast.success('Address Auto-filled', {
+          description: `${result.city}, ${result.stateCode} detected from ZIP code`,
+        });
+      }
+    }
+  };
+
+  const handleStateChange = (stateCode: string) => {
+    setValue('address.state', stateCode);
+    
+    const cities = getCitiesByState(stateCode);
+    setAvailableCities(cities);
+    
+    const currentCity = control._formValues.address?.city;
+    if (currentCity && !cities.includes(currentCity)) {
+      setValue('address.city', '');
+    }
+  };
   
   return (
     <div className="space-y-6">
-      {/* Address Line 1 & 2 - Two Column Grid */}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Address Line 1 */}
+        
         <FormField
           control={control}
           name="address.line1"
@@ -90,7 +125,7 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
           )}
         />
 
-        {/* Address Line 2 */}
+        
         <FormField
           control={control}
           name="address.line2"
@@ -114,9 +149,9 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
         />
       </div>
 
-      {/* City, State, Zip Code - Three Column Grid */}
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* City */}
+        
         <FormField
           control={control}
           name="address.city"
@@ -125,23 +160,32 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
               <FormLabel className="text-[13px] font-medium text-gray-900 font-poppins">
                 City*
               </FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  value={field.value || ''}
-                  placeholder="City name"
-                  className={`h-12 border-gray-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 font-poppins text-[14px] placeholder:text-gray-400 ${
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value} 
+                disabled={isSubmitting || availableCities.length === 0}
+              >
+                <FormControl>
+                  <SelectTrigger className={`h-12 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-poppins text-[14px] placeholder:text-gray-400 ${
                     showAISuggestions && field.value ? 'bg-blue-50 border-blue-300' : ''
-                  }`}
-                  disabled={isSubmitting}
-                />
-              </FormControl>
+                  }`}>
+                    <SelectValue placeholder={availableCities.length > 0 ? "Select City" : "Select state first"} className="text-gray-400" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="max-h-60 bg-white border border-gray-200 shadow-lg rounded-lg font-poppins">
+                  {availableCities.map((city) => (
+                    <SelectItem key={city} value={city} className="text-[14px] cursor-pointer hover:bg-gray-100 focus:bg-gray-100">
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage className="text-xs font-poppins" />
             </FormItem>
           )}
         />
 
-        {/* State */}
+        
         <FormField
           control={control}
           name="address.state"
@@ -150,7 +194,14 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
               <FormLabel className="text-[13px] font-medium text-gray-900 font-poppins">
                 State*
               </FormLabel>
-              <Select onValueChange={field.onChange} value={field.value} disabled={isSubmitting}>
+              <Select 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  handleStateChange(value);
+                }} 
+                value={field.value} 
+                disabled={isSubmitting}
+              >
                 <FormControl>
                   <SelectTrigger className="h-12 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-poppins text-[14px] placeholder:text-gray-400">
                     <SelectValue placeholder="Select State" className="text-gray-400" />
@@ -169,14 +220,14 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
           )}
         />
 
-        {/* Zip Code */}
+        
         <FormField
           control={control}
           name="address.pincode"
           render={({ field }) => (
             <FormItem className="space-y-2.5">
               <FormLabel className="text-[13px] font-medium text-gray-900 font-poppins">
-                Zip Code*
+                Zip Code* <span className="text-xs text-blue-600 font-normal">✨ Auto-fills city & state</span>
               </FormLabel>
               <FormControl>
                 <Input
@@ -185,15 +236,18 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  placeholder="Postal code"
+                  placeholder="Enter 5-digit ZIP code"
                   className="h-12 border-gray-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 font-poppins text-[14px] placeholder:text-gray-400"
                   disabled={isSubmitting}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 5); // Remove non-digits, limit to 5
                     const numValue = value ? parseInt(value) : undefined;
                     field.onChange(numValue);
+                    if (value.length === 5) {
+                      handleZipCodeChange(value);
+                    }
                   }}
-                  maxLength={6}
+                  maxLength={5}
                 />
               </FormControl>
               <FormMessage className="text-xs font-poppins" />

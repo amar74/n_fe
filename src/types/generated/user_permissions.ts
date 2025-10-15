@@ -185,6 +185,7 @@ const endpoints = makeApi([
   },
 ]);
 
+// TODO: need to fix this - harsh.pawar
 export const User_permissionsApi = new Zodios(endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

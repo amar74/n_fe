@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import type { 
+// @author harsh.pawar
   UserPermissionUpdateRequest, 
   UserWithPermissionsResponse,
   User,
@@ -28,14 +29,12 @@ export default function UserPermissionsSection() {
   const [permissions, setPermissions] = useState<PermissionState>({});
   const [saving, setSaving] = useState<string | null>(null);
 
-  // Use TanStack Query hooks
   const { 
     useUserPermissionsList, 
     updateUserPermission, 
     isUpdating 
   } = useUserPermissions();
 
-  // Fetch users with permissions
   const { 
     data: usersWithPermissions = [], 
     isLoading: loading, 
@@ -43,7 +42,6 @@ export default function UserPermissionsSection() {
     refetch
   } = useUserPermissionsList();
 
-  // Initialize permissions state when data loads
   React.useEffect(() => {
     if (usersWithPermissions.length > 0) {
       const state: PermissionState = {};
@@ -58,7 +56,6 @@ export default function UserPermissionsSection() {
     }
   }, [usersWithPermissions]);
 
-  // Calculate stats from current permissions state (this will update when permissions change)
   const totalUsers = usersWithPermissions.length;
   const activePermissions = Object.values(permissions).reduce((total, userPermissions) => {
     return total + 
@@ -68,7 +65,6 @@ export default function UserPermissionsSection() {
   }, 0);
   const permissionCategories = PERMISSIONS.length;
 
-  // Check if any user is currently being saved
   const isAnyUserSaving = Object.keys(saving ? { [saving]: true } : {}).length > 0;
 
   const handleCheck = (userid: string, perm: PermissionCategory, action: string) => {
@@ -93,10 +89,8 @@ export default function UserPermissionsSection() {
     };
     try {
       await updateUserPermission({ userid, data: req });
-      // TanStack Query will automatically update the cache and refetch
       // The permissions state will be updated when the new data comes in
     } catch (e) {
-      // Error handling is done in the mutation
     } finally {
       setSaving(null);
     }
@@ -125,7 +119,7 @@ export default function UserPermissionsSection() {
             <div className="text-center">
               <div className="text-red-500 mb-4">
                 <Shield className="h-8 w-8 mx-auto mb-2" />
-                <p className="text-lg">Failed to load user permissions</p>
+                <p className="text-lg">Load failed permissions</p>
                 <p className="text-sm text-gray-500 mt-2">
                   {error instanceof Error ? error.message : 'An error occurred'}
                 </p>
@@ -144,7 +138,7 @@ export default function UserPermissionsSection() {
   return (
     <div className="min-h-screen bg-[#FCFCFC] font-['Inter',_system-ui,_-apple-system,_sans-serif]">
       <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16 py-12">
-        {/* Back Button */}
+        
         <div className="mb-12">
           <Link
             to="/module/accounts"
@@ -155,7 +149,7 @@ export default function UserPermissionsSection() {
           </Link>
         </div>
 
-        {/* Header Section */}
+        
         <div className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-4xl font-medium text-[#1D1D1F] mb-4 text-center overflow-wrap-break-word">
@@ -166,7 +160,7 @@ export default function UserPermissionsSection() {
             </p>
           </div>
 
-          {/* Action Buttons */}
+          
           <div className="flex items-center space-x-6">
             <Button
               variant="outline"
@@ -179,7 +173,7 @@ export default function UserPermissionsSection() {
           </div>
         </div>
 
-        {/* Summary Stats */}
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           <Card className={`border border-[#EFF1F3] bg-[#FCFCFC] rounded-md shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out hover:transform hover:-translate-y-0.5 hover:shadow-lg ${isAnyUserSaving ? 'opacity-75' : ''}`}>
             <CardContent className="p-8 text-center flex flex-col items-center justify-center h-full">
@@ -214,7 +208,7 @@ export default function UserPermissionsSection() {
           </Card>
         </div>
 
-        {/* Permissions Table */}
+        
         <Card className="border border-[#EFF1F3] bg-[#FCFCFC] rounded-md shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
           <CardHeader className="p-8">
             <CardTitle className="text-2xl font-medium text-[#1D1D1F] flex items-center">

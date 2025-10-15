@@ -1,32 +1,119 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AccountsList } from './components/AccountsList';
 import { CreateAccountModal } from './components/CreateAccountModal';
+import { AccountsMap } from './components/AccountsMap';
 import { useAccountsPage } from './useAccountsPage';
+import { SuccessModal } from '@/components/SuccessModal';
+import { useToast } from '@/hooks/useToast';
+import { AccountListItem } from '@/types/accounts';
+
+// Type for pagination
+interface PaginationData {
+  total: number;
+  page: number;
+  size: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
+}
 
 function AccountsPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const {
-    accounts,
+    accounts: originalAccounts,
     stats,
     isLoading,
     isCreateModalOpen,
+    isSuccessModalOpen,
+    successMessage,
     handleCreateAccount,
     handleCreateAccountSubmit,
     handleAccountClick,
     setIsCreateModalOpen,
+    setIsSuccessModalOpen,
     isCreating,
-    createErrors
+    createErrors,
+    pagination,
+    setCurrentPage,
   } = useAccountsPage();
+
+  // Local state to manage account approval status
+  const [accounts, setAccounts] = useState<AccountListItem[]>([]);
+
+  useEffect(() => {
+    const storedApprovals = localStorage.getItem('accountApprovals');
+    const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
+
+    const accountsWithStatus = originalAccounts.map(account => ({
+      ...account,
+      approval_status: approvalMap[account.account_id] || 'pending',
+    }));
+
+    setAccounts(accountsWithStatus);
+  }, [originalAccounts]);
+
+  const handleApproveAccount = async (accountId: string, notes: string) => {
+    try {
+      // Update local state
+      setAccounts(prevAccounts =>
+        prevAccounts.map(account =>
+          account.account_id === accountId
+            ? { ...account, approval_status: 'approved' }
+            : account
+        )
+      );
+
+      // Save to localStorage
+      const storedApprovals = localStorage.getItem('accountApprovals');
+      const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
+      approvalMap[accountId] = 'approved';
+      localStorage.setItem('accountApprovals', JSON.stringify(approvalMap));
+
+      // TODO: Call backend API when ready
+      // await apiClient.post(`/accounts/${accountId}/approve`, { notes });
+      
+      toast.success('✅ Account approved successfully! The account is now active.');
+    } catch (error) {
+      toast.error('approve failed. Please try again.');
+    }
+  };
+
+  const handleDeclineAccount = async (accountId: string, notes: string) => {
+    try {
+      // Update local state
+      setAccounts(prevAccounts =>
+        prevAccounts.map(account =>
+          account.account_id === accountId
+            ? { ...account, approval_status: 'declined' }
+            : account
+        )
+      );
+
+      // Save to localStorage
+      const storedApprovals = localStorage.getItem('accountApprovals');
+      const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
+      approvalMap[accountId] = 'declined';
+      localStorage.setItem('accountApprovals', JSON.stringify(approvalMap));
+
+      // TODO: Call backend API when ready
+      // await apiClient.post(`/accounts/${accountId}/decline`, { notes });
+      
+      toast.error('❌ Account declined.');
+    } catch (err) {
+      toast.error('decline failed. Please try again.');
+    }
+  };
 
   return (
     <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Header with Breadcrumbs and Actions */}
+        
         <div className="flex justify-between items-end">
-          {/* Left side - Breadcrumbs and Title */}
+          
           <div className="flex flex-col gap-3">
-            {/* Breadcrumb */}
+            
             <div className="flex items-center gap-2">
               <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
                 Dashboard
@@ -35,15 +122,15 @@ function AccountsPage() {
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Organization details</span>
             </div>
             
-            {/* Page Title */}
+            
             <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">My Accounts</h1>
           </div>
 
-          {/* Right side - Action Buttons */}
+          
           <div className="flex items-start gap-3">
-            {/* Client Survey Button */}
+            
             <button 
-              className="h-11 p-2 bg-transparent rounded-lg border border-black flex items-center gap-2.5 hover:bg-gray-50 transition-colors"
+              className="h-11 px-4 py-2 bg-transparent rounded-lg border border-black flex items-center gap-2.5 hover:bg-gray-50 transition-colors"
               onClick={() => navigate('/client-surveys')}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -52,10 +139,10 @@ function AccountsPage() {
               <span className="text-black text-xs font-medium font-outfit leading-normal">Client Survey</span>
             </button>
 
-            {/* Create Account Button */}
+            
             <button 
               onClick={handleCreateAccount}
-              className="h-11 p-2 bg-indigo-950 rounded-lg flex items-center gap-2.5 hover:bg-indigo-900 transition-colors"
+              className="h-11 px-5 py-2 bg-indigo-950 rounded-lg flex items-center gap-2.5 hover:bg-indigo-900 transition-colors"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21.375 12C21.375 12.2984 21.2565 12.5845 21.0455 12.7955C20.8345 13.0065 20.5484 13.125 20.25 13.125H13.125V20.25C13.125 20.5484 13.0065 20.8345 12.7955 21.0455C12.5845 21.2565 12.2984 21.375 12 21.375C11.7016 21.375 11.4155 21.2565 11.2045 21.0455C10.9935 20.8345 10.875 20.5484 10.875 20.25V13.125H3.75C3.45163 13.125 3.16548 13.0065 2.9545 12.7955C2.74353 12.5845 2.625 12.2984 2.625 12C2.625 11.7016 2.74353 11.4155 2.9545 11.2045C3.16548 10.9935 3.45163 10.875 3.75 10.875H10.875V3.75C10.875 3.45163 10.9935 3.16548 11.2045 2.9545C11.4155 2.74353 11.7016 2.625 12 2.625C12.2984 2.625 12.5845 2.74353 12.7955 2.9545C13.0065 3.16548 13.125 3.45163 13.125 3.75V10.875H20.25C20.5484 10.875 20.8345 10.9935 21.0455 11.2045C21.2565 11.4155 21.375 11.7016 21.375 12Z" fill="white"/>
@@ -65,12 +152,12 @@ function AccountsPage() {
           </div>
         </div>
 
-        {/* Main Content Grid */}
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Map */}
+          
           <div className="lg:col-span-2">
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6 overflow-hidden">
-              {/* Title */}
+              
               <div className="flex justify-start items-start gap-6">
                 <div className="flex-1 flex flex-col gap-1">
                   <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">
@@ -79,14 +166,12 @@ function AccountsPage() {
                 </div>
               </div>
 
-              {/* Content */}
+              
               <div className="flex flex-col gap-6">
-                {/* Map */}
-                <div className="h-72 relative bg-[#F5F3F2] rounded-2xl border border-gray-200 overflow-hidden flex items-center justify-center">
-                  <div className="text-gray-400 text-sm font-outfit">Map visualization will appear here</div>
-                </div>
+                
+                <AccountsMap accounts={accounts} />
 
-                {/* Legend */}
+                
                 <div className="flex justify-start items-center gap-4">
                   <div className="flex items-center gap-2">
                     <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -111,9 +196,9 @@ function AccountsPage() {
             </div>
           </div>
 
-          {/* Right Column - Stats */}
+          
           <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col justify-between gap-3">
-            {/* Total Accounts */}
+            
             <div className="h-20 p-5 bg-[#F9FAFB] rounded-2xl border border-gray-200 flex justify-between items-center">
               <div className="w-14 h-14 p-3 bg-[#EAECF0] rounded-xl flex justify-center items-center overflow-hidden">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -126,7 +211,7 @@ function AccountsPage() {
               </div>
             </div>
 
-            {/* AI Health Score */}
+            
             <div className="h-20 p-5 bg-[#F9FAFB] rounded-2xl border border-gray-200 flex justify-between items-center">
               <div className="w-14 h-14 p-3 bg-[#EAECF0] rounded-xl flex justify-center items-center overflow-hidden">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -142,7 +227,7 @@ function AccountsPage() {
               </div>
             </div>
 
-            {/* High Risk */}
+            
             <div className="h-20 p-5 bg-[#F9FAFB] rounded-2xl border border-gray-200 flex justify-between items-center">
               <div className="w-14 h-14 p-3 bg-[#EAECF0] rounded-xl flex justify-center items-center overflow-hidden">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -157,7 +242,7 @@ function AccountsPage() {
               </div>
             </div>
 
-            {/* Total Value */}
+            
             <div className="h-20 p-5 bg-[#F9FAFB] rounded-2xl border border-gray-200 flex justify-between items-center">
               <div className="w-14 h-14 p-3 bg-[#EAECF0] rounded-xl flex justify-center items-center overflow-hidden">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -175,23 +260,36 @@ function AccountsPage() {
           </div>
         </div>
 
-        {/* Accounts List Section */}
+        
         <div className="mt-6">
           <AccountsList 
             accounts={accounts}
             isLoading={isLoading}
             onAccountClick={handleAccountClick}
+            onApprove={handleApproveAccount}
+            onDecline={handleDeclineAccount}
+            pagination={pagination as PaginationData | undefined}
+            onPageChange={setCurrentPage}
           />
         </div>
       </div>
 
-      {/* Create Account Modal */}
+      
       <CreateAccountModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateAccountSubmit}
         isLoading={isCreating}
         errors={createErrors}
+      />
+
+      
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title={successMessage.title}
+        message={successMessage.description}
+        autoCloseDuration={4000}
       />
     </div>
   );

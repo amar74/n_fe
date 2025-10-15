@@ -51,10 +51,11 @@ interface Agent {
   autonomyLevel: string;
 }
 
-interface AgentManagementProps {
+type AgentManagementProps = {
   moduleContext?: string;
 }
 
+// @author abhishek.softication
 export default function AgentManagement({ moduleContext = "General" }: AgentManagementProps) {
   const { toast } = useToast();
   
@@ -118,7 +119,7 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
   const createAgent = () => {
     if (!newAgent.name || !newAgent.type) {
       toast({
-        title: "Missing Information",
+        title: "not provided Information",
         description: "Please provide agent name and type",
         variant: "destructive",
       });
@@ -152,7 +153,7 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
     setCreateAgentOpen(false);
     toast({
       title: "Agent Created",
-      description: `${agent.name} has been successfully created`,
+      description: `${agent.name} has been sucessfully created`,
     });
   };
 
@@ -232,7 +233,7 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
 
   return (
     <>
-      {/* Floating Agent Management Button */}
+      
       <div className="fixed top-20 right-20 z-50">
         <TooltipProvider>
           <Tooltip>
@@ -254,7 +255,7 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
         </div>
       </div>
 
-      {/* Agent Management Panel */}
+      
       <Dialog open={agentPanelOpen} onOpenChange={setAgentPanelOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -269,7 +270,7 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Quick Stats */}
+            
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
                 <CardContent className="p-4 text-center">
@@ -303,7 +304,7 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
               </Card>
             </div>
 
-            {/* Action Buttons */}
+            
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Your AI Agents</h3>
               <Button
@@ -315,7 +316,7 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
               </Button>
             </div>
 
-            {/* Agents Grid */}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {agents.map((agent) => (
                 <Card
@@ -416,7 +417,7 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
         </DialogContent>
       </Dialog>
 
-      {/* Create Agent Dialog */}
+      
       <Dialog open={createAgentOpen} onOpenChange={setCreateAgentOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>

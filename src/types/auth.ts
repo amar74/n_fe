@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { schemas } from './generated/auth';
 
-// Re-export generated types
 // Note: Backend returns user object directly, not wrapped in { user: ... }
 export type CurrentUserResponse = z.infer<typeof schemas.CurrentUserResponse>;
 export type CurrentUser = CurrentUserResponse['user']; // Extract the user part
@@ -84,7 +83,6 @@ export interface AuthResponse<T = unknown> {
 export type LoginResponse = AuthResponse<{ user: CurrentUser; token: string }>;
 export type LogoutResponse = AuthResponse<{ message: string }>;
 
-// Zod validation schemas for forms
 export const LoginFormSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   password: z

@@ -26,10 +26,6 @@ const AccountsHeader: React.FC = () => {
           <span className="text-sm font-medium text-gray-700">Client Survey</span>
         </button>
         
-        {/* <button className="flex items-center space-x-2 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-800 transition-colors">
-          <Plus size={16} />
-          <span className="text-sm font-medium">Create Account</span>
-        </button> */}
         <CreateAccountModal />
       </div>
     </div>

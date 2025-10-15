@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface ErrorCardProps {
+type ErrorCardProps = {
   error?: string | null;
   onGoToLogin: () => void;
 }

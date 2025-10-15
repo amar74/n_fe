@@ -43,6 +43,7 @@ interface ProposalSection {
 }
 
 export default function DetailRefineTab() {
+  // will optimize later - guddy.tech
   const { toast } = useToast();
   const [sections, setSections] = useState<ProposalSection[]>([
     {
@@ -166,7 +167,7 @@ export default function DetailRefineTab() {
 
   return (
     <div className="space-y-6">
-      {/* Proposal Score Overview */}
+      
       <Card className="border-2 bg-gradient-to-r from-blue-50 to-purple-50">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -202,7 +203,7 @@ export default function DetailRefineTab() {
         </CardContent>
       </Card>
 
-      {/* Section Review */}
+      
       <div className="space-y-4">
         {sections.map((section) => (
           <Card key={section.id} className="border-2">
@@ -261,7 +262,7 @@ export default function DetailRefineTab() {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <CardContent className="space-y-4">
-                  {/* Content Editor */}
+                  
                   <div>
                     <Textarea
                       value={section.content}
@@ -274,7 +275,7 @@ export default function DetailRefineTab() {
                     />
                   </div>
 
-                  {/* AI Suggestions */}
+                  
                   {section.suggestions.length > 0 && (
                     <Card className="bg-yellow-50 border-yellow-200">
                       <CardHeader>
@@ -307,7 +308,7 @@ export default function DetailRefineTab() {
                     </Card>
                   )}
 
-                  {/* Section Actions */}
+                  
                   <div className="flex space-x-2">
                     <Button size="sm" variant="outline">
                       <Edit3 className="h-4 w-4 mr-2" />
@@ -342,7 +343,7 @@ export default function DetailRefineTab() {
         ))}
       </div>
 
-      {/* Contract Exceptions */}
+      
       <Card className="border-2 border-orange-200">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -394,7 +395,7 @@ export default function DetailRefineTab() {
         </CardContent>
       </Card>
 
-      {/* Compliance Summary */}
+      
       <Card className="border-2 bg-green-50">
         <CardContent className="pt-6">
           <div className="flex items-center space-x-3">

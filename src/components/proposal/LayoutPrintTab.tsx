@@ -185,7 +185,7 @@ export default function LayoutPrintTab() {
 
   return (
     <div className="space-y-6">
-      {/* Compliance Overview */}
+      
       <Card className="border-2 bg-gradient-to-r from-blue-50 to-green-50">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -226,7 +226,7 @@ export default function LayoutPrintTab() {
         </CardContent>
       </Card>
 
-      {/* Section Summary */}
+      
       <Card className="border-2">
         <CardHeader>
           <CardTitle>Section Summary</CardTitle>
@@ -266,7 +266,7 @@ export default function LayoutPrintTab() {
         </CardContent>
       </Card>
 
-      {/* Page Layout Grid */}
+      
       <Card className="border-2">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -337,7 +337,7 @@ export default function LayoutPrintTab() {
         </CardContent>
       </Card>
 
-      {/* Print Configuration */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-2">
           <CardHeader>
@@ -515,7 +515,7 @@ export default function LayoutPrintTab() {
         </Card>
       </div>
 
-      {/* Final Status */}
+      
       <Card className="border-2 bg-green-50">
         <CardContent className="pt-6">
           <div className="flex items-center space-x-3">

@@ -10,7 +10,6 @@ import {
 } from '@/types/notes';
 import { useToast } from '@/hooks/use-toast';
 
-// Query keys for consistent caching
 export const notesKeys = {
   all: ['notes'] as const,
   lists: () => [...notesKeys.all, 'list'] as const,
@@ -22,58 +21,51 @@ export const notesKeys = {
 export function useNotes(params: NotesListParams = {}) {
   const { toast } = useToast();
 
-  // Query for listing notes
   const notesQuery = useQuery({
     queryKey: notesKeys.list(params),
     queryFn: () => notesApi.getNotes(params),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Mutation for creating a note
   const createNoteMutation = useMutation({
     mutationFn: (data: NoteCreateRequest) => notesApi.createNote(data),
     onSuccess: () => {
-      // Invalidate and refetch notes list
       queryClient.invalidateQueries({ queryKey: notesKeys.lists() });
       toast({
         title: 'Success',
-        description: 'Note created successfully',
+        description: 'Note created sucessfully',
       });
     },
     onError: (error: any) => {
-      console.error('Create note error:', error);
       toast({
         title: 'Error',
-        description: error.response?.data?.detail?.error?.message || 'Failed to create note',
+        description: error.response?.data?.detail?.error?.message || 'create failed',
         variant: 'destructive',
       });
     },
   });
 
-  // Mutation for updating a note
   const updateNoteMutation = useMutation({
     mutationFn: ({ noteId, data }: { noteId: string; data: NoteUpdateRequest }) =>
       notesApi.updateNote(noteId, data),
     onSuccess: (_, { noteId }) => {
-      // Invalidate specific note detail and lists
+      // not validate specific note detail and lists
       queryClient.invalidateQueries({ queryKey: notesKeys.detail(noteId) });
       queryClient.invalidateQueries({ queryKey: notesKeys.lists() });
       toast({
         title: 'Success',
-        description: 'Note updated successfully',
+        description: 'Note updated sucessfully',
       });
     },
     onError: (error: any) => {
-      console.error('Update note error:', error);
       toast({
         title: 'Error',
-        description: error.response?.data?.detail?.error?.message || 'Failed to update note',
+        description: error.response?.data?.detail?.error?.message || 'update failed',
         variant: 'destructive',
       });
     },
   });
 
-  // Mutation for deleting a note
   const deleteNoteMutation = useMutation({
     mutationFn: (noteId: string) => notesApi.deleteNote(noteId),
     onSuccess: () => {
@@ -85,10 +77,9 @@ export function useNotes(params: NotesListParams = {}) {
       });
     },
     onError: (error: any) => {
-      console.error('Delete note error:', error);
       toast({
         title: 'Error',
-        description: error.response?.data?.detail?.error?.message || 'Failed to delete note',
+        description: error.response?.data?.detail?.error?.message || 'delete failed',
         variant: 'destructive',
       });
     },
@@ -118,7 +109,6 @@ export function useNotes(params: NotesListParams = {}) {
     updateNote: updateNoteMutation.mutate,
     deleteNote: deleteNoteMutation.mutate,
 
-    // Query controls
     refetch: notesQuery.refetch,
     isRefetching: notesQuery.isRefetching,
   };
@@ -135,7 +125,6 @@ export function useNote(noteId: string) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  // Mutation for updating this specific note
   const updateNoteMutation = useMutation({
     mutationFn: (data: NoteUpdateRequest) => notesApi.updateNote(noteId, data),
     onSuccess: () => {
@@ -148,16 +137,14 @@ export function useNote(noteId: string) {
       });
     },
     onError: (error: any) => {
-      console.error('Update note error:', error);
       toast({
         title: 'Error',
-        description: error.response?.data?.detail?.error?.message || 'Failed to update note',
+        description: error.response?.data?.detail?.error?.message || 'update failed',
         variant: 'destructive',
       });
     },
   });
 
-  // Mutation for deleting this specific note
   const deleteNoteMutation = useMutation({
     mutationFn: () => notesApi.deleteNote(noteId),
     onSuccess: () => {
@@ -169,10 +156,9 @@ export function useNote(noteId: string) {
       });
     },
     onError: (error: any) => {
-      console.error('Delete note error:', error);
       toast({
         title: 'Error',
-        description: error.response?.data?.detail?.error?.message || 'Failed to delete note',
+        description: error.response?.data?.detail?.error?.message || 'delete failed',
         variant: 'destructive',
       });
     },
@@ -196,7 +182,6 @@ export function useNote(noteId: string) {
     updateNote: updateNoteMutation.mutate,
     deleteNote: deleteNoteMutation.mutate,
 
-    // Query controls
     refetch: noteQuery.refetch,
     isRefetching: noteQuery.isRefetching,
   };

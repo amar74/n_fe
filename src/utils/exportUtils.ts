@@ -1,12 +1,10 @@
 import { AccountListItem } from '@/types/accounts';
 
-// Helper to format date strings
 const formatDate = (dateStr: string | null | undefined): string => {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString();
 };
 
-// Helper to format address
 const formatAddress = (address: any): string => {
   if (!address) return '';
   const parts = [
@@ -18,7 +16,6 @@ const formatAddress = (address: any): string => {
   return parts.join(', ');
 };
 
-// Convert accounts data to CSV format
 export const exportToCSV = (accounts: AccountListItem[]): void => {
   // Define headers and corresponding data keys
   const headers = [
@@ -33,7 +30,6 @@ export const exportToCSV = (accounts: AccountListItem[]): void => {
     'Last Contact'
   ];
 
-  // Transform accounts data into rows
   const rows = accounts.map(account => [
     account.client_name,
     account.client_type,
@@ -61,10 +57,8 @@ export const exportToCSV = (accounts: AccountListItem[]): void => {
   URL.revokeObjectURL(link.href);
 };
 
-// Convert accounts data to Excel format
 export const exportToExcel = async (accounts: AccountListItem[]): Promise<void> => {
   try {
-    // Dynamically import XLSX only when needed
     const XLSX = await import('xlsx');
     
     // Prepare data for Excel
@@ -87,10 +81,8 @@ export const exportToExcel = async (accounts: AccountListItem[]): Promise<void> 
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(wb, ws, 'Accounts');
 
-    // Generate Excel file and trigger download
     XLSX.writeFile(wb, `accounts_export_${new Date().toISOString().split('T')[0]}.xlsx`);
-  } catch (error) {
-    console.error('Error exporting to Excel:', error);
-    throw new Error('Failed to export to Excel. Please try again.');
+  } catch (err) {
+    throw new Error('export failed Excel. Please try again.');
   }
 };

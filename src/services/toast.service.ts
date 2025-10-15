@@ -134,7 +134,7 @@ export const ToastPresets = {
    */
   authSuccess: (message: string = '🎉 Welcome back!') =>
     toastService.success(message, {
-      //   description: 'You have successfully signed in.',
+      //   description: 'You have sucessfully signed in.',
       duration: 4000,
       style: {
         background: '#10b981',

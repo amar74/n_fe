@@ -282,7 +282,7 @@ export default function PlanTab() {
       setIsUploadingImages(false);
       toast({
         title: "Images Uploaded",
-        description: `Successfully uploaded ${files.length} image(s) for proposal design.`,
+        description: `uploaded ${files.length} image(s) for proposal design.`,
       });
     }, 1500);
   };
@@ -329,7 +329,6 @@ export default function PlanTab() {
         description: "AI is analyzing and enhancing your image...",
       });
       
-      // Simulate AI enhancement
       setTimeout(() => {
         handleEnhancementChange('aiEnhanced', true);
         handleEnhancementChange('brightness', 10);
@@ -352,7 +351,6 @@ export default function PlanTab() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // AI Generated Design Options
   const [aiDesignOptions, setAiDesignOptions] = useState([
     {
       id: 'ai-design-1',
@@ -392,14 +390,11 @@ export default function PlanTab() {
   const handleGenerateMoreDesigns = () => {
     setIsGeneratingDesigns(true);
 
-    // Generate designs based on user input or defaults
     const generateCustomDesigns = () => {
       if (customDesignInput.trim()) {
-        // AI-generated designs based on user input
         const inputLower = customDesignInput.toLowerCase();
         const designVariations = [];
 
-        // Analyze input for keywords and generate accordingly
         if (inputLower.includes('modern') || inputLower.includes('sleek') || inputLower.includes('minimalist')) {
           designVariations.push({
             id: `ai-design-${Date.now()}-modern`,
@@ -527,7 +522,7 @@ export default function PlanTab() {
 
   return (
     <div className="space-y-6">
-      {/* AI-Generated Mind Map and Plans */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <Card className="border-2 hover:border-blue-500 transition-colors cursor-pointer">
           <CardHeader className="text-center">
@@ -592,7 +587,7 @@ export default function PlanTab() {
         </Card>
       </div>
 
-      {/* Proposal Design Section */}
+      
       <Card className="border-2">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -617,7 +612,7 @@ export default function PlanTab() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Theme Selection */}
+          
           <div>
             <Label className="text-base font-medium mb-3 block">
               Proposal Theme
@@ -652,7 +647,7 @@ export default function PlanTab() {
             </div>
           </div>
 
-          {/* Cover Page Options */}
+          
           <div>
             <Label className="text-base font-medium mb-3 block">
               Cover Page Layout
@@ -677,7 +672,7 @@ export default function PlanTab() {
             </div>
           </div>
 
-          {/* Tab Configuration */}
+          
           <div>
             <Label className="text-base font-medium mb-3 block">
               Proposal Tabs
@@ -708,7 +703,7 @@ export default function PlanTab() {
             </div>
           </div>
 
-          {/* Image Upload and Management */}
+          
           <div>
             <div className="flex items-center justify-between mb-3">
               <Label className="text-base font-medium">
@@ -731,7 +726,7 @@ export default function PlanTab() {
               </TooltipProvider>
             </div>
             
-            {/* Upload Area */}
+            
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-4 hover:border-gray-400 transition-colors">
               <input
                 ref={fileInputRef}
@@ -771,7 +766,7 @@ export default function PlanTab() {
               )}
             </div>
 
-            {/* Uploaded Images Grid */}
+            
             {uploadedImages.length > 0 && (
               <div className="space-y-4">
                 <h4 className="font-medium text-sm">Uploaded Images ({uploadedImages.length})</h4>
@@ -849,7 +844,7 @@ export default function PlanTab() {
         </CardContent>
       </Card>
 
-      {/* Image Enhancement Dialog */}
+      
       <Dialog open={isEnhancementDialogOpen} onOpenChange={setIsEnhancementDialogOpen}>
         <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -864,7 +859,7 @@ export default function PlanTab() {
           
           {selectedImageForEdit && (
             <div className="space-y-6">
-              {/* Image Preview */}
+              
               <div className="text-center">
                 <div className="relative inline-block">
                   <img
@@ -886,7 +881,7 @@ export default function PlanTab() {
                 <p className="text-sm text-gray-600 mt-2">{selectedImageForEdit.name}</p>
               </div>
 
-              {/* AI Quick Enhancement */}
+              
               <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -911,9 +906,9 @@ export default function PlanTab() {
                 </CardContent>
               </Card>
 
-              {/* Manual Enhancement Controls */}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Lighting & Color */}
+                
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">
@@ -958,7 +953,7 @@ export default function PlanTab() {
                   </CardContent>
                 </Card>
 
-                {/* Effects & Transform */}
+                
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">
@@ -1011,7 +1006,7 @@ export default function PlanTab() {
                 </Card>
               </div>
 
-              {/* Quick Action Buttons */}
+              
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"
@@ -1063,7 +1058,7 @@ export default function PlanTab() {
         </DialogContent>
       </Dialog>
 
-      {/* AI Design Options Dialog */}
+      
       <Dialog open={isAIDesignDialogOpen} onOpenChange={setIsAIDesignDialogOpen}>
         <DialogContent className="sm:max-w-[900px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
@@ -1077,7 +1072,7 @@ export default function PlanTab() {
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Custom Design Input Section */}
+            
             <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -1110,7 +1105,7 @@ export default function PlanTab() {
                   </div>
                 </div>
 
-                {/* Quick Suggestion Tags */}
+                
                 <div>
                   <Label className="text-xs font-medium mb-2 block">Quick Suggestions</Label>
                   <div className="flex flex-wrap gap-2">
@@ -1163,7 +1158,7 @@ export default function PlanTab() {
               </CardContent>
             </Card>
 
-            {/* Design Options Grid */}
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {aiDesignOptions.map((design) => (
                 <Card
@@ -1188,7 +1183,7 @@ export default function PlanTab() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {/* Color Scheme Preview */}
+                    
                     <div>
                       <Label className="text-xs font-medium">Color Scheme</Label>
                       <div className="flex space-x-1 mt-1">
@@ -1202,7 +1197,7 @@ export default function PlanTab() {
                       </div>
                     </div>
 
-                    {/* Design Details */}
+                    
                     <div className="space-y-2">
                       <div>
                         <Label className="text-xs font-medium">Cover Style</Label>
@@ -1214,7 +1209,7 @@ export default function PlanTab() {
                       </div>
                     </div>
 
-                    {/* Features */}
+                    
                     <div>
                       <Label className="text-xs font-medium mb-1 block">Key Features</Label>
                       <div className="flex flex-wrap gap-1">
@@ -1226,7 +1221,7 @@ export default function PlanTab() {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
+                    
                     <div className="flex gap-2 pt-2">
                       <Button
                         size="sm"
@@ -1266,7 +1261,7 @@ export default function PlanTab() {
               ))}
             </div>
 
-            {/* Generate More Designs */}
+            
             <Card className="border-2 border-dashed border-purple-300 bg-gradient-to-r from-purple-50 to-blue-50">
               <CardContent className="p-6 text-center">
                 <div className="space-y-4">
@@ -1317,7 +1312,7 @@ export default function PlanTab() {
               </CardContent>
             </Card>
 
-            {/* Selected Design Preview */}
+            
             {selectedAIDesign && (
               <Card className="border-2 border-green-200 bg-green-50">
                 <CardContent className="p-4">
@@ -1364,7 +1359,7 @@ export default function PlanTab() {
         </DialogContent>
       </Dialog>
 
-      {/* Section Details */}
+      
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
@@ -1499,7 +1494,7 @@ export default function PlanTab() {
         </CardContent>
       </Card>
 
-      {/* Layout Options */}
+      
       <Card className="border-2">
         <CardHeader>
           <CardTitle>Layout & Design Options</CardTitle>

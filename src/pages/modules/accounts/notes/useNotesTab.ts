@@ -27,10 +27,8 @@ export function useNotesTab(accountId: string) {
     deleteNote: deleteNoteCore,
   } = useAccountNotes(accountId);
 
-  // Get notes from the response
   const accountNotes = notesData?.notes || [];
 
-  // Convert and sort notes
   const sortedNotes = useMemo(() => {
     return [...accountNotes]
       .sort((a, b) => 
@@ -72,7 +70,6 @@ export function useNotesTab(accountId: string) {
     closeEditModal();
   };
 
-  // Handle create errors
   useEffect(() => {
     if (createNoteError && (createNoteError as AxiosError)?.response?.data) {
       const errors = parseBackendErrors(
@@ -85,7 +82,6 @@ export function useNotesTab(accountId: string) {
     }
   }, [createNoteError]);
 
-  // Handle update errors
   useEffect(() => {
     if (updateNoteError && (updateNoteError as AxiosError)?.response?.data) {
       const errors = parseBackendErrors(
@@ -98,7 +94,6 @@ export function useNotesTab(accountId: string) {
     }
   }, [updateNoteError]);
 
-  // Clear errors on success
   useEffect(() => {
     if (createNoteSuccess) {
       setCreateErrors({});

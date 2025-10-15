@@ -3,7 +3,7 @@ import { X, Sparkles } from 'lucide-react';
 import { MARKET_SECTORS, CLIENT_TYPES, HOSTING_AREAS, US_STATES } from '../CreateAccountModal/CreateAccountModal.constants';
 import { ClientType } from '../CreateAccountModal/CreateAccountModal.types';
 
-interface UpdateAccountModalProps {
+type UpdateAccountModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (data: any) => void;
@@ -61,7 +61,6 @@ export function UpdateAccountModal({
     }
   }, [accountData]);
 
-  // Handle escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -93,17 +92,17 @@ export function UpdateAccountModal({
 
   return (
     <>
-      {/* Backdrop */}
+      
       <div 
         className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
         onClick={onClose}
       >
-        {/* Modal */}
+        
         <div 
           className="w-[653px] p-8 bg-white rounded-2xl border border-[#E5E7EB] flex flex-col gap-5 max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
+          
           <div className="self-stretch flex justify-between items-center">
             <div className="text-slate-800 text-3xl font-semibold font-['Outfit'] leading-[48px]">
               Update Account
@@ -116,12 +115,12 @@ export function UpdateAccountModal({
             </button>
           </div>
 
-          {/* Divider */}
+          
           <div className="self-stretch h-0 border-t border-black/10"></div>
 
-          {/* Form */}
+          
           <form onSubmit={handleSubmit} className="self-stretch flex flex-col gap-5">
-            {/* Row 1: Company Website + Client Name */}
+            
             <div className="self-stretch flex gap-5">
               <div className="w-72 flex flex-col gap-1.5">
                 <div className="flex items-center gap-3">
@@ -156,7 +155,7 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            {/* Row 2: Address 1 + Address 2 */}
+            
             <div className="self-stretch flex gap-5">
               <div className="w-72 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -185,7 +184,7 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            {/* Row 3: City + State + Zip Code */}
+            
             <div className="self-stretch flex gap-5">
               <div className="flex-1 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -237,7 +236,7 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            {/* Row 4: Primary Contact + Email Address */}
+            
             <div className="self-stretch flex gap-5">
               <div className="w-72 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -266,7 +265,7 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            {/* Row 5: Client Market Sector + Client Type */}
+            
             <div className="self-stretch flex gap-5">
               <div className="flex-1 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -317,7 +316,7 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            {/* Row 6: Hosting Area/Office + MSA in place */}
+            
             <div className="self-stretch flex gap-5">
               <div className="flex-1 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -364,7 +363,7 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            {/* Action Buttons */}
+            
             <div className="self-stretch flex gap-5 mt-2">
               <button
                 type="button"

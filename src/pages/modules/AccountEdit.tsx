@@ -8,6 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
+import { US_STATES } from './accounts/components/CreateAccountModal/CreateAccountModal.constants';
+import { getClientTypeColor, getClientTypeLabel } from '@/utils/accountUtils';
 import {
   Select,
   SelectContent,
@@ -44,7 +47,6 @@ const AccountEdit: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Use the new useAccounts hook
   const {
     updateAccount,
     addContact,
@@ -58,12 +60,15 @@ const AccountEdit: React.FC = () => {
     isPromotingContact,
   } = useAccounts();
 
-  // Use the account data from the hook
   const { accountDetail: account, isAccountDetailLoading: isLoading, accountDetailError: error } = useAccountDetail(id || '');
   const { accountContacts: contactsResponse } = useAccountContacts(id || '');
   const [editForm, setEditForm] = useState<AccountUpdate>({});
+  
+  const [isZipLoading, setIsZipLoading] = useState(false);
+  const [zipAutoFilled, setZipAutoFilled] = useState(false);
+  const [zipError, setZipError] = useState<string>('');
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
 
-  // Contact management state
   const [showAddContactModal, setShowAddContactModal] = useState(false);
   const [showEditContactModal, setShowEditContactModal] = useState(false);
   const [showDeleteContactDialog, setShowDeleteContactDialog] = useState(false);
@@ -75,7 +80,6 @@ const AccountEdit: React.FC = () => {
     title: '',
   });
 
-  // Initialize form with current account data when account loads
   useEffect(() => {
     if (account && account.client_name) {
       setEditForm({
@@ -108,26 +112,24 @@ const AccountEdit: React.FC = () => {
 
       toast({
         title: '✅ Account Updated',
-        description: 'Account information has been updated successfully.',
+        description: 'Account information has been updated sucessfully.',
       });
 
-      // Navigate back to account details
-      navigate(`/module/accounts/${account.account_id}`);
-    } catch (error: any) {
-      console.error('Error updating account:', error);
+        const urlId = account?.custom_id || account.account_id;
+        navigate(`/module/accounts/${urlId}`);
+    } catch (err: any) {
       toast({
         title: 'Error',
-        description: 'Failed to update account. Please try again.',
+        description: 'update failed. Please try again.',
         variant: 'destructive',
       });
     }
   };
 
   const handleCancel = () => {
-    navigate(`/module/accounts/${id}`);
+        navigate(`/module/accounts/${id}`);
   };
 
-  // Contact management handlers
   const handleAddContact = () => {
     setContactForm({ name: '', email: '', phone: '', title: '' });
     setSelectedContactId(null);
@@ -160,7 +162,6 @@ const AccountEdit: React.FC = () => {
       return;
     }
 
-    // Show confirmation dialog
     const confirmed = confirm(
       `Are you sure you want to promote "${contactName}" to primary contact?\n\n` +
         `This will:\n` +
@@ -177,13 +178,94 @@ const AccountEdit: React.FC = () => {
         contactId: contactId,
       });
     } catch (error: any) {
-      console.error('Error promoting contact:', error);
-      // Error toast is handled by the mutation
     }
   };
 
+  const handleZipCodeChange = async (zipCode: string) => {
+    setEditForm(prev => ({
+      ...prev,
+      client_address: {
+        ...prev.client_address,
+        line1: prev.client_address?.line1 || '',
+        pincode: zipCode ? parseInt(zipCode) : undefined,
+      },
+    }));
+
+    setZipError('');
+    setZipAutoFilled(false);
+
+    if (zipCode.length !== 5 || !/^\d{5}$/.test(zipCode)) {
+      return;
+    }
+
+    setIsZipLoading(true);
+
+    try {
+      const result = lookupByZipCode(zipCode);
+
+      if (result) {
+        const cities = getCitiesByState(result.stateCode);
+        setAvailableCities(cities);
+
+        setEditForm(prev => ({
+          ...prev,
+          client_address: {
+            ...prev.client_address,
+            line1: prev.client_address?.line1 || '',
+            city: result.city,
+            state: result.state,
+            pincode: parseInt(zipCode),
+          },
+        }));
+
+        setZipAutoFilled(true);
+        toast({
+          title: '✓ Location Found',
+          description: `City and State updated for ${zipCode}`,
+        });
+      } else {
+        setZipError('ZIP code not found');
+        setAvailableCities([]);
+      }
+    } catch (err) {
+      setZipError('Error looking up ZIP code');
+      setAvailableCities([]);
+    } finally {
+      setIsZipLoading(false);
+    }
+  };
+
+  const handleStateChange = (state: string) => {
+    const stateCode = Object.keys({
+      Alabama: 'AL', Alaska: 'AK', Arizona: 'AZ', Arkansas: 'AR', California: 'CA',
+      Colorado: 'CO', Connecticut: 'CT', Delaware: 'DE', Florida: 'FL', Georgia: 'GA',
+      Hawaii: 'HI', Idaho: 'ID', Illinois: 'IL', Indiana: 'IN', Iowa: 'IA',
+      Kansas: 'KS', Kentucky: 'KY', Louisiana: 'LA', Maine: 'ME', Maryland: 'MD',
+      Massachusetts: 'MA', Michigan: 'MI', Minnesota: 'MN', Mississippi: 'MS', Missouri: 'MO',
+      Montana: 'MT', Nebraska: 'NE', Nevada: 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+      'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', Ohio: 'OH',
+      Oklahoma: 'OK', Oregon: 'OR', Pennsylvania: 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+      'South Dakota': 'SD', Tennessee: 'TN', Texas: 'TX', Utah: 'UT', Vermont: 'VT',
+      Virginia: 'VA', Washington: 'WA', 'West Virginia': 'WV', Wisconsin: 'WI', Wyoming: 'WY'
+    }).find(key => key === state);
+
+    if (stateCode) {
+      const cities = getCitiesByState(stateCode);
+      setAvailableCities(cities);
+    }
+
+    setEditForm(prev => ({
+      ...prev,
+      client_address: {
+        ...prev.client_address,
+        line1: prev.client_address?.line1 || '',
+        state,
+        city: '', // Reset city when state changes
+      },
+    }));
+  };
+
   const submitAddContact = async () => {
-    // Validation
     if (!account?.account_id) {
       toast({
         title: 'Error',
@@ -202,7 +284,6 @@ const AccountEdit: React.FC = () => {
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(contactForm.email.trim())) {
       toast({
@@ -227,24 +308,22 @@ const AccountEdit: React.FC = () => {
 
       toast({
         title: '✅ Contact Added',
-        description: 'Contact has been added successfully.',
+        description: 'Contact has been added sucessfully.',
       });
 
       setShowAddContactModal(false);
       setContactForm({ name: '', email: '', phone: '', title: '' });
-    } catch (error: any) {
-      console.error('Error adding contact:', error);
+    } catch (e: any) {
       toast({
         title: 'Error',
         description:
-          error.response?.data?.detail?.message || 'Failed to add contact. Please try again.',
+          error.response?.data?.detail?.message || 'add failed. Please try again.',
         variant: 'destructive',
       });
     }
   };
 
   const submitEditContact = async () => {
-    // Validation
     if (!account?.account_id || !selectedContactId) {
       toast({
         title: 'Error',
@@ -263,7 +342,6 @@ const AccountEdit: React.FC = () => {
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(contactForm.email.trim())) {
       toast({
@@ -288,17 +366,16 @@ const AccountEdit: React.FC = () => {
 
       toast({
         title: '✅ Contact Updated',
-        description: 'Contact has been updated successfully.',
+        description: 'Contact has been updated sucessfully.',
       });
 
       setShowEditContactModal(false);
       setContactForm({ name: '', email: '', phone: '', title: '' });
     } catch (error: any) {
-      console.error('Error updating contact:', error);
       toast({
         title: 'Error',
         description:
-          error.response?.data?.detail?.message || 'Failed to update contact. Please try again.',
+          error.response?.data?.detail?.message || 'update failed. Please try again.',
         variant: 'destructive',
       });
     }
@@ -326,12 +403,11 @@ const AccountEdit: React.FC = () => {
       });
 
       setShowDeleteContactDialog(false);
-    } catch (error: any) {
-      console.error('Error deleting contact:', error);
+    } catch (e: any) {
       toast({
         title: 'Error',
         description:
-          error.response?.data?.detail?.message || 'Failed to delete contact. Please try again.',
+          error.response?.data?.detail?.message || 'delete failed. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -339,36 +415,10 @@ const AccountEdit: React.FC = () => {
     }
   };
 
-  const getClientTypeColor = (type: string) => {
-    switch (type) {
-      case 'tier_1':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'tier_2':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'tier_3':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getClientTypeLabel = (type: string) => {
-    switch (type) {
-      case 'tier_1':
-        return 'Tier 1 - Premium';
-      case 'tier_2':
-        return 'Tier 2 - Standard';
-      case 'tier_3':
-        return 'Tier 3 - Basic';
-      default:
-        return type;
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen">
-        {/* Navigation Header */}
+        
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -384,7 +434,7 @@ const AccountEdit: React.FC = () => {
           </div>
         </div>
 
-        {/* Loading State */}
+        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -398,7 +448,7 @@ const AccountEdit: React.FC = () => {
   if (error || !account || !account.client_name) {
     return (
       <div className="min-h-screen">
-        {/* Navigation Header */}
+        
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -414,7 +464,7 @@ const AccountEdit: React.FC = () => {
           </div>
         </div>
 
-        {/* Error State */}
+        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="mx-auto h-12 w-12 text-red-500 mb-4">
@@ -433,7 +483,7 @@ const AccountEdit: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Navigation Header */}
+      
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -475,9 +525,9 @@ const AccountEdit: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+      
       <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Account Preview Card */}
+        
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center">
@@ -508,9 +558,9 @@ const AccountEdit: React.FC = () => {
           </CardHeader>
         </Card>
 
-        {/* Edit Form */}
+        
         <div className="space-y-8">
-          {/* Basic Information */}
+          
           <Card>
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>
@@ -594,7 +644,7 @@ const AccountEdit: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Contact Information */}
+          
           <Card>
             <CardHeader>
               <CardTitle>Address Information</CardTitle>
@@ -602,10 +652,10 @@ const AccountEdit: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {/* Address Fields */}
+                
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="address-line1">Address Line 1</Label>
+                    <Label htmlFor="address-line1">Address Line 1*</Label>
                     <Input
                       id="address-line1"
                       value={editForm.client_address?.line1 || ''}
@@ -618,13 +668,13 @@ const AccountEdit: React.FC = () => {
                           },
                         }))
                       }
-                      placeholder="Enter address line 1"
+                      placeholder="Enter street address"
                       className="mt-1"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="address-line2">Address Line 2 (Optional)</Label>
+                    <Label htmlFor="address-line2">Address Line 2</Label>
                     <Input
                       id="address-line2"
                       value={editForm.client_address?.line2 || ''}
@@ -638,37 +688,109 @@ const AccountEdit: React.FC = () => {
                           },
                         }))
                       }
-                      placeholder="Enter address line 2 (optional)"
+                      placeholder="Apartment, suite, etc. (optional)"
                       className="mt-1"
                     />
                   </div>
 
+                  
                   <div>
-                    <Label htmlFor="pincode">Pincode</Label>
+                    <Label htmlFor="pincode">
+                      ZIP Code* {isZipLoading && <span className="text-xs text-blue-600 ml-2">🔍 Looking up...</span>}
+                    </Label>
                     <Input
                       id="pincode"
-                      type="number"
+                      type="text"
+                      maxLength={5}
                       value={editForm.client_address?.pincode || ''}
-                      onChange={e =>
-                        setEditForm(prev => ({
-                          ...prev,
-                          client_address: {
-                            ...prev.client_address,
-                            line1: prev.client_address?.line1 || '',
-                            pincode: e.target.value ? parseInt(e.target.value) : undefined,
-                          },
-                        }))
-                      }
-                      placeholder="Enter pincode"
-                      className="mt-1"
+                      onChange={e => handleZipCodeChange(e.target.value)}
+                      placeholder="Enter 5-digit ZIP code"
+                      className={`mt-1 ${zipAutoFilled ? 'border-green-500 bg-green-50' : ''} ${zipError ? 'border-red-500' : ''}`}
                     />
+                    {zipError && <p className="text-xs text-red-600 mt-1">{zipError}</p>}
+                    {zipAutoFilled && (
+                      <p className="text-xs text-green-600 mt-1">✓ City and State auto-filled</p>
+                    )}
+                  </div>
+
+                  
+                  <div>
+                    <Label htmlFor="state">State*</Label>
+                    <Select
+                      value={editForm.client_address?.state || ''}
+                      onValueChange={handleStateChange}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select State" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px] overflow-y-auto">
+                        {US_STATES.map(state => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  
+                  <div>
+                    <Label htmlFor="city">City*</Label>
+                    {availableCities.length > 0 ? (
+                      <Select
+                        value={editForm.client_address?.city || ''}
+                        onValueChange={value =>
+                          setEditForm(prev => ({
+                            ...prev,
+                            client_address: {
+                              ...prev.client_address,
+                              line1: prev.client_address?.line1 || '',
+                              city: value,
+                            },
+                          }))
+                        }
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select City" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px] overflow-y-auto">
+                          {availableCities.map(city => (
+                            <SelectItem key={city} value={city}>
+                              {city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        id="city"
+                        value={editForm.client_address?.city || ''}
+                        onChange={e =>
+                          setEditForm(prev => ({
+                            ...prev,
+                            client_address: {
+                              ...prev.client_address,
+                              line1: prev.client_address?.line1 || '',
+                              city: e.target.value,
+                            },
+                          }))
+                        }
+                        placeholder="Enter city name"
+                        className="mt-1"
+                      />
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      {availableCities.length > 0
+                        ? 'Select from available cities in this state'
+                        : 'Enter ZIP code or select state to see city options'}
+                    </p>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Contacts */}
+          
           {account &&
             (account.primary_contact ||
               (account.secondary_contacts && account.secondary_contacts.length > 0)) && (
@@ -693,7 +815,7 @@ const AccountEdit: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Primary Contact */}
+                    
                     {account.primary_contact && (
                       <div className="flex items-center justify-between p-4 border rounded-lg bg-blue-50 border-blue-200">
                         <div className="flex items-center space-x-4">
@@ -744,7 +866,7 @@ const AccountEdit: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Secondary Contacts */}
+                    
                     {account.secondary_contacts?.map((contact, index) => (
                       <div
                         key={contact.contact_id || index}
@@ -824,7 +946,7 @@ const AccountEdit: React.FC = () => {
               </Card>
             )}
 
-          {/* Notes */}
+          
           <Card>
             <CardHeader>
               <CardTitle>Internal Notes</CardTitle>
@@ -847,7 +969,7 @@ const AccountEdit: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Action Buttons */}
+          
           <div className="flex items-center justify-end space-x-4 pt-6 border-t">
             <Button variant="outline" onClick={handleCancel} disabled={isUpdating}>
               <X className="h-4 w-4 mr-2" />
@@ -870,7 +992,7 @@ const AccountEdit: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Contact Modal */}
+      
       <Dialog open={showAddContactModal} onOpenChange={setShowAddContactModal}>
         <DialogContent className="sm:max-w-[425px] bg-white">
           <DialogHeader>
@@ -952,7 +1074,7 @@ const AccountEdit: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Contact Modal */}
+      
       <Dialog open={showEditContactModal} onOpenChange={setShowEditContactModal}>
         <DialogContent className="sm:max-w-[425px] bg-white">
           <DialogHeader>
@@ -1034,7 +1156,7 @@ const AccountEdit: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Contact Confirmation */}
+      
       <AlertDialog open={showDeleteContactDialog} onOpenChange={setShowDeleteContactDialog}>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>

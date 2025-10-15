@@ -1,4 +1,4 @@
-export interface HomePageProps {
+export type HomePageProps = {
   className?: string;
 }
 

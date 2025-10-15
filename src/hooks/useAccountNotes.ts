@@ -4,10 +4,8 @@ import { useToast } from '@/hooks/useToast';
 import { createQueryKeys } from '@/lib/query-client';
 import { AccountNoteCreateRequest, AccountNoteUpdateRequest } from '@/types/accountNotes';
 
-// Base query keys using the utility
 const baseKeys = createQueryKeys('account-notes');
 
-// Extended query keys for account notes feature
 export const accountNotesKeys = {
   ...baseKeys,
   list: (accountId: string) => [...baseKeys.all, 'notes', accountId] as const,
@@ -22,7 +20,6 @@ export function useAccountNotes(accountId: string) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch notes for an account
   const {
     data: notesData,
     isLoading: isNotesLoading,
@@ -34,10 +31,10 @@ export function useAccountNotes(accountId: string) {
       return accountNotesApi.listNotes(accountId);
     },
     enabled: !!accountId,
-    staleTime: 1000 * 60 * 3, // 3 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes - notes don't change very frequently
   });
 
-  // Create note mutation
+  // working but need cleanup - harsh.pawar
   const createNoteMutation = useMutation({
     mutationFn: async (data: AccountNoteCreateRequest) => {
       if (!accountId) throw new Error('Account ID is required');
@@ -45,7 +42,6 @@ export function useAccountNotes(accountId: string) {
       return { message: 'Note created successfully' };
     },
     onSuccess: async (data: { message: string }) => {
-      // Force immediate refetch of notes data
       await queryClient.refetchQueries({ 
         queryKey: accountNotesKeys.list(accountId),
         type: 'active'
@@ -53,18 +49,16 @@ export function useAccountNotes(accountId: string) {
       toast.success(data.message);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to create note');
+      toast.error(error.response?.data?.message || 'create failed');
     },
   });
 
-  // Update note mutation - simplified
   const updateNoteMutation = useMutation({
     mutationFn: async (params: { noteId: string; data: AccountNoteUpdateRequest }) => {
       const response = await accountNotesApi.updateNote(accountId, params.noteId, params.data);
       return { message: 'Note updated successfully' };
     },
     onSuccess: async (data: { message: string }) => {
-      // Force immediate refetch of notes data
       await queryClient.refetchQueries({ 
         queryKey: accountNotesKeys.list(accountId),
         type: 'active'
@@ -72,11 +66,10 @@ export function useAccountNotes(accountId: string) {
       toast.success(data.message);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to update note');
+      toast.error(error.response?.data?.message || 'update failed');
     },
   });
 
-  // Delete note mutation
   const deleteNoteMutation = useMutation({
     mutationFn: async (noteId: string) => {
       if (!accountId || !noteId) throw new Error('Account ID and Note ID are required');
@@ -84,7 +77,6 @@ export function useAccountNotes(accountId: string) {
       return { message: 'Note deleted successfully' };
     },
     onSuccess: async (data: { message: string }) => {
-      // Force immediate refetch of notes data
       await queryClient.refetchQueries({ 
         queryKey: accountNotesKeys.list(accountId),
         type: 'active'
@@ -92,22 +84,19 @@ export function useAccountNotes(accountId: string) {
       toast.success(data.message);
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to delete note');
+      toast.error(error.response?.data?.message || 'delete failed');
     },
   });
 
   return {
-    // Query data and states
     notesData,
     isNotesLoading,
     notesError,
 
-    // Note mutation actions
     createNote: createNoteMutation.mutateAsync,
     updateNote: updateNoteMutation.mutateAsync,
     deleteNote: deleteNoteMutation.mutateAsync,
 
-    // Note mutation states
     isCreatingNote: createNoteMutation.isPending,
     isUpdatingNote: updateNoteMutation.isPending,
     isDeletingNote: deleteNoteMutation.isPending,

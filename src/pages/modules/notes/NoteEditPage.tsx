@@ -58,10 +58,8 @@ export default function NoteEditPage() {
     },
   });
 
-  // Load note data into form when note is fetched
   useEffect(() => {
     if (note) {
-      // Convert datetime to local datetime-local format
       const localDateTime = format(new Date(note.meeting_datetime), "yyyy-MM-dd'T'HH:mm");
       
       form.reset({
@@ -73,7 +71,6 @@ export default function NoteEditPage() {
   }, [note, form]);
 
   const onSubmit = (data: NoteUpdateFormData) => {
-    // Convert local datetime back to ISO format
     const updateData = {
       ...data,
       meeting_datetime: data.meeting_datetime 
@@ -114,7 +111,7 @@ export default function NoteEditPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-destructive">Error Loading Note</h1>
           <p className="text-muted-foreground mt-2">
-            {error?.message || 'Failed to load the note. Please try again.'}
+            {error?.message || 'Load failed note. Please try again.'}
           </p>
           <Button asChild className="mt-4">
             <Link to="/module/notes">
@@ -129,7 +126,7 @@ export default function NoteEditPage() {
 
   return (
     <div className="container mx-auto py-8 max-w-4xl space-y-6">
-      {/* Header */}
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Edit Note</h1>
@@ -141,7 +138,7 @@ export default function NoteEditPage() {
         </Button>
       </div>
 
-      {/* Form */}
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -155,7 +152,7 @@ export default function NoteEditPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Meeting Title */}
+              
               <FormField
                 control={form.control}
                 name="meeting_title"
@@ -177,7 +174,7 @@ export default function NoteEditPage() {
                 )}
               />
 
-              {/* Meeting Date and Time */}
+              
               <FormField
                 control={form.control}
                 name="meeting_datetime"
@@ -203,7 +200,7 @@ export default function NoteEditPage() {
                 )}
               />
 
-              {/* Meeting Notes */}
+              
               <FormField
                 control={form.control}
                 name="meeting_notes"
@@ -226,7 +223,7 @@ export default function NoteEditPage() {
                 )}
               />
 
-              {/* Form Actions */}
+              
               <div className="flex items-center justify-end gap-4 pt-6">
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Cancel

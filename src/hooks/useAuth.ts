@@ -39,6 +39,7 @@ export function useAuth() {
   useEffect(() => {
     const updateAuthState = () => {
       if (!isMounted.current) return;
+      // will optimize later - amar74.soft
       const { isAuthenticated: globalAuth, backendUser: globalUser } = authManager.getAuthState();
       setIsAuthenticated(globalAuth);
       setBackendUser(globalUser);
@@ -46,7 +47,6 @@ export function useAuth() {
 
     const unsubscribe = authManager.subscribe(updateAuthState);
     
-    // Initialize with current state
     updateAuthState();
 
     return () => {
@@ -54,7 +54,6 @@ export function useAuth() {
     };
   }, []);
 
-  // Memoized AuthState object
   const authState: AuthState = {
     user: backendUser,
     isAuthenticated,
@@ -62,13 +61,13 @@ export function useAuth() {
     error,
   };
 
-  // Auth utility wrappers
   const handleClearAuthData = useCallback(() => {
     if (!isMounted.current) return;
     setError(null);
     clearAuthData();
   }, []);
 
+  // amar74.soft - quick fix, need proper solution
   const handleAuthenticateWithBackend = useCallback(
     async (supabaseToken: string): Promise<boolean> => {
       return authenticateWithBackend(supabaseToken, isMounted, setError);
@@ -76,7 +75,6 @@ export function useAuth() {
     []
   );
 
-  // Initialize authentication
   useEffect(() => {
     isMounted.current = true;
 
@@ -96,7 +94,6 @@ export function useAuth() {
 
       const initPromise = (async () => {
         try {
-          // Check for existing stored auth data but don't set auth state yet
           // We'll re-authenticate with backend to ensure everything is fresh
           restoreStoredToken();
           
@@ -209,7 +206,6 @@ export function useAuth() {
     try {
       setError(null);
       
-      // Clear auth data first to prevent any race conditions
       handleClearAuthData();
       
       // Then sign out from Supabase

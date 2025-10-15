@@ -1,12 +1,9 @@
 import { z } from 'zod';
 
-// Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Phone number validation (standard international formats)
 const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
 
-// Postal code validation (supports various international formats)
 const postalCodeRegex = /^[0-9]{5,6}$/;
 
 export const CreateOrganizationSchema = z.object({
@@ -20,7 +17,7 @@ export const CreateOrganizationSchema = z.object({
     .string()
     .optional()
     .refine((val) => {
-      if (!val || val.trim() === '') return true; // Optional field
+      if (!val || val== '') return true; // Optional field
       // Allow URLs with or without protocol
       const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
       return urlPattern.test(val);
@@ -45,7 +42,7 @@ export const CreateOrganizationSchema = z.object({
       .string()
       .optional()
       .refine((val) => {
-        if (!val || val.trim() === '') return true; // Optional field
+        if (!val || val== '') return true; // Optional field
         return emailRegex.test(val);
       }, 'Please enter a valid email address'),
     
@@ -53,8 +50,8 @@ export const CreateOrganizationSchema = z.object({
       .string()
       .optional()
       .refine((val) => {
-        if (!val || val.trim() === '') return true; // Optional field
-        // Remove spaces, dashes, and parentheses for validation
+        if (!val || val== '') return true; // Optional field
+        // temp solution by rose11
         const cleanPhone = val.replace(/[\s\-\(\)]/g, '');
         return phoneRegex.test(cleanPhone);
       }, 'Please enter a valid phone number'),

@@ -9,6 +9,7 @@ import { tr } from 'date-fns/locale';
 
 export function useAccountsPage() {
   const navigate = useNavigate();
+  // will optimize later - rose11
   const { toast } = useToast();
   
   // Local state
@@ -17,8 +18,9 @@ export function useAccountsPage() {
     tier: 'all',
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState({ title: '', description: '' });
 
-  // Use the real accounts hook
   const {
     isLoading,
     accountsList,
@@ -27,16 +29,18 @@ export function useAccountsPage() {
     isCreating,
     isDeleting,
     createErrors,
+    pagination,
+    currentPage,
+    pageSize,
+    setCurrentPage,
+    setPageSize,
   } = useAccounts({eager: true});
 
   const accounts = accountsList?.accounts || [];
-  // Use real API data with current filters
  
 
 
-  // API handles filtering, so we use accounts directly
 
-  // Calculate stats from accounts data
   const stats: AccountStatsData = useMemo(() => {
     if (accounts.length === 0) {
       return {
@@ -56,7 +60,6 @@ export function useAccountsPage() {
     const highRiskCount = 0;
     const growingCount = 0;
     
-    // Calculate total value from actual account values
     const totalValueNumber = accounts.reduce((sum, acc) => {
       return sum + (acc.total_value || 0);
     }, 0);
@@ -71,7 +74,6 @@ export function useAccountsPage() {
     };
   }, [accounts]);
 
-  // Handlers
   const handleSearchChange = (search: string) => {
     setFilters(prev => ({ ...prev, search }));
   };
@@ -85,28 +87,64 @@ export function useAccountsPage() {
     setIsCreateModalOpen(true);
   };
 
-  const handleCreateAccountSubmit = async (formData: AccountCreate) => {
+  const handleCreateAccountSubmit = async (formData: any) => {
     try {
-      // Use the real API call
-      await createAccount(formData);
+      const accountData: AccountCreate = {
+        company_website: formData.company_website || null,
+        client_name: formData.client_name,
+        client_address: {
+          line1: formData.client_address_line1,
+          line2: formData.client_address_line2 || null,
+          city: formData.client_address_city || null,
+          pincode: formData.client_address_zip_code ? parseInt(formData.client_address_zip_code) : null,
+        },
+        primary_contact: {
+          name: formData.primary_contact || formData.client_name,
+          email: formData.email_address,
+          phone: formData.phone,
+          title: null,
+        },
+        secondary_contacts: [],
+        client_type: formData.client_type as ClientType,
+        market_sector: formData.market_sector || null,
+      };
+
+      await createAccount(accountData);
       
-      // Only close modal and show success message if API call succeeds
-      toast({
-        title: 'Account Created Successfully',
+      // Only close modal and show success modal if API call succeeds
+      setIsCreateModalOpen(false);
+      setSuccessMessage({
+        title: 'Created Account',
         description: `${formData.client_name} has been added to your accounts.`,
       });
-      setIsCreateModalOpen(false);
+      setIsSuccessModalOpen(true);
     } catch (error: any) {
-      // Show specific error message from API if available
-      const errorMessage = error.response?.data?.detail?.[0]?.msg 
-        || error.response?.data?.message 
-        || 'There was an error creating the account. Please try again.';
+      const validationErrors = error.response?.data?.detail;
       
-      toast({
-        title: 'Error Creating Account',
-        description: errorMessage,
-        variant: 'destructive',
-      });
+      if (Array.isArray(validationErrors) && validationErrors.length > 0) {
+        // Collect all error messages
+        const errorMessages = validationErrors.map((err: any) => {
+          const fieldPath = err.loc?.slice(1).join('.') || 'field';
+          const message = err.msg || 'Validation error';
+          return `• ${fieldPath}: ${message}`;
+        }).join('\n');
+        
+        toast({
+          title: 'Validation Error',
+          description: errorMessages,
+          variant: 'destructive',
+        });
+      } else {
+        const errorMessage = error.response?.data?.message 
+          || error.message
+          || 'There was an error creating the account. Please try again.';
+        
+        toast({
+          title: 'Error Creating Account',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
       
       // Re-throw error so the form component can handle it
       throw error;
@@ -114,9 +152,12 @@ export function useAccountsPage() {
   };
 
   const handleAccountClick = (accountId: string) => {
-    navigate(`/module/accounts/${accountId}`);
+    const account = accounts.find(acc => acc.account_id === accountId);
+    const urlId = account?.custom_id || accountId;
+    navigate(`/module/accounts/${urlId}`);
   };
 
+  // will optimize later - guddy.tech
   const handleExport = (format: string) => {
     toast({
       title: `Exporting to ${format.toUpperCase()}`,
@@ -125,7 +166,6 @@ export function useAccountsPage() {
   };
 
   const handleStatClick = (statId: string) => {
-    // TODO: Implement stat card click handling (filtering or navigation)
   };
 
   return {
@@ -135,6 +175,15 @@ export function useAccountsPage() {
     filters,
     isLoading,
     isCreateModalOpen,
+    isSuccessModalOpen,
+    successMessage,
+    
+    // Pagination
+    pagination,
+    currentPage,
+    pageSize,
+    setCurrentPage,
+    setPageSize,
     
     // Actions
     handleSearchChange,
@@ -145,6 +194,7 @@ export function useAccountsPage() {
     handleExport,
     handleStatClick,
     setIsCreateModalOpen,
+    setIsSuccessModalOpen,
     
     // Status
     isCreating: isCreating || false,

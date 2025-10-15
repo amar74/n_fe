@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { schemas } from './generated/orgs';
 
-// Custom schema for Organization to fix datetime validation issue
+// @author amar74.soft
 const OrganizationCustomSchema = z
   .object({
     id: z.string().uuid(),
@@ -35,10 +35,8 @@ const OrganizationCustomSchema = z
   })
   .passthrough();
 
-// Export the custom schema for use in API validation
 export { OrganizationCustomSchema };
 
-// Re-export generated types (except Organization which we override)
 export type OrgCreate = z.infer<typeof schemas.OrgCreateResponse>;
 export type OrgCreated = z.infer<typeof schemas.OrgCreatedResponse>;
 export type OrgUpdate = z.infer<typeof schemas.OrgUpdateResponse>;
@@ -50,12 +48,10 @@ export type UpdateOrgRequest = z.infer<typeof schemas.OrgUpdateRequest>;
 export type OrgMemberResponse = z.infer<typeof schemas.OrgMemberResponse>;
 export type OrgMembersListResponse = z.infer<typeof schemas.OrgMembersListResponse>;
 
-// Invite types from generated schema
 export type InviteCreateRequest = z.infer<typeof schemas.InviteCreateRequest>;
 export type InviteResponse = z.infer<typeof schemas.InviteResponse>;
 export type AcceptInviteResponse = z.infer<typeof schemas.AcceptInviteResponse>;
 
-// Address and Contact types from generated schema
 export type AddressCreateRequest = z.infer<typeof schemas.AddressCreateResquest>;
 export type ContactCreateRequest = z.infer<typeof schemas.ContactCreateRequest>;
 export type AddressCreateResponse = z.infer<typeof schemas.AddressCreateResponse>;

@@ -3,7 +3,6 @@
 import { z } from 'zod';
 import { schemas } from './generated/scraper'; // Adjust path if needed
 
-// Re-export generated types
 export type ScrapedAddress = z.infer<typeof schemas.ScrapedAddress>;
 export type ScrapedInfo = z.infer<typeof schemas.ScrapedInfo>;
 export type ScrapeResult = z.infer<typeof schemas.ScrapeResult>;
@@ -20,12 +19,10 @@ export interface ScraperState {
   error: string | null;
 }
 
-// Request form for user input (may differ from actual ScrapeRequest if you use a form)
 export interface ScraperInput {
   urls: string[];
 }
 
-// Scraper response wrapper
 export interface ScraperResponse extends ScrapeResponse {
   timestamp: string; // for example: when the scraping was done
 }

@@ -3,12 +3,14 @@ import { z } from "zod";
 
 import { HTTPValidationError } from "./common";
 import { ValidationError } from "./common";
+import { search } from "./common";
 
 const AddressCreate = z
   .object({
     line1: z.string().min(1).max(255),
     line2: z.union([z.string(), z.null()]).optional(),
     city: z.union([z.string(), z.null()]).optional(),
+    state: z.union([z.string(), z.null()]).optional(),
     pincode: z.union([z.number(), z.null()]).optional(),
   })
   .passthrough();
@@ -37,6 +39,7 @@ const AddressResponse = z
     line1: z.string().min(1).max(255),
     line2: z.union([z.string(), z.null()]).optional(),
     city: z.union([z.string(), z.null()]).optional(),
+    state: z.union([z.string(), z.null()]).optional(),
     pincode: z.union([z.number(), z.null()]).optional(),
     address_id: z.string().uuid(),
   })
@@ -53,6 +56,7 @@ const ContactResponse = z
 const AccountDetailResponse = z
   .object({
     account_id: z.string().uuid(),
+    custom_id: z.union([z.string(), z.null()]).optional(),
     company_website: z.union([z.string(), z.null()]).optional(),
     client_name: z.string(),
     client_address: z.union([AddressResponse, z.null()]).optional(),
@@ -62,8 +66,19 @@ const AccountDetailResponse = z
     market_sector: z.union([z.string(), z.null()]).optional(),
     notes: z.union([z.string(), z.null()]).optional(),
     total_value: z.union([z.number(), z.null()]).optional(),
+    ai_health_score: z.union([z.number(), z.null()]).optional(),
+    health_trend: z.union([z.string(), z.null()]).optional(),
+    risk_level: z.union([z.string(), z.null()]).optional(),
+    last_ai_analysis: z.union([z.string(), z.null()]).optional(),
+    data_quality_score: z.union([z.number(), z.null()]).optional(),
+    revenue_growth: z.union([z.number(), z.null()]).optional(),
+    communication_frequency: z.union([z.number(), z.null()]).optional(),
+    win_rate: z.union([z.number(), z.null()]).optional(),
     opportunities: z.union([z.number(), z.null()]).optional(),
     last_contact: z.union([z.string(), z.null()]).optional(),
+    hosting_area: z.union([z.string(), z.null()]).optional(),
+    account_approver: z.union([z.string(), z.null()]).optional(),
+    approval_date: z.union([z.string(), z.null()]).optional(),
     created_at: z.string().datetime({ offset: true }),
     updated_at: z.union([z.string(), z.null()]).optional(),
   })
@@ -71,6 +86,7 @@ const AccountDetailResponse = z
 const AccountListItem = z
   .object({
     account_id: z.string().uuid(),
+    custom_id: z.union([z.string(), z.null()]).optional(),
     client_name: z.string(),
     client_address: z.union([AddressResponse, z.null()]).optional(),
     primary_contact_name: z.union([z.string(), z.null()]).optional(),
@@ -79,6 +95,8 @@ const AccountListItem = z
     market_sector: z.union([z.string(), z.null()]).optional(),
     total_value: z.union([z.number(), z.null()]).optional(),
     ai_health_score: z.union([z.number(), z.null()]).optional(),
+    health_trend: z.union([z.string(), z.null()]).optional(),
+    risk_level: z.union([z.string(), z.null()]).optional(),
     last_contact: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
@@ -97,6 +115,9 @@ const AccountUpdate = z
     client_type: z.union([ClientType, z.null()]),
     market_sector: z.union([z.string(), z.null()]),
     notes: z.union([z.string(), z.null()]),
+    hosting_area: z.union([z.string(), z.null()]),
+    account_approver: z.union([z.string(), z.null()]),
+    approval_date: z.union([z.string(), z.null()]),
   })
   .partial()
   .passthrough();
@@ -111,7 +132,6 @@ const AccountCreateResponse = z
     message: z.string(),
   })
   .passthrough();
-const search = z.union([z.string(), z.null()]).optional();
 const AccountUpdateResponse = z
   .object({
     status_code: z.number().int().optional().default(200),
@@ -148,12 +168,6 @@ const ContactUpdateRequest = z
   })
   .partial()
   .passthrough();
-const ContactDeleteResponse = z
-  .object({
-    status_code: z.number().int().optional().default(200),
-    message: z.string(),
-  })
-  .passthrough();
 
 export const schemas = {
   AddressCreate,
@@ -169,13 +183,11 @@ export const schemas = {
   ContactAddRequest,
   ContactListResponse,
   AccountCreateResponse,
-  search,
   AccountUpdateResponse,
   AccountDeleteResponse,
   ContactCreateResponse,
   ContactUpdateResponse,
   ContactUpdateRequest,
-  ContactDeleteResponse,
 };
 
 const endpoints = makeApi([
@@ -408,7 +420,10 @@ const endpoints = makeApi([
         schema: z.string().uuid(),
       },
     ],
-    response: ContactDeleteResponse,
+    response: z
+      .object({ status_code: z.number().int().default(200) })
+      .partial()
+      .passthrough(),
     errors: [
       {
         status: 422,

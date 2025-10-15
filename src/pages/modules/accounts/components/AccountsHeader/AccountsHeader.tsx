@@ -13,7 +13,7 @@ import { exportToCSV, exportToExcel } from '@/utils/exportUtils';
 import { useToast } from '@/hooks/useToast';
 import { Link } from 'react-router-dom';
 
-interface AccountsHeaderProps {
+type AccountsHeaderProps = {
   onCreateAccount: () => void;
   onFilterChange: (filter: ClientType | 'all') => void;
 }
@@ -37,20 +37,20 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
         await exportToExcel(accountsList.accounts);
       }
       toast.success('Export Successful', {
-        description: `Accounts data exported to ${format.toUpperCase()} successfully`
+        description: `Accounts data exported to ${format.toUpperCase()} sucessfully`
       });
     } catch (error) {
       toast.error('Export Failed', {
-        description: error instanceof Error ? error.message : 'Failed to export accounts data'
+        description: error instanceof Error ? error.message : 'export failed data'
       });
     }
   };
   return (
     <div className="content-stretch flex flex-col gap-7 items-start justify-start relative w-full">
-      {/* Header Content */}
+      
       <div className="content-stretch flex flex-col h-[85px] items-start justify-between relative shrink-0 w-full">
         <div className="content-stretch flex items-end justify-between relative shrink-0 w-full">
-          {/* Title Section */}
+          
           <div className="content-stretch flex flex-col gap-2 items-start justify-start leading-[0] not-italic relative shrink-0 text-nowrap">
             <div className="font-['Inter:Semi_Bold',_sans-serif] font-semibold relative shrink-0 text-[#ed8a09] text-[40px] text-center">
               <p className="leading-[normal] text-nowrap whitespace-pre">My Accounts</p>
@@ -60,9 +60,9 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
             </div>
           </div>
 
-          {/* CTA Buttons */}
+          
           <div className="flex flex-wrap gap-3 items-start justify-start">
-            {/* All Accounts Dropdown */}
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="bg-white box-border flex h-[46px] items-center justify-between px-5 py-3 relative rounded-[24px] min-w-[180px] cursor-pointer hover:shadow-md transition-shadow">
@@ -84,7 +84,7 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Actions Dropdown */}
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="bg-white box-border flex h-[46px] items-center justify-between px-5 py-3 relative rounded-[24px] min-w-[140px] cursor-pointer hover:shadow-md transition-shadow">
@@ -105,7 +105,7 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Client Survey Link */}
+            
             <Link to="/client-surveys" className="bg-[rgba(255,255,255,0)] box-border flex gap-2.5 h-[46px] items-center justify-center px-4 py-2 relative rounded-[100px] min-w-[150px] cursor-pointer hover:shadow-md transition-shadow">
               <div aria-hidden="true" className="absolute border border-black border-solid inset-0 pointer-events-none rounded-[100px]" />
               <FileText className="relative shrink-0 size-6 text-black" />
@@ -114,7 +114,7 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
               </div>
             </Link>
 
-            {/* Create Account Button */}
+            
             <div 
               onClick={onCreateAccount}
               className="bg-[#0f0901] box-border flex gap-2.5 h-[46px] items-center justify-center px-4 py-2 relative rounded-[100px] min-w-[150px] cursor-pointer hover:shadow-md transition-shadow"

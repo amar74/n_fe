@@ -22,18 +22,18 @@ export interface WebsiteAnalysisResponse {
   results: WebsiteAnalysisResult[];
 }
 
-export interface CreateOrganizationFormProps {
+export type CreateOrganizationFormProps = {
   onSubmit: (data: CreateOrgFormData) => Promise<void>;
   isSubmitting: boolean;
 }
 
-export interface AddressFormProps {
+export type AddressFormProps = {
   control: any; // Replace with proper form control type
   isSubmitting: boolean;
   showAISuggestions: boolean;
 }
 
-export interface ContactFormProps {
+export type ContactFormProps = {
   control: any; // Replace with proper form control type
   isSubmitting: boolean;
   userEmail?: string;

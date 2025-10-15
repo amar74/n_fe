@@ -1,4 +1,4 @@
-export interface ComingSoonProps {
+export type ComingSoonProps = {
   moduleId: string;
   moduleName: string;
 }

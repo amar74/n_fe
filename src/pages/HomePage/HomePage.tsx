@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { useHomePage } from './useHomePage';
 import { memo } from 'react';
 
+// @author amar74.soft
 function HomePage() {
   const {
     user,
@@ -35,9 +36,9 @@ function HomePage() {
 
     return (
       <div className="h-full bg-[#F5F3F2] font-inter">
-        {/* Main Content Area */}
+        
         <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-full">
-          {/* Content will be rendered here via Outlet */}
+          
           <Outlet />
         </div>
       </div>

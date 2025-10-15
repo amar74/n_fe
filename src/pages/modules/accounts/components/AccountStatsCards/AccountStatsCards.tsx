@@ -1,7 +1,7 @@
 import React from 'react';
 import { AccountStatsCard } from '../../AccountDetailsPage.types';
 
-interface AccountStatsCardsProps {
+type AccountStatsCardsProps = {
   stats: AccountStatsCard[];
 }
 
@@ -13,14 +13,14 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
   return (
     <div className="w-full h-60 p-6 bg-white rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E5E7EB] flex justify-between items-start">
       <div className="flex-1 self-stretch flex justify-start items-start gap-3">
-        {/* Left Column */}
+        
         <div className="flex-1 h-44 inline-flex flex-col justify-start items-start gap-3">
           {leftStats.map((stat) => (
             <div
               key={stat.id}
               className="self-stretch flex-1 px-3 py-2 bg-[#FAFAF8] rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E5E7EB] inline-flex justify-between items-center"
             >
-              {/* Icon */}
+              
               <div className="size-14 p-3 bg-[#F0F0F0] rounded-xl flex justify-between items-center overflow-hidden">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {stat.id === 'total-value' ? (
@@ -31,7 +31,7 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
                 </svg>
               </div>
 
-              {/* Text Content */}
+              
               <div className="inline-flex flex-col justify-center items-end gap-3.5">
                 <div className="justify-start text-[#667085] text-sm font-normal font-['Outfit'] leading-tight">
                   {stat.title}
@@ -44,14 +44,14 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
           ))}
         </div>
 
-        {/* Right Column */}
+        
         <div className="flex-1 h-44 inline-flex flex-col justify-start items-start gap-3">
           {rightStats.map((stat) => (
             <div
               key={stat.id}
               className="self-stretch flex-1 px-3 py-2 bg-[#FAFAF8] rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E5E7EB] inline-flex justify-between items-center"
             >
-              {/* Icon */}
+              
               <div className="size-14 p-3 bg-[#F0F0F0] rounded-xl flex justify-between items-center overflow-hidden">
                 <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   {stat.id === 'last-contact' ? (
@@ -62,7 +62,7 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
                 </svg>
               </div>
 
-              {/* Text Content */}
+              
               <div className="inline-flex flex-col justify-center items-end gap-3.5">
                 <div className="justify-start text-[#667085] text-sm font-normal font-['Outfit'] leading-tight">
                   {stat.title}

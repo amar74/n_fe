@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-interface ArchitectureNodeProps {
+type ArchitectureNodeProps = {
   title: string;
   icon: string;
   description?: string;
@@ -50,11 +50,12 @@ const ConnectionLine: React.FC<{
   />
 );
 
+// working but need cleanup - rose11
 export default function SystemArchitecture() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
             System Architecture
@@ -65,9 +66,9 @@ export default function SystemArchitecture() {
           </p>
         </div>
 
-        {/* Architecture Diagram */}
+        
         <div className="space-y-8">
-          {/* User & External Layer */}
+          
           <div className="text-center">
             <Badge
               variant="outline"
@@ -91,12 +92,12 @@ export default function SystemArchitecture() {
             </div>
           </div>
 
-          {/* Connection */}
+          
           <div className="flex justify-center">
             <ConnectionLine direction="vertical" className="h-8" />
           </div>
 
-          {/* Network & Gateway Layer */}
+          
           <div className="text-center">
             <Badge
               variant="outline"
@@ -121,12 +122,12 @@ export default function SystemArchitecture() {
             </div>
           </div>
 
-          {/* Connection */}
+          
           <div className="flex justify-center">
             <ConnectionLine direction="vertical" className="h-8" />
           </div>
 
-          {/* Application Services Layer */}
+          
           <div className="text-center">
             <Badge
               variant="outline"
@@ -168,12 +169,12 @@ export default function SystemArchitecture() {
             </div>
           </div>
 
-          {/* Connection */}
+          
           <div className="flex justify-center">
             <ConnectionLine direction="vertical" className="h-8" />
           </div>
 
-          {/* Data & File Stores Layer */}
+          
           <div className="text-center">
             <Badge
               variant="outline"
@@ -206,7 +207,7 @@ export default function SystemArchitecture() {
             </div>
           </div>
 
-          {/* Third-Party APIs Layer */}
+          
           <div className="text-center mt-12">
             <Badge
               variant="outline"
@@ -232,7 +233,7 @@ export default function SystemArchitecture() {
           </div>
         </div>
 
-        {/* Data Flow Information */}
+        
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <h3 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
