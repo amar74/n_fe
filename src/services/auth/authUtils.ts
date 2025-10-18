@@ -4,9 +4,6 @@ import { STORAGE_CONSTANTS } from '@/constants/storageConstants';
 import { authManager } from './AuthManager';
 import type { CurrentUser } from '@/types/auth';
 
-/**
- * Clear all authentication data from localStorage and API client
- */
 export const clearAuthData = () => {
   localStorage.removeItem(STORAGE_CONSTANTS.AUTH_TOKEN);
   localStorage.removeItem(STORAGE_CONSTANTS.USER_INFO);
@@ -18,10 +15,6 @@ export const clearAuthData = () => {
   authManager.setAuthInProgress(false);
 };
 
-/**
- * Restore auth token from localStorage and set it in API client headers
- * Returns true if token was found and set, false otherwise
- */
 export const restoreStoredToken = (): boolean => {
   const storedToken = localStorage.getItem(STORAGE_CONSTANTS.AUTH_TOKEN);
   const storedUserInfo = localStorage.getItem(STORAGE_CONSTANTS.USER_INFO);
@@ -40,9 +33,6 @@ export const restoreStoredToken = (): boolean => {
   return false;
 };
 
-/**
- * Authenticate with backend using Supabase token
- */
 export const authenticateWithBackend = async (
   supabaseToken: string,
   isMounted: { current: boolean },

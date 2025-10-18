@@ -285,8 +285,8 @@ export default function SuperAdminLoginPage() {
           <div className="inline-flex justify-start items-center gap-5">
             <img src={LogoIcon} alt="Megapolis Logo" className="w-[88px] h-[88px]" />
             <div className="inline-flex flex-col justify-center items-start">
-              <h2 className="text-white text-4xl font-semibold font-poppins">Megapolis</h2>
-              <p className="text-[#ABA4A1] text-xl font-medium font-poppins">Advisory</p>
+              <h2 className="text-white text-4xl font-semibold font-poppins" style={{ color: '#ffffff' }}>Megapolis</h2>
+              <p className="text-white text-xl font-medium font-poppins" style={{ color: '#ffffff' }}>Advisory</p>
             </div>
           </div>
           

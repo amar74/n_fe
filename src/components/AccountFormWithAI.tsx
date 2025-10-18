@@ -88,7 +88,6 @@ export function AccountFormWithAI() {
     clearError();
     
     try {
-      // Progressive enhancement with current form data
       const result = await enhanceWithContext(formData.companyWebsite, {
         client_name: formData.clientName,
         industry: formData.industry
@@ -110,7 +109,6 @@ export function AccountFormWithAI() {
     }
   };
 
-  // Apply a specific suggestion
   const applySuggestion = (suggestion: AISuggestion) => {
     const { field, value } = suggestion;
 
@@ -152,11 +150,9 @@ export function AccountFormWithAI() {
         break;
     }
 
-    // Mark as applied
     setAppliedSuggestions(prev => [...prev, field]);
   };
 
-  // Apply all high-confidence suggestions
   const applyAllSuggestions = () => {
     suggestions
       .filter(s => s.confidence >= 0.8 && !appliedSuggestions.includes(s.field))

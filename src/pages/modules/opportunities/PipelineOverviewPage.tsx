@@ -1,27 +1,33 @@
-import { memo, useState } from 'react';
+import { memo, useState, Suspense, lazy } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useOpportunity } from '@/hooks/useOpportunity';
-import { 
-  ArrowLeft, 
-  Calendar, 
-  MapPin, 
-  Building, 
-  FileText, 
-  Plus,
-  Eye,
-  Trash2,
-  Bot
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Bot } from 'lucide-react';
+
+const OverviewTab = lazy(() => import('./components/tabs/OverviewTab'));
+const ClientStakeholderTab = lazy(() => import('./components/tabs/ClientStakeholderTab'));
+const CompetitionStrategyTab = lazy(() => import('./components/tabs/CompetitionStrategyTab'));
+const DeliveryModelTab = lazy(() => import('./components/tabs/DeliveryModelTab'));
+const TeamReferencesTab = lazy(() => import('./components/tabs/TeamReferencesTab'));
+const FinancialSummaryTab = lazy(() => import('./components/tabs/FinancialSummaryTab'));
+const LegalRisksTab = lazy(() => import('./components/tabs/LegalRisksTab'));
 
 type TabType = 'overview' | 'client' | 'competition' | 'delivery' | 'team' | 'financial' | 'legal';
 
-interface Document {
-  id: string;
-  name: string;
-  category: string;
-  purpose: string;
-  type: string;
-}
+const TabLoadingSkeleton = () => (
+  <div className="mx-auto max-w-7xl">
+    <div className="bg-white rounded-xl border border-gray-200 p-8">
+      <div className="animate-pulse">
+        <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+        <div className="space-y-3">
+          <div className="h-4 bg-gray-200 rounded"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 function PipelineOverviewPage() {
   const { opportunityId } = useParams();
@@ -29,8 +35,30 @@ function PipelineOverviewPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   
   const { data: opportunity, isLoading, error } = useOpportunity(opportunityId);
+
+  const renderTabContent = () => {
+    const tabProps = { opportunity };
+    
+    switch (activeTab) {
+      case 'overview':
+        return <OverviewTab {...tabProps} />;
+      case 'client':
+        return <ClientStakeholderTab {...tabProps} />;
+      case 'competition':
+        return <CompetitionStrategyTab {...tabProps} />;
+      case 'delivery':
+        return <DeliveryModelTab {...tabProps} />;
+      case 'team':
+        return <TeamReferencesTab {...tabProps} />;
+      case 'financial':
+        return <FinancialSummaryTab {...tabProps} />;
+      case 'legal':
+        return <LegalRisksTab {...tabProps} />;
+      default:
+        return <OverviewTab {...tabProps} />;
+    }
+  };
   
-  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -39,86 +67,39 @@ function PipelineOverviewPage() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Error Loading Opportunity</h2>
-          <p className="text-gray-600 mb-4">There was an error loading the opportunity data.</p>
-          <p className="text-sm text-gray-500 mb-4">Error: {error.message || 'Unknown error'}</p>
-          <button
-            onClick={() => navigate('/module/opportunities')}
-            className="px-4 py-2 bg-indigo-950 text-white rounded-lg hover:bg-indigo-800"
-          >
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Opportunity</h2>
+          <p className="text-gray-600 mb-6">{error.message}</p>
+          <Button onClick={() => navigate('/opportunities')}>
             Back to Opportunities
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // No data state
-  if (!opportunity) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Opportunity Not Found</h2>
-          <p className="text-gray-600 mb-4">The opportunity you're looking for doesn't exist or has been removed.</p>
-          <p className="text-sm text-gray-500 mb-4">ID: {opportunityId}</p>
-          <button
-            onClick={() => navigate('/module/opportunities')}
-            className="px-4 py-2 bg-indigo-950 text-white rounded-lg hover:bg-indigo-800"
-          >
-            Back to Opportunities
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
   const formattedOpportunity = {
-    id: opportunity.id,
-    projectName: opportunity.project_name,
-    category: opportunity.market_sector || 'General',
-    stage: opportunity.stage,
-    aiMatch: opportunity.match_score || 0,
-    projectValue: opportunity.project_value || 0,
-    winProbability: 75,
-    expectedRfp: opportunity.expected_rfp_date ? new Date(opportunity.expected_rfp_date).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    }) : 'TBD',
-    location: 'Austin, TX', // This would need to be added to the API
-    type: opportunity.market_sector || 'General',
-    description: opportunity.description || 'No description available.',
-    scope: [
-      'Transit corridor feasibility analysis',
-      'Station location planning and design',
-      'Community engagement and public outreach',
-      'Environmental impact assessment',
-      'Multi-modal connectivity planning',
-      'Financial analysis and funding strategies'
-    ]
+    projectName: opportunity?.project_name,
+    custom_id: opportunity?.custom_id,
+    category: opportunity?.market_sector,
+    projectValue: opportunity?.project_value,
+    winProbability: 75, // This will need to be added to the backend API
+    aiMatch: opportunity?.match_score,
+    expectedRfp: opportunity?.expected_rfp_date,
+    currentStage: opportunity?.stage
   };
 
-  const documents: Document[] = [
-    {
-      id: '1',
-      name: 'Primary Contact',
-      category: 'Documents & Reports',
-      purpose: 'Project Reference',
-      type: 'Pdf'
-    },
-    {
-      id: '2',
-      name: 'Secondary Contact',
-      category: 'Documents & Reports',
-      purpose: 'Project Reference',
-      type: 'Pdf'
-    }
-  ];
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   const tabs = [
     { id: 'overview' as TabType, label: 'Overview & Scope' },
@@ -127,82 +108,78 @@ function PipelineOverviewPage() {
     { id: 'delivery' as TabType, label: 'Delivery Model' },
     { id: 'team' as TabType, label: 'Team & References' },
     { id: 'financial' as TabType, label: 'Financial Summary' },
-    { id: 'legal' as TabType, label: 'Legal & Risks' }
+    { id: 'legal' as TabType, label: 'Legal & Risks' },
   ];
-
-  const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 1
-    }).format(value / 1000000) + ' M';
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      
-      <div className="bg-[#212140] w-full h-12 flex items-center px-8">
-        <div className="mx-auto max-w-[1392px] w-full flex items-center gap-4 mt-10">
-          <button 
-            onClick={() => navigate('/module/opportunities')}
-            className="w-8 h-8 bg-[#212140] border border-white/20 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-white" />
-          </button>
-          <span className="text-white text-sm font-medium">Pipeline management (Overview & Scope)</span>
-        </div>
-      </div>
-
-      
-      <div className="bg-[#212140]">
-        <div className="mx-auto max-w-[1392px] px-8 py-10 flex items-end justify-between gap-6">
-          <div className="flex-1 flex flex-col gap-5">
-            <h2 className="text-3xl font-bold text-white leading-tight">
-              {formattedOpportunity.projectName}
-            </h2>
-            <div className="flex items-center gap-4 text-white text-lg">
-              <span className="text-white font-medium">{opportunity.custom_id || `OPP-${opportunity.id?.slice(-6).toUpperCase() || 'UNKNOWN'}`}</span>
-              <span className="w-px h-6 bg-white/40 rounded" />
-              <span className="text-white font-medium">{formattedOpportunity.category}</span>
-            </div>
-            
-            <div className="flex items-center gap-3 pt-2">
-              <span className="px-4 py-2 bg-[#212140] border border-white/20 text-white text-sm font-medium rounded-lg">
-                proposal
-              </span>
-              <span className="px-4 py-2 bg-[#212140] border border-white/20 text-white text-sm font-medium rounded-lg flex items-center gap-2">
-                <Bot className="w-4 h-4" />
-                AI Match : {formattedOpportunity.aiMatch}%
-              </span>
-            </div>
-          </div>
-          
-          <div className="text-right pb-1">
-            <div className="text-4xl font-bold text-[#66BB6A] leading-tight">
-              {formatCurrency(formattedOpportunity.projectValue)}
-            </div>
-            <div className="text-white text-lg font-medium">Project Value</div>
-            <div className="text-white text-xl font-medium mt-2">
-              {formattedOpportunity.winProbability}% Win Probability
-            </div>
-          </div>
-        </div>
-      </div>
-
-      
-      <div className="bg-[#F3F4F6] border-b border-gray-200">
-        <div className="px-8 py-4">
+      <div className="bg-[#161950]">
+        <div className="px-8 py-5">
           <div className="mx-auto max-w-[1392px]">
-            <div className="w-full h-11 p-0.5 bg-[#F3F4F6] rounded-lg border border-gray-200 inline-flex justify-start items-center gap-2">
+            <nav className="flex items-center space-x-3 text-sm">
+              <button 
+                onClick={() => navigate('/opportunities')}
+                className="hover:text-white transition-colors flex items-center gap-3 px-2 py-1 rounded-md hover:bg-white/10"
+                style={{ color: 'white' }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Pipeline management (Overview & Scope)
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-[#161950] text-white">
+        <div className="px-8 py-10">
+          <div className="mx-auto max-w-[1392px]">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 pr-8">
+                <h1 className="text-4xl font-bold leading-tight mb-6" style={{ color: 'white' }}>
+                  {formattedOpportunity.projectName}
+                </h1>
+                <div className="flex items-center gap-4 mb-6 mt-3">
+                  <span className="text-white/80 text-lg font-medium">
+                    {formattedOpportunity.custom_id} | {formattedOpportunity.category}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="px-5 py-3 bg-[#212140] border border-white/20 text-white text-sm font-medium rounded-lg">
+                    {formattedOpportunity.currentStage}
+                  </span>
+                  <span className="px-5 py-3 bg-[#212140] border border-white/20 text-white text-sm font-medium rounded-lg flex items-center gap-2">
+                    <Bot className="w-4 h-4" />
+                    AI Match: {formattedOpportunity.aiMatch}%
+                  </span>
+                </div>
+              </div>
+              
+              <div className="text-right">
+                <div className="text-4xl font-bold text-[#66BB6A] leading-tight mb-2">
+                  {formattedOpportunity.projectValue ? formatCurrency(formattedOpportunity.projectValue) : 'N/A'}
+                </div>
+                <div className="text-white/80 text-lg font-medium mb-3">Project Value</div>
+                <div className="text-white text-xl font-medium">
+                  {formattedOpportunity.winProbability}% Win Probability
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-8 py-8">
+          <div className="mx-auto max-w-[1392px]">
+            <div className="flex items-center space-x-2 bg-gray-100 p-2 rounded-xl">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 self-stretch px-4 py-2.5 rounded-md text-sm font-medium inline-flex justify-center items-center gap-2.5 transition-colors ${
+                  className={`px-8 py-4 text-sm font-medium rounded-lg transition-all duration-200 ${
                     activeTab === tab.id
-                      ? 'bg-[#212140] text-white shadow-sm'
-                      : 'text-[#667085] hover:text-[#0F172A]'
+                      ? 'bg-white text-[#161950] shadow-sm border border-gray-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/70'
                   }`}
                 >
                   {tab.label}
@@ -213,197 +190,12 @@ function PipelineOverviewPage() {
         </div>
       </div>
 
-      
-      <div className="px-8 py-8">
-        {activeTab === 'overview' && (
-          <div className="mx-auto max-w-[1392px]">
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              
-              <div className="bg-white rounded-2xl border border-gray-200 p-8">
-                <h3 className="text-lg font-semibold text-[#0F172A] mb-8">Key Metrics</h3>
-                <div className="grid grid-cols-2 gap-6">
-                  
-                  <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-gray-200">
-                    <div className="text-sm text-[#667085] mb-3">Project Value</div>
-                    <div className="text-[#66BB6A] text-2xl font-bold">{formatCurrency(formattedOpportunity.projectValue)}</div>
-                  </div>
-                  
-                  <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-gray-200">
-                    <div className="text-sm text-[#667085] mb-3">Win Probability</div>
-                    <div className="text-[#0F172A] text-2xl font-bold">{formattedOpportunity.winProbability}%</div>
-                  </div>
-                  
-                  <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-gray-200">
-                    <div className="text-sm text-[#667085] mb-3">Expected RFP</div>
-                    <div className="text-[#0F172A] text-2xl font-bold">{formattedOpportunity.expectedRfp}</div>
-                  </div>
-                  
-                  <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-gray-200">
-                    <div className="text-sm text-[#667085] mb-3">AI Match Score</div>
-                    <div className="text-[#0F172A] text-2xl font-bold">{formattedOpportunity.aiMatch}%</div>
-                  </div>
-                  
-                  <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-gray-200">
-                    <div className="text-sm text-[#667085] mb-3">Current Stage</div>
-                    <div className="text-[#0F172A] text-2xl font-bold">proposal</div>
-                  </div>
-                  
-                  <div className="p-6 bg-[#F9FAFB] rounded-2xl border border-gray-200">
-                    <div className="text-sm text-[#667085] mb-3">Total Opportunities</div>
-                    <div className="flex items-end gap-2">
-                      <div className="text-[#0F172A] text-2xl font-bold">0</div>
-                      <div className="text-sm text-[#667085]">for proposals</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              
-              <div className="space-y-8">
-                
-                <div className="bg-white rounded-2xl border border-gray-200 p-8">
-                  <div className="flex flex-col gap-4 mb-6">
-                    <h3 className="text-lg font-semibold text-[#0F172A]">Project Description</h3>
-                    <div className="h-px w-full bg-black/10" />
-                  </div>
-                  <div className="text-[#374151] text-base leading-relaxed mb-6">
-                    {formattedOpportunity.description}
-                  </div>
-                  <div className="h-px w-full bg-black/10 mb-5" />
-                  <div className="flex items-center gap-6 text-sm">
-                    <div className="flex items-center gap-3">
-                      <MapPin className="w-4 h-4 text-[#6B7280]" />
-                      <span className="font-medium text-[#374151]">{formattedOpportunity.location}</span>
-                    </div>
-                    <div className="w-px h-4 bg-[#D9D9D9]" />
-                    <div className="flex items-center gap-3">
-                      <Building className="w-4 h-4 text-[#6B7280]" />
-                      <span className="font-medium text-[#374151]">{formattedOpportunity.type}</span>
-                    </div>
-                  </div>
-                </div>
-
-                
-                <div className="bg-white rounded-2xl border border-gray-200 p-8">
-                  <div className="flex flex-col gap-4 mb-6">
-                    <h3 className="text-lg font-semibold text-[#0F172A]">Project Scope</h3>
-                    <div className="h-px w-full bg-black/10" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-5">
-                      {formattedOpportunity.scope.slice(0, 3).map((item, index) => (
-                        <div key={index} className="flex items-start gap-4">
-                          <div className="w-1.5 h-1.5 bg-[#212140] rounded-full mt-2 flex-shrink-0" />
-                          <div className="text-[#374151] text-sm leading-relaxed">{item}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="space-y-5">
-                      {formattedOpportunity.scope.slice(3).map((item, index) => (
-                        <div key={index} className="flex items-start gap-4">
-                          <div className="w-1.5 h-1.5 bg-[#212140] rounded-full mt-2 flex-shrink-0" />
-                          <div className="text-[#374151] text-sm leading-relaxed">{item}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 mb-8">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-lg font-semibold text-[#0F172A]">Client Contact</h3>
-                <button className="flex items-center gap-2 px-4 py-2 bg-[#212140] text-white text-sm font-medium rounded-lg hover:bg-[#1a1a35] transition-colors">
-                  <Plus className="w-4 h-4" />
-                  Add Documents
-                </button>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-4 px-6 text-sm font-medium text-[#667085]">Document Name</th>
-                      <th className="text-left py-4 px-6 text-sm font-medium text-[#667085]">Document Category</th>
-                      <th className="text-left py-4 px-6 text-sm font-medium text-[#667085]">Document Purpose</th>
-                      <th className="text-left py-4 px-6 text-sm font-medium text-[#667085]">Document Type</th>
-                      <th className="text-left py-4 px-6 text-sm font-medium text-[#667085]">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {documents.map((doc) => (
-                      <tr key={doc.id} className="border-b border-gray-100">
-                        <td className="py-5 px-6 text-sm text-[#0F172A] font-medium">{doc.name}</td>
-                        <td className="py-5 px-6 text-sm text-[#667085]">{doc.category}</td>
-                        <td className="py-5 px-6 text-sm text-[#667085]">{doc.purpose}</td>
-                        <td className="py-5 px-6 text-sm text-[#667085]">{doc.type}</td>
-                        <td className="py-5 px-6">
-                          <div className="flex items-center gap-3">
-                            <button className="px-4 py-2 bg-[#212140] text-white text-xs font-medium rounded-lg hover:bg-[#1a1a35] transition-colors">
-                              View Document
-                            </button>
-                            <button className="px-4 py-2 bg-white border border-[#212140] text-[#212140] text-xs font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                              Remove Document
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            
-            <div className="bg-white rounded-2xl border border-gray-200 p-8">
-              <h3 className="text-lg font-semibold text-[#0F172A] mb-8">
-                Document Organization & Proposal Integration
-              </h3>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-1.5 h-1.5 bg-[#212140] rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-[#374151] text-sm leading-relaxed">
-                    All uploaded files are automatically organized by category and purpose
-                  </span>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-1.5 h-1.5 bg-[#212140] rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-[#374151] text-sm leading-relaxed">
-                    Documents marked as "Available for Proposals" can be selected in the proposal module
-                  </span>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-1.5 h-1.5 bg-[#212140] rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-[#374151] text-sm leading-relaxed">
-                    Images and plans will be available for visual elements in your proposals
-                  </span>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-1.5 h-1.5 bg-[#212140] rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-[#374151] text-sm leading-relaxed">
-                    Reference documents can be cited and linked in proposal content
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        
-        {activeTab !== 'overview' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {tabs.find(t => t.id === activeTab)?.label} Content
-            </h3>
-            <p className="text-gray-600">
-              This section will be implemented based on the Figma design.
-            </p>
-          </div>
-        )}
+      <div className="bg-gray-50 min-h-screen">
+        <div className="px-8 py-10">
+          <Suspense fallback={<TabLoadingSkeleton />}>
+            {renderTabContent()}
+          </Suspense>
+        </div>
       </div>
     </div>
   );

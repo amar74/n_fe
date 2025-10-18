@@ -55,9 +55,6 @@ export function useDataEnrichment(options: SuggestionOptions = {}) {
   
   const clearError = () => setError(null);
   
-  /**
-   * Suggest organization name from website URL
-   */
   const suggestOrganizationName = async (
     websiteUrl: string, 
     context?: Record<string, string>
@@ -385,7 +382,7 @@ export function useProgressiveEnhancement() {
   const [enhancementData, setEnhancementData] = useState<Record<string, any>>({});
   const [isEnhancing, setIsEnhancing] = useState(false);
   
-  const { enhanceAccountData, isLoading } = useAISuggestions({
+  const { enhanceAccountData, isLoading } = useDataEnrichment({
     autoApply: false, // Manual control for progressive enhancement
     confidenceThreshold: 0.7
   });
@@ -446,7 +443,7 @@ export function useRealTimeValidation() {
   // TODO: need to fix this - harsh.pawar
   const [isValidating, setIsValidating] = useState(false);
   
-  const { validateAddress, validateContact } = useAISuggestions();
+  const { validateAddress, validateContact } = useDataEnrichment();
   
   const validateAddressRealTime = async (
     address: Record<string, string | null>,

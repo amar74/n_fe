@@ -27,8 +27,8 @@ class OpportunitiesApiService {
       );
       return response.data;
     } catch (err) {
-      this.handleError(error, 'create failed');
-      throw error;
+      this.handleError(err, 'create failed');
+      throw err;
     }
   }
 
@@ -253,6 +253,256 @@ class OpportunitiesApiService {
     }
 
     return errors;
+  }
+
+  // Tab-specific API methods
+  async getOpportunityOverview(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/overview`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get overview failed ${id}`);
+      throw err;
+    }
+  }
+
+  async updateOpportunityOverview(id: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/overview`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update overview failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityStakeholders(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/stakeholders`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get stakeholders failed ${id}`);
+      throw err;
+    }
+  }
+
+  async createOpportunityStakeholder(id: string, data: any) {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${id}/stakeholders`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `create stakeholder failed ${id}`);
+      throw err;
+    }
+  }
+
+  async updateOpportunityStakeholder(id: string, stakeholderId: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/stakeholders/${stakeholderId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update stakeholder failed ${id}`);
+      throw err;
+    }
+  }
+
+  async deleteOpportunityStakeholder(id: string, stakeholderId: string) {
+    try {
+      await apiClient.delete(`${this.baseUrl}/${id}/stakeholders/${stakeholderId}`);
+    } catch (err) {
+      this.handleError(err, `delete stakeholder failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityDrivers(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/drivers`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get drivers failed ${id}`);
+      throw err;
+    }
+  }
+
+  async createOpportunityDriver(id: string, data: any) {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${id}/drivers`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `create driver failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityCompetitors(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/competitors`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get competitors failed ${id}`);
+      throw err;
+    }
+  }
+
+  async createOpportunityCompetitor(id: string, data: any) {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${id}/competitors`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `create competitor failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityStrategies(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/strategies`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get strategies failed ${id}`);
+      throw err;
+    }
+  }
+
+  async createOpportunityStrategy(id: string, data: any) {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${id}/strategies`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `create strategy failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityDeliveryModel(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/delivery-model`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get delivery model failed ${id}`);
+      throw err;
+    }
+  }
+
+  async updateOpportunityDeliveryModel(id: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/delivery-model`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update delivery model failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityTeamMembers(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/team`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get team members failed ${id}`);
+      throw err;
+    }
+  }
+
+  async createOpportunityTeamMember(id: string, data: any) {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${id}/team`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `create team member failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityReferences(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/references`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get references failed ${id}`);
+      throw err;
+    }
+  }
+
+  async createOpportunityReference(id: string, data: any) {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${id}/references`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `create reference failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityFinancialSummary(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/financial`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get financial summary failed ${id}`);
+      throw err;
+    }
+  }
+
+  async updateOpportunityFinancialSummary(id: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/financial`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update financial summary failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityRisks(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/risks`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get risks failed ${id}`);
+      throw err;
+    }
+  }
+
+  async createOpportunityRisk(id: string, data: any) {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${id}/risks`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `create risk failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityLegalChecklist(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/legal-checklist`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get legal checklist failed ${id}`);
+      throw err;
+    }
+  }
+
+  async createOpportunityLegalChecklistItem(id: string, data: any) {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${id}/legal-checklist`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `create legal checklist item failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getAllOpportunityTabData(id: string) {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/${id}/all-tabs`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `get all tab data failed ${id}`);
+      throw err;
+    }
   }
 }
 

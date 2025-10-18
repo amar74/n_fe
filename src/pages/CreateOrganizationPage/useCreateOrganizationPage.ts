@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useOrganizations } from '@/hooks/useOrganizations';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { useAISuggestions } from '@/hooks/useAISuggestions';
+import { useDataEnrichment } from '@/hooks/useDataEnrichment';
 import { supabase } from '@/lib/supabase';
 import { apiClient } from '@/services/api/client';
 import { authApi } from '@/services/api/authApi';
@@ -26,7 +26,7 @@ export function useCreateOrganizationPage() {
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
   const [appliedSuggestions, setAppliedSuggestions] = useState<string[]>([]);
 
-  const { enhanceAccountData, isLoading: isAILoading, error: aiError } = useAISuggestions({
+  const { enhanceAccountData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,
     confidenceThreshold: 0.85,
     onSuggestionReceived: (suggestion) => {
@@ -315,3 +315,4 @@ export function useCreateOrganizationPage() {
     applySuggestion,
   };
 }
+export default useCreateOrganizationPage;

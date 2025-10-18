@@ -85,7 +85,7 @@ function AccountDetailsPage() {
           </div>
 
           
-          <h1 className="text-slate-800 text-[32px] sm:text-4xl font-semibold font-['Outfit'] mb-5 truncate">
+          <h1 className="text-slate-800 text-[32px] sm:text-4xl font-semibold font-['Outfit'] mb-8 pb-4 truncate">
             {account.client_name}
           </h1>
 

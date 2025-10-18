@@ -1,43 +1,146 @@
+/* Enhanced Typography System - Inter as default font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @import 'tailwindcss';
 
-/* Typography - Inter as default font with enhanced features */
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #1f2937;
 }
 
+/* Enhanced heading hierarchy */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   font-weight: 700;
   line-height: 1.2;
+  color: #111827;
+  margin: 0;
 }
 
-/* Enhanced heading styles */
 h1 {
-  font-size: 2rem;
+  font-size: 2.5rem;
+  font-weight: 800;
   letter-spacing: -0.04em;
+  line-height: 1.1;
 }
 
 h2 {
-  font-size: 1.75rem;
-  letter-spacing: -0.03em;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
 }
 
 h3 {
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
-/* Better paragraph spacing */
+h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+/* Enhanced paragraph and text styles */
 p {
   line-height: 1.6;
   letter-spacing: -0.01em;
+  margin: 0;
+  color: #374151;
 }
+
+/* Text size utilities */
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: -0.005em;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  letter-spacing: -0.015em;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  letter-spacing: -0.02em;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  letter-spacing: -0.025em;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  letter-spacing: -0.03em;
+}
+
+.text-4xl {
+  font-size: 2.25rem;
+  line-height: 2.5rem;
+  letter-spacing: -0.035em;
+}
+
+/* Font weight utilities */
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+.font-extrabold { font-weight: 800; }
+.font-black { font-weight: 900; }
+
+/* Text color utilities */
+.text-primary { color: #161950; }
+.text-secondary { color: #6b7280; }
+.text-muted { color: #9ca3af; }
+.text-success { color: #059669; }
+.text-warning { color: #d97706; }
+.text-error { color: #dc2626; }
+.text-info { color: #2563eb; }
 
 /* Global Sonner toast styles - applied to the main.tsx instance */
 [data-sonner-toaster] {
@@ -89,10 +192,90 @@ button {
   scroll-behavior: smooth;
 }
 
-/* Custom text gradient utility */
+/* Enhanced text gradient utilities */
 .text-gradient {
   background: linear-gradient(135deg, #161950 0%, #2d3b8f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, #161950 0%, #4338ca 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-success {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Enhanced button utilities */
+.btn-primary {
+  @apply bg-[#161950] text-white hover:bg-[#1E2B5B] hover:shadow-lg shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all duration-200 active:scale-[0.98] transform;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 text-gray-900 hover:bg-gray-200 hover:shadow-md shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all duration-200 active:scale-[0.98] transform;
+}
+
+.btn-outline {
+  @apply border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all duration-200 active:scale-[0.98] transform;
+}
+
+/* Enhanced card utilities */
+.card {
+  @apply bg-white rounded-xl border border-gray-200 shadow-[0_1px_3px_rgba(16,24,40,0.1)] hover:shadow-[0_4px_12px_rgba(16,24,40,0.15)] transition-all duration-200;
+}
+
+.card-elevated {
+  @apply bg-white rounded-xl border border-gray-200 shadow-[0_4px_12px_rgba(16,24,40,0.15)] hover:shadow-[0_8px_24px_rgba(16,24,40,0.2)] transition-all duration-200;
+}
+
+/* Enhanced input utilities */
+.input-enhanced {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#161950] focus:border-transparent transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)];
+}
+
+/* Enhanced spacing utilities */
+.space-y-enhanced > * + * {
+  margin-top: 1.5rem;
+}
+
+.space-x-enhanced > * + * {
+  margin-left: 1.5rem;
+}
+
+/* Enhanced focus states */
+.focus-enhanced:focus {
+  @apply outline-none ring-2 ring-[#161950] ring-offset-2;
+}
+
+/* Enhanced hover states */
+.hover-lift:hover {
+  @apply transform -translate-y-1 shadow-lg;
+}
+
+.hover-scale:hover {
+  @apply transform scale-105;
+}
+
+/* Enhanced loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
