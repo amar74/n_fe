@@ -15,7 +15,7 @@ const SuggestionValue = z
   .passthrough();
 const AccountEnhancementResponse = z
   .object({
-    enhanced_data: z.record(SuggestionValue),
+    enhanced_data: z.record(z.string(), SuggestionValue),
     processing_time_ms: z.number().int(),
     warnings: z.array(z.string()).optional(),
     suggestions_applied: z.number().int().optional().default(0),
@@ -34,7 +34,7 @@ const AddressValidationResponse = z
   .object({
     is_valid: z.boolean(),
     issues: z.array(AddressIssue).optional(),
-    corrected_address: z.record(z.union([z.string(), z.null()])),
+    corrected_address: z.record(z.string(), z.union([z.string(), z.null()])),
     confidence: z.number().gte(0).lte(1),
   })
   .passthrough();
@@ -43,7 +43,7 @@ const ContactValidationResponse = z
     email_valid: z.boolean().default(true),
     phone_valid: z.boolean().default(true),
     name_valid: z.boolean().default(true),
-    suggestions: z.record(SuggestionValue),
+    suggestions: z.record(z.string(), SuggestionValue),
     warnings: z.array(z.string()),
   })
   .partial()
@@ -60,19 +60,19 @@ const OrganizationNameResponse = z
 const OrganizationNameRequest = z
   .object({
     website_url: z.string().min(1).max(2083).url(),
-    context: z.union([z.record(z.string()), z.null()]).optional(),
+    context: z.union([z.record(z.string(), z.string()), z.null()]).optional(),
   })
   .passthrough();
 const AccountEnhancementRequest = z
   .object({
     company_website: z.string().min(1).max(2083).url(),
     partial_data: z.object({}).partial().passthrough().optional(),
-    enhancement_options: z.record(z.boolean()).optional(),
+    enhancement_options: z.record(z.string(), z.boolean()).optional(),
   })
   .passthrough();
 const AddressValidationRequest = z
   .object({
-    address: z.record(z.union([z.string(), z.null()])),
+    address: z.record(z.string(), z.union([z.string(), z.null()])),
     country_code: z.string().optional().default("US"),
   })
   .passthrough();

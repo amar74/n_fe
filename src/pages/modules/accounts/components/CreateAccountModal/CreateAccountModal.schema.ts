@@ -122,8 +122,8 @@ export const validateField = (field: keyof AccountCreate, value: any): string | 
     schema.parse(value);
     return null;
   } catch (err) {
-    if (error instanceof z.ZodError) {
-      return error.issues[0]?.message || 'Invalid value';
+    if (err instanceof z.ZodError) {
+      return err.issues[0]?.message || 'Invalid value';
     }
     return 'Invalid value';
   }

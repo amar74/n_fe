@@ -422,7 +422,7 @@ Requires &#x27;view&#x27; permission for opportunities.`,
         schema: OpportunitySearchRequest,
       },
     ],
-    response: z.array(OpportunitySearchResult),
+    response: z.array(OpportunityResponse),
     errors: [
       {
         status: 422,

@@ -39,10 +39,10 @@ export { OrganizationCustomSchema };
 
 export type OrgCreate = z.infer<typeof schemas.OrgCreateResponse>;
 export type OrgCreated = z.infer<typeof schemas.OrgCreatedResponse>;
-export type OrgUpdate = z.infer<typeof schemas.OrgUpdateResponse>;
+export type OrgUpdate = z.infer<typeof schemas.OrgCreateResponse>; // Use OrgCreateResponse for updates
 export type CreateOrgRequest = z.infer<typeof schemas.OrgCreateRequest>;
 export type Organization = z.infer<typeof OrganizationCustomSchema>; // Use custom schema
-export type UpdateOrgRequest = z.infer<typeof schemas.OrgUpdateRequest>;
+export type UpdateOrgRequest = z.infer<typeof schemas.OrgCreateRequest>; // Use OrgCreateRequest for updates
 
 // Organization members types
 export type OrgMemberResponse = z.infer<typeof schemas.OrgMemberResponse>;

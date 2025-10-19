@@ -69,7 +69,7 @@ export default function SuperAdminLoginPage() {
         navigate('/super-admin/dashboard', { replace: true });
       }, 500);
     } catch (err: any) {
-      const errorMessage = error.response?.data?.detail || 'Invalid credentials';
+      const errorMessage = err.response?.data?.detail || 'Invalid credentials';
       
       form.setError('email', {
         type: 'manual',
