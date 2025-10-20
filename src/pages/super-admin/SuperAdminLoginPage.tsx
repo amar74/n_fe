@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { hybridAuth } from '@/lib/hybridAuth';
+import { localAuth } from '@/lib/localAuth';
 import LogoIcon from '@assets/Asset 2 1.svg';
 import VectorGrid1 from '@assets/Vector.svg';
 import VectorGrid2 from '@assets/Vector-1.svg';
@@ -51,24 +51,12 @@ export default function SuperAdminLoginPage() {
     form.clearErrors();
 
     try {
-      const { data: authResponse, error } = await hybridAuth.signInWithPassword({ email: data.email, password: data.password });
+      const response = await localAuth.signInWithPassword({ email: data.email, password: data.password });
 
-      if (error) {
-        form.setError('email', {
-          type: 'manual',
-          message: error.message,
-        });
-        form.setError('password', {
-          type: 'manual',
-          message: error.message,
-        });
-        return;
-      }
-
-      if (authResponse?.token) {
-        localStorage.setItem('authToken', authResponse.token);
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
         localStorage.setItem('userRole', 'super_admin');
-        localStorage.setItem('userEmail', data.email);
+        localStorage.setItem('userEmail', response.data.user.email);
 
         if (data.rememberMe) {
           localStorage.setItem('rememberMe', 'true');
