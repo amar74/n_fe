@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { apiClient } from '@/services/api/client';
+import { hybridAuth } from '@/lib/hybridAuth';
 import LogoIcon from '@assets/Asset 2 1.svg';
 import VectorGrid1 from '@assets/Vector.svg';
 import VectorGrid2 from '@assets/Vector-1.svg';
@@ -51,23 +51,34 @@ export default function SuperAdminLoginPage() {
     form.clearErrors();
 
     try {
-      const response = await apiClient.post<SuperAdminLoginResponse>('/super-admin/login', {
-        email: data.email,
-        password: data.password,
-      });
+      const { data: authResponse, error } = await hybridAuth.signInWithPassword({ email: data.email, password: data.password });
 
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('userRole', 'super_admin');
-      localStorage.setItem('userEmail', response.data.user.email);
-
-      if (data.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
+      if (error) {
+        form.setError('email', {
+          type: 'manual',
+          message: error.message,
+        });
+        form.setError('password', {
+          type: 'manual',
+          message: error.message,
+        });
+        return;
       }
 
-      // Redirect to Super Admin dashboard
-      setTimeout(() => {
-        navigate('/super-admin/dashboard', { replace: true });
-      }, 500);
+      if (authResponse?.token) {
+        localStorage.setItem('authToken', authResponse.token);
+        localStorage.setItem('userRole', 'super_admin');
+        localStorage.setItem('userEmail', data.email);
+
+        if (data.rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+        }
+
+        // Redirect to Super Admin dashboard
+        setTimeout(() => {
+          navigate('/super-admin/dashboard', { replace: true });
+        }, 500);
+      }
     } catch (err: any) {
       const errorMessage = err.response?.data?.detail || 'Invalid credentials';
       
