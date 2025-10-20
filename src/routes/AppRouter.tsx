@@ -1,7 +1,7 @@
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { HomePage } from '@/pages/HomePage';
 import { DashboardWelcome } from '@/pages/HomePage/components/DashboardWelcome';
-import LoginPage from '@pages/LoginPage';
+import LocalLoginPage from '@pages/LocalLoginPage';
 import SignupPage from '@pages/SignupPage';
 import ForgotPasswordPage from '@pages/ForgotPasswordPage';
 import ResetPasswordPage from '@pages/ResetPasswordPage';
@@ -53,7 +53,7 @@ import MyAccountFinancial from '@/pages/testUI/MyAccountFinancial';
 import MyOpportunities from '@/pages/testUI/MyOpportunities';
 import EditSurvey from '@/pages/client-surveys/EditSurvey';
 import ShowSurveyResponses from '@/pages/client-surveys/ShowSurveyResponses';
-import SuperAdminLoginPage from '@/pages/super-admin/SuperAdminLoginPage';
+import LocalSuperAdminLoginPage from '@/pages/super-admin/LocalSuperAdminLoginPage';
 import SuperAdminDashboardPage from '@/pages/super-admin/SuperAdminDashboardPage';
 import VendorListPage from '@/pages/super-admin/VendorListPage';
 import VendorProfilePage from '@/pages/super-admin/VendorProfilePage';
@@ -211,7 +211,7 @@ const router = createBrowserRouter([
   // Super Admin routes
   {
     path: '/super-admin/login',
-    element: <SuperAdminLoginPage />,
+        element: <LocalSuperAdminLoginPage />,
   },
   {
     path: '/super-admin',
@@ -241,7 +241,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: 'login',
-        element: <LoginPage />,
+        element: <LocalLoginPage />,
       },
       {
         path: 'signup',
