@@ -1,6 +1,9 @@
 // Simple replacement for TanStack Query to avoid Node.js module issues
 // This provides basic query functionality without the complex internals
 
+// Import React for the hooks
+import React from 'react';
+
 export interface QueryClient {
   getQueryData: (queryKey: any[]) => any;
   setQueryData: (queryKey: any[], data: any) => void;
@@ -47,7 +50,11 @@ const cache = new Map<string, any>();
 const queryStates = new Map<string, { isLoading: boolean; isError: boolean; error: Error | null }>();
 
 // Simple QueryClient implementation
-export class SimpleQueryClient implements QueryClient {
+export class QueryClient {
+  constructor(options?: any) {
+    // Simple constructor that accepts options but doesn't use them
+  }
+
   getQueryData(queryKey: any[]): any {
     const key = JSON.stringify(queryKey);
     return cache.get(key);
@@ -178,6 +185,3 @@ export function useQueryClient(): QueryClient {
 export function QueryClientProvider({ children }: { children: React.ReactNode }) {
   return React.createElement('div', null, children);
 }
-
-// Import React for the hooks
-import React from 'react';
