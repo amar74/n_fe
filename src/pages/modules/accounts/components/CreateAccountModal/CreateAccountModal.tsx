@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, MapPin } from 'lucide-react';
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
 import { MARKET_SECTORS, CLIENT_TYPES, HOSTING_AREAS, US_STATES, MSA_OPTIONS, STATE_ABBREVIATION_TO_NAME } from './CreateAccountModal.constants';
 import { CreateAccountModalProps } from './CreateAccountModal.types';
 import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
@@ -709,18 +707,12 @@ export function CreateAccountModal({
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                     Primary Contact Phone
                   </label>
-                  <PhoneInput
-                    international
-                    defaultCountry="US"
+                  <input
+                    type="tel"
                     value={primaryContactPhone}
-                    onChange={(value) => setPrimaryContactPhone(value || '')}
-                    className="phone-input-custom"
-                    numberInputProps={{
-                      className: "h-12 px-4 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-black text-sm font-normal font-['Outfit'] leading-tight focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all w-full"
-                    }}
-                    style={{
-                      '--PhoneInputCountryFlag-height': '1em',
-                    } as React.CSSProperties}
+                    onChange={(e) => setPrimaryContactPhone(e.target.value)}
+                    placeholder="+1 (555) 000-0000"
+                    className="h-12 px-4 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-black text-sm font-normal font-['Outfit'] leading-tight focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all w-full"
                   />
                 </div>
 
@@ -728,18 +720,13 @@ export function CreateAccountModal({
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                     Company Phone<span className="text-red-600 ml-0.5">*</span>
                   </label>
-                  <PhoneInput
-                    international
-                    defaultCountry="US"
+                  <input
+                    type="tel"
                     value={mainPhone}
-                    onChange={(value) => setMainPhone(value || '')}
-                    className="phone-input-custom"
-                    numberInputProps={{
-                      className: "h-12 px-4 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-black text-sm font-normal font-['Outfit'] leading-tight focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all w-full"
-                    }}
-                    style={{
-                      '--PhoneInputCountryFlag-height': '1em',
-                    } as React.CSSProperties}
+                    onChange={(e) => setMainPhone(e.target.value)}
+                    placeholder="+1 (555) 000-0000"
+                    required
+                    className="h-12 px-4 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-black text-sm font-normal font-['Outfit'] leading-tight focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all w-full"
                   />
                   {backendErrors['phone'] && (
                     <span className="text-red-600 text-xs mt-1">{backendErrors['phone']}</span>
