@@ -28,12 +28,7 @@ export default defineConfig({
           'timers', 'tty', 'v8', 'worker_threads'
         ];
         
-        // Also exclude problematic packages that use Node.js modules
-        const problematicPackages = [
-          '@tanstack/react-query'
-        ];
-        
-        return nodeModules.includes(id) || problematicPackages.includes(id);
+        return nodeModules.includes(id);
       },
       output: {
         manualChunks: (id) => {
@@ -138,6 +133,8 @@ export default defineConfig({
       tty: path.resolve(__dirname, './src/lib/empty-module.ts'),
       v8: path.resolve(__dirname, './src/lib/empty-module.ts'),
       worker_threads: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      // TanStack Query replacement
+      '@tanstack/react-query': path.resolve(__dirname, './src/lib/query-client-replacement.ts'),
     },
   },
 });
