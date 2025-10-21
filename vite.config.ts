@@ -3,14 +3,43 @@ import react from '@vitejs/plugin-react-swc';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
+// Plugin to remove Node.js imports
+const removeNodeImports = () => ({
+  name: 'remove-node-imports',
+  transform(code: string, id: string) {
+    // Remove fs and other Node.js imports from all files
+    const nodeImports = ['fs', 'path', 'os', 'crypto', 'util', 'stream', 'buffer', 'events', 'child_process', 'cluster', 'dgram', 'dns', 'domain', 'http', 'https', 'net', 'readline', 'repl', 'tls', 'tty', 'url', 'vm', 'zlib'];
+    
+    for (const nodeImport of nodeImports) {
+      // Remove import statements
+      code = code.replace(new RegExp(`import\\s+.*\\s+from\\s+['"]${nodeImport}['"]`, 'g'), '');
+      code = code.replace(new RegExp(`import\\s+['"]${nodeImport}['"]`, 'g'), '');
+      code = code.replace(new RegExp(`require\\(['"]${nodeImport}['"]\\)`, 'g'), 'undefined');
+      // Replace fs usage with undefined
+      code = code.replace(new RegExp(`\\bfs\\b`, 'g'), 'undefined');
+      // Replace new fs() with undefined
+      code = code.replace(new RegExp(`new\\s+${nodeImport}\\s*\\(`, 'g'), 'undefined(');
+    }
+    return code;
+  }
+});
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), removeNodeImports()],
   define: {
     global: 'globalThis',
     'process.env': '{}',
     'process': '{}',
     'Buffer': 'undefined',
+    'fs': 'undefined',
+    'path': 'undefined',
+    'os': 'undefined',
+    'crypto': 'undefined',
+    'util': 'undefined',
+    'stream': 'undefined',
+    'buffer': 'undefined',
+    'events': 'undefined',
   },
   css: {
     devSourcemap: true,
