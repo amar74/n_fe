@@ -58,31 +58,7 @@ export const exportToCSV = (accounts: AccountListItem[]): void => {
 };
 
 export const exportToExcel = async (accounts: AccountListItem[]): Promise<void> => {
-  try {
-    const XLSX = await import('xlsx');
-    
-    // Prepare data for Excel
-    const excelData = accounts.map(account => ({
-      'Client Name': account.client_name,
-      'Client Type': account.client_type,
-      'Market Sector': account.market_sector || '',
-      'Address': formatAddress(account.client_address),
-      'Primary Contact Name': account.primary_contact_name || '',
-      'Primary Contact Email': account.primary_contact_email || '',
-      'Total Value': account.total_value || '',
-      'AI Health Score': account.ai_health_score || '',
-      'Last Contact': formatDate(account.last_contact)
-    }));
-
-    // Create workbook and worksheet
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(excelData);
-
-    // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(wb, ws, 'Accounts');
-
-    XLSX.writeFile(wb, `accounts_export_${new Date().toISOString().split('T')[0]}.xlsx`);
-  } catch (err) {
-    throw new Error('export failed Excel. Please try again.');
-  }
+  // Excel export using CSV format (compatible with Excel, Google Sheets, etc.)
+  // This avoids Node.js dependencies while providing Excel-compatible exports
+  exportToCSV(accounts);
 };
