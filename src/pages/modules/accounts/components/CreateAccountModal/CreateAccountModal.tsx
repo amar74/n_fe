@@ -219,7 +219,7 @@ export function CreateAccountModal({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleZipCodeChange = (zipCode: string) => {
+  const handleZipCodeChange = async (zipCode: string) => {
     const cleanedZip = zipCode.replace(/\D/g, '').slice(0, 5);
     
     setFormData(prev => ({ ...prev, client_address_zip_code: cleanedZip }));
@@ -230,28 +230,35 @@ export function CreateAccountModal({
     if (cleanedZip.length === 5 && /^\d{5}$/.test(cleanedZip)) {
       setIsZipLoading(true);
       
-      const result = lookupByZipCode(cleanedZip);
-      
-      if (result) {
-        const stateFullName = STATE_ABBREVIATION_TO_NAME[result.stateCode] || result.stateCode;
+      try {
+        const result = await lookupByZipCode(cleanedZip);
         
-        const cities = getCitiesByState(result.stateCode);
-        setAvailableCities(cities);
-        
-        setFormData(prev => ({
-          ...prev,
-          client_address_city: result.city,
-          client_address_state: stateFullName
-        }));
-        setZipAutoFilled(true);
-        setZipError('');
-      } else {
-        setZipError('Invalid ZIP code or location not found');
+        if (result) {
+          const stateFullName = STATE_ABBREVIATION_TO_NAME[result.stateCode] || result.stateCode;
+          
+          const cities = getCitiesByState(result.stateCode);
+          setAvailableCities(cities);
+          
+          setFormData(prev => ({
+            ...prev,
+            client_address_city: result.city,
+            client_address_state: stateFullName
+          }));
+          setZipAutoFilled(true);
+          setZipError('');
+        } else {
+          setZipError('Invalid ZIP code or location not found');
+          setZipAutoFilled(false);
+          setAvailableCities([]);
+        }
+      } catch (error) {
+        console.error('ZIP lookup error:', error);
+        setZipError('Failed to lookup ZIP code');
         setZipAutoFilled(false);
         setAvailableCities([]);
+      } finally {
+        setIsZipLoading(false);
       }
-      
-      setIsZipLoading(false);
     } else if (cleanedZip.length > 0 && cleanedZip.length < 5) {
       setZipError('ZIP code must be 5 digits');
     }

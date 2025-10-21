@@ -1,5 +1,3 @@
-import zipcodes from 'zipcodes';
-
 /**
  * US Cities grouped by state (top 50 cities per state for performance)
  * In production, this should be fetched from an API or more comprehensive database
@@ -58,27 +56,39 @@ const US_CITIES_BY_STATE: Record<string, string[]> = {
 };
 
 /**
- * Lookup city and state by ZIP code
+ * Lookup city and state by ZIP code using Zippopotam.us API
  * Returns null if ZIP code not found
  */
-export function lookupByZipCode(zipCode: string | number): { city: string; state: string; stateCode: string } | null {
+export async function lookupByZipCode(zipCode: string | number): Promise<{ city: string; state: string; stateCode: string } | null> {
   const zip = String(zipCode).trim();
   
   if (!zip || zip.length !== 5 || !/^\d{5}$/.test(zip)) {
     return null;
   }
 
-  const result = zipcodes.lookup(zip);
-  
-  if (!result) {
+  try {
+    const response = await fetch(`https://api.zippopotam.us/us/${zip}`);
+    
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (!data.places || data.places.length === 0) {
+      return null;
+    }
+
+    const place = data.places[0];
+    return {
+      city: place['place name'],
+      state: place['state'], // Full state name (e.g., "California")
+      stateCode: place['state abbreviation'], // State abbreviation (e.g., "CA")
+    };
+  } catch (error) {
+    console.error('ZIP code lookup failed:', error);
     return null;
   }
-
-  return {
-    city: result.city,
-    state: result.state, // Full state name (e.g., "California")
-    stateCode: result.state, // State abbreviation (e.g., "CA")
-  };
 }
 
 /**
