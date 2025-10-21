@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, aiApiClient } from './client';
 import type { Account, AccountListItem, AccountListResponse, AccountCreate, AccountUpdate } from '../../types/accounts';
 
 export const accountsApi = {
@@ -17,8 +17,8 @@ export const accountsApi = {
   },
 
   async createAccount(payload: AccountCreate) {
-    // temp solution by amar74.soft
-    const { data } = await apiClient.post<Account>('/accounts', payload);
+    // Use aiApiClient for account creation since it involves AI processing
+    const { data } = await aiApiClient.post<Account>('/accounts', payload);
     return data;
   },
 

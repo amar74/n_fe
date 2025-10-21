@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router-dom';
 import { useHomePage } from './useHomePage';
 import { memo } from 'react';
+import { DashboardWelcome } from './components/DashboardWelcome';
 
 // @author amar74.soft
 function HomePage() {
@@ -36,10 +36,8 @@ function HomePage() {
 
     return (
       <div className="h-full bg-[#F5F3F2] font-inter">
-        
         <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-full">
-          
-          <Outlet />
+          <DashboardWelcome />
         </div>
       </div>
     );

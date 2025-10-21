@@ -98,6 +98,8 @@ export function useDataEnrichment(options: SuggestionOptions = {}) {
       const response = await aiApiClient.post('/ai/enhance-account-data', {
         company_website: websiteUrl,
         current_data: partialData, // Changed from partial_data to match backend schema
+      }, {
+        timeout: 40000, // 40 seconds timeout for AI enhancement
       });
       const result = response.data;
       
@@ -141,7 +143,11 @@ export function useDataEnrichment(options: SuggestionOptions = {}) {
       let errorMessage = 'enhance failed data';
       
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-        errorMessage = 'Processing is taking longer than expected. Please try again.';
+        errorMessage = 'AI processing is taking longer than expected. Please try again.';
+      } else if (err.response?.status === 408) {
+        errorMessage = 'AI processing timeout. Please try again.';
+      } else if (err.response?.status === 429) {
+        errorMessage = 'AI service is busy. Please try again in a few moments.';
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.message) {

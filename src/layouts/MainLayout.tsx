@@ -12,24 +12,17 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { data: organization, isLoading: isOrgLoading } = useMyOrganization({
-    enabled: !!backendUser?.org_id, // Only fetch if user has org_id
-  });
+  const { data: organization, isLoading: isOrgLoading } = useMyOrganization();
 
   useEffect(() => {
     // Only handle redirects after initial auth is complete
     if (!initialAuthComplete) return;
     
-    // If not authenticated with Supabase, redirect to login
-    if (!user) {
+    // If not authenticated, redirect to login
+    if (!backendUser || !isAuthenticated) {
       navigate('/auth/login', { replace: true });
       return;
     }
-
-    // Wait for backend authentication to complete before checking further
-    // This prevents premature redirects while backend is still authenticating
-    if (!backendUser) return;
-    if (!isAuthenticated) return;
 
     const currentPath = location.pathname;
 
@@ -62,12 +55,12 @@ export default function MainLayout() {
       
       // Only redirect to profile update if profile is significantly incomplete (< 50%)
       // This allows users with mostly complete profiles to access the dashboard
-      if (organization && organization.profile_completion < 50) {
+      if (organization && typeof organization.profile_completion === 'number' && organization.profile_completion < 50) {
         navigate('/organization/update', { replace: true });
         return;
       }
     }
-  }, [user, isAuthenticated, backendUser, initialAuthComplete, organization, isOrgLoading, navigate, location.pathname]);
+  }, [backendUser, isAuthenticated, initialAuthComplete, organization, isOrgLoading, navigate, location.pathname]);
 
   // Show loading only during initial auth check
   if (!initialAuthComplete) {
@@ -82,7 +75,7 @@ export default function MainLayout() {
   }
 
   // If no user or not authenticated, will redirect in useEffect
-  if (!user || !isAuthenticated) {
+  if (!backendUser || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center space-y-4">

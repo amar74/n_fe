@@ -5,15 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 
 export default function AuthLayout() {
-  const { user, initialAuthComplete } = useAuth();
+  const { user, backendUser, isAuthenticated, initialAuthComplete } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (user && location.pathname === '/auth/login') {
+    if (backendUser && isAuthenticated && location.pathname === '/auth/login') {
       navigate('/');
     }
-  }, [user, location.pathname]);
+  }, [backendUser, isAuthenticated, location.pathname, navigate]);
 
   if (!initialAuthComplete) {
     return (

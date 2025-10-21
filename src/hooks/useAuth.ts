@@ -1,29 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@lib/supabase';
 import type { AuthState, CurrentUser } from '@/types/auth';
 import { 
   authManager, 
-  authenticateWithBackend, 
-  clearAuthData, 
-  restoreStoredToken 
+  clearAuthData
 } from '@services/auth';
 
 /**
- * Custom hook for managing authentication state and operations.
+ * Custom hook for managing local authentication state and operations.
  * 
  * Provides a unified interface for:
- * - Supabase authentication (sign in/up/out, password reset)
- * - Backend authentication (JWT token management)
+ * - Local backend authentication (sign in/up/out, password reset)
+ * - JWT token management
  * - Global auth state synchronization across components
  * 
  * @returns Auth state and methods for authentication operations
  */
 export function useAuth() {
-  // Supabase auth state
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  
   // Backend auth state (managed by AuthManager)
   const [backendUser, setBackendUser] = useState<CurrentUser | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -67,13 +59,6 @@ export function useAuth() {
     clearAuthData();
   }, []);
 
-  // amar74.soft - quick fix, need proper solution
-  const handleAuthenticateWithBackend = useCallback(
-    async (supabaseToken: string): Promise<boolean> => {
-      return authenticateWithBackend(supabaseToken, isMounted, setError);
-    },
-    []
-  );
 
   useEffect(() => {
     isMounted.current = true;
@@ -94,29 +79,31 @@ export function useAuth() {
 
       const initPromise = (async () => {
         try {
-          // We'll re-authenticate with backend to ensure everything is fresh
-          restoreStoredToken();
+          // Check for stored token instead of Supabase session
+          const storedToken = localStorage.getItem('authToken');
           
-          const {
-            data: { session },
-            error,
-          } = await supabase.auth.getSession();
-
-          if (error) {
-            handleClearAuthData();
-            if (isMounted.current) {
-              setInitialAuthComplete(true);
+          if (storedToken) {
+            // Verify token with backend
+            try {
+              const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
+                headers: {
+                  'Authorization': `Bearer ${storedToken}`,
+                },
+              });
+              
+              if (response.ok) {
+                const userData = await response.json();
+                authManager.setAuthState(true, userData);
+                setBackendUser(userData);
+                setIsAuthenticated(true);
+              } else {
+                // Token is invalid, clear it
+                handleClearAuthData();
+              }
+            } catch (error) {
+              // Network error, clear token
+              handleClearAuthData();
             }
-            return;
-          }
-
-          if (!isMounted.current) return;
-
-          setSession(session);
-          setUser(session?.user ?? null);
-
-          if (session) {
-            await handleAuthenticateWithBackend(session.access_token);
           } else {
             handleClearAuthData();
           }
@@ -136,48 +123,45 @@ export function useAuth() {
 
     initializeAuth();
 
-    // Listen for Supabase auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!isMounted.current) return;
-
-        setSession(session);
-        setUser(session?.user ?? null);
-
-        switch (event) {
-          case 'SIGNED_IN':
-            if (session) {
-              await handleAuthenticateWithBackend(session.access_token);
-            }
-            break;
-          case 'TOKEN_REFRESHED':
-            if (session && !authManager.getAuthState().isAuthenticated) {
-              await handleAuthenticateWithBackend(session.access_token);
-            }
-            break;
-          case 'SIGNED_OUT':
-            handleClearAuthData();
-            break;
-        }
-      }
-    );
-
     return () => {
       isMounted.current = false;
-      subscription.unsubscribe();
     };
   }, []); // Empty dependency array to run only once
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
       setError(null);
-      const result = await supabase.auth.signInWithPassword({ email, password });
       
-      if (result.error) {
-        setError(result.error.message);
+      // Use local authentication instead of Supabase
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.detail || 'Login failed');
+        return { data: null, error: { message: errorData.detail || 'Login failed' } };
       }
       
-      return result;
+      const result = await response.json();
+      
+      if (result.token && result.user) {
+        // Store the token and user data
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('userRole', result.user.role);
+        localStorage.setItem('userEmail', result.user.email);
+        
+        // Update auth state
+        authManager.setAuthState(true, result.user);
+        setBackendUser(result.user);
+        setIsAuthenticated(true);
+      }
+      
+      return { data: result, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Sign in failed';
       setError(errorMessage);
@@ -188,13 +172,37 @@ export function useAuth() {
   const signUp = useCallback(async (email: string, password: string) => {
     try {
       setError(null);
-      const result = await supabase.auth.signUp({ email, password });
       
-      if (result.error) {
-        setError(result.error.message);
+      // Use local authentication for signup
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.detail || 'Signup failed');
+        return { data: null, error: { message: errorData.detail || 'Signup failed' } };
       }
       
-      return result;
+      const result = await response.json();
+      
+      if (result.token && result.user) {
+        // Store the token and user data
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('userRole', result.user.role);
+        localStorage.setItem('userEmail', result.user.email);
+        
+        // Update auth state
+        authManager.setAuthState(true, result.user);
+        setBackendUser(result.user);
+        setIsAuthenticated(true);
+      }
+      
+      return { data: result, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Sign up failed';
       setError(errorMessage);
@@ -206,16 +214,17 @@ export function useAuth() {
     try {
       setError(null);
       
-      handleClearAuthData();
+      // Clear local storage and auth state
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userEmail');
       
-      // Then sign out from Supabase
-      const { error } = await supabase.auth.signOut();
+      handleClearAuthData();
+      authManager.setAuthState(false, null);
+      setBackendUser(null);
+      setIsAuthenticated(false);
 
-      if (error) {
-        setError(error.message);
-      }
-
-      return { error };
+      return { error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Sign out failed';
       setError(errorMessage);
@@ -226,15 +235,24 @@ export function useAuth() {
   const resetPassword = useCallback(async (email: string) => {
     try {
       setError(null);
-      const result = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+      
+      // Use local backend for password reset
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
       });
       
-      if (result.error) {
-        setError(result.error.message);
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.detail || 'Password reset failed');
+        return { data: null, error: { message: errorData.detail || 'Password reset failed' } };
       }
       
-      return result;
+      const result = await response.json();
+      return { data: result, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Password reset failed';
       setError(errorMessage);
@@ -250,11 +268,7 @@ export function useAuth() {
     initialAuthComplete,
     error,
     
-    // Supabase-specific data
-    supabaseUser: user,
-    session,
-    
-    // Backend user data (for backward compatibility)
+    // Backend user data
     backendUser,
     
     // Auth actions

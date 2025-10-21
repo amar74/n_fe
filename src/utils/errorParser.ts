@@ -30,7 +30,9 @@ type FormErrors = Record<string, string>;
  */
 export function parseBackendErrors(error: HTTPValidationError, fields: string[] = []): FormErrors {
   const detail = error?.detail || [];
-  if (!detail.length || !fields.length) {
+  
+  // Ensure detail is an array
+  if (!Array.isArray(detail) || !detail.length || !fields.length) {
     return {};
   }
 
@@ -38,7 +40,7 @@ export function parseBackendErrors(error: HTTPValidationError, fields: string[] 
 
   fields.forEach(field => {
     const fieldErrors = detail
-      .filter((err) => err.loc.includes(field))
+      .filter((err) => err.loc && err.loc.includes(field))
       .map((err) => err.msg);
 
     if (fieldErrors.length > 0) {

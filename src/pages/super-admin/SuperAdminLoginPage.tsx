@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { localAuth } from '@/lib/localAuth';
+import { authApi } from '@/services/api/authApi';
 import LogoIcon from '@assets/Asset 2 1.svg';
 import VectorGrid1 from '@assets/Vector.svg';
 import VectorGrid2 from '@assets/Vector-1.svg';
@@ -51,12 +51,12 @@ export default function SuperAdminLoginPage() {
     form.clearErrors();
 
     try {
-      const response = await localAuth.signInWithPassword({ email: data.email, password: data.password });
+      const response = await authApi.superAdminLogin(data.email, data.password);
 
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
         localStorage.setItem('userRole', 'super_admin');
-        localStorage.setItem('userEmail', response.data.user.email);
+        localStorage.setItem('userEmail', response.user.email);
 
         if (data.rememberMe) {
           localStorage.setItem('rememberMe', 'true');

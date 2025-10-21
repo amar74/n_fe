@@ -15,11 +15,18 @@ export const authApi = {
     }
   },
 
-  async verifySupabaseToken(supabaseToken: string): Promise<{ token: string }> {
-    const { data } = await apiClient.get<{ token: string }>('/auth/verify_supabase_token', {
-      headers: {
-        Authorization: `Bearer ${supabaseToken}`,
-      },
+  async login(email: string, password: string): Promise<{ token: string; user: any }> {
+    const { data } = await apiClient.post<{ token: string; user: any }>('/auth/login', {
+      email,
+      password,
+    });
+    return data;
+  },
+
+  async superAdminLogin(email: string, password: string): Promise<{ token: string; user: any }> {
+    const { data } = await apiClient.post<{ token: string; user: any }>('/auth/super-admin/login', {
+      email,
+      password,
     });
     return data;
   },

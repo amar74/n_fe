@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useLocalAuth } from '@/hooks/useLocalAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -17,7 +17,7 @@ import VectorGrid2 from '@assets/Vector-1.svg';
 
 export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn } = useLocalAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast, presets } = useToast();
 

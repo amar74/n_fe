@@ -1,6 +1,5 @@
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { HomePage } from '@/pages/HomePage';
-import { DashboardWelcome } from '@/pages/HomePage/components/DashboardWelcome';
 import LoginPage from '@pages/LoginPage';
 import SignupPage from '@pages/SignupPage';
 import ForgotPasswordPage from '@pages/ForgotPasswordPage';
@@ -59,132 +58,117 @@ import VendorListPage from '@/pages/super-admin/VendorListPage';
 import VendorProfilePage from '@/pages/super-admin/VendorProfilePage';
 import CreateVendorPage from '@/pages/super-admin/CreateVendorPage';
 
-// import ClientSurveys from '@/pages/client-surveys';
-
-// # pnpm
-// export PNPM_HOME="/home/rishabh/.local/share/pnpm"
-// case ":$PATH:" in
-//   *":$PNPM_HOME:"*) ;;
-//   *) export PATH="$PNPM_HOME:$PATH" ;;
-// esac
-
 const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
     children: [
       {
-        path: '',
+        index: true,
         element: <HomePage />,
-        children: [
-          {
-            index: true,
-            element: <DashboardWelcome />,
-          },
-          {
-            path: 'module/opportunities',
-            element: <OpportunitiesDashboardPage />,
-          },
-          {
-            path: 'module/opportunities/analysis',
-            element: <AIAnalysisPage />,
-          },
-          {
-            path: 'module/opportunities/pipeline/:opportunityId',
-            element: <PipelineOverviewPage />,
-          },
-          {
-            path: 'module/accounts',
-            element: <AccountsPage />,
-          },
-          {
-            path: 'module/accounts/:id',
-            element: <AccountDetailsPage />,
-          },
-          {
-            path: 'module/accounts/:id/edit',
-            element: <AccountEdit />,
-          },
-          {
-            path: 'module/proposals',
-            element: <ProposalsPage />,
-          },
-          {
-            path: 'module/resources',
-            element: <ResourcesPage />,
-          },
-          {
-            path: 'module/contracts',
-            element: <ContractsPage />,
-          },
-          {
-            path: 'module/projects',
-            element: <ProjectsPage />,
-          },
-          {
-            path: 'module/finance',
-            element: <FinancePage />,
-          },
-          {
-            path: 'module/procurement',
-            element: <ProcurementPage />,
-          },
-          {
-            path: 'module/kpis',
-            element: <KpisPage />,
-          },
-          {
-            path: 'module/notes',
-            element: <NotesPage />,
-          },
-          {
-            path: 'module/notes/create',
-            element: <NoteCreatePage />,
-          },
-          {
-            path: 'module/notes/:noteId',
-            element: <NoteDetailsPage />,
-          },
-          {
-            path: 'module/notes/:noteId/edit',
-            element: <NoteEditPage />,
-          },
-          {
-            path: 'modules/accounts-user-permissions',
-            element: <AccountsUserPermissions />,
-          },
-          {
-            path: 'profile',
-            element: <ProfilePage />,
-          },
-          {
-            path: 'profile/settings',
-            element: <ProfileSettingsPage />,
-          },
-          {
-            path: 'organization',
-            element: <OrganizationPage />,
-          },
-          {
-            path: 'organization/update',
-            element: <OrganizationUpdatePage />,
-          },
-          {
-            path: 'organization/settings',
-            element: <OrganizationSettingsPage />,
-          },
-          {
-            path: 'client-surveys',
-            element: <ClientSurveys />,
-          },
-        ],
       },
       {
-        path: '/client-surveys/:environmentId/:surveyId/edit',
+        path: 'module/opportunities',
+        element: <OpportunitiesDashboardPage />,
+      },
+      {
+        path: 'module/opportunities/analysis',
+        element: <AIAnalysisPage />,
+      },
+      {
+        path: 'module/opportunities/pipeline/:opportunityId',
+        element: <PipelineOverviewPage />,
+      },
+      {
+        path: 'module/accounts',
+        element: <AccountsPage />,
+      },
+      {
+        path: 'module/accounts/:id',
+        element: <AccountDetailsPage />,
+      },
+      {
+        path: 'module/accounts/:id/edit',
+        element: <AccountEdit />,
+      },
+      {
+        path: 'module/proposals',
+        element: <ProposalsPage />,
+      },
+      {
+        path: 'module/resources',
+        element: <ResourcesPage />,
+      },
+      {
+        path: 'module/contracts',
+        element: <ContractsPage />,
+      },
+      {
+        path: 'module/projects',
+        element: <ProjectsPage />,
+      },
+      {
+        path: 'module/finance',
+        element: <FinancePage />,
+      },
+      {
+        path: 'module/procurement',
+        element: <ProcurementPage />,
+      },
+      {
+        path: 'module/kpis',
+        element: <KpisPage />,
+      },
+      {
+        path: 'module/notes',
+        element: <NotesPage />,
+      },
+      {
+        path: 'module/notes/create',
+        element: <NoteCreatePage />,
+      },
+      {
+        path: 'module/notes/:noteId',
+        element: <NoteDetailsPage />,
+      },
+      {
+        path: 'module/notes/:noteId/edit',
+        element: <NoteEditPage />,
+      },
+      {
+        path: 'modules/accounts-user-permissions',
+        element: <AccountsUserPermissions />,
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+      },
+      {
+        path: 'profile/settings',
+        element: <ProfileSettingsPage />,
+      },
+      {
+        path: 'organization',
+        element: <OrganizationPage />,
+      },
+      {
+        path: 'organization/update',
+        element: <OrganizationUpdatePage />,
+      },
+      {
+        path: 'organization/settings',
+        element: <OrganizationSettingsPage />,
+      },
+      {
+        path: 'client-surveys',
+        element: <ClientSurveys />,
+      },
+      {
+        path: 'client-surveys/:environmentId/:surveyId/edit',
         element: <EditSurvey />,
       },
       {
-        path: '/client-surveys/:environmentId/:surveyId',
+        path: 'client-surveys/:environmentId/:surveyId',
         element: <ShowSurveyResponses />,
       },
     ],
@@ -211,7 +195,7 @@ const router = createBrowserRouter([
   // Super Admin routes
   {
     path: '/super-admin/login',
-        element: <SuperAdminLoginPage />,
+    element: <SuperAdminLoginPage />,
   },
   {
     path: '/super-admin',
@@ -266,75 +250,73 @@ const router = createBrowserRouter([
     path: '/invite/accept',
     element: <AcceptInvitePage />,
   },
-
-  //testUI
+  // testUI
   {
     path: '/testUI',
-    element: <Outlet/>,
+    element: <Outlet />,
     children: [
       {
         index: true,
-        element: <SignInPage/>
+        element: <SignInPage />,
       },
       {
         path: 'reset-password',
-        element: <ResetPasswordDialog/>
+        element: <ResetPasswordDialog />,
       },
       {
         path: 'set-new-password',
-        element: <SetNewPassword/>
+        element: <SetNewPassword />,
       },
       {
         path: 'create-organization',
-        element: <CreateOrganization/>
+        element: <CreateOrganization />,
       },
       {
         path: 'organization-details',
-        element: <OrganizationDetailsView/>
+        element: <OrganizationDetailsView />,
       },
       {
         path: 'organization-edit',
-        element: <EditOrganizationDetails/>
+        element: <EditOrganizationDetails />,
       },
       {
         path: 'my-account',
-        element: <Dashboard/>
+        element: <Dashboard />,
       },
-        {
-          path: 'create-account',
-          element: <CreateAccountModal/>
-        },
+      {
+        path: 'create-account',
+        element: <CreateAccountModal />,
+      },
       {
         path: 'my-account-overview',
-        element: <AccountOverview/>
+        element: <AccountOverview />,
       },
       {
         path: 'my-account-overview-edit',
-        element: <AccountOverviewEdit/>
+        element: <AccountOverviewEdit />,
       },
       {
         path: 'my-account-contact',
-        element: <AccountContact/>
+        element: <AccountContact />,
       },
       {
         path: 'my-account-performance',
-        element: <PastPerformance/>
+        element: <PastPerformance />,
       },
       {
         path: 'my-account-notes',
-        element: <MyAccountNotes/>
+        element: <MyAccountNotes />,
       },
       {
         path: 'my-account-finance',
-        element: <MyAccountFinancial/>
+        element: <MyAccountFinancial />,
       },
       {
         path: 'my-account-opportunities',
-        element: <MyOpportunities/>
-      }
-
-    ]
-  }
+        element: <MyOpportunities />,
+      },
+    ],
+  },
 ]);
 
 export default function AppRouter() {
