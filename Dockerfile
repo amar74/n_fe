@@ -1,5 +1,5 @@
 # Use an official Node.js runtime as a parent image
-FROM node:20
+FROM node:20 as builder
 
 # Declare Railway-provided env vars as build args (available during build only)
 ARG VITE_API_BASE_URL
@@ -16,7 +16,7 @@ COPY package.json ./
 
 # Install any needed packages specified in package.json
 RUN npm install -g pnpm
-RUN pnpm install
+RUN pnpm install --frozen-lockfile --prefer-offline
 
 # Copy the rest of the application code to the working directory
 COPY . .
@@ -38,7 +38,7 @@ WORKDIR /app
 RUN npm install -g serve
 
 # Copy built assets from the builder stage
-COPY --from=0 /app/dist /app/dist
+COPY --from=builder /app/dist /app/dist
 
 ENV NODE_ENV=production
 
