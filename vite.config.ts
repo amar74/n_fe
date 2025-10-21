@@ -27,7 +27,13 @@ export default defineConfig({
           'vm', 'cluster', 'dgram', 'dns', 'readline', 'repl', 'string_decoder',
           'timers', 'tty', 'v8', 'worker_threads'
         ];
-        return nodeModules.includes(id);
+        
+        // Also exclude problematic packages that use Node.js modules
+        const problematicPackages = [
+          '@tanstack/react-query'
+        ];
+        
+        return nodeModules.includes(id) || problematicPackages.includes(id);
       },
       output: {
         manualChunks: (id) => {
