@@ -1,6 +1,23 @@
 // Simple replacement for TanStack Query to avoid Node.js module issues
 // This provides basic query functionality without the complex internals
 
+// Export types that might be imported
+export interface UseQueryResult<T> {
+  data: T | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+  refetch: () => void;
+}
+
+export interface UseMutationResult<T, V> {
+  mutate: (variables: V) => void;
+  mutateAsync: (variables: V) => Promise<T>;
+  isPending: boolean;
+  isError: boolean;
+  error: Error | null;
+}
+
 // Simple QueryClient implementation
 export class QueryClient {
   constructor(options?: any) {
@@ -25,7 +42,7 @@ export class QueryClient {
 }
 
 // Simple useQuery hook - returns empty state
-export function useQuery<T>(options: any): any {
+export function useQuery<T>(options: any): UseQueryResult<T> {
   return {
     data: undefined,
     isLoading: false,
@@ -36,7 +53,7 @@ export function useQuery<T>(options: any): any {
 }
 
 // Simple useMutation hook - returns empty state
-export function useMutation<T, V>(options: any): any {
+export function useMutation<T, V>(options: any): UseMutationResult<T, V> {
   return {
     mutate: () => {},
     mutateAsync: async () => ({} as T),
