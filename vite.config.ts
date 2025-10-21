@@ -3,30 +3,9 @@ import react from '@vitejs/plugin-react-swc';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
-// Plugin to remove Node.js imports
-const removeNodeImports = () => ({
-  name: 'remove-node-imports',
-  transform(code: string, id: string) {
-    // Remove fs and other Node.js imports from all files
-    const nodeImports = ['fs', 'path', 'os', 'crypto', 'util', 'stream', 'buffer', 'events', 'child_process', 'cluster', 'dgram', 'dns', 'domain', 'http', 'https', 'net', 'readline', 'repl', 'tls', 'tty', 'url', 'vm', 'zlib'];
-    
-    for (const nodeImport of nodeImports) {
-      // Remove import statements
-      code = code.replace(new RegExp(`import\\s+.*\\s+from\\s+['"]${nodeImport}['"]`, 'g'), '');
-      code = code.replace(new RegExp(`import\\s+['"]${nodeImport}['"]`, 'g'), '');
-      code = code.replace(new RegExp(`require\\(['"]${nodeImport}['"]\\)`, 'g'), 'undefined');
-      // Replace fs usage with undefined
-      code = code.replace(new RegExp(`\\bfs\\b`, 'g'), 'undefined');
-      // Replace new fs() with undefined
-      code = code.replace(new RegExp(`new\\s+${nodeImport}\\s*\\(`, 'g'), 'undefined(');
-    }
-    return code;
-  }
-});
-
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), removeNodeImports()],
+  plugins: [react(), tailwindcss()],
   define: {
     global: 'globalThis',
     'process.env': '{}',
@@ -40,6 +19,21 @@ export default defineConfig({
     'stream': 'undefined',
     'buffer': 'undefined',
     'events': 'undefined',
+    'child_process': 'undefined',
+    'cluster': 'undefined',
+    'dgram': 'undefined',
+    'dns': 'undefined',
+    'domain': 'undefined',
+    'http': 'undefined',
+    'https': 'undefined',
+    'net': 'undefined',
+    'readline': 'undefined',
+    'repl': 'undefined',
+    'tls': 'undefined',
+    'tty': 'undefined',
+    'url': 'undefined',
+    'vm': 'undefined',
+    'zlib': 'undefined',
   },
   css: {
     devSourcemap: true,
@@ -47,13 +41,8 @@ export default defineConfig({
   build: {
     sourcemap: false, // Disable source maps for production
     rollupOptions: {
-      external: (id) => {
-        // Exclude Node.js built-in modules
-        if (['fs', 'path', 'os', 'crypto', 'util', 'stream', 'buffer', 'events', 'child_process', 'cluster', 'dgram', 'dns', 'domain', 'http', 'https', 'net', 'readline', 'repl', 'tls', 'tty', 'url', 'vm', 'zlib'].includes(id)) {
-          return true;
-        }
-        return false;
-      },
+      // Note: Do NOT mark Node.js modules as external for browser builds
+      // The resolve.alias configuration below handles them correctly
       output: {
         manualChunks: (id) => {
           // Split by vendor libraries
