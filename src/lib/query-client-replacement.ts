@@ -1,6 +1,9 @@
 // Simple replacement for TanStack Query to avoid Node.js module issues
 // This provides basic query functionality without the complex internals
 
+// Import React properly
+import React from 'react';
+
 // Export types that might be imported
 export interface UseQueryResult<T> {
   data: T | undefined;
@@ -69,6 +72,6 @@ export function useQueryClient(): QueryClient {
 }
 
 // Simple QueryClientProvider
-export function QueryClientProvider({ children }: { children: any }) {
-  return children;
+export function QueryClientProvider({ children }: { children: React.ReactNode }) {
+  return React.createElement('div', null, children);
 }
