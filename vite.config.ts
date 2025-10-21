@@ -10,11 +10,56 @@ export default defineConfig({
     devSourcemap: true,
   },
   build: {
-    sourcemap: true,
+    sourcemap: false, // Disable source maps for production
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Split by vendor libraries
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons-vendor';
+            }
+            if (id.includes('recharts')) {
+              return 'charts-vendor';
+            }
+            if (id.includes('axios') || id.includes('date-fns') || id.includes('zod')) {
+              return 'utils-vendor';
+            }
+            return 'vendor';
+          }
+          
+          // Split by page/route
+          if (id.includes('/pages/modules/opportunities/')) {
+            return 'opportunities';
+          }
+          if (id.includes('/pages/modules/accounts/')) {
+            return 'accounts';
+          }
+          if (id.includes('/pages/modules/proposals/')) {
+            return 'proposals';
+          }
+          if (id.includes('/components/proposal/')) {
+            return 'proposal-components';
+          }
+          if (id.includes('/components/')) {
+            return 'shared-components';
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500, // 500KB warning limit
+    target: 'es2020', // Modern target for smaller bundles
+    minify: 'esbuild', // Use esbuild for minification
   },
   optimizeDeps: {
     esbuildOptions: {
-      sourcemap: true,
+      sourcemap: false,
     },
   },
   resolve: {
