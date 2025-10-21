@@ -9,6 +9,8 @@ export default defineConfig({
   define: {
     global: 'globalThis',
     'process.env': '{}',
+    'process': '{}',
+    'Buffer': 'undefined',
   },
   css: {
     devSourcemap: true,
@@ -16,7 +18,13 @@ export default defineConfig({
   build: {
     sourcemap: false, // Disable source maps for production
     rollupOptions: {
-      external: ['fs', 'path', 'os', 'crypto', 'util', 'stream', 'buffer', 'events'],
+      external: (id) => {
+        // Exclude Node.js built-in modules
+        if (['fs', 'path', 'os', 'crypto', 'util', 'stream', 'buffer', 'events', 'child_process', 'cluster', 'dgram', 'dns', 'domain', 'http', 'https', 'net', 'readline', 'repl', 'tls', 'tty', 'url', 'vm', 'zlib'].includes(id)) {
+          return true;
+        }
+        return false;
+      },
       output: {
         manualChunks: (id) => {
           // Split by vendor libraries
@@ -82,6 +90,15 @@ export default defineConfig({
       '@assets': path.resolve(__dirname, './src/assets'),
       '@models': path.resolve(__dirname, './src/models'),
       '@controllers': path.resolve(__dirname, './src/controllers'),
+      // Node.js module polyfills
+      'fs': false,
+      'path': false,
+      'os': false,
+      'crypto': false,
+      'util': false,
+      'stream': false,
+      'buffer': false,
+      'events': false,
     },
   },
 });
