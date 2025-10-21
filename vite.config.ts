@@ -66,7 +66,11 @@ export default defineConfig({
   optimizeDeps: {
     esbuildOptions: {
       sourcemap: false,
+      define: {
+        global: 'globalThis'
+      },
     },
+    exclude: ['xlsx'], // Let Vite handle xlsx specially
   },
   resolve: {
     alias: {
@@ -83,15 +87,21 @@ export default defineConfig({
       '@assets': path.resolve(__dirname, './src/assets'),
       '@models': path.resolve(__dirname, './src/models'),
       '@controllers': path.resolve(__dirname, './src/controllers'),
-      // Node.js module polyfills
-      'fs': false,
-      'path': false,
-      'os': false,
-      'crypto': false,
-      'util': false,
-      'stream': false,
-      'buffer': false,
-      'events': false,
+      // Node.js module polyfills - set to empty module to avoid errors
+      fs: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      path: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      os: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      crypto: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      util: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      stream: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      buffer: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      events: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      child_process: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      net: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      tls: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      http: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      https: path.resolve(__dirname, './src/lib/empty-module.ts'),
+      zlib: path.resolve(__dirname, './src/lib/empty-module.ts'),
     },
   },
 });
