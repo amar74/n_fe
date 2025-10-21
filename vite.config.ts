@@ -6,12 +6,17 @@ import path from 'path';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    global: 'globalThis',
+    'process.env': '{}',
+  },
   css: {
     devSourcemap: true,
   },
   build: {
     sourcemap: false, // Disable source maps for production
     rollupOptions: {
+      external: ['fs', 'path', 'os', 'crypto', 'util', 'stream', 'buffer', 'events'],
       output: {
         manualChunks: (id) => {
           // Split by vendor libraries
