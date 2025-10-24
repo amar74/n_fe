@@ -1,8 +1,10 @@
 import { AccountListItem } from '@/types/accounts';
 import { useState } from 'react';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Download } from 'lucide-react';
 import { ApprovalModal } from '../ApprovalModal';
 import { DeclineModal } from '../DeclineModal';
+import { apiClient } from '@/services/api/client';
+import { STORAGE_CONSTANTS } from '@/constants/storageConstants';
 
 type AccountsListProps = {
   accounts: AccountListItem[];
@@ -33,8 +35,9 @@ export function AccountsList({
   const [searchQuery, setSearchQuery] = useState('');
   const [approvalModalOpen, setApprovalModalOpen] = useState(false);
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
-  // FIXME: this not working properly - guddy.tech
   const [selectedAccount, setSelectedAccount] = useState<{ id: string; name: string } | null>(null);
+  const [showOnlyApproved, setShowOnlyApproved] = useState(true); // Show only approved by default
+  const [isExporting, setIsExporting] = useState(false);
 
   if (isLoading) {
     return (
@@ -44,11 +47,12 @@ export function AccountsList({
     );
   }
 
+  // Show empty state before filtering
   if (accounts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="text-gray-500 text-lg mb-2">No accounts found</div>
-        <div className="text-gray-400 text-sm">Try adjusting your search or filters</div>
+        <div className="text-gray-400 text-sm">Create your first account to get started</div>
       </div>
     );
   }
@@ -81,6 +85,93 @@ export function AccountsList({
     return 'text-[#D92D20]';
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // Get auth token to verify user is authenticated
+      const token = localStorage.getItem(STORAGE_CONSTANTS.AUTH_TOKEN);
+      if (!token) {
+        throw new Error('No authentication token found. Please log in.');
+      }
+
+      // Call backend export API using apiClient (which handles auth automatically)
+      const response = await apiClient.get('/accounts/export', {
+        responseType: 'blob', // Important for file downloads
+      });
+
+      // Get filename from response headers
+      const contentDisposition = response.headers['content-disposition'];
+      const filename = contentDisposition 
+        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '')
+        : `accounts_export_${new Date().toISOString().split('T')[0]}.csv`;
+
+      // Create blob and download
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error('Export failed:', error);
+      
+      // For blob responses, we need to read the error data differently
+      let errorMessage = 'Export failed. Please try again.';
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          const errorData = JSON.parse(text);
+          console.error('FULL ERROR DATA:', JSON.stringify(errorData, null, 2));
+          
+          // Handle FastAPI validation errors (detail is an array)
+          if (Array.isArray(errorData.detail)) {
+            const errors = errorData.detail.map((err: any) => 
+              `${err.loc?.join(' -> ') || 'unknown'}: ${err.msg}`
+            ).join('; ');
+            errorMessage = `Validation Error: ${errors}`;
+          } else {
+            errorMessage = errorData.detail || errorMessage;
+          }
+        } catch (parseError) {
+          console.error('Could not parse error blob:', parseError);
+        }
+      } else {
+        errorMessage = error.response?.data?.detail || error.message || errorMessage;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Filter accounts based on search and approval status
+  const filteredAccounts = accounts.filter(account => {
+    const accountStatus = (account as any).approval_status || 'pending';
+    
+    // Filter by approval status
+    if (showOnlyApproved && accountStatus !== 'approved') {
+      return false;
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesName = account.client_name?.toLowerCase().includes(query);
+      const matchesCity = account.client_address?.city?.toLowerCase().includes(query);
+      const matchesContact = account.primary_contact_name?.toLowerCase().includes(query);
+      const matchesSector = account.market_sector?.toLowerCase().includes(query);
+      
+      return matchesName || matchesCity || matchesContact || matchesSector;
+    }
+    
+    return true;
+  });
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
       
@@ -101,18 +192,31 @@ export function AccountsList({
 
         
         <div className="flex flex-wrap items-center gap-3">
-          <button className="px-4 py-2.5 bg-white rounded-lg shadow-sm border border-gray-300 flex items-center gap-2 hover:bg-gray-50 hover:border-gray-400 transition-all">
+          <button 
+            onClick={() => setShowOnlyApproved(!showOnlyApproved)}
+            className={`px-4 py-2.5 rounded-lg shadow-sm border flex items-center gap-2 transition-all ${
+              showOnlyApproved 
+                ? 'bg-indigo-50 border-indigo-300 text-indigo-700 hover:bg-indigo-100' 
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+            }`}
+          >
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7.91699 10.7754C9.49286 10.7754 10.812 11.8731 11.1523 13.3457H17.708C18.1219 13.346 18.4578 13.6818 18.458 14.0957C18.458 14.5098 18.122 14.8454 17.708 14.8457H11.1523C10.8122 16.3185 9.49308 17.417 7.91699 17.417C6.3411 17.4168 5.0226 16.3183 4.68262 14.8457H2.29102C1.87695 14.8455 1.54102 14.5098 1.54102 14.0957C1.54121 13.6818 1.87707 13.3459 2.29102 13.3457H4.68262C5.02284 11.8733 6.34133 10.7756 7.91699 10.7754ZM7.91699 12.2754C6.91159 12.2756 6.09668 13.0912 6.09668 14.0967C6.09714 15.1018 6.91187 15.9167 7.91699 15.917C8.92232 15.917 9.73782 15.1019 9.73828 14.0967C9.73828 13.0911 8.92261 12.2754 7.91699 12.2754ZM12.083 2.58301C13.6588 2.58322 14.9772 3.68177 15.3174 5.1543H17.707C18.1211 5.15447 18.457 5.49019 18.457 5.9043C18.4568 6.31823 18.121 6.65412 17.707 6.6543H15.3174C14.9773 8.1268 13.6588 9.2244 12.083 9.22461C10.507 9.22461 9.18787 8.12694 8.84766 6.6543H2.29004C1.87595 6.6543 1.54024 6.31834 1.54004 5.9043C1.54004 5.49008 1.87583 5.1543 2.29004 5.1543H8.84766C9.18793 3.68162 10.5071 2.58301 12.083 2.58301ZM12.083 4.08301C11.0775 4.08301 10.2619 4.89883 10.2617 5.9043C10.262 6.90971 11.0775 7.72461 12.083 7.72461C13.0883 7.72436 13.9031 6.90955 13.9033 5.9043C13.9031 4.89898 13.0883 4.08325 12.083 4.08301Z" fill="#475467"/>
+              <path d="M7.91699 10.7754C9.49286 10.7754 10.812 11.8731 11.1523 13.3457H17.708C18.1219 13.346 18.4578 13.6818 18.458 14.0957C18.458 14.5098 18.122 14.8454 17.708 14.8457H11.1523C10.8122 16.3185 9.49308 17.417 7.91699 17.417C6.3411 17.4168 5.0226 16.3183 4.68262 14.8457H2.29102C1.87695 14.8455 1.54102 14.5098 1.54102 14.0957C1.54121 13.6818 1.87707 13.3459 2.29102 13.3457H4.68262C5.02284 11.8733 6.34133 10.7756 7.91699 10.7754ZM7.91699 12.2754C6.91159 12.2756 6.09668 13.0912 6.09668 14.0967C6.09714 15.1018 6.91187 15.9167 7.91699 15.917C8.92232 15.917 9.73782 15.1019 9.73828 14.0967C9.73828 13.0911 8.92261 12.2754 7.91699 12.2754ZM12.083 2.58301C13.6588 2.58322 14.9772 3.68177 15.3174 5.1543H17.707C18.1211 5.15447 18.457 5.49019 18.457 5.9043C18.4568 6.31823 18.121 6.65412 17.707 6.6543H15.3174C14.9773 8.1268 13.6588 9.2244 12.083 9.22461C10.507 9.22461 9.18787 8.12694 8.84766 6.6543H2.29004C1.87595 6.6543 1.54024 6.31834 1.54004 5.9043C1.54004 5.49008 1.87583 5.1543 2.29004 5.1543H8.84766C9.18793 3.68162 10.5071 2.58301 12.083 2.58301ZM12.083 4.08301C11.0775 4.08301 10.2619 4.89883 10.2617 5.9043C10.262 6.90971 11.0775 7.72461 12.083 7.72461C13.0883 7.72436 13.9031 6.90955 13.9033 5.9043C13.9031 4.89898 13.0883 4.08325 12.083 4.08301Z" fill="currentColor"/>
             </svg>
-            <span className="text-gray-700 text-sm font-medium font-outfit leading-tight whitespace-nowrap">All Accounts</span>
+            <span className="text-sm font-medium font-outfit leading-tight whitespace-nowrap">
+              {showOnlyApproved ? 'Approved Only' : 'All Accounts'}
+            </span>
           </button>
 
-          <button className="px-4 py-2.5 bg-white rounded-lg shadow-sm border border-gray-300 flex items-center gap-2 hover:bg-gray-50 hover:border-gray-400 transition-all">
-            <span className="text-gray-700 text-sm font-medium font-outfit leading-tight">Actions</span>
-            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16.6925 7.94217L10.4425 14.1922C10.3845 14.2503 10.3156 14.2964 10.2397 14.3278C10.1638 14.3593 10.0825 14.3755 10.0003 14.3755C9.91821 14.3755 9.83688 14.3593 9.76101 14.3278C9.68514 14.2964 9.61621 14.2503 9.55816 14.1922L3.30816 7.94217C3.19088 7.82489 3.125 7.66583 3.125 7.49998C3.125 7.33413 3.19088 7.17507 3.30816 7.05779C3.42544 6.94052 3.5845 6.87463 3.75035 6.87463C3.9162 6.87463 4.07526 6.94052 4.19253 7.05779L10.0003 12.8664L15.8082 7.05779C15.8662 6.99972 15.9352 6.95366 16.011 6.92224C16.0869 6.89081 16.1682 6.87463 16.2503 6.87463C16.3325 6.87463 16.4138 6.89081 16.4897 6.92224C16.5655 6.95366 16.6345 6.99972 16.6925 7.05779C16.7506 7.11586 16.7967 7.1848 16.8281 7.26067C16.8595 7.33654 16.8757 7.41786 16.8757 7.49998C16.8757 7.5821 16.8595 7.66342 16.8281 7.73929C16.7967 7.81516 16.7506 7.8841 16.6925 7.94217Z" fill="#475467"/>
-            </svg>
+          <button 
+            onClick={handleExport}
+            disabled={isExporting || filteredAccounts.length === 0}
+            className="px-4 py-2.5 rounded-lg shadow-sm border flex items-center gap-2 transition-all bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Download className="w-4 h-4" />
+            <span className="text-sm font-medium font-outfit leading-tight whitespace-nowrap">
+              {isExporting ? 'Exporting...' : 'Export CSV'}
+            </span>
           </button>
         </div>
       </div>
@@ -160,7 +264,25 @@ export function AccountsList({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {accounts.map((account, index) => {
+            {filteredAccounts.length === 0 ? (
+              <tr>
+                <td colSpan={11} className="px-6 py-12 text-center">
+                  <div className="text-gray-500 text-lg mb-2">No accounts found</div>
+                  <div className="text-gray-400 text-sm">
+                    {searchQuery ? 'Try adjusting your search query' : 'No approved accounts available'}
+                  </div>
+                  {showOnlyApproved && (
+                    <button
+                      onClick={() => setShowOnlyApproved(false)}
+                      className="mt-4 text-sm text-indigo-600 hover:text-indigo-800 underline"
+                    >
+                      Show all accounts
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ) : (
+              filteredAccounts.map((account, index) => {
               const riskBadge = getRiskBadge(account.ai_health_score || 0);
               const healthScoreColor = getHealthScoreColor(account.ai_health_score || 0);
               const accountStatus = (account as any).approval_status || 'pending';
@@ -298,7 +420,8 @@ export function AccountsList({
                   </td>
                 </tr>
               );
-            })}
+            })
+            )}
           </tbody>
         </table>
           </div>
@@ -306,14 +429,15 @@ export function AccountsList({
       </div>
 
       
-      {pagination && pagination.total > 0 && (
+      {filteredAccounts.length > 0 && (
         <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-4 rounded-b-2xl">
           
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-700">
-              Showing <span className="font-medium">{((pagination.page - 1) * pagination.size) + 1}</span> to{' '}
-              <span className="font-medium">{Math.min(pagination.page * pagination.size, pagination.total)}</span> of{' '}
-              <span className="font-medium">{pagination.total}</span> accounts
+              Showing <span className="font-medium">1</span> to{' '}
+              <span className="font-medium">{filteredAccounts.length}</span> of{' '}
+              <span className="font-medium">{filteredAccounts.length}</span> accounts
+              {showOnlyApproved && <span className="text-indigo-600"> (Approved only)</span>}
             </span>
           </div>
 

@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000
 
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,
   timeout: 30000, // Increased to 30s for AI processing
   headers: {
     'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ apiClient.interceptors.response.use(
 
 // Specialized API client for AI requests with longer timeout
 export const aiApiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,
   timeout: 45000, // 45 seconds for AI processing
   headers: {
     'Content-Type': 'application/json',
