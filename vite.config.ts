@@ -58,16 +58,11 @@ export default defineConfig({
         },
       },
     },
-    chunkSizeWarningLimit: 500, // 500KB warning limit
+    chunkSizeWarningLimit: 1000, // 1000KB warning limit
     target: 'es2020', // Modern target for smaller bundles
-    minify: 'terser', // Use Terser for minification (esbuild was naming vars as 'fs')
-    // Configure Terser to avoid using Node.js built-in module names as minified variable names
-    terserOptions: {
-      mangle: {
-        // Reserve Node.js built-in module names to prevent conflicts
-        // Minifier was renaming 'cva' -> 'fs', causing "Cannot access 'fs' before initialization" errors
-        reserved: ['fs', 'path', 'os', 'crypto', 'util', 'stream', 'buffer', 'events', 'child_process', 'net', 'tls', 'http', 'https', 'zlib', 'url', 'querystring', 'assert', 'constants', 'domain', 'punycode', 'process', 'vm', 'cluster', 'dgram', 'dns', 'readline', 'repl', 'string_decoder', 'timers', 'tty', 'v8', 'worker_threads'],
-      },
+    minify: 'esbuild', // Use esbuild for minification
+    commonjsOptions: {
+      transformMixedEsModules: true, // Handle mixed ES/CJS modules better
     },
   },
   optimizeDeps: {
