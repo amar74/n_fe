@@ -4,6 +4,16 @@ import { QueryClient } from '@tanstack/react-query';
  * Centralized TanStack Query client configuration
  * Following Development.md strict patterns for query management
  */
+
+// Debug: Log QueryClient to see what it actually is
+console.log('QueryClient type:', typeof QueryClient);
+console.log('QueryClient value:', QueryClient);
+
+if (typeof QueryClient !== 'function') {
+  console.error('❌ QueryClient is not a function! It is:', QueryClient);
+  throw new Error('QueryClient import failed - not a constructor');
+}
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
