@@ -15,25 +15,7 @@ export default defineConfig({
   },
   build: {
     sourcemap: false, // Disable source maps for production
-    // Force new build hash - fix minified cva/fs conflict
     rollupOptions: {
-      // CRITICAL: Do NOT externalize Node.js modules by simple name matching
-      // Minifiers can rename variables (like 'cva' -> 'fs'), causing false positives
-      // Only externalize actual Node.js module imports (node: protocol or absolute paths)
-      external: (id) => {
-        // Only exclude actual Node.js imports with node: protocol
-        if (id.startsWith('node:')) {
-          return true;
-        }
-        
-        // Exclude build scripts from bundling (absolute path check)
-        if (id.includes('/scripts/generate.ts') || id.includes('\\scripts\\generate.ts')) {
-          return true;
-        }
-        
-        // Allow everything else (including minified variable names like 'fs')
-        return false;
-      },
       output: {
         manualChunks: (id) => {
           // Split by vendor libraries
@@ -79,6 +61,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 500, // 500KB warning limit
     target: 'es2020', // Modern target for smaller bundles
     minify: 'esbuild', // Use esbuild for minification
+    // Configure esbuild to avoid using Node.js built-in module names as minified variable names
+    esbuildOptions: {
+      // Reserve Node.js built-in module names to prevent minifier conflicts
+      // Minifier was renaming 'cva' -> 'fs', causing runtime errors
+      reserveProps: /^(fs|path|os|crypto|util|stream|buffer|events|child_process|net|tls|http|https|zlib|url|querystring|assert|constants|domain|punycode|process|vm|cluster|dgram|dns|readline|repl|string_decoder|timers|tty|v8|worker_threads)$/,
+    },
   },
   optimizeDeps: {
     esbuildOptions: {
