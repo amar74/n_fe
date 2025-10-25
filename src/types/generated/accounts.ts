@@ -434,8 +434,9 @@ const endpoints = makeApi([
   },
 ]);
 
-// Removed problematic AccountsApi export that was causing "pt is not a constructor" error
-// Use createApiClient instead
+// Fixed: Removed problematic AccountsApi export that was causing "pt is not a constructor" error
+// Use createApiClient function below which properly requires baseUrl parameter
+// Build timestamp to force cache bust: 2025-10-25
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);
