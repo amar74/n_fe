@@ -28,6 +28,11 @@ export default defineConfig({
           'timers', 'tty', 'v8', 'worker_threads'
         ];
         
+        // Exclude build scripts from bundling
+        if (id.includes('/scripts/') || id.includes('\\scripts\\')) {
+          return true;
+        }
+        
         return nodeModules.includes(id);
       },
       output: {
