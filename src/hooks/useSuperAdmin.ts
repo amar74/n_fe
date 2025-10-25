@@ -1,9 +1,9 @@
-import { apiClient } from '@services/api/client';
+import { apiClient, API_BASE_URL_WITH_PREFIX } from '@services/api/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createApiClient } from '@/types/generated/admin';
 import { useToast } from './use-toast';
 
-const adminApi = createApiClient(import.meta.env.VITE_API_BASE_URL, { axiosInstance: apiClient });
+const adminApi = createApiClient(API_BASE_URL_WITH_PREFIX, { axiosInstance: apiClient });
 export const useSuperAdmin = () => {
   
   const queryClient = useQueryClient();

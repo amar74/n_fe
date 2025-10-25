@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createQueryKeys } from '@/lib/query-client';
 import { createApiClient } from '@/types/generated/user_permissions';
-import { apiClient } from '@/services/api/client';
+import { apiClient, API_BASE_URL_WITH_PREFIX } from '@/services/api/client';
 import { useToast } from './use-toast';
 import type {
   UserPermissionCreateRequest,
@@ -12,7 +12,7 @@ import type {
 
 export const userPermissionsKeys = createQueryKeys('userPermissions');
 
-const userPermissionsApi = createApiClient(import.meta.env.VITE_API_BASE_URL, { axiosInstance: apiClient });
+const userPermissionsApi = createApiClient(API_BASE_URL_WITH_PREFIX, { axiosInstance: apiClient });
 
 /**
  * Unified User Permissions hook following Development.md patterns

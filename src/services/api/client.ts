@@ -5,9 +5,12 @@ import { STORAGE_CONSTANTS } from '@/constants/storageConstants';
 // Base API configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
+// API Base URL with /api prefix for generated clients
+export const API_BASE_URL_WITH_PREFIX = `${API_BASE_URL}/api`;
+
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL_WITH_PREFIX,
   timeout: 30000, // Increased to 30s for AI processing
   headers: {
     'Content-Type': 'application/json',
@@ -53,7 +56,7 @@ apiClient.interceptors.response.use(
 
 // Specialized API client for AI requests with longer timeout
 export const aiApiClient: AxiosInstance = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL_WITH_PREFIX,
   timeout: 45000, // 45 seconds for AI processing
   headers: {
     'Content-Type': 'application/json',

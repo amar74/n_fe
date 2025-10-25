@@ -26,6 +26,7 @@ export function useAccountsPage() {
     accountsList,
     createAccount,
     fetchAccounts,
+    refetch,
     isCreating,
     isDeleting,
     createErrors,
@@ -195,6 +196,7 @@ export function useAccountsPage() {
     handleStatClick,
     setIsCreateModalOpen,
     setIsSuccessModalOpen,
+    refetchAccounts: refetch,
     
     // Status
     isCreating: isCreating || false,

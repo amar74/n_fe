@@ -85,7 +85,7 @@ export function useAuth() {
           if (storedToken) {
             // Verify token with backend
             try {
-              const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/me`, {
+              const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/me`, {
                 headers: {
                   'Authorization': `Bearer ${storedToken}`,
                 },
@@ -133,7 +133,7 @@ export function useAuth() {
       setError(null);
       
       // Use local authentication instead of Supabase
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ export function useAuth() {
       setError(null);
       
       // Use local authentication for signup
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/signup`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -237,7 +237,7 @@ export function useAuth() {
       setError(null);
       
       // Use local backend for password reset
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/reset-password`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

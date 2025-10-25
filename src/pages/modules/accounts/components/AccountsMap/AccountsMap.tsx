@@ -25,14 +25,11 @@ export function AccountsMap({ accounts }: AccountsMapProps) {
   const [error, setError] = useState<string | null>(null);
   const [cityAggregates, setCityAggregates] = useState<CityAggregate[]>([]);
 
-  // Memoize accounts to prevent unnecessary recalculations
-  const memoizedAccounts = useMemo(() => accounts, [accounts]);
-
   // Aggregate accounts by city whenever accounts change
   useEffect(() => {
-    const aggregates = calculateCityAggregates(memoizedAccounts);
+    const aggregates = calculateCityAggregates(accounts);
     setCityAggregates(aggregates);
-  }, [memoizedAccounts]);
+  }, [accounts]);
 
   useEffect(() => {
     if (isLoaded && !infoWindowRef.current) {

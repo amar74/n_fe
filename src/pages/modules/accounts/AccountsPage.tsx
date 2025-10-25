@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AccountsList } from './components/AccountsList';
 import { CreateAccountModal } from './components/CreateAccountModal';
@@ -7,6 +7,7 @@ import { useAccountsPage } from './useAccountsPage';
 import { SuccessModal } from '@/components/SuccessModal';
 import { useToast } from '@/hooks/useToast';
 import { AccountListItem } from '@/types/accounts';
+import { apiClient } from '@/services/api/client';
 
 // Type for pagination
 interface PaginationData {
@@ -37,72 +38,76 @@ function AccountsPage() {
     createErrors,
     pagination,
     setCurrentPage,
+    refetchAccounts,
   } = useAccountsPage();
 
-  // Local state to manage account approval status
-  const [accounts, setAccounts] = useState<AccountListItem[]>([]);
+  // Local state to manage account approval status for optimistic updates
+  const [localApprovals, setLocalApprovals] = useState<Record<string, string>>({});
 
+  // Sync localStorage with backend data when accounts load
   useEffect(() => {
-    const storedApprovals = localStorage.getItem('accountApprovals');
-    const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
-
-    const accountsWithStatus = originalAccounts.map(account => ({
-      ...account,
-      approval_status: approvalMap[account.account_id] || 'pending',
-    }));
-
-    setAccounts(accountsWithStatus);
+    const approvals: Record<string, string> = {};
+    originalAccounts.forEach(account => {
+      // Use backend approval_status if available, otherwise check localStorage
+      if ((account as any).approval_status) {
+        approvals[account.account_id] = (account as any).approval_status;
+      }
+    });
+    setLocalApprovals(approvals);
+    
+    // Update localStorage with backend data
+    localStorage.setItem('accountApprovals', JSON.stringify(approvals));
   }, [originalAccounts]);
+
+  // Memoize accounts with approval status to prevent infinite loops
+  const accounts = useMemo(() => {
+    return originalAccounts.map(account => ({
+      ...account,
+      approval_status: localApprovals[account.account_id] || (account as any).approval_status || 'pending',
+    }));
+  }, [originalAccounts, localApprovals]);
 
   const handleApproveAccount = async (accountId: string, notes: string) => {
     try {
-      // Update local state
-      setAccounts(prevAccounts =>
-        prevAccounts.map(account =>
-          account.account_id === accountId
-            ? { ...account, approval_status: 'approved' }
-            : account
-        )
-      );
-
-      // Save to localStorage
-      const storedApprovals = localStorage.getItem('accountApprovals');
-      const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
-      approvalMap[accountId] = 'approved';
-      localStorage.setItem('accountApprovals', JSON.stringify(approvalMap));
-
-      // TODO: Call backend API when ready
-      // await apiClient.post(`/accounts/${accountId}/approve`, { notes });
+      // Call backend API to approve account
+      await apiClient.post(`/api/accounts/${accountId}/approve`, { notes });
+      
+      // Update local state to reflect the change immediately
+      setLocalApprovals(prev => {
+        const updated = { ...prev, [accountId]: 'approved' };
+        localStorage.setItem('accountApprovals', JSON.stringify(updated));
+        return updated;
+      });
+      
+      // Refetch accounts to get updated data from backend
+      await refetchAccounts();
       
       toast.success('✅ Account approved successfully! The account is now active.');
     } catch (error) {
-      toast.error('approve failed. Please try again.');
+      console.error('Failed to approve account:', error);
+      toast.error('Approve failed. Please try again.');
     }
   };
 
   const handleDeclineAccount = async (accountId: string, notes: string) => {
     try {
-      // Update local state
-      setAccounts(prevAccounts =>
-        prevAccounts.map(account =>
-          account.account_id === accountId
-            ? { ...account, approval_status: 'declined' }
-            : account
-        )
-      );
-
-      // Save to localStorage
-      const storedApprovals = localStorage.getItem('accountApprovals');
-      const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
-      approvalMap[accountId] = 'declined';
-      localStorage.setItem('accountApprovals', JSON.stringify(approvalMap));
-
-      // TODO: Call backend API when ready
-      // await apiClient.post(`/accounts/${accountId}/decline`, { notes });
+      // Call backend API to decline account
+      await apiClient.post(`/api/accounts/${accountId}/decline`, { notes });
+      
+      // Update local state to reflect the change immediately
+      setLocalApprovals(prev => {
+        const updated = { ...prev, [accountId]: 'declined' };
+        localStorage.setItem('accountApprovals', JSON.stringify(updated));
+        return updated;
+      });
+      
+      // Refetch accounts to get updated data from backend
+      await refetchAccounts();
       
       toast.error('❌ Account declined.');
     } catch (err) {
-      toast.error('decline failed. Please try again.');
+      console.error('Failed to decline account:', err);
+      toast.error('Decline failed. Please try again.');
     }
   };
 
@@ -295,4 +300,4 @@ function AccountsPage() {
   );
 }
 
-export default AccountsPage;
+export default memo(AccountsPage);
