@@ -200,7 +200,6 @@ const endpoints = makeApi([
   },
 ]);
 
-export const Account_documentsApi = new Zodios(endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);

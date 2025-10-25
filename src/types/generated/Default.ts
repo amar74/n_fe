@@ -114,7 +114,6 @@ const endpoints = makeApi([
   },
 ]);
 
-export const DefaultApi = new Zodios(endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);

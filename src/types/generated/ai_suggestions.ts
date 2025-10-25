@@ -374,7 +374,6 @@ Returns:
   },
 ]);
 
-export const Ai_suggestionsApi = new Zodios(endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);

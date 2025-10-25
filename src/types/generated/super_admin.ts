@@ -73,7 +73,6 @@ Returns statistics for vendors (users with role&#x3D;&#x27;vendor&#x27;)`,
   },
 ]);
 
-export const Super_adminApi = new Zodios(endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);

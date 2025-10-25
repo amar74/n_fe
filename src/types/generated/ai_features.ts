@@ -191,7 +191,6 @@ const endpoints = makeApi([
   },
 ]);
 
-export const Ai_featuresApi = new Zodios(endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);

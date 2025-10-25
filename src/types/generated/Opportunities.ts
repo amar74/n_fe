@@ -564,7 +564,6 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
 ]);
 
-export const OpportunitiesApi = new Zodios(endpoints);
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);
