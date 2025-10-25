@@ -65,9 +65,10 @@ export default defineConfig({
           if (id.includes('/components/proposal/')) {
             return 'proposal-components';
           }
-          if (id.includes('/components/')) {
-            return 'shared-components';
-          }
+          // Don't split shared components - keep them in main bundle
+          // if (id.includes('/components/')) {
+          //   return 'shared-components';
+          // }
         },
       },
     },
