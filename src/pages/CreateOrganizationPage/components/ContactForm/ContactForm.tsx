@@ -15,6 +15,31 @@ const COUNTRY_CODES = [
 
 export function ContactForm({ control, isSubmitting, userEmail }: ContactFormProps) {
   const [countryCode, setCountryCode] = useState('+1');
+  const [phoneError, setPhoneError] = useState<string>('');
+
+  // Format phone number
+  const formatPhoneNumber = (value: string): string => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length <= 3) return cleaned;
+    if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)} ${cleaned.slice(6, 13)}`; // 13 digits max
+  };
+
+  // Validate phone number (10-13 digits)
+  const validatePhoneNumber = (phone: string): boolean => {
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length < 10) {
+      setPhoneError('Phone number must be at least 10 digits');
+      return false;
+    }
+    if (cleaned.length > 13) {
+      setPhoneError('Phone number must be at most 13 digits');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       
@@ -84,15 +109,24 @@ export function ContactForm({ control, isSubmitting, userEmail }: ContactFormPro
                   type="tel"
                   placeholder="(555) 123 4567"
                   onChange={(e) => {
-                    const phoneNumber = e.target.value;
-                    field.onChange(`${countryCode} ${phoneNumber}`);
+                    const rawValue = e.target.value.replace(/\D/g, '');
+                    const formatted = formatPhoneNumber(rawValue);
+                    field.onChange(`${countryCode} ${formatted}`);
+                    validatePhoneNumber(rawValue);
+                  }}
+                  onBlur={(e) => {
+                    const rawValue = e.target.value.replace(/\D/g, '');
+                    validatePhoneNumber(rawValue);
                   }}
                   value={field.value ? field.value.replace(/^\+\d{1,3}\s?/, '') : ''}
-                  className="flex-1 h-12 border-gray-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 font-poppins text-[14px] placeholder:text-gray-400"
+                  className={`flex-1 h-12 border-gray-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 font-poppins text-[14px] placeholder:text-gray-400 ${phoneError ? 'border-red-500' : ''}`}
                   disabled={isSubmitting}
                 />
               </FormControl>
             </div>
+            {phoneError && (
+              <p className="text-xs text-red-600 font-poppins">{phoneError}</p>
+            )}
             <FormMessage className="text-xs font-poppins" />
           </FormItem>
         )}

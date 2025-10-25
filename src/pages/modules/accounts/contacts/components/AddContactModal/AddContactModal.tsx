@@ -21,9 +21,13 @@ export function AddContactModal({
   if (!isOpen) return null;
 
   const handleSubmit = async (contact: ContactCreate) => {
-    // console.log(formData); // debug
-    await onSubmit(contact);
-    onClose();
+    try {
+      await onSubmit(contact);
+      // onClose is handled by the parent component after successful creation
+    } catch (error) {
+      // Error is handled by the hook and displayed via toast
+      console.error('Failed to add contact:', error);
+    }
   };
 
   return (

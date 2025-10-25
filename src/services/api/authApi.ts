@@ -24,7 +24,7 @@ export const authApi = {
   },
 
   async superAdminLogin(email: string, password: string): Promise<{ token: string; user: any }> {
-    const { data } = await apiClient.post<{ token: string; user: any }>('/auth/super-admin/login', {
+    const { data } = await apiClient.post<{ token: string; user: any }>('/super-admin/login', {
       email,
       password,
     });

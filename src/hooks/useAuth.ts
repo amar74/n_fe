@@ -4,6 +4,7 @@ import {
   authManager, 
   clearAuthData
 } from '@services/auth';
+import { API_BASE_URL_WITH_PREFIX } from '@services/api/client';
 
 /**
  * Custom hook for managing local authentication state and operations.
@@ -85,23 +86,30 @@ export function useAuth() {
           if (storedToken) {
             // Verify token with backend
             try {
-              const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/me`, {
+              const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/me`, {
                 headers: {
                   'Authorization': `Bearer ${storedToken}`,
                 },
               });
               
               if (response.ok) {
-                const userData = await response.json();
-                authManager.setAuthState(true, userData);
-                setBackendUser(userData);
-                setIsAuthenticated(true);
+                try {
+                  const userData = await response.json();
+                  authManager.setAuthState(true, userData);
+                  setBackendUser(userData);
+                  setIsAuthenticated(true);
+                } catch (jsonError) {
+                  // If JSON parsing fails, clear auth data
+                  console.error('Failed to parse user data:', jsonError);
+                  handleClearAuthData();
+                }
               } else {
                 // Token is invalid, clear it
                 handleClearAuthData();
               }
             } catch (error) {
-              // Network error, clear token
+              // Network error or other error, clear token
+              console.error('Auth initialization error:', error);
               handleClearAuthData();
             }
           } else {
@@ -133,7 +141,7 @@ export function useAuth() {
       setError(null);
       
       // Use local authentication instead of Supabase
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,12 +150,26 @@ export function useAuth() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Login failed');
-        return { data: null, error: { message: errorData.detail || 'Login failed' } };
+        let errorMessage = 'Login failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || 'Login failed';
+        } catch (jsonError) {
+          // If JSON parsing fails, use status text or default message
+          errorMessage = response.statusText || `Login failed with status ${response.status}`;
+        }
+        setError(errorMessage);
+        return { data: null, error: { message: errorMessage } };
       }
       
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        const errorMessage = 'Invalid response format from server';
+        setError(errorMessage);
+        return { data: null, error: { message: errorMessage } };
+      }
       
       if (result.token && result.user) {
         // Store the token and user data
@@ -174,7 +196,7 @@ export function useAuth() {
       setError(null);
       
       // Use local authentication for signup
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/signup`, {
+      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,12 +205,26 @@ export function useAuth() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Signup failed');
-        return { data: null, error: { message: errorData.detail || 'Signup failed' } };
+        let errorMessage = 'Signup failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || 'Signup failed';
+        } catch (jsonError) {
+          // If JSON parsing fails, use status text or default message
+          errorMessage = response.statusText || `Signup failed with status ${response.status}`;
+        }
+        setError(errorMessage);
+        return { data: null, error: { message: errorMessage } };
       }
       
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        const errorMessage = 'Invalid response format from server';
+        setError(errorMessage);
+        return { data: null, error: { message: errorMessage } };
+      }
       
       if (result.token && result.user) {
         // Store the token and user data
@@ -237,7 +273,7 @@ export function useAuth() {
       setError(null);
       
       // Use local backend for password reset
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/reset-password`, {
+      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -246,12 +282,27 @@ export function useAuth() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.detail || 'Password reset failed');
-        return { data: null, error: { message: errorData.detail || 'Password reset failed' } };
+        let errorMessage = 'Password reset failed';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || 'Password reset failed';
+        } catch (jsonError) {
+          // If JSON parsing fails, use status text or default message
+          errorMessage = response.statusText || `Password reset failed with status ${response.status}`;
+        }
+        setError(errorMessage);
+        return { data: null, error: { message: errorMessage } };
       }
       
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        const errorMessage = 'Invalid response format from server';
+        setError(errorMessage);
+        return { data: null, error: { message: errorMessage } };
+      }
+      
       return { data: result, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Password reset failed';

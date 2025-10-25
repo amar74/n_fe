@@ -34,7 +34,13 @@ import OrganizationUpdatePage from '@/pages/OrganizationUpdatePage';
 import ProfilePage from '@/pages/ProfilePage';
 import ProfileSettingsPage from '@/pages/ProfileSettingsPage';
 import OrganizationSettingsPage from '@/pages/OrganizationSettingsPage';
-import ClientSurveys from '@/pages/client-surveys';
+// Custom Survey System Pages
+import SurveysPage from '@/pages/SurveysPage/SurveysPage';
+import SurveyBuilderPage from '@/pages/SurveyBuilderPage/SurveyBuilderPage';
+import SurveyResponsesPage from '@/pages/SurveyResponsesPage/SurveyResponsesPage';
+import SurveyAnalyticsPage from '@/pages/SurveyAnalyticsPage/SurveyAnalyticsPage';
+import SurveyPreviewPage from '@/pages/SurveyPreviewPage/SurveyPreviewPage';
+import PublicSurveyPage from '@/pages/PublicSurveyPage/PublicSurveyPage';
 import SignInPage from '@/pages/testUI/SignInPage';
 import { ResetPasswordDialog } from '@/pages/testUI/ResetPasswordDialog';
 import SetNewPassword from '@/pages/testUI/SetNewPassword';
@@ -50,8 +56,6 @@ import PastPerformance from '@/pages/testUI/PastPerformance';
 import MyAccountNotes from '@/pages/testUI/MyAccountNotes';
 import MyAccountFinancial from '@/pages/testUI/MyAccountFinancial';
 import MyOpportunities from '@/pages/testUI/MyOpportunities';
-import EditSurvey from '@/pages/client-surveys/EditSurvey';
-import ShowSurveyResponses from '@/pages/client-surveys/ShowSurveyResponses';
 import SuperAdminLoginPage from '@/pages/super-admin/SuperAdminLoginPage';
 import SuperAdminDashboardPage from '@/pages/super-admin/SuperAdminDashboardPage';
 import VendorListPage from '@/pages/super-admin/VendorListPage';
@@ -159,17 +163,39 @@ const router = createBrowserRouter([
         path: 'organization/settings',
         element: <OrganizationSettingsPage />,
       },
+      // Custom Survey System Routes
+      {
+        path: 'surveys',
+        element: <SurveysPage />,
+      },
+      {
+        path: 'surveys/builder',
+        element: <SurveyBuilderPage />,
+      },
+      {
+        path: 'surveys/:surveyId/edit',
+        element: <SurveyBuilderPage />,
+      },
+      {
+        path: 'surveys/:surveyId',
+        element: <SurveyResponsesPage />,
+      },
+      {
+        path: 'surveys/:surveyId/responses',
+        element: <SurveyResponsesPage />,
+      },
+      {
+        path: 'surveys/:surveyId/analytics',
+        element: <SurveyAnalyticsPage />,
+      },
+      {
+        path: 'surveys/preview',
+        element: <SurveyPreviewPage />,
+      },
+      // Keep client-surveys for backward compatibility
       {
         path: 'client-surveys',
-        element: <ClientSurveys />,
-      },
-      {
-        path: 'client-surveys/:environmentId/:surveyId/edit',
-        element: <EditSurvey />,
-      },
-      {
-        path: 'client-surveys/:environmentId/:surveyId',
-        element: <ShowSurveyResponses />,
+        element: <SurveysPage />,
       },
     ],
   },
@@ -177,6 +203,11 @@ const router = createBrowserRouter([
   {
     path: '/organization/create',
     element: <CreateOrganizationPage />,
+  },
+  // Public Survey Page (no auth required)
+  {
+    path: '/survey/:surveyId',
+    element: <PublicSurveyPage />,
   },
   {
     path: '/admin',

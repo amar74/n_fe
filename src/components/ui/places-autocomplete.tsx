@@ -1,15 +1,7 @@
 /// <reference types="@types/google.maps" />
 import { useEffect, useRef, useState } from 'react';
-import { Input } from './input';
-import { MapPin } from 'lucide-react';
-
-declare global {
-  interface Window {
-    google: typeof google;
-    initGooglePlaces?: () => void;
-    gm_authFailure?: () => void;
-  }
-}
+import { MapPin, AlertCircle } from 'lucide-react';
+import { loadGoogleMaps, isGoogleMapsLoaded } from '@/lib/google-maps-loader';
 
 type PlacesAutocompleteProps = {
   value: string;
@@ -17,8 +9,12 @@ type PlacesAutocompleteProps = {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-}
+};
 
+/**
+ * Google Places Autocomplete Component
+ * Uses centralized Google Maps loader to prevent conflicts
+ */
 export function PlacesAutocomplete({
   value,
   onChange,
@@ -28,121 +24,189 @@ export function PlacesAutocomplete({
 }: PlacesAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const listenerRef = useRef<google.maps.MapsEventListener | null>(null);
+  
+  const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const initializePlaces = () => {
-    if (!inputRef.current || !window.google?.maps?.places) {
-      setError('Places API not available');
-      return;
-    }
-
-    try {
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
-        types: ['address'],
-        fields: ['address_components', 'formatted_address', 'geometry'],
-      });
-
-      const listener = autocompleteRef.current.addListener('place_changed', () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (!place) return;
-        onChange(place.formatted_address || '', place);
-      });
-
-      setIsInitialized(true);
-      setError(null);
-
-      return () => {
-        if (listener) window.google.maps.event.removeListener(listener);
-      };
-    } catch (e) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      setError(`initialize failed Autocomplete: ${errorMessage}`);
-    }
-  };
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const handleScriptError = (event: Event | string) => {
-      if (window.google?.maps?.places === undefined && window.google?.maps) {
-        const error = (window as any).google.maps.errors?.[0];
-        if (error?.includes('RefererNotAllowedMapError')) {
-          setError(`This URL (${window.location.origin}) is not authorized. Add "${window.location.origin}/*" to allowed referrers.`);
+    let mounted = true;
+
+    const initializeAutocomplete = async () => {
+      try {
+        console.log('🌍 Initializing Google Places Autocomplete...');
+        setIsLoading(true);
+        setError(null);
+
+        // Load Google Maps API
+        await loadGoogleMaps({ libraries: ['places'] });
+
+        if (!mounted) return;
+
+        // Verify API is loaded
+        if (!isGoogleMapsLoaded()) {
+          throw new Error('Google Maps API failed to load');
+        }
+
+        // Verify input ref exists
+        if (!inputRef.current) {
+          console.warn('⚠️ Input ref not available yet, retrying...');
+          setTimeout(() => {
+            if (mounted && !autocompleteRef.current) {
+              initializeAutocomplete();
+            }
+          }, 100);
           return;
         }
-        if (error?.includes('ApiTargetBlockedMapError')) {
-          setError('The Places API is not enabled for this API key.');
-          return;
-        }
+
+        console.log('✅ Google Maps loaded, creating Autocomplete instance...');
+
+        // Create autocomplete instance
+        const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+          types: ['address'],
+          componentRestrictions: { country: 'us' },
+          fields: ['address_components', 'formatted_address', 'geometry', 'name'],
+        });
+
+        autocompleteRef.current = autocomplete;
+
+        // Add place_changed listener
+        const listener = autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          
+          if (!place) {
+            console.warn('⚠️ No place selected');
+            return;
+          }
+
+          console.log('📍 Place selected:', place);
+
+          // Call parent onChange with place details
+          const address = place.formatted_address || place.name || '';
+          onChange(address, place);
+        });
+
+        listenerRef.current = listener;
+
+        setIsReady(true);
+        setIsLoading(false);
+        console.log('✅ Places Autocomplete ready');
+
+      } catch (err) {
+        if (!mounted) return;
+        
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        console.error('❌ Failed to initialize Places Autocomplete:', errorMessage);
+        setError(errorMessage);
+        setIsLoading(false);
       }
     };
 
-    window.gm_authFailure = () => {
-      setError(`Authorization failed. Please ensure "${window.location.origin}/*" is added to allowed referrers.`);
-    };
+    initializeAutocomplete();
 
-    window.initGooglePlaces = () => {
-      setIsLoaded(true);
-      initializePlaces();
-    };
-
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      setError('Google Maps API key is missing');
-      return;
-    }
-
-    if (!document.querySelector('#google-maps-script')) {
-      const script = document.createElement('script');
-      script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGooglePlaces&v=weekly`;
-      script.async = true;
-      script.defer = true;
-      script.onerror = handleScriptError;
-      document.head.appendChild(script);
-    } else if (window.google) {
-      setIsLoaded(true);
-      initializePlaces();
-    }
-
+    // Cleanup
     return () => {
-      delete window.initGooglePlaces;
+      mounted = false;
+      
+      if (listenerRef.current) {
+        window.google?.maps?.event.removeListener(listenerRef.current);
+        listenerRef.current = null;
+      }
+      
+      if (autocompleteRef.current) {
+        // Clear autocomplete instance
+        window.google?.maps?.event.clearInstanceListeners(autocompleteRef.current);
+        autocompleteRef.current = null;
+      }
     };
   }, []);
 
+  // Handle manual input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+  };
+
   return (
-    <div className="relative">
-      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-      <Input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={error ? 'Google Maps not available' : placeholder}
-        className={`pl-10 border placeholder-shown:border-gray-300 focus:border-orange-300 not-placeholder-shown:border-orange-300 focus:outline-none focus:ring-0 focus-visible:ring-0 ${
-          error ? 'border-red-300 bg-red-50' : ''
-        } ${className}`}
-        disabled={disabled || !isLoaded || !isInitialized || !!error}
-      />
+    <div className="relative w-full">
+      <div className="relative">
+        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none z-10" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={handleInputChange}
+          placeholder={error ? 'Google Maps unavailable - enter manually' : placeholder}
+          disabled={disabled || isLoading}
+          className={`
+            w-full h-12 pl-10 pr-4 py-2.5
+            bg-white rounded-lg
+            border border-gray-300
+            text-sm text-gray-900
+            placeholder:text-gray-500
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+            disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
+            transition-colors
+            ${error ? 'border-red-300 bg-red-50' : ''}
+            ${className}
+          `.trim()}
+          autoComplete="off"
+        />
+        
+        {isLoading && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <div className="animate-spin h-4 w-4 border-2 border-indigo-500 border-t-transparent rounded-full" />
+          </div>
+        )}
+      </div>
+
       {error && (
-        <div className="mt-2 p-2 text-sm bg-red-50 border border-red-200 rounded-md">
-          <div className="font-medium text-red-800">Error loading Google Maps</div>
-          <div className="mt-1 text-red-600">{error}</div>
-          {error.includes('not authorized') && (
-            <div className="mt-2 text-red-700">
-              <ol className="mt-1 ml-4 list-decimal">
-                <li>Go to Google Cloud Console</li>
-                <li>Navigate to "APIs & Services" {'->'} "Credentials"</li>
-                <li>Edit your API key</li>
-                <li>Add these URLs:
-                  <pre className="mt-1 p-2 bg-red-100 rounded text-xs font-mono">
-                    {`http://localhost:5173/*\nhttp://localhost:5173`}
-                  </pre>
-                </li>
-              </ol>
+        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <div className="text-sm font-medium text-red-800">Google Maps Error</div>
+              <div className="mt-1 text-xs text-red-600 leading-relaxed">{error}</div>
+              
+              {error.includes('API key') && (
+                <div className="mt-3 p-2 bg-white rounded border border-red-200">
+                  <div className="text-xs font-medium text-red-800 mb-2">✅ Quick Fix:</div>
+                  <ol className="ml-4 list-decimal space-y-1 text-xs text-gray-700">
+                    <li>Ensure <code className="px-1 py-0.5 bg-gray-100 rounded font-mono text-[10px]">VITE_GOOGLE_MAPS_API_KEY</code> is in <code className="px-1 py-0.5 bg-gray-100 rounded">.env</code></li>
+                    <li>Restart the dev server with <code className="px-1 py-0.5 bg-gray-100 rounded font-mono text-[10px]">pnpm dev</code></li>
+                  </ol>
+                </div>
+              )}
+              
+              {(error.includes('Places API') || error.includes('Timeout')) && (
+                <div className="mt-3 p-2 bg-white rounded border border-red-200">
+                  <div className="text-xs font-medium text-red-800 mb-2">Common Issues:</div>
+                  <ul className="ml-4 list-disc space-y-1 text-xs text-gray-700">
+                    <li><strong>Places API not enabled:</strong> Go to <a href="https://console.cloud.google.com/apis/library/places-backend.googleapis.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Google Cloud</a> and enable it</li>
+                    <li><strong>Billing not enabled:</strong> Google Maps requires a billing account</li>
+                    <li><strong>Referrer restrictions:</strong> Add <code className="px-1 py-0.5 bg-gray-100 rounded font-mono text-[10px]">{window.location.origin}/*</code> to allowed referrers</li>
+                    <li><strong>API key restrictions:</strong> Ensure "Places API" is allowed for your key</li>
+                  </ul>
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <button 
+                      onClick={() => window.location.reload()} 
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      🔄 Retry (reload page)
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
+      )}
+
+      {!error && !isLoading && !isReady && (
+        <p className="mt-1 text-xs text-gray-500">
+          💡 Type to see address suggestions or enter manually
+        </p>
       )}
     </div>
   );

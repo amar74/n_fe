@@ -66,9 +66,9 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
   const { toast } = useToast();
   const [availableCities, setAvailableCities] = useState<string[]>([]);
   
-  const handleZipCodeChange = (zipCode: string) => {
+  const handleZipCodeChange = async (zipCode: string) => {
     if (zipCode.length === 5) {
-      const result = lookupByZipCode(zipCode);
+      const result = await lookupByZipCode(zipCode);
       if (result) {
         setValue('address.city', result.city);
         setValue('address.state', result.stateCode);
@@ -107,13 +107,48 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
           render={({ field }) => (
             <FormItem className="space-y-2.5">
               <FormLabel className="text-[13px] font-medium text-gray-900 font-poppins">
-                Address 1*
+                Address 1* <span className="text-xs text-gray-500 font-normal">🌍 Google autocomplete</span>
               </FormLabel>
               <FormControl>
-                <Input
-                  {...field}
+                <PlacesAutocomplete
                   value={field.value || ''}
-                  placeholder="45, Street"
+                  onChange={(value, placeDetails) => {
+                    field.onChange(value);
+                    
+                    // Auto-fill other address fields if place details are available
+                    if (placeDetails?.address_components) {
+                      const components = placeDetails.address_components;
+                      
+                      // Extract city
+                      const city = components.find(c => c.types.includes('locality'))?.long_name;
+                      
+                      // Extract state
+                      const state = components.find(c => c.types.includes('administrative_area_level_1'))?.short_name;
+                      
+                      // Extract zip code
+                      const zipCode = components.find(c => c.types.includes('postal_code'))?.long_name;
+                      
+                      // Auto-fill fields
+                      if (state) {
+                        setValue('address.state', state);
+                        handleStateChange(state);
+                      }
+                      if (city) {
+                        setValue('address.city', city);
+                      }
+                      if (zipCode) {
+                        setValue('address.pincode', parseInt(zipCode));
+                      }
+                      
+                      // Show success toast
+                      if (city && state) {
+                        toast.success('Address Auto-filled', {
+                          description: `${city}, ${state} detected from Google Maps`,
+                        });
+                      }
+                    }
+                  }}
+                  placeholder="Enter street address"
                   className={`h-12 border-gray-300 rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 font-poppins text-[14px] placeholder:text-gray-400 ${
                     showAISuggestions && field.value ? 'bg-blue-50 border-blue-300' : ''
                   }`}

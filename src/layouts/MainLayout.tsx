@@ -12,7 +12,9 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { data: organization, isLoading: isOrgLoading } = useMyOrganization();
+  // Only fetch organization if user has an org_id (super admins may not have one)
+  const hasOrgId = backendUser?.org_id !== null && backendUser?.org_id !== undefined;
+  const { data: organization, isLoading: isOrgLoading } = useMyOrganization(hasOrgId);
 
   useEffect(() => {
     // Only handle redirects after initial auth is complete

@@ -157,21 +157,28 @@ export default function OrganizationSettingsPage() {
             backgroundSize: '40px 40px'
           }} />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <Link 
             to="/profile" 
-            className="inline-flex items-center text-white/80 hover:text-white mb-4 transition-colors"
+            className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-all hover:gap-3 gap-2"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4" />
             Back to Profile
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-extrabold mb-3 tracking-tight leading-tight">Organization Settings</h1>
-              <p className="text-white/95 text-lg font-medium leading-relaxed">Manage your organization's information and team</p>
+              <h1 className="text-5xl font-extrabold mb-3 tracking-tight leading-tight text-white drop-shadow-lg">
+                Organization Settings
+              </h1>
+              <p className="text-white text-lg font-medium leading-relaxed drop-shadow-md">
+                Manage your organization's information and team
+              </p>
             </div>
             <Link to="/organization/update">
-              <Button className="bg-white text-[#161950] hover:bg-gray-100">
+              <Button className="bg-white text-[#161950] hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all hover:scale-105 h-12 px-6 font-semibold">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Details
               </Button>
@@ -459,18 +466,21 @@ export default function OrganizationSettingsPage() {
             </Card>
 
             
-            <Card className="border border-gray-100 shadow-md bg-[#161950] text-white">
-              <CardContent className="p-6">
+            <Card className="border-2 border-white/20 shadow-2xl bg-gradient-to-br from-[#161950] via-[#1e2563] to-[#2a3175] text-white overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-2xl"></div>
+              
+              <CardContent className="p-7 relative z-10">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                    <Settings className="h-6 w-6 text-white" />
+                  <div className="w-14 h-14 bg-gradient-to-br from-white/20 to-white/10 rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-sm">
+                    <Settings className="h-7 w-7 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-lg mb-2">Need Help?</h4>
-                    <p className="text-white/90 text-sm mb-4">
+                    <h4 className="font-bold text-xl mb-2 text-white">Need Help?</h4>
+                    <p className="text-white text-sm mb-4 leading-relaxed">
                       Our support team is here to help you manage your organization settings.
                     </p>
-                    <Button variant="secondary" size="sm" className="bg-white text-[#161950] hover:bg-gray-100">
+                    <Button variant="secondary" size="sm" className="bg-white text-[#161950] hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all hover:scale-105 font-semibold">
                       Contact Support
                     </Button>
                   </div>

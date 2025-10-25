@@ -11,12 +11,14 @@ import type { LoginCredentials, LoginFormData } from '@/types/auth';
 import { LoginFormSchema } from '@/types/auth';
 import { useToast } from '@/hooks/useToast';
 import { STORAGE_CONSTANTS } from '@/constants/storageConstants';
+import { Eye, EyeOff } from 'lucide-react';
 import LogoIcon from '@assets/Asset 2 1.svg';
 import VectorGrid1 from '@assets/Vector.svg';
 import VectorGrid2 from '@assets/Vector-1.svg';
 
 export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast, presets } = useToast();
@@ -171,12 +173,26 @@ export default function LoginPage() {
                         Password<span className="text-[#F04438]">*</span>
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          type="password"
-                          placeholder="hello123"
-                          className="self-stretch h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
-                        />
+                        <div className="relative w-full">
+                          <Input
+                            {...field}
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            className="self-stretch h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#344054] transition-colors"
+                            tabIndex={-1}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="w-5 h-5" />
+                            ) : (
+                              <Eye className="w-5 h-5" />
+                            )}
+                          </button>
+                        </div>
                       </FormControl>
                       <FormMessage className="text-xs text-[#F04438] font-outfit" />
                     </FormItem>

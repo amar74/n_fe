@@ -118,11 +118,11 @@ function CreateOrganizationPage() {
           </div>
 
           
-          <div className="text-center mb-10">
-            <h1 className="text-[32px] font-bold text-gray-900 mb-3 font-outfit tracking-tight">
+          <div className="text-center mb-12 flex flex-col items-center justify-center">
+            <h1 className="text-[36px] font-bold text-gray-900 mb-4 font-outfit tracking-tight">
               Create Your Organization
             </h1>
-            <p className="text-gray-600 text-[15px] max-w-3xl mx-auto font-poppins leading-relaxed">
+            <p className="text-gray-600 text-[16px] mx-auto font-poppins leading-relaxed text-center">
               Set up your organization to get started with the platform, You need an organization to access all features and collaborate with your team.
             </p>
           </div>
@@ -210,7 +210,7 @@ function CreateOrganizationPage() {
               />
 
               
-              {showAISuggestions && aiSuggestions && (
+              {showAISuggestions && aiSuggestions && aiSuggestions.suggestions && (
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
@@ -220,7 +220,7 @@ function CreateOrganizationPage() {
                       <div>
                         <h3 className="text-lg font-semibold text-purple-900 font-outfit">AI Suggestions</h3>
                         <p className="text-sm text-purple-700 font-poppins">
-                          Found {Object.keys(aiSuggestions.suggestions).length} suggestions 
+                          Found {Object.keys(aiSuggestions.suggestions || {}).length} suggestions 
                           ({appliedSuggestions.length} auto-applied)
                         </p>
                       </div>
@@ -239,7 +239,7 @@ function CreateOrganizationPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(aiSuggestions.suggestions).map(([field, suggestion]: [string, any]) => (
+                    {Object.entries(aiSuggestions.suggestions || {}).map(([field, suggestion]: [string, any]) => (
                       <div
                         key={field}
                         className={`p-4 rounded-lg border-2 ${
@@ -253,13 +253,15 @@ function CreateOrganizationPage() {
                             <span className="font-medium text-gray-900 capitalize font-poppins">
                               {field.replace('_', ' ').replace('company_name', 'Organization Name')}
                             </span>
-                            <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              suggestion.confidence >= 0.9 ? 'bg-green-100 text-green-800' :
-                              suggestion.confidence >= 0.7 ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>
-                              {(suggestion.confidence * 100).toFixed(0)}%
-                            </div>
+                            {suggestion.confidence !== undefined && (
+                              <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                suggestion.confidence >= 0.9 ? 'bg-green-100 text-green-800' :
+                                suggestion.confidence >= 0.7 ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {(suggestion.confidence * 100).toFixed(0)}%
+                              </div>
+                            )}
                           </div>
                           <button
                             type="button"
@@ -285,16 +287,16 @@ function CreateOrganizationPage() {
                         </div>
 
                         <div className="text-sm text-gray-700 mb-2 font-poppins">
-                          {typeof suggestion.value === 'object' ? (
+                          {typeof suggestion.value === 'object' && suggestion.value !== null ? (
                             <div className="space-y-1">
-                              {Object.entries(suggestion.value).map(([key, value]) => (
+                              {Object.entries(suggestion.value || {}).map(([key, value]) => (
                                 <div key={key}>
                                   <span className="font-medium">{key}:</span> {String(value)}
                                 </div>
                               ))}
                             </div>
                           ) : (
-                            suggestion.value
+                            suggestion.value || 'N/A'
                           )}
                         </div>
 

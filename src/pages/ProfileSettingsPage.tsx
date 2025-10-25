@@ -22,22 +22,140 @@ import {
   Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { apiClient } from '@/services/api/client';
+import { authManager } from '@/services/auth';
+import { loadGoogleMaps } from '@/lib/google-maps-loader';
 
 export default function ProfileSettingsPage() {
   const { user, backendUser } = useAuth();
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
+  const addressInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    name: backendUser?.name || '',
-    email: user?.email || '',
+    name: '',
+    email: '',
+    bio: '',
     phone: '',
-    location: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'United States',
     timezone: 'America/New_York',
     language: 'en',
   });
+
+  // Update form when backendUser or user changes - Load all saved data
+  useEffect(() => {
+    if (backendUser || user) {
+      setFormData(prev => ({
+        ...prev,
+        name: String(backendUser?.name || ''),
+        email: String(user?.email || (backendUser as any)?.email || ''),
+        phone: String((backendUser as any)?.phone || ''),
+        bio: String((backendUser as any)?.bio || ''),
+        address: String((backendUser as any)?.address || ''),
+        city: String((backendUser as any)?.city || ''),
+        state: String((backendUser as any)?.state || ''),
+        zipCode: String((backendUser as any)?.zip_code || ''),
+        country: String((backendUser as any)?.country || 'United States'),
+        timezone: String((backendUser as any)?.timezone || 'America/New_York'),
+        language: String((backendUser as any)?.language || 'en'),
+      }));
+    }
+  }, [backendUser, user]);
+
+  // Initialize Google Places Autocomplete
+  useEffect(() => {
+    const initAutocomplete = async () => {
+      try {
+        await loadGoogleMaps({ libraries: ['places'] });
+        
+        if (addressInputRef.current && typeof (window as any).google !== 'undefined') {
+          const autocomplete = new (window as any).google.maps.places.Autocomplete(addressInputRef.current, {
+            componentRestrictions: { country: 'us' },
+            fields: ['address_components', 'formatted_address'],
+            types: ['address'],
+          });
+
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (!place.address_components) return;
+
+            let street = '';
+            let city = '';
+            let state = '';
+            let zipCode = '';
+
+            place.address_components.forEach((component: any) => {
+              const types = component.types;
+              
+              if (types.includes('street_number')) {
+                street = component.long_name + ' ';
+              }
+              if (types.includes('route')) {
+                street += component.long_name;
+              }
+              if (types.includes('locality')) {
+                city = component.long_name;
+              }
+              if (types.includes('administrative_area_level_1')) {
+                state = component.short_name;
+              }
+              if (types.includes('postal_code')) {
+                zipCode = component.long_name;
+              }
+            });
+
+            setFormData(prev => ({
+              ...prev,
+              address: street || place.formatted_address || '',
+              city: city,
+              state: state,
+              zipCode: zipCode,
+            }));
+
+            if (city && state) {
+              toast({
+                title: 'Address Found',
+                description: `${city}, ${state} ${zipCode}`,
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load Google Maps:', error);
+      }
+    };
+
+    initAutocomplete();
+  }, [toast]);
+
+  // Phone number formatting for USA
+  const formatPhoneNumber = (value: string) => {
+    const phoneNumber = value.replace(/\D/g, '');
+    const limitedNumber = phoneNumber.slice(0, 11);
+    
+    if (limitedNumber.length === 0) return '';
+    if (limitedNumber.length <= 1) return `+${limitedNumber}`;
+    if (limitedNumber.length <= 4) return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1)}`;
+    if (limitedNumber.length <= 7) return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1, 4)}-${limitedNumber.slice(4)}`;
+    return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1, 4)}-${limitedNumber.slice(4, 7)}-${limitedNumber.slice(7, 11)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+  };
+
+  const isValidPhone = (phone: string) => {
+    if (!phone) return true;
+    const phoneRegex = /^\+1 \d{3}-\d{3}-\d{4}$/;
+    return phoneRegex.test(phone);
+  };
 
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
@@ -47,26 +165,84 @@ export default function ProfileSettingsPage() {
 
   const getInitials = () => {
     const email = user?.email || '';
-    const name = backendUser?.name || email.split('@')[0] || 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    const name = backendUser?.name || (typeof email === 'string' ? email.split('@')[0] : '') || 'U';
+    return String(name).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  // Fetch city and state from ZIP code
+  const handleZipCodeChange = async (zipCode: string) => {
+    const numericZip = zipCode.replace(/\D/g, '').slice(0, 5);
+    setFormData(prev => ({ ...prev, zipCode: numericZip }));
+
+    if (numericZip.length === 5) {
+      try {
+        const response = await fetch(`https://api.zippopotam.us/us/${numericZip}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.places && data.places.length > 0) {
+            const place = data.places[0];
+            setFormData(prev => ({
+              ...prev,
+              city: place['place name'] || '',
+              state: place['state abbreviation'] || '',
+              zipCode: numericZip,
+            }));
+            toast({
+              title: 'Location Found',
+              description: `${place['place name']}, ${place['state abbreviation']}`,
+            });
+          }
+        }
+      } catch (error) {
+        console.log('ZIP code lookup failed:', error);
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.phone && !isValidPhone(formData.phone)) {
+      toast({
+        title: 'Invalid Phone Number',
+        description: 'Please enter a valid US phone number in format +1 XXX-XXX-XXXX',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsUpdating(true);
 
     try {
-      // TODO: Implement profile update API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      const response = await apiClient.put('/auth/profile', {
+        name: formData.name,
+        phone: formData.phone,
+        bio: formData.bio,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zipCode,
+        country: formData.country,
+        timezone: formData.timezone,
+        language: formData.language,
+      });
+
+      if (response.data) {
+        authManager.setAuthState(true, {
+          ...backendUser,
+          ...response.data,
+        });
+      }
       
       toast({
         title: 'Profile Updated',
-        description: 'Your profile has been updated sucessfully.',
+        description: 'Your profile has been updated successfully.',
       });
-    } catch (e) {
+    } catch (error: any) {
+      console.error('Profile update error:', error);
       toast({
         title: 'Update Failed',
-        description: 'update failed. please try again.',
+        description: error.response?.data?.detail || 'Profile update failed. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -77,7 +253,7 @@ export default function ProfileSettingsPage() {
   return (
     <div className="min-h-screen bg-white">
       
-      <div className="relative bg-[#161950] text-white overflow-hidden">
+      <div className="relative bg-[#161950] overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
             backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
@@ -94,8 +270,12 @@ export default function ProfileSettingsPage() {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-extrabold mb-3 tracking-tight leading-tight">Edit Profile</h1>
-              <p className="text-white/95 text-lg font-medium leading-relaxed">Manage your account settings and preferences</p>
+              <h1 className="text-4xl font-extrabold mb-3 tracking-tight leading-tight !text-white" style={{ color: 'white' }}>
+                Edit Profile
+              </h1>
+              <p className="text-lg font-medium leading-relaxed !text-white" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                Manage your account settings and preferences
+              </p>
             </div>
             <div className="hidden md:flex items-center gap-2">
               <Badge className="bg-white/20 text-white border-white/30">
@@ -131,7 +311,7 @@ export default function ProfileSettingsPage() {
                       </button>
                     </div>
                     <h3 className="font-bold text-xl text-gray-900 text-center mb-1 tracking-tight leading-tight">
-                      {backendUser?.name || user?.email?.split('@')[0] || 'User'}
+                      {String(backendUser?.name || (typeof user?.email === 'string' ? user.email.split('@')[0] : '') || 'User')}
                     </h3>
                     <p className="text-base text-gray-600 text-center mb-4 font-medium tracking-tight">{user?.email}</p>
                     <Button variant="outline" size="sm" className="w-full border-[#161950] text-[#161950] hover:bg-[#161950] hover:text-white">
@@ -201,24 +381,6 @@ export default function ProfileSettingsPage() {
                     </div>
 
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                        Phone Number
-                      </Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="+1 (555) 000-0000"
-                          className="pl-10 border-gray-200 focus:border-[#161950] focus:ring-[#161950]"
-                        />
-                      </div>
-                    </div>
-
-                    
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                         Email Address
@@ -239,21 +401,43 @@ export default function ProfileSettingsPage() {
                     </div>
 
                     
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
+                        Brief Description
+                      </Label>
+                      <textarea
+                        id="bio"
+                        value={formData.bio}
+                        onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                        placeholder="Tell us a bit about yourself..."
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-[#161950] focus:ring-[#161950] focus:ring-2 focus:ring-offset-0"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Brief description about yourself (optional)
+                      </p>
+                    </div>
+
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="location" className="text-sm font-medium text-gray-700">
-                        Location
+                      <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                        Phone Number (USA)
                       </Label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
-                          id="location"
-                          type="text"
-                          value={formData.location}
-                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                          placeholder="City, Country"
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={handlePhoneChange}
+                          placeholder="+1 555-555-5555"
+                          maxLength={16}
                           className="pl-10 border-gray-200 focus:border-[#161950] focus:ring-[#161950]"
                         />
                       </div>
+                      <p className="text-xs text-gray-500">
+                        Format: +1 XXX-XXX-XXXX (13 digits)
+                      </p>
                     </div>
 
                     
@@ -266,13 +450,116 @@ export default function ProfileSettingsPage() {
                         <Input
                           id="role"
                           type="text"
-                          value={backendUser?.role || 'Member'}
+                          value={String(backendUser?.role || 'Member')}
                           disabled
                           className="pl-10 bg-gray-50 cursor-not-allowed capitalize border-gray-200"
                         />
                       </div>
                       <p className="text-xs text-gray-500">
                         Your role is assigned by your organization administrator
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Address Information Card */}
+              <Card className="border border-gray-100 shadow-md">
+                <CardHeader className="border-b border-gray-100">
+                  <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight">
+                    <MapPin className="h-5 w-5 text-[#161950]" />
+                    Address Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+                        Street Address
+                      </Label>
+                      <Input
+                        ref={addressInputRef}
+                        id="address"
+                        type="text"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        placeholder="Start typing your address..."
+                        className="border-gray-200 focus:border-[#161950] focus:ring-[#161950]"
+                        autoComplete="off"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Start typing to see address suggestions from Google Maps
+                      </p>
+                    </div>
+
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="city" className="text-sm font-medium text-gray-700">
+                        City
+                      </Label>
+                      <Input
+                        id="city"
+                        type="text"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        placeholder="New York"
+                        className="border-gray-200 focus:border-[#161950] focus:ring-[#161950]"
+                      />
+                    </div>
+
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="state" className="text-sm font-medium text-gray-700">
+                        State
+                      </Label>
+                      <Input
+                        id="state"
+                        type="text"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                        placeholder="NY"
+                        maxLength={2}
+                        className="border-gray-200 focus:border-[#161950] focus:ring-[#161950] uppercase"
+                      />
+                      <p className="text-xs text-gray-500">
+                        2-letter state code (e.g., NY, CA)
+                      </p>
+                    </div>
+
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="zipCode" className="text-sm font-medium text-gray-700">
+                        ZIP Code
+                      </Label>
+                      <Input
+                        id="zipCode"
+                        type="text"
+                        value={formData.zipCode}
+                        onChange={(e) => handleZipCodeChange(e.target.value)}
+                        placeholder="10001"
+                        maxLength={5}
+                        className="border-gray-200 focus:border-[#161950] focus:ring-[#161950]"
+                      />
+                      <p className="text-xs text-gray-500">
+                        5-digit ZIP code - City and State will auto-fill
+                      </p>
+                    </div>
+
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="country" className="text-sm font-medium text-gray-700">
+                        Country
+                      </Label>
+                      <Input
+                        id="country"
+                        type="text"
+                        value={formData.country}
+                        disabled
+                        className="bg-gray-50 cursor-not-allowed border-gray-200"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Currently only USA is supported
                       </p>
                     </div>
                   </div>

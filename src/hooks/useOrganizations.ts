@@ -33,7 +33,7 @@ export function useOrganizations() {
   const { toast } = useToast();
 
   // READ - Get current user's organization
-  const useMyOrganization = () => {
+  const useMyOrganization = (enabled: boolean = true) => {
     return useQuery({
       queryKey: organizationsQueryKeys.myOrg(),
       queryFn: async (): Promise<Organization> => {
@@ -43,8 +43,15 @@ export function useOrganizations() {
         
         return result;
       },
+      enabled, // Allow caller to conditionally enable the query
       staleTime: 1000 * 60 * 5, // 5 minutes for org data
-      retry: 3,
+      retry: (failureCount, error: any) => {
+        // Don't retry if it's a 404 (user has no org)
+        if (error?.response?.status === 404) {
+          return false;
+        }
+        return failureCount < 3;
+      },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     });
   };
@@ -210,9 +217,9 @@ export function useOrganizations() {
  * Follows the pattern from useAccounts for direct data access
  * Returns the current user's organization data with loading/error states
  */
-export function useMyOrganization() {
-  const { useMyOrganization } = useOrganizations();
-  const query = useMyOrganization();
+export function useMyOrganization(enabled: boolean = true) {
+  const { useMyOrganization: useMyOrgQuery } = useOrganizations();
+  const query = useMyOrgQuery(enabled);
   
   
   return query;

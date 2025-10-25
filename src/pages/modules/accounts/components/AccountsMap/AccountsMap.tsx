@@ -1,21 +1,16 @@
 /// <reference types="@types/google.maps" />
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, memo } from 'react';
 import { AccountListItem } from '@/types/accounts';
 import { calculateCityAggregates, getRiskColor, getRiskLevel, CityAggregate } from './utils';
+import { loadGoogleMaps, isGoogleMapsLoaded } from '@/lib/google-maps-loader';
 
-declare global {
-  interface Window {
-    google: typeof google;
-    initGoogleMaps?: () => void;
-    gm_authFailure?: () => void;
-  }
-}
+// Window.google is declared in google-maps-loader
 
 type AccountsMapProps = {
   accounts: AccountListItem[];
 }
 
-export function AccountsMap({ accounts }: AccountsMapProps) {
+function AccountsMap({ accounts }: AccountsMapProps) {
   // working but need cleanup - guddy.tech
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
@@ -23,12 +18,28 @@ export function AccountsMap({ accounts }: AccountsMapProps) {
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cityAggregates, setCityAggregates] = useState<CityAggregate[]>([]);
+  const prevAccountsRef = useRef<string>('');
 
-  // Aggregate accounts by city whenever accounts change
-  useEffect(() => {
+  // Create a stable key from accounts to detect changes
+  const accountsKey = useMemo(() => {
+    return accounts.map(a => `${a.account_id}-${a.client_address?.city || ''}`).join('|');
+  }, [accounts]);
+
+  // Memoize city aggregates - recalculate when accounts change
+  const cityAggregates = useMemo(() => {
+    console.log('[AccountsMap] 📊 Recalculating city aggregates from', accounts.length, 'accounts');
+    console.log('[AccountsMap] Account cities:', accounts.map(a => `${a.client_address?.city || 'No city'}, ${a.client_address?.state || 'No state'}`));
+    
     const aggregates = calculateCityAggregates(accounts);
-    setCityAggregates(aggregates);
+    
+    console.log('[AccountsMap] ✅ Result:', aggregates.length, 'cities with valid coordinates');
+    if (aggregates.length > 0) {
+      console.log('[AccountsMap] Cities:', aggregates.map(a => `${a.city} (${a.accountCount} accounts, pos: ${a.position.lat.toFixed(2)}, ${a.position.lng.toFixed(2)})`));
+    } else {
+      console.warn('[AccountsMap] ⚠️ No valid city aggregates created! Check if accounts have city and state data.');
+    }
+    
+    return aggregates;
   }, [accounts]);
 
   useEffect(() => {
@@ -37,26 +48,36 @@ export function AccountsMap({ accounts }: AccountsMapProps) {
     }
   }, [isLoaded]);
 
-  // Create marker with info window
-  const createMarker = useCallback((cityData: CityAggregate, map: google.maps.Map) => {
+  // Create marker with info window - moved out of useCallback to avoid dependency issues
+  const createMarker = (cityData: CityAggregate, map: google.maps.Map) => {
+    // Calculate dynamic size based on account count (smaller to reduce overlap)
+    // Minimum 16px, maximum 32px for better separation
+    const markerSize = Math.min(32, Math.max(16, 14 + (cityData.accountCount * 3)));
+    
+    // Create custom SVG marker for better visibility
+    const svgMarker = {
+      path: window.google.maps.SymbolPath.CIRCLE,
+      scale: markerSize,
+      fillColor: cityData.riskColor,
+      fillOpacity: 0.95,
+      strokeColor: '#FFFFFF',
+      strokeWeight: 4,
+      anchor: new window.google.maps.Point(0, 0),
+    };
+
     const marker = new window.google.maps.Marker({
       position: cityData.position,
       map: map,
-      title: cityData.city,
+      title: `${cityData.city}: ${cityData.accountCount} accounts`,
       label: {
         text: cityData.accountCount.toString(),
-        color: 'white',
-        fontSize: '12px',
+        color: '#FFFFFF',
+        fontSize: cityData.accountCount >= 10 ? '11px' : '13px',
         fontWeight: 'bold',
+        fontFamily: 'Outfit, sans-serif',
       },
-      icon: {
-        path: window.google.maps.SymbolPath.CIRCLE,
-        scale: 15 + (cityData.accountCount * 3), // Scale based on account count
-        fillColor: cityData.riskColor,
-        fillOpacity: 0.8,
-        strokeColor: 'white',
-        strokeWeight: 2,
-      },
+      icon: svgMarker,
+      optimized: false, // Better rendering for custom markers
     });
 
     // Add click listener for info window
@@ -95,14 +116,48 @@ export function AccountsMap({ accounts }: AccountsMapProps) {
       }
     });
 
+    // Add hover effect to show city name prominently
+    marker.addListener('mouseover', () => {
+      if (infoWindowRef.current) {
+        const hoverContent = `
+          <div style="padding: 8px 12px; font-family: 'Outfit', sans-serif; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+            <div style="font-size: 16px; font-weight: 700; color: #1A1A1A; margin-bottom: 4px;">
+              ${cityData.city}
+            </div>
+            <div style="font-size: 14px; color: #667085;">
+              <span style="font-weight: 600; color: ${cityData.riskColor};">${cityData.accountCount}</span> account${cityData.accountCount > 1 ? 's' : ''}
+            </div>
+          </div>
+        `;
+        infoWindowRef.current.setContent(hoverContent);
+        infoWindowRef.current.open(map, marker);
+      }
+    });
+
     return marker;
-  }, []);
+  };
 
+  // Update markers when cityAggregates or accountsKey changes
   useEffect(() => {
-    if (!isLoaded || !mapRef.current || cityAggregates.length === 0) return;
+    if (!isLoaded || !mapRef.current || cityAggregates.length === 0) {
+      console.log('[AccountsMap] Skipping marker update - isLoaded:', isLoaded, 'cityAggregates:', cityAggregates.length);
+      return;
+    }
 
+    // Only skip if accounts key is exactly the same AND we already have markers
+    if (prevAccountsRef.current === accountsKey && markersRef.current.length > 0) {
+      console.log('[AccountsMap] Accounts unchanged and markers already exist, skipping update');
+      return;
+    }
+
+    console.log('[AccountsMap] 🔄 UPDATING MARKERS for', cityAggregates.length, 'cities with accounts:', accountsKey);
+    
+    // Clear existing markers
     markersRef.current.forEach(marker => marker.setMap(null));
     markersRef.current = [];
+    
+    // Update the previous accounts key
+    prevAccountsRef.current = accountsKey;
 
     // Create map if it doesn't exist
     if (!googleMapRef.current) {
@@ -197,11 +252,18 @@ export function AccountsMap({ accounts }: AccountsMapProps) {
 
     // Fit map to show all markers
     if (cityAggregates.length > 1) {
-      googleMapRef.current.fitBounds(bounds);
+      // Add padding to prevent markers from being cut off at edges
+      googleMapRef.current.fitBounds(bounds, {
+        top: 50,
+        right: 50,
+        bottom: 50,
+        left: 50
+      });
       const listener = window.google.maps.event.addListenerOnce(googleMapRef.current, 'bounds_changed', () => {
         const zoom = googleMapRef.current?.getZoom();
-        if (zoom && zoom > 15) {
-          googleMapRef.current?.setZoom(15);
+        // Allow higher zoom levels to separate overlapping markers
+        if (zoom && zoom > 18) {
+          googleMapRef.current?.setZoom(18);
         }
       });
       
@@ -210,47 +272,45 @@ export function AccountsMap({ accounts }: AccountsMapProps) {
       };
     } else if (cityAggregates.length === 1) {
       googleMapRef.current.setCenter(cityAggregates[0].position);
-      googleMapRef.current.setZoom(10);
+      googleMapRef.current.setZoom(12);
     }
-  }, [isLoaded, cityAggregates, createMarker]);
+  }, [isLoaded, cityAggregates, accountsKey]); // Watch accountsKey to trigger updates
 
-  // Load Google Maps script
+  // Load Google Maps using centralized loader
   useEffect(() => {
-    const handleScriptError = () => {
-      setError('Load failed Maps. Please check your API key and network connection.');
+    let mounted = true;
+
+    const initializeMap = async () => {
+      try {
+        console.log('[AccountsMap] 🌍 Initializing Google Maps...');
+        setError(null);
+
+        // Use centralized loader to prevent conflicts
+        await loadGoogleMaps({ libraries: ['places', 'geometry'] });
+
+        if (!mounted) return;
+
+        // Verify API is loaded
+        if (!isGoogleMapsLoaded()) {
+          throw new Error('Google Maps API failed to load');
+        }
+
+        console.log('[AccountsMap] ✅ Google Maps loaded successfully');
+        setIsLoaded(true);
+
+      } catch (err: any) {
+        if (!mounted) return;
+        
+        const errorMessage = err.message || 'Failed to load Google Maps';
+        console.error('[AccountsMap] ❌ Map initialization error:', errorMessage);
+        setError(errorMessage);
+      }
     };
 
-    window.gm_authFailure = () => {
-      setError('Google Maps authentication failed. Please check your API key configuration.');
-    };
-
-    window.initGoogleMaps = () => {
-      setIsLoaded(true);
-      setError(null);
-    };
-
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      setError('Google Maps API key is missing. Please add VITE_GOOGLE_MAPS_API_KEY to your .env file.');
-      return;
-    }
-
-    if (!document.querySelector('#google-maps-script')) {
-      const script = document.createElement('script');
-      script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initGoogleMaps&v=weekly`;
-      script.async = true;
-      script.defer = true;
-      script.onerror = handleScriptError;
-      document.head.appendChild(script);
-    } else if (window.google?.maps) {
-      setIsLoaded(true);
-      setError(null);
-    }
+    initializeMap();
 
     return () => {
-      delete window.initGoogleMaps;
-      delete window.gm_authFailure;
+      mounted = false;
     };
   }, []);
 
@@ -279,17 +339,51 @@ export function AccountsMap({ accounts }: AccountsMapProps) {
   if (cityAggregates.length === 0) {
     return (
       <div className="h-72 relative bg-[#F5F3F2] rounded-2xl border border-gray-200 overflow-hidden flex items-center justify-center">
-        <div className="text-gray-400 text-sm font-outfit">
-          No account locations available
+        <div className="text-center p-6">
+          <div className="text-gray-400 text-sm font-outfit mb-2">
+            {accounts.length === 0 
+              ? '📍 No accounts to display' 
+              : '⚠️ No mappable locations found'}
+          </div>
+          {accounts.length > 0 && (
+            <div className="text-gray-500 text-xs font-outfit">
+              Accounts must have valid city and state data to display on map
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div 
-      ref={mapRef} 
-      className="h-72 relative bg-[#F5F3F2] rounded-2xl border border-gray-200 overflow-hidden"
-    />
+    <>
+      <style>{`
+        /* Enhance Google Maps marker labels for smaller markers */
+        div[style*="font-family: Outfit"] {
+          text-shadow: 
+            0 0 2px rgba(0, 0, 0, 0.9),
+            0 0 4px rgba(0, 0, 0, 0.7),
+            0.5px 0.5px 1px rgba(0, 0, 0, 1);
+          font-weight: 700 !important;
+          letter-spacing: 0.3px;
+          line-height: 1.2;
+        }
+        
+        /* Add subtle animation to markers on hover */
+        @keyframes pulse-marker {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.05); opacity: 0.95; }
+        }
+      `}</style>
+      <div 
+        ref={mapRef} 
+        className="h-72 relative bg-[#F5F3F2] rounded-2xl border border-gray-200 overflow-hidden"
+      />
+    </>
   );
 }
+
+// Export memoized component to prevent unnecessary re-renders
+const MemoizedAccountsMap = memo(AccountsMap);
+export { MemoizedAccountsMap as AccountsMap };
+export default MemoizedAccountsMap;

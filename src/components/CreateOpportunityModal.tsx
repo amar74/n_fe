@@ -1,8 +1,10 @@
-import { memo, useState, useEffect, useCallback } from 'react';
+import { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { X, Sparkles, Calendar, DollarSign, Building, Target, User, FileText, MapPin } from 'lucide-react';
 import { accountsApi } from '../services/api/accountsApi';
 import { AccountListItem } from '../types/accounts';
 import { useDataEnrichment } from '../hooks/useDataEnrichment';
+import { useAuth } from '../hooks/useAuth';
+import { loadGoogleMaps } from '@/lib/google-maps-loader';
 
 type CreateOpportunityModalProps = {
   isOpen: boolean;
@@ -15,6 +17,10 @@ interface OpportunityFormData {
   opportunityName: string;
   selectedAccount: string;
   location: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
   projectValue: string;
   salesStage: string;
   marketSector: string;
@@ -24,16 +30,23 @@ interface OpportunityFormData {
 }
 
 export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: CreateOpportunityModalProps) => {
+  const { user } = useAuth();
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  
   const [formData, setFormData] = useState<OpportunityFormData>({
     companyWebsite: '',
     opportunityName: '',
     selectedAccount: '',
     location: '',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
     projectValue: '',
     salesStage: '',
     marketSector: '',
-    date: '',
-    opportunityApprover: '',
+    date: new Date().toISOString().split('T')[0], // Current date
+    opportunityApprover: String(user?.name || user?.email || ''), // Current user
     projectDescription: '',
   });
 
@@ -47,6 +60,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
   const [aiEnhancementError, setAiEnhancementError] = useState<string | null>(null);
   const [aiEnhancementResults, setAiEnhancementResults] = useState<any>(null);
   const [showEnhancementPanel, setShowEnhancementPanel] = useState(false);
+  const [isZipLookupLoading, setIsZipLookupLoading] = useState(false);
 
   const { enhanceAccountData, enhanceOpportunityData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,
@@ -83,10 +97,133 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
       .finally(() => setIsAccountsLoading(false));
   }, [isOpen]);
 
+  // Initialize Google Maps Autocomplete
+  useEffect(() => {
+    const initAutocomplete = async () => {
+      if (!isOpen || !addressInputRef.current) return;
+      
+      try {
+        await loadGoogleMaps({ libraries: ['places'] });
+        
+        // Verify Google Maps API and Places library are fully loaded
+        if (
+          addressInputRef.current && 
+          typeof (window as any).google !== 'undefined' &&
+          (window as any).google?.maps?.places?.Autocomplete
+        ) {
+          const autocomplete = new (window as any).google.maps.places.Autocomplete(addressInputRef.current, {
+            componentRestrictions: { country: 'us' },
+            fields: ['address_components', 'formatted_address'],
+            types: ['address'],
+          });
+
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (!place.address_components) return;
+
+            let street = '';
+            let city = '';
+            let state = '';
+            let zipCode = '';
+
+            place.address_components.forEach((component: any) => {
+              const types = component.types;
+              
+              if (types.includes('street_number')) {
+                street = component.long_name + ' ';
+              }
+              if (types.includes('route')) {
+                street += component.long_name;
+              }
+              if (types.includes('locality')) {
+                city = component.long_name;
+              }
+              if (types.includes('administrative_area_level_1')) {
+                state = component.short_name;
+              }
+              if (types.includes('postal_code')) {
+                zipCode = component.long_name;
+              }
+            });
+
+            setFormData(prev => ({
+              ...prev,
+              address: street || place.formatted_address || '',
+              city: city,
+              state: state,
+              zipCode: zipCode,
+              location: `${city}, ${state}`,
+            }));
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load Google Maps:', error);
+      }
+    };
+
+    initAutocomplete();
+  }, [isOpen]);
+
+  // Auto-fetch city and state from ZIP code
+  const fetchLocationFromZip = async (zipCode: string) => {
+    if (zipCode.length !== 5 || !/^\d{5}$/.test(zipCode)) return;
+
+    setIsZipLookupLoading(true);
+
+    try {
+      // Use Google Geocoding API
+      if (typeof (window as any).google !== 'undefined') {
+        const geocoder = new (window as any).google.maps.Geocoder();
+        
+        geocoder.geocode({ address: zipCode }, (results: any, status: any) => {
+          setIsZipLookupLoading(false);
+          
+          if (status === 'OK' && results[0]) {
+            let city = '';
+            let state = '';
+
+            results[0].address_components.forEach((component: any) => {
+              if (component.types.includes('locality')) {
+                city = component.long_name;
+              }
+              if (component.types.includes('administrative_area_level_1')) {
+                state = component.short_name;
+              }
+            });
+
+            if (city && state) {
+              setFormData(prev => ({
+                ...prev,
+                city: city,
+                state: state,
+                location: `${city}, ${state}`,
+              }));
+              
+              // Show success toast
+              console.log(`✓ Found: ${city}, ${state}`);
+            }
+          } else {
+            console.error('ZIP code not found');
+          }
+        });
+      } else {
+        setIsZipLookupLoading(false);
+      }
+    } catch (error) {
+      console.error('Failed to fetch location from ZIP:', error);
+      setIsZipLookupLoading(false);
+    }
+  };
+
   const handleInputChange = (field: keyof OpportunityFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+
+    // Auto-fetch city and state when ZIP code is entered
+    if (field === 'zipCode' && value.length === 5 && /^\d{5}$/.test(value)) {
+      fetchLocationFromZip(value);
     }
   };
 
@@ -159,6 +296,10 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
       newErrors.date = 'Date is required';
     }
 
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -166,17 +307,27 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      // Combine address fields into location for submission
+      const locationData = {
+        ...formData,
+        location: `${formData.city}, ${formData.state}`.replace(/^,\s*/, '') || formData.address,
+      };
+      
+      onSubmit(locationData);
       setFormData({
         companyWebsite: '',
         opportunityName: '',
         selectedAccount: '',
         location: '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: '',
         projectValue: '',
         salesStage: '',
         marketSector: '',
-        date: '',
-        opportunityApprover: '',
+        date: new Date().toISOString().split('T')[0],
+        opportunityApprover: String(user?.name || user?.email || ''),
         projectDescription: '',
       });
       setErrors({});
@@ -192,11 +343,15 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
       opportunityName: '',
       selectedAccount: '',
       location: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: '',
       projectValue: '',
       salesStage: '',
       marketSector: '',
-      date: '',
-      opportunityApprover: '',
+      date: new Date().toISOString().split('T')[0],
+      opportunityApprover: String(user?.name || user?.email || ''),
       projectDescription: '',
     });
     onClose();
@@ -358,23 +513,90 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
             </div>
 
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
-                  Location
+                  Address (Google Maps Autocomplete) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
+                    ref={addressInputRef}
                     type="text"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
-                    placeholder="Enter location"
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400 ${
+                      errors.address ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Start typing address..."
                   />
                 </div>
+                {errors.address && (
+                  <p className="text-red-600 text-sm flex items-center gap-1">
+                    <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                    {errors.address}
+                  </p>
+                )}
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
+                    placeholder="City"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
+                    placeholder="State"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    ZIP Code
+                    {isZipLookupLoading && (
+                      <span className="ml-2 text-xs text-blue-600 italic">(Looking up...)</span>
+                    )}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.zipCode}
+                      onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
+                      placeholder="Enter ZIP code"
+                      maxLength={5}
+                    />
+                    {isZipLookupLoading && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <svg className="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 italic">Auto-fills city and state</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
                   Project Value
@@ -388,6 +610,28 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
                     placeholder="$ X.XM"
                   />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Market Sector
+                </label>
+                <div className="relative">
+                  <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <select
+                    value={formData.marketSector}
+                    onChange={(e) => handleInputChange('marketSector', e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400 appearance-none cursor-pointer"
+                  >
+                    <option value="">Select Sector</option>
+                    <option value="transportation">Transportation</option>
+                    <option value="technology">Technology</option>
+                    <option value="energy">Energy</option>
+                    <option value="utilities">Utilities</option>
+                    <option value="real-estate">Real Estate</option>
+                    <option value="healthcare">Healthcare</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -460,38 +704,32 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
                   Date <span className="text-red-500">*</span>
+                  <span className="text-xs text-gray-500 ml-2">(Current Date)</span>
                 </label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="date"
                     value={formData.date}
-                    onChange={(e) => handleInputChange('date', e.target.value)}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white ${
-                      errors.date ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                    readOnly
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium bg-gray-50 text-gray-600 cursor-not-allowed"
                   />
                 </div>
-                {errors.date && (
-                  <p className="text-red-600 text-sm flex items-center gap-1">
-                    <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                    {errors.date}
-                  </p>
-                )}
               </div>
 
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
                   Opportunity Approver
+                  <span className="text-xs text-gray-500 ml-2">(Current User)</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     value={formData.opportunityApprover}
-                    onChange={(e) => handleInputChange('opportunityApprover', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
-                    placeholder="Enter approver name"
+                    readOnly
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium bg-gray-50 text-gray-600 cursor-not-allowed"
+                    placeholder="Current user"
                   />
                 </div>
               </div>
@@ -563,7 +801,9 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
                   </div>
                   
                   <div className="text-sm text-gray-900 mb-2">
-                    {suggestion.value || 'No data available'}
+                    {typeof suggestion.value === 'object' && suggestion.value !== null 
+                      ? JSON.stringify(suggestion.value) 
+                      : (suggestion.value || 'No data available')}
                   </div>
                   
                   <div className="text-xs text-gray-500">

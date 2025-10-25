@@ -61,10 +61,11 @@ export function useAccountsPage() {
     const highRiskCount = 0;
     const growingCount = 0;
     
-    const totalValueNumber = accounts.reduce((sum, acc) => {
-      return sum + (acc.total_value || 0);
-    }, 0);
-    const totalValue = `$${totalValueNumber.toFixed(1)}M`;
+  const totalValueNumber = accounts.reduce((sum, acc) => {
+    return sum + (acc.total_value || 0);
+  }, 0);
+  // Convert to millions by dividing by 1,000,000
+  const totalValue = `$${(totalValueNumber / 1000000).toFixed(1)}M`;
 
     return {
       totalAccounts,

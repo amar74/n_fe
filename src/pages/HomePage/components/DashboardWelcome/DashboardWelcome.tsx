@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/services/api/client';
 import { 
   TrendingUp, 
   Users, 
@@ -115,49 +117,58 @@ const modules = [
   },
 ];
 
-// Analytics/Stats data
-// @amar74.soft - refactor needed
-const stats = [
-  {
-    title: 'Active Accounts',
-    value: '24',
-    change: '+12%',
-    trend: 'up',
-    icon: Building2,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
-  },
-  {
-    title: 'Open Opportunities',
-    value: '18',
-    change: '+8%',
-    trend: 'up',
-    icon: Target,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50',
-  },
-  {
-    title: 'Active Projects',
-    value: '12',
-    change: '+5%',
-    trend: 'up',
-    icon: Activity,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
-  },
-  {
-    title: 'This Month Revenue',
-    value: '$125K',
-    change: '+15%',
-    trend: 'up',
-    icon: DollarSign,
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-50',
-  },
-];
-
 function DashboardWelcome() {
   const { user, backendUser } = useAuth();
+
+  // Fetch dashboard statistics from backend
+  const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: async () => {
+      const response = await apiClient.get('/dashboard/stats');
+      return response.data;
+    },
+    enabled: !!backendUser,
+  });
+
+  // Analytics/Stats data - Now using dynamic data from API
+  const stats = [
+    {
+      title: 'Active Accounts',
+      value: statsLoading ? '...' : String(dashboardStats?.active_accounts || 0),
+      change: statsLoading ? '...' : (dashboardStats?.accounts_change || '0%'),
+      trend: 'up',
+      icon: Building2,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+    {
+      title: 'Open Opportunities',
+      value: statsLoading ? '...' : String(dashboardStats?.open_opportunities || 0),
+      change: statsLoading ? '...' : (dashboardStats?.opportunities_change || '0%'),
+      trend: 'up',
+      icon: Target,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    {
+      title: 'Active Projects',
+      value: statsLoading ? '...' : String(dashboardStats?.active_projects || 0),
+      change: statsLoading ? '...' : (dashboardStats?.projects_change || '0%'),
+      trend: 'up',
+      icon: Activity,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+    },
+    {
+      title: 'This Month Revenue',
+      value: statsLoading ? '...' : (dashboardStats?.monthly_revenue || '$0'),
+      change: statsLoading ? '...' : (dashboardStats?.revenue_change || '0%'),
+      trend: 'up',
+      icon: DollarSign,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50',
+    },
+  ];
   
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
@@ -7,13 +7,26 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/useToast';
+import { Eye, EyeOff, Key, Copy, Check, Phone, Mail, User, ArrowLeft } from 'lucide-react';
+
+// Country codes for phone number
+const COUNTRY_CODES = [
+  { value: '+1', label: 'US (+1)', flag: '🇺🇸' },
+  { value: '+91', label: 'IN (+91)', flag: '🇮🇳' },
+  { value: '+44', label: 'UK (+44)', flag: '🇬🇧' },
+  { value: '+61', label: 'AU (+61)', flag: '🇦🇺' },
+  { value: '+86', label: 'CN (+86)', flag: '🇨🇳' },
+];
 
 export default function CreateVendorPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showCredentials, setShowCredentials] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [countryCode, setCountryCode] = useState('+1');
   const [createdVendor, setCreatedVendor] = useState<{
     email: string;
     password: string;
@@ -29,6 +42,45 @@ export default function CreateVendorPage() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Format phone number (XXX) XXX-XXXX
+  const formatPhoneNumber = (value: string) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length <= 3) return cleaned;
+    if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+  };
+
+  // Validate USA phone number
+  const validateUSAPhone = (phone: string): boolean => {
+    const cleaned = phone.replace(/\D/g, '');
+    return cleaned.length === 10;
+  };
+
+  // Copy to clipboard
+  const copyToClipboard = async (text: string, label: string, fieldId: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(fieldId);
+      toast.success(`${label} copied to clipboard`);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopiedField(fieldId);
+        toast.success(`${label} copied to clipboard`);
+        setTimeout(() => setCopiedField(null), 2000);
+      } catch (err) {
+        toast.error('Failed to copy to clipboard');
+      }
+      document.body.removeChild(textArea);
+    }
+  };
 
   // Validate form
   const validateForm = () => {
@@ -50,8 +102,8 @@ export default function CreateVendorPage() {
       newErrors.password = 'Password must be at least 8 characters';
     }
 
-    if (formData.contact_number && !/^\d{10}$/.test(formData.contact_number.replace(/\D/g, ''))) {
-      newErrors.contact_number = 'Contact number must be 10 digits';
+    if (formData.contact_number && !validateUSAPhone(formData.contact_number)) {
+      newErrors.contact_number = 'Contact number must be a valid 10-digit USA phone number';
     }
 
     setErrors(newErrors);
@@ -60,9 +112,12 @@ export default function CreateVendorPage() {
 
   const createVendorMutation = useMutation({
     mutationFn: async (vendorData: typeof formData) => {
+      const fullPhone = vendorData.contact_number ? `${countryCode} ${vendorData.contact_number}` : undefined;
       const response = await apiClient.post('/admin/create_new_user', {
         email: vendorData.email,
         password: vendorData.password,
+        name: vendorData.name,
+        contact_number: fullPhone,
         role: 'vendor',
       });
       return response.data;
@@ -72,422 +127,399 @@ export default function CreateVendorPage() {
         const vendorData = {
           email: formData.email,
           password: formData.password,
-          userId: data?.user?.id || data?.id || 'unknown',
+          userId: data?.user?.short_id || data?.short_id || 'unknown',
           orgId: data?.user?.org_id || data?.org_id || undefined,
         };
         setCreatedVendor(vendorData);
         setShowCredentials(true);
-        toast({
-          title: 'Success',
-          description: 'Vendor created sucessfully!',
-        });
+        toast.success('Vendor created successfully!');
       } catch (error) {
-        toast({
-          title: 'Warning',
-          description: 'Vendor created but there was an issue displaying credentials. Please check vendor list.',
-          variant: 'destructive',
-        });
+        toast.error('Vendor created but there was an issue displaying credentials. Please check vendor list.');
       }
     },
     onError: (error: any) => {
-      let errorMessage = 'create failed';
-      let isEmailAlreadyRegistered = false;
+      const errorMessage = error?.response?.data?.detail || error?.message || 'Failed to create vendor';
       
-      if (error.response?.data?.detail) {
-        const detail = error.response.data.detail;
-        if (typeof detail === 'string') {
-          errorMessage = detail;
-        } else if (detail.error?.message) {
-          errorMessage = detail.error.message;
-        } else if (detail.message) {
-          errorMessage = detail.message;
-        } else {
-          errorMessage = JSON.stringify(detail);
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
+      // Check if error is due to existing email
+      if (errorMessage.toLowerCase().includes('already') || errorMessage.toLowerCase().includes('exist')) {
+        setErrors({ email: 'This email is already registered in the system' });
+        toast.error('Email already exists', {
+          description: 'This email is already registered. Please use a different email address.',
+        });
+      } else {
+        toast.error('Failed to create vendor', {
+          description: errorMessage,
+        });
       }
-      // Make error more user-friendly and check if it's an email duplicate error
-      if (errorMessage.toLowerCase().includes('already been registered') || 
-          errorMessage.toLowerCase().includes('already registered') ||
-          errorMessage.toLowerCase().includes('already exists') ||
-          errorMessage.toLowerCase().includes('duplicate')) {
-        errorMessage = 'This email address is already registered. Please use a different email.';
-        isEmailAlreadyRegistered = true;
-      }
-      
-      if (isEmailAlreadyRegistered) {
-        setErrors((prev) => ({
-          ...prev,
-          email: '⚠️ This email is already registered. Please use a different email address.',
-        }));
-      }
-      
-      toast({
-        title: 'Error Creating Vendor',
-        description: errorMessage,
-        variant: 'destructive',
-      });
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error for this field when user starts typing
+    if (errors[field]) {
+      setErrors(prev => {
+        const updated = { ...prev };
+        delete updated[field];
+        return updated;
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
+      toast.error('Please fix the errors before submitting');
       return;
     }
 
-    createVendorMutation.mutate(formData);
+    await createVendorMutation.mutateAsync(formData);
   };
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
+  const handleCreateAnother = () => {
+    setShowCredentials(false);
+    setCreatedVendor(null);
+    setFormData({
+      name: '',
+      email: '',
+      contact_number: '',
+      password: '',
+    });
+    setErrors({});
   };
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({ title: 'Copied!', description: `${label} copied to clipboard` });
-  };
-
-  if (showCredentials && createdVendor) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/super-admin/vendors')}
-              className="mb-4"
-            >
-              ← Back to Vendors
-            </Button>
-            <h1 className="text-3xl font-bold text-gray-900">Vendor Created Successfully!</h1>
-            <p className="text-gray-600 mt-2">Save these credentials. The password will not be shown again.</p>
-          </div>
-
-          
-          <Alert className="border-green-200 bg-green-50 mb-6">
-            <div className="flex items-center">
-              <svg className="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div>
-                <AlertTitle className="text-green-800">Vendor Account Created</AlertTitle>
-                <AlertDescription className="text-green-700">
-                  The vendor account has been created successfully. Make sure to copy these credentials before leaving this page.
-                </AlertDescription>
-              </div>
-            </div>
-          </Alert>
-
-          
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Vendor Credentials</CardTitle>
-              <CardDescription>Copy and share these credentials with the vendor</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  User ID
-                </label>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-white p-3 rounded border text-sm font-mono break-all">
-                    {createdVendor.userId}
-                  </code>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyToClipboard(createdVendor.userId, 'User ID')}
-                  >
-                    Copy
-                  </Button>
-                </div>
-              </div>
-
-              
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email (Login ID)
-                </label>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-white p-3 rounded border text-sm font-mono break-all">
-                    {createdVendor.email}
-                  </code>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyToClipboard(createdVendor.email, 'Email')}
-                  >
-                    Copy
-                  </Button>
-                </div>
-              </div>
-
-              
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <label className="block text-sm font-medium text-yellow-800 mb-2">
-                  🔑 Password (One-time view)
-                </label>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-white p-3 rounded border text-sm font-mono break-all text-red-600 font-bold">
-                    {createdVendor.password}
-                  </code>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => copyToClipboard(createdVendor.password, 'Password')}
-                  >
-                    Copy
-                  </Button>
-                </div>
-                <p className="text-xs text-yellow-700 mt-2">
-                  ⚠️ This password will never be shown again. Make sure to copy it now!
-                </p>
-              </div>
-
-              
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-6">
-                <div className="flex items-start">
-                  <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div className="ml-3">
-                    <h4 className="text-sm font-medium text-blue-800">Vendor Login Information</h4>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Vendor login URL: <strong>{window.location.origin}/login</strong>
-                    </p>
-                    <p className="text-sm text-blue-700 mt-1">
-                      After first login, vendor will be guided to create their organization profile.
-                    </p>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Share these credentials securely with the vendor via email or secure messaging.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          
-          <div className="mt-8 flex gap-4">
-            <Button onClick={() => navigate('/super-admin/vendors')} size="lg">
-              Go to Vendor List
-            </Button>
-            <Button onClick={() => {
-              setShowCredentials(false);
-              setCreatedVendor(null);
-              setFormData({
-                name: '',
-                email: '',
-                contact_number: '',
-                password: '',
-              });
-            }} variant="outline" size="lg">
-              Create Another Vendor
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/super-admin/vendors')}
-            className="mb-4"
-          >
-            ← Back to Vendors
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Vendor</h1>
-          <p className="text-gray-600 mt-2">Create vendor account. Vendor will set up their organization on first login.</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/super-admin')}
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium">Back to Super Admin Dashboard</span>
+        </button>
 
-        
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Vendor Information</CardTitle>
-            <CardDescription>Enter basic vendor details. Vendor will create organization after first login.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              
-              <div>
-                <Label htmlFor="name">
-                  Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Enter vendor's full name"
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  className={errors.name ? 'border-red-500' : ''}
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-500 mt-1">{errors.name}</p>
-                )}
+        {!showCredentials ? (
+          <Card className="shadow-xl border-2 border-gray-100">
+            <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 pb-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-3 bg-indigo-600 rounded-xl shadow-lg">
+                  <User className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-3xl font-bold text-gray-900">Create New Vendor</CardTitle>
+                  <CardDescription className="text-base mt-1">
+                    Add a new vendor to the system with their contact information
+                  </CardDescription>
+                </div>
               </div>
+            </CardHeader>
+            
+            <CardContent className="p-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Name Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <User className="w-4 h-4 text-indigo-600" />
+                    Full Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    className={`${errors.name ? 'border-red-500 bg-red-50' : ''} h-11 transition-all`}
+                  />
+                  {errors.name && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="font-medium">⚠</span> {errors.name}
+                    </p>
+                  )}
+                </div>
 
-              
-              <div>
-                <Label htmlFor="email">
-                  Email <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="vendor@company.com"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  className={errors.email ? 'border-red-500' : ''}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-500 mt-1">{errors.email}</p>
-                )}
-                <p className="text-sm text-gray-500 mt-1">Use vendor's real email address. This will be their login ID.</p>
-              </div>
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-indigo-600" />
+                    Email Address <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="vendor@company.com"
+                      value={formData.email}
+                      onChange={(e) => handleChange('email', e.target.value)}
+                      className={`${errors.email ? 'border-red-500 bg-red-50' : ''} h-11`}
+                    />
+                    {errors.email && errors.email.includes('already registered') && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  {errors.email && (
+                    <div className={`text-sm flex items-start gap-2 p-3 rounded-lg ${
+                      errors.email.includes('already registered') 
+                        ? 'bg-red-50 border border-red-200' 
+                        : ''
+                    }`}>
+                      <span className="font-medium text-red-600">⚠</span>
+                      <span className="text-red-600 flex-1">{errors.email}</span>
+                    </div>
+                  )}
+                </div>
 
-              
-              <div>
-                <Label htmlFor="contact_number">Contact Number</Label>
-                <Input
-                  id="contact_number"
-                  type="tel"
-                  placeholder="+1 (555) 123-4567"
-                  value={formData.contact_number}
-                  onChange={(e) => handleChange('contact_number', e.target.value)}
-                  className={errors.contact_number ? 'border-red-500' : ''}
-                />
-                {errors.contact_number && (
-                  <p className="text-sm text-red-500 mt-1">{errors.contact_number}</p>
-                )}
-              </div>
+                {/* Contact Number with Country Code */}
+                <div className="space-y-2">
+                  <Label htmlFor="contact_number" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-indigo-600" />
+                    Contact Number (USA)
+                  </Label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={countryCode}
+                      onValueChange={setCountryCode}
+                    >
+                      <SelectTrigger className="w-32 h-11">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRY_CODES.map((country) => (
+                          <SelectItem key={country.value} value={country.value}>
+                            <span className="flex items-center gap-2">
+                              <span>{country.flag}</span>
+                              <span>{country.value}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <Input
+                      id="contact_number"
+                      type="tel"
+                      placeholder="(555) 123-4567"
+                      value={formData.contact_number}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, '');
+                        const formatted = formatPhoneNumber(rawValue);
+                        handleChange('contact_number', formatted);
+                      }}
+                      className={`${errors.contact_number ? 'border-red-500 bg-red-50' : ''} flex-1 h-11`}
+                      maxLength={14}
+                    />
+                  </div>
+                  {errors.contact_number && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="font-medium">⚠</span> {errors.contact_number}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">Format: (XXX) XXX-XXXX (10 digits)</p>
+                </div>
 
-              
-              <div>
-                <Label htmlFor="password">
-                  Password <span className="text-red-500">*</span>
-                </Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
+                {/* Password Field with Toggle */}
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <Key className="w-4 h-4 text-indigo-600" />
+                    Password <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter a secure password (min 8 characters)"
+                      placeholder="Minimum 8 characters"
                       value={formData.password}
                       onChange={(e) => handleChange('password', e.target.value)}
-                      className={errors.password ? 'border-red-500 pr-10' : 'pr-10'}
+                      className={`${errors.password ? 'border-red-500 bg-red-50' : ''} h-11 pr-12`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      tabIndex={-1}
                     >
-                      {showPassword ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      )}
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p className="text-sm text-red-600 flex items-center gap-1">
+                      <span className="font-medium">⚠</span> {errors.password}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-4">
                   <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                      const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-                      const numbers = '0123456789';
-                      const special = '@#$%&*!';
-                      const allChars = uppercase + lowercase + numbers + special;
-                      
-                      let password = '';
-                      // Ensure at least one of each type
-                      password += uppercase[Math.floor(Math.random() * uppercase.length)];
-                      password += lowercase[Math.floor(Math.random() * lowercase.length)];
-                      password += numbers[Math.floor(Math.random() * numbers.length)];
-                      password += special[Math.floor(Math.random() * special.length)];
-                      
-                      // Fill the rest randomly (total 12 characters)
-                      for (let i = 4; i < 12; i++) {
-                        password += allChars[Math.floor(Math.random() * allChars.length)];
-                      }
-                      
-                      // Shuffle the password
-                      password = password.split('').sort(() => Math.random() - 0.5).join('');
-                      
-                      handleChange('password', password);
-                      setShowPassword(true); // Show the generated password
-                    }}
-                    className="whitespace-nowrap"
-                    title="Generate a secure password"
+                    type="submit"
+                    disabled={createVendorMutation.isPending}
+                    className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
                   >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    Generate
+                    {createVendorMutation.isPending ? (
+                      <span className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Creating Vendor...
+                      </span>
+                    ) : (
+                      'Create Vendor'
+                    )}
                   </Button>
                 </div>
-                {errors.password && (
-                  <p className="text-sm text-red-500 mt-1">{errors.password}</p>
-                )}
-                <p className="text-sm text-gray-500 mt-1">Password will be shown only once after creation. Click "Generate" for a strong password.</p>
-              </div>
-
-              
-              <Alert className="border-blue-200 bg-blue-50">
-                <div className="flex items-start">
-                  <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div className="ml-3">
-                    <p className="text-sm text-blue-800">
-                      After creating the vendor, you'll receive the complete credentials including user ID, email, and password. 
-                      Make sure to copy and share them securely with the vendor.
-                    </p>
-                  </div>
+              </form>
+            </CardContent>
+          </Card>
+        ) : (
+          /* Success Screen with Credentials */
+          <Card className="shadow-2xl border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+            <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white pb-8">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                  <Check className="w-10 h-10 text-white" />
                 </div>
+                <div>
+                  <CardTitle className="text-3xl font-bold mb-2">Vendor Created Successfully!</CardTitle>
+                  <CardDescription className="text-green-50 text-base">
+                    Save these credentials securely - they won't be shown again
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-8 space-y-6">
+              <Alert className="bg-yellow-50 border-2 border-yellow-300">
+                <AlertTitle className="text-yellow-900 font-bold flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  Important: Save These Credentials
+                </AlertTitle>
+                <AlertDescription className="text-yellow-800">
+                  These credentials will not be displayed again. Please copy and save them in a secure location.
+                </AlertDescription>
               </Alert>
 
-              
-              <div className="flex gap-4 pt-4">
+              <div className="space-y-4">
+                {/* Vendor ID */}
+                <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">
+                        Vendor ID
+                      </Label>
+                      <p className="text-2xl font-bold text-gray-900 font-mono">{createdVendor?.userId}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(createdVendor?.userId || '', 'Vendor ID', 'vendorId')}
+                      className="h-10 px-4 hover:bg-indigo-50 hover:border-indigo-300 transition-all"
+                    >
+                      {copiedField === 'vendorId' ? (
+                        <>
+                          <Check className="w-4 h-4 mr-2 text-green-600" />
+                          <span className="text-green-600">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-2">
+                        <Mail className="w-3 h-3" />
+                        Email Address
+                      </Label>
+                      <p className="text-lg font-semibold text-gray-900 break-all">{createdVendor?.email}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(createdVendor?.email || '', 'Email', 'email')}
+                      className="h-10 px-4 hover:bg-indigo-50 hover:border-indigo-300 transition-all"
+                    >
+                      {copiedField === 'email' ? (
+                        <>
+                          <Check className="w-4 h-4 mr-2 text-green-600" />
+                          <span className="text-green-600">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div className="bg-white rounded-xl p-5 border-2 border-red-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block flex items-center gap-2">
+                        <Key className="w-3 h-3" />
+                        Temporary Password
+                      </Label>
+                      <p className="text-lg font-semibold text-gray-900 font-mono">{createdVendor?.password}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(createdVendor?.password || '', 'Password', 'password')}
+                      className="h-10 px-4 hover:bg-red-50 hover:border-red-300 transition-all"
+                    >
+                      {copiedField === 'password' ? (
+                        <>
+                          <Check className="w-4 h-4 mr-2 text-green-600" />
+                          <span className="text-green-600">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Copy
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-6">
                 <Button
-                  type="submit"
-                  size="lg"
-                  disabled={createVendorMutation.isPending}
-                  className="flex-1"
+                  onClick={handleCreateAnother}
+                  variant="outline"
+                  className="flex-1 h-12 font-semibold hover:bg-gray-50"
                 >
-                  {createVendorMutation.isPending ? 'Creating...' : 'Create Vendor'}
+                  Create Another Vendor
                 </Button>
                 <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
                   onClick={() => navigate('/super-admin/vendors')}
-                  disabled={createVendorMutation.isPending}
+                  className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 font-semibold"
                 >
-                  Cancel
+                  View All Vendors
                 </Button>
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

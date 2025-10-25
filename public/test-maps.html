@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps API Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status {
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: white;
+            border: 2px solid #e0e0e0;
+        }
+        .success { border-color: #4caf50; background: #f1f8f4; }
+        .error { border-color: #f44336; background: #fef1f1; }
+        .warning { border-color: #ff9800; background: #fff8f1; }
+        .loading { border-color: #2196f3; background: #f1f8ff; }
+        code {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .timeline {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+        .timeline-item {
+            padding: 8px 0;
+            border-left: 3px solid #ddd;
+            padding-left: 15px;
+            margin: 5px 0;
+        }
+        .timeline-item.success { border-left-color: #4caf50; }
+        .timeline-item.error { border-left-color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Google Maps API Diagnostic</h1>
+    
+    <div id="status" class="status loading">
+        <strong>⏳ Testing API...</strong>
+        <div>Checking Google Maps API and Places library...</div>
+    </div>
+
+    <div class="timeline" id="timeline">
+        <h3>Timeline:</h3>
+    </div>
+
+    <div style="margin-top: 20px; padding: 20px; background: white; border-radius: 8px;">
+        <h3>Test Autocomplete:</h3>
+        <input id="autocomplete" placeholder="Type an address to test autocomplete..." />
+        <div id="autocomplete-status" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyAj1LovdGIQCHZ6OWkHfM_7Fg_m-HATvys';
+        const timeline = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            timeline.push({ timestamp, message, type });
+            updateTimeline();
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateTimeline() {
+            const timelineEl = document.getElementById('timeline');
+            const items = timeline.map(item => 
+                `<div class="timeline-item ${item.type}">
+                    <small style="color: #666;">${item.timestamp}</small> - ${item.message}
+                </div>`
+            ).join('');
+            timelineEl.innerHTML = '<h3>Timeline:</h3>' + items;
+        }
+
+        function updateStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${type}`;
+            statusEl.innerHTML = message;
+        }
+
+        // Test 1: Check API Key
+        log('Starting diagnostic...', 'info');
+        log(`API Key: ${API_KEY.substring(0, 10)}...`, 'info');
+
+        // Test 2: Load Google Maps Script
+        log('Loading Google Maps script...', 'info');
+
+        window.initMap = function() {
+            log('✅ Google Maps callback fired!', 'success');
+            
+            // Test 3: Check if Places API is available
+            if (window.google && window.google.maps && window.google.maps.places) {
+                log('✅ Places API is available', 'success');
+                
+                // Test 4: Try to create Autocomplete
+                const input = document.getElementById('autocomplete');
+                try {
+                    const autocomplete = new google.maps.places.Autocomplete(input, {
+                        types: ['address'],
+                        componentRestrictions: { country: 'us' },
+                        fields: ['address_components', 'formatted_address']
+                    });
+                    
+                    log('✅ Autocomplete instance created successfully', 'success');
+                    updateStatus(`
+                        <strong>✅ All Tests Passed!</strong>
+                        <div style="margin-top: 10px;">Google Maps API is working correctly.</div>
+                        <div style="margin-top: 5px; font-size: 12px;">Try typing in the input field above to test autocomplete.</div>
+                    `, 'success');
+                    
+                    autocomplete.addListener('place_changed', function() {
+                        const place = autocomplete.getPlace();
+                        document.getElementById('autocomplete-status').innerHTML = 
+                            `<strong>Selected:</strong> ${place.formatted_address || 'Unknown'}`;
+                        log(`Place selected: ${place.formatted_address}`, 'success');
+                    });
+                    
+                } catch (error) {
+                    log(`❌ Failed to create Autocomplete: ${error.message}`, 'error');
+                    updateStatus(`
+                        <strong>❌ Autocomplete Creation Failed</strong>
+                        <div style="margin-top: 10px;">Error: ${error.message}</div>
+                    `, 'error');
+                }
+                
+            } else {
+                log('❌ Places API not available', 'error');
+                updateStatus(`
+                    <strong>❌ Places API Not Available</strong>
+                    <div style="margin-top: 10px;">
+                        <strong>Fix:</strong> Enable "Places API" in Google Cloud Console
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <a href="https://console.cloud.google.com/apis/library/places-backend.googleapis.com" 
+                           target="_blank" 
+                           style="color: #2196f3; text-decoration: underline;">
+                           → Enable Places API
+                        </a>
+                    </div>
+                `, 'error');
+            }
+        };
+
+        window.gm_authFailure = function() {
+            log('❌ Google Maps authentication failed', 'error');
+            updateStatus(`
+                <strong>❌ Authentication Failed</strong>
+                <div style="margin-top: 10px;">
+                    Possible causes:
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Invalid API key</li>
+                        <li>API key restrictions (referrer restrictions)</li>
+                        <li>Billing not enabled</li>
+                    </ul>
+                </div>
+                <div style="margin-top: 10px; padding: 10px; background: #fff; border-radius: 4px;">
+                    <strong>Current origin:</strong> <code>${window.location.origin}</code>
+                    <div style="margin-top: 5px; font-size: 12px;">
+                        Add this to "Application restrictions" → "HTTP referrers": 
+                        <code>${window.location.origin}/*</code>
+                    </div>
+                </div>
+            `, 'error');
+        };
+
+        // Load the script
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        
+        script.onerror = function(error) {
+            log('❌ Failed to load Google Maps script', 'error');
+            updateStatus(`
+                <strong>❌ Script Load Failed</strong>
+                <div style="margin-top: 10px;">
+                    Check:
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>Internet connection</li>
+                        <li>Browser console for errors (F12)</li>
+                        <li>API key is correct</li>
+                    </ul>
+                </div>
+            `, 'error');
+        };
+        
+        log('Injecting script tag into document...', 'info');
+        document.head.appendChild(script);
+
+        // Timeout check
+        setTimeout(() => {
+            if (!window.google || !window.google.maps) {
+                log('❌ Timeout: Google Maps did not load within 10 seconds', 'error');
+                updateStatus(`
+                    <strong>⚠️ Timeout</strong>
+                    <div style="margin-top: 10px;">
+                        Google Maps did not load within 10 seconds. Check browser console (F12) for errors.
+                    </div>
+                `, 'warning');
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

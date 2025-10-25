@@ -21,7 +21,7 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.025em;
   font-weight: 700;
   line-height: 1.2;
-  color: #111827;
+  /* color removed to allow Tailwind utilities like text-white to work */
   margin: 0;
 }
 
@@ -72,7 +72,7 @@ p {
   line-height: 1.6;
   letter-spacing: -0.01em;
   margin: 0;
-  color: #374151;
+  /* color removed to allow Tailwind utilities like text-white to work */
 }
 
 /* Text size utilities */

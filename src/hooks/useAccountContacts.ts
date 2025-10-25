@@ -24,14 +24,22 @@ export function useAccountContacts(accountId: string) {
    // TODO: need to fix this - jhalak32
 			const result = await accountsApi.getContacts(accountId);
 			const fetchEnd = performance.now();
-			return result;
+			console.log('🔍 API Response - getContacts:', {
+				accountId,
+				resultType: Array.isArray(result) ? 'Array' : 'Object',
+				contactsCount: Array.isArray(result) ? result.length : 0,
+				result
+			});
+			// Backend returns array directly, wrap it in object format expected by frontend
+			return { contacts: Array.isArray(result) ? result : [] };
 		} catch (error) {
 			const fetchEnd = performance.now();
 			throw error;
 		}
 		},
 		enabled: !!accountId,
-		staleTime: 1000 * 60 * 5, // 5 minutes - contacts don't change very frequently
+		staleTime: 0, // Always fetch fresh data
+		refetchOnMount: 'always',
 	});
 
   const { toast } = useToast();
@@ -47,13 +55,27 @@ export function useAccountContacts(accountId: string) {
       return await accountsApi.addContact(accountId, contact);
     },
     onSuccess: async (data, variables) => {
+      console.log('✅ Contact added, invalidating queries for:', variables.accountId);
+      
+      // Invalidate first to mark as stale
+      queryClient.invalidateQueries({ 
+        queryKey: accountsQueryKeys.contacts(variables.accountId)
+      });
+      
+      queryClient.invalidateQueries({ 
+        queryKey: accountsQueryKeys.detail(variables.accountId)
+      });
+      
+      // Then force refetch
       await queryClient.refetchQueries({ 
         queryKey: accountsQueryKeys.contacts(variables.accountId),
         type: 'active'
       });
-      queryClient.invalidateQueries({ queryKey: accountsQueryKeys.detail(variables.accountId) });
+      
+      console.log('✅ Queries refetched');
+      
       toast.success('Contact Added', {
-        description: data.message || 'Contact added sucessfully'
+        description: 'Contact added successfully'
       });
     },
     onError: (error: any) => {
@@ -73,6 +95,12 @@ export function useAccountContacts(accountId: string) {
       contactId: string;
       contact: ContactUpdateRequest;
     }): Promise<{ status_code: number; message: string }> => {
+      console.log('🔄 API Call - Update Contact:', {
+        accountId,
+        contactId,
+        contactData: contact,
+        endpoint: `/accounts/${accountId}/contacts/${contactId}`
+      });
       return await accountsApi.updateContact(accountId, contactId, contact);
     },
     onSuccess: async (data, variables) => {

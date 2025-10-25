@@ -23,8 +23,21 @@ export function EditContactModal({
   const handleSubmit = async (formData: ContactUpdateRequest) => {
     if (!contact) return;
     
-    await onSave(contact.contact_id, formData);
-    onClose();
+    console.log('📤 Sending contact update:', {
+      contactId: contact.contact_id,
+      data: formData
+    });
+    
+    try {
+      await onSave(contact.contact_id, formData);
+      // onClose is handled by the parent component after successful update
+    } catch (error) {
+      // Error is handled by the hook and displayed via toast
+      console.error('❌ Failed to update contact:', error);
+      if (error && typeof error === 'object' && 'response' in error) {
+        console.error('Backend response:', (error as any).response?.data);
+      }
+    }
   };
 
   if (!isOpen || !contact) return null;

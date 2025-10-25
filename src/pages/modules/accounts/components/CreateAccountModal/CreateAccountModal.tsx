@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Sparkles, MapPin } from 'lucide-react';
 import { MARKET_SECTORS, CLIENT_TYPES, HOSTING_AREAS, US_STATES, MSA_OPTIONS, STATE_ABBREVIATION_TO_NAME } from './CreateAccountModal.constants';
 import { CreateAccountModalProps } from './CreateAccountModal.types';
 import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
 import { useAuth } from '@/hooks/useAuth';
 import { useDataEnrichment } from '@/hooks/useDataEnrichment';
+import { PlacesAutocomplete } from '@/components/ui/places-autocomplete';
 
 const CLIENT_TYPE_DISPLAY: Record<string, string> = {
   'tier_1': 'Tier 1',
@@ -67,6 +68,32 @@ export function CreateAccountModal({
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
   const [appliedSuggestions, setAppliedSuggestions] = useState<string[]>([]);
+  
+  // Phone number formatting for USA (13 digits: +1 XXX-XXX-XXXX)
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-numeric characters
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Limit to 11 digits (1 + 10 digits)
+    const limitedNumber = phoneNumber.slice(0, 11);
+    
+    // Format as +1 XXX-XXX-XXXX
+    if (limitedNumber.length === 0) return '';
+    if (limitedNumber.length <= 1) return `+${limitedNumber}`;
+    if (limitedNumber.length <= 4) return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1)}`;
+    if (limitedNumber.length <= 7) return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1, 4)}-${limitedNumber.slice(4)}`;
+    return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1, 4)}-${limitedNumber.slice(4, 7)}-${limitedNumber.slice(7, 11)}`;
+  };
+  
+  const handlePrimaryPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPrimaryContactPhone(formatted);
+  };
+  
+  const handleMainPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setMainPhone(formatted);
+  };
 
   const { enhanceAccountData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,
@@ -80,6 +107,62 @@ export function CreateAccountModal({
       // Error handled
     }
   });
+
+  // Handler for Google Places Autocomplete
+  const handlePlaceSelect = (value: string, placeDetails?: google.maps.places.PlaceResult) => {
+    console.log('📍 Place selected:', value, placeDetails);
+    
+    if (!placeDetails || !placeDetails.address_components) {
+      // User manually typed an address
+      setFormData(prev => ({
+        ...prev,
+        client_address_line1: value,
+      }));
+      return;
+    }
+
+    let street = '';
+    let city = '';
+    let state = '';
+    let zipCode = '';
+
+    placeDetails.address_components.forEach((component: any) => {
+      const types = component.types;
+      
+      if (types.includes('street_number')) {
+        street = component.long_name + ' ';
+      }
+      if (types.includes('route')) {
+        street += component.long_name;
+      }
+      if (types.includes('locality')) {
+        city = component.long_name;
+      }
+      if (types.includes('administrative_area_level_1')) {
+        state = component.short_name;
+      }
+      if (types.includes('postal_code')) {
+        zipCode = component.long_name;
+      }
+    });
+
+    console.log('📍 Parsed address:', { street, city, state, zipCode });
+
+    // Update form with parsed address
+    setFormData(prev => ({
+      ...prev,
+      client_address_line1: street || placeDetails.formatted_address || value,
+      client_address_city: city,
+      client_address_state: state,
+      client_address_zip_code: zipCode,
+    }));
+    
+    // Show success indicator for ZIP code
+    if (zipCode) {
+      setZipAutoFilled(true);
+      setTimeout(() => setZipAutoFilled(false), 3000);
+    }
+  };
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -466,16 +549,18 @@ export function CreateAccountModal({
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                     Address 1<span className="text-red-600 ml-0.5">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={formData.client_address_line1}
-                    onChange={(e) => handleInputChange('client_address_line1', e.target.value)}
-                    className="h-12 px-4 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-black text-sm font-normal font-['Outfit'] leading-tight focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
-                    placeholder="45, Street"
-                  />
+                  <div className="relative">
+                    <PlacesAutocomplete
+                      value={formData.client_address_line1}
+                      onChange={handlePlaceSelect}
+                      placeholder="Start typing address..."
+                      className="h-12 px-4 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-black text-sm font-normal font-['Outfit'] leading-tight focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
+                    />
+                  </div>
                   {backendErrors['client_address_line1'] && (
                     <span className="text-red-600 text-xs mt-1">{backendErrors['client_address_line1']}</span>
                   )}
+                  <p className="text-xs text-gray-500">💡 Type to see address suggestions or enter manually</p>
                 </div>
 
                 <div className="flex-1 flex flex-col gap-1.5">
@@ -710,10 +795,12 @@ export function CreateAccountModal({
                   <input
                     type="tel"
                     value={primaryContactPhone}
-                    onChange={(e) => setPrimaryContactPhone(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
+                    onChange={handlePrimaryPhoneChange}
+                    placeholder="+1 555-555-5555"
+                    maxLength={16}
                     className="h-12 px-4 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-black text-sm font-normal font-['Outfit'] leading-tight focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all w-full"
                   />
+                  <p className="text-xs text-gray-500">Format: +1 XXX-XXX-XXXX (13 digits total)</p>
                 </div>
 
                 <div className="flex-1 flex flex-col gap-1.5">
@@ -723,14 +810,16 @@ export function CreateAccountModal({
                   <input
                     type="tel"
                     value={mainPhone}
-                    onChange={(e) => setMainPhone(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
+                    onChange={handleMainPhoneChange}
+                    placeholder="+1 555-555-5555"
+                    maxLength={16}
                     required
                     className="h-12 px-4 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-black text-sm font-normal font-['Outfit'] leading-tight focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all w-full"
                   />
                   {backendErrors['phone'] && (
                     <span className="text-red-600 text-xs mt-1">{backendErrors['phone']}</span>
                   )}
+                  <p className="text-xs text-gray-500">Format: +1 XXX-XXX-XXXX (13 digits total)</p>
                 </div>
               </div>
             </div>
@@ -948,7 +1037,7 @@ export function CreateAccountModal({
                       </div>
 
                       <div className="text-sm text-gray-700 mb-2">
-                        {typeof suggestion.value === 'object' ? (
+                        {typeof suggestion.value === 'object' && suggestion.value !== null ? (
                           <div className="space-y-1">
                             {Object.entries(suggestion.value).map(([key, value]) => (
                               <div key={key}>
@@ -957,7 +1046,7 @@ export function CreateAccountModal({
                             ))}
                           </div>
                         ) : (
-                          suggestion.value
+                          String(suggestion.value || '')
                         )}
                       </div>
 

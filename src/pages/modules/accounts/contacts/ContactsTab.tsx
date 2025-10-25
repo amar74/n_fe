@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { AddContactModal } from './components/AddContactModal';
 import { ContactsList } from './components/ContactsList';
@@ -25,6 +25,7 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
     isDeletingContact: isDeleting,
     createErrors,
     updateErrors,
+    addContactSuccess,
     
     // Actions
     createContact,
@@ -34,9 +35,16 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
     deleteContact,
   } = useContacts(accountId);
 
+  // Close add modal on successful contact creation
+  useEffect(() => {
+    if (addContactSuccess) {
+      setShowAddModal(false);
+    }
+  }, [addContactSuccess]);
+
   const handleAddContact = async (contactData: any) => {
     await createContact(contactData);
-    setShowAddModal(false);
+    // Modal will be closed by useEffect when addContactSuccess is true
   };
 
   return (

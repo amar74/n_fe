@@ -1,288 +1,270 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@lib/supabase';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { apiClient } from '@/services/api/client';
 import { useToast } from '@/hooks/useToast';
-import type { ResetPasswordFormRequest } from '@/types/auth';
-import { ResetPasswordNewFormSchema } from '@/types/auth';
-import LoginPage from '@pages/LoginPage';
+import { Eye, EyeOff, CheckCircle2, ArrowLeft } from 'lucide-react';
+
+const ResetPasswordSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  otp: z.string().length(6, 'OTP must be 6 digits').regex(/^\d+$/, 'OTP must contain only numbers'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type ResetPasswordFormData = z.infer<typeof ResetPasswordSchema>;
 
 export default function ResetPasswordPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isValidSession, setIsValidSession] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
-  // temp solution by jhalak32
+  const location = useLocation();
   const navigate = useNavigate();
-  const { toast, presets } = useToast();
+  const { toast } = useToast();
 
-  const form = useForm<ResetPasswordFormRequest>({
-    resolver: zodResolver(ResetPasswordNewFormSchema),
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordReset, setPasswordReset] = useState(false);
+
+  // Get email from navigation state (passed from ForgotPasswordPage)
+  const emailFromState = (location.state as any)?.email || '';
+
+  const form = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(ResetPasswordSchema),
     defaultValues: {
+      email: emailFromState,
+      otp: '',
       newPassword: '',
       confirmPassword: '',
     },
     mode: 'onBlur',
   });
 
-  useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
-
-        if (error) {
-          toast.error('Invalid Reset Link', {
-            description: 'Invalid or expired reset link. Please request a new password reset.',
-            duration: 5000,
-          });
-          setIsCheckingSession(false);
-          return;
-        }
-
-        if (session) {
-          setIsValidSession(true);
-        } else {
-          toast.error('Invalid Reset Link', {
-            description: 'Invalid or expired reset link. Please request a new password reset.',
-            duration: 5000,
-          });
-        }
-      } catch (err) {
-        toast.error('Error', {
-          description: 'An error occurred. please try again.',
-          duration: 4000,
-        });
-      } finally {
-        setIsCheckingSession(false);
-      }
-    };
-
-    checkSession();
-  }, [toast]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const data = form.getValues();
-    
-    // Validate form
-    const result = await form.trigger();
-    if (!result) return;
-
+  const onSubmit = form.handleSubmit(async (data: ResetPasswordFormData) => {
     setIsSubmitting(true);
+    form.clearErrors();
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: data.newPassword,
+      await apiClient.post('/auth/reset-password', {
+        email: data.email,
+        otp: data.otp,
+        new_password: data.newPassword,
       });
 
-      if (error) {
-        form.setError('newPassword', {
-          type: 'manual',
-          message: error.message,
-        });
-
-        toast.error('Update Failed', {
-          description: error.message,
-          duration: 4000,
-        });
-      } else {
-        presets.authSuccess('Password updated successfully! Redirecting to login...');
-        form.reset();
-        
-        // Sign out to ensure user needs to login with new password
-        await supabase.auth.signOut();
-
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-          navigate('/auth/login', { replace: true });
-        }, 2000);
-      }
-    } catch (err) {
-      const errorMessage = 'update failed. Please try again.';
-      form.setError('root', {
-        type: 'manual',
-        message: errorMessage,
+      setPasswordReset(true);
+      
+      toast.success('Success', {
+        description: 'Your password has been reset successfully!',
       });
 
+      // Redirect to login after 3 seconds
+      setTimeout(() => {
+        navigate('/auth/login');
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('Reset password error:', error);
+      
+      const errorMessage = error.response?.data?.detail || 'Failed to reset password';
+      
       toast.error('Error', {
         description: errorMessage,
-        duration: 4000,
       });
     } finally {
       setIsSubmitting(false);
     }
-  };
+  });
 
-  const handleBackToDashboard = () => {
-    navigate('/auth/login');
-  };
-
-  // Loading/Checking Session State
-  if (isCheckingSession) {
+  // Success state
+  if (passwordReset) {
     return (
-      <div className="w-full min-h-screen relative overflow-hidden">
-        
-        <div className="absolute inset-0 w-full h-full">
-          <LoginPage />
-        </div>
-        <div className="absolute inset-0 w-full h-full bg-black/50 backdrop-blur-sm" />
-
-        
-        <div className="relative z-10 w-full min-h-screen flex items-center justify-center px-4">
-          <div className="w-full max-w-md p-8 bg-white rounded-2xl border border-[#E6E6E6] flex flex-col items-center gap-8 shadow-lg">
-            <div className="self-stretch flex flex-col items-center gap-3">
-              <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2] text-center">
-                Verifying Reset Link
-              </h1>
-              <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed text-center">
-                Please wait while we verify your password reset link...
-              </p>
-            </div>
-
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#161950]"></div>
-            </div>
-
-            <Button
-              onClick={handleBackToDashboard}
-              className="self-stretch h-[48px] px-5 py-3 bg-transparent border border-[#D0D5DD] rounded-lg text-[#344054] text-[15px] font-semibold font-outfit leading-tight hover:bg-gray-50 transition-all duration-200"
-            >
-              Back to Sign-in
-            </Button>
+      <div className="w-full min-h-screen relative bg-white flex items-center justify-center px-4">
+        <div className="w-full max-w-[480px] p-12 rounded-2xl border border-[#E6E6E6] bg-white flex flex-col items-center gap-6 shadow-lg">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
+          
+          <div className="text-center space-y-3">
+            <h1 className="text-[#101828] text-[32px] font-semibold font-outfit">Password Reset Complete!</h1>
+            <p className="text-[#667085] text-[15px] font-normal font-outfit leading-relaxed">
+              Your password has been successfully reset. You can now sign in with your new password.
+            </p>
+          </div>
+
+          <p className="text-sm text-[#667085] font-outfit">
+            Redirecting to sign in page...
+          </p>
+
+          <Button
+            onClick={() => navigate('/auth/login')}
+            className="w-full bg-[#161950] hover:bg-[#1E2B5B]"
+          >
+            Go to Sign In
+          </Button>
         </div>
       </div>
     );
   }
 
-  // Invalid Session State
-  if (!isValidSession) {
-    return (
-      <div className="w-full min-h-screen relative overflow-hidden">
-        
-        <div className="absolute inset-0 w-full h-full">
-          <LoginPage />
-        </div>
-        <div className="absolute inset-0 w-full h-full bg-black/50 backdrop-blur-sm" />
-
-        
-        <div className="relative z-10 w-full min-h-screen flex items-center justify-center px-4">
-          <div className="w-full max-w-md p-8 bg-white rounded-2xl border border-[#E6E6E6] flex flex-col items-start gap-8 shadow-lg">
-            <div className="self-stretch flex flex-col items-center gap-3">
-              <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2] text-center">
-                Invalid Reset Link
-              </h1>
-              <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed text-center">
-                This password reset link is invalid or has expired. Please request a new password reset.
-              </p>
-            </div>
-
-            <div className="self-stretch rounded-lg bg-[#FEF3F2] border border-[#FECDCA] px-4 py-3">
-              <div className="text-[#F04438] text-sm font-outfit text-center">
-                Reset link expired or invalid
-              </div>
-            </div>
-
-            <Button
-              onClick={handleBackToDashboard}
-              className="self-stretch h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-outfit leading-tight hover:bg-[#1E2B5B] hover:shadow-lg transition-all duration-200"
-            >
-              Back to Sign-in
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  // Reset password form
   return (
-    <div className="w-full min-h-screen relative overflow-hidden">
-      
-      <div className="absolute inset-0 w-full h-full">
-        <LoginPage />
-      </div>
-      <div className="absolute inset-0 w-full h-full bg-black/50 backdrop-blur-sm" />
+    <div className="w-full min-h-screen relative bg-white flex items-center justify-center px-4">
+      <div className="w-full max-w-[480px] p-12 rounded-2xl border border-[#E6E6E6] bg-white flex flex-col gap-8 shadow-lg">
+        <button
+          onClick={() => navigate('/forgot-password')}
+          className="inline-flex justify-start items-center gap-1.5 transition-all duration-200 hover:opacity-70 hover:gap-2 self-start"
+        >
+          <ArrowLeft className="w-5 h-5 text-[#344054]" />
+          <span className="text-[#344054] text-sm font-normal font-outfit">Back</span>
+        </button>
 
-      
-      <div className="relative z-10 w-full min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md p-8 sm:p-10 bg-white rounded-2xl border border-[#E6E6E6] flex flex-col items-start gap-8 shadow-xl">
-          
-          <div className="self-stretch flex flex-col items-start gap-3">
-            <h1 className="self-stretch text-center text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2]">
-              Reset Your Password
-            </h1>
-            <p className="self-stretch text-center text-[#667085] text-[14px] font-normal font-outfit leading-relaxed">
-              Enter your e-mail address and we will send you a link to reset your password
-            </p>
-          </div>
+        <div className="flex flex-col gap-3">
+          <h1 className="text-[#101828] text-[32px] font-semibold font-outfit">
+            Reset Your Password
+          </h1>
+          <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed">
+            Enter the 6-digit OTP sent to your email and create a new password.
+          </p>
+        </div>
 
-          
-          <form onSubmit={handleSubmit} className="self-stretch flex flex-col items-start gap-6">
-            
-            {form.formState.errors.root && (
-              <div className="self-stretch rounded-lg bg-[#FEF3F2] border border-[#FECDCA] px-4 py-3">
-                <div className="text-[#F04438] text-sm font-outfit">
-                  {form.formState.errors.root.message}
-                </div>
-              </div>
-            )}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800 text-xs font-semibold mb-2">⚠️ Important:</p>
+          <p className="text-yellow-700 text-xs">
+            The OTP is valid for 10 minutes and can only be used once. Make sure to complete 
+            the password reset now, or you'll need to request a new OTP.
+          </p>
+        </div>
 
-            
-            <div className="self-stretch flex flex-col items-start gap-2">
-              <label className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
-                New Password<span className="text-[#F04438]">*</span>
-              </label>
-              <Input
-                type="password"
-                {...form.register('newPassword')}
-                placeholder="*********"
-                className="self-stretch h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
-              />
-              {form.formState.errors.newPassword && (
-                <p className="text-[#F04438] text-sm font-outfit">
-                  {form.formState.errors.newPassword.message}
-                </p>
+        <Form {...form}>
+          <form onSubmit={onSubmit} className="flex flex-col gap-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-2">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                    Email address<span className="text-[#F04438]">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      placeholder="Enter your email"
+                      autoComplete="email"
+                      className="h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                </FormItem>
               )}
-            </div>
+            />
 
-            
-            <div className="self-stretch flex flex-col items-start gap-2">
-              <label className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
-                Confirm Password<span className="text-[#F04438]">*</span>
-              </label>
-              <Input
-                type="password"
-                {...form.register('confirmPassword')}
-                placeholder="123456"
-                className="self-stretch h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
-              />
-              {form.formState.errors.confirmPassword && (
-                <p className="text-[#F04438] text-sm font-outfit">
-                  {form.formState.errors.confirmPassword.message}
-                </p>
+            <FormField
+              control={form.control}
+              name="otp"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-2">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                    OTP (6 digits)<span className="text-[#F04438]">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="Enter 6-digit OTP"
+                      className="h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[20px] font-mono font-bold tracking-widest text-center focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-[#667085] font-outfit">Check your email for the 6-digit code</p>
+                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                </FormItem>
               )}
-            </div>
+            />
 
-            
-            <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">
-              Min 8 character require
-            </p>
+            <FormField
+              control={form.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-2">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                    New Password<span className="text-[#F04438]">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="Enter new password"
+                        className="h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#344054] transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </FormControl>
+                  <p className="text-xs text-[#667085] font-outfit">Minimum 8 characters</p>
+                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                </FormItem>
+              )}
+            />
 
-            
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem className="flex flex-col gap-2">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                    Confirm New Password<span className="text-[#F04438]">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        {...field}
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm new password"
+                        className="h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#98A2B3] hover:text-[#344054] transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                </FormItem>
+              )}
+            />
+
             <Button
               type="submit"
+              className="w-full h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-outfit hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               disabled={isSubmitting}
-              className="self-stretch h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-outfit leading-tight hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
             >
-              {isSubmitting ? 'Saving Password...' : 'Save Your Password'}
+              {isSubmitting ? 'Resetting Password...' : 'Reset Password'}
             </Button>
           </form>
-        </div>
+        </Form>
       </div>
     </div>
   );

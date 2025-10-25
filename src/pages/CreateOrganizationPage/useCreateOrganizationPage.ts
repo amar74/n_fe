@@ -44,7 +44,13 @@ export function useCreateOrganizationPage() {
 
   const form = useForm<CreateOrganizationFormData>({
     resolver: zodResolver(CreateOrganizationSchema),
-    defaultValues: FORM_DEFAULT_VALUES,
+    defaultValues: {
+      ...FORM_DEFAULT_VALUES,
+      contact: {
+        email: user?.email || '',
+        phone: '',
+      },
+    },
     mode: 'onChange', // Validate on change for better UX
   });
 
