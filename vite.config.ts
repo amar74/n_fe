@@ -15,27 +15,24 @@ export default defineConfig({
   },
   build: {
     sourcemap: false, // Disable source maps for production
-    // Force new build hash - scripts exclusion fix
-    // Force new build hash - fs module exclusion fix
+    // Force new build hash - fix minified cva/fs conflict
     rollupOptions: {
-      // Note: Do NOT mark Node.js modules as external for browser builds
-      // The resolve.alias configuration below handles them correctly
+      // CRITICAL: Do NOT externalize Node.js modules by simple name matching
+      // Minifiers can rename variables (like 'cva' -> 'fs'), causing false positives
+      // Only externalize actual Node.js module imports (node: protocol or absolute paths)
       external: (id) => {
-        // Completely exclude Node.js built-in modules
-        const nodeModules = [
-          'fs', 'path', 'os', 'crypto', 'util', 'stream', 'buffer', 'events',
-          'child_process', 'net', 'tls', 'http', 'https', 'zlib', 'url',
-          'querystring', 'assert', 'constants', 'domain', 'punycode', 'process',
-          'vm', 'cluster', 'dgram', 'dns', 'readline', 'repl', 'string_decoder',
-          'timers', 'tty', 'v8', 'worker_threads'
-        ];
-        
-        // Exclude build scripts from bundling
-        if (id.includes('/scripts/') || id.includes('\\scripts\\')) {
+        // Only exclude actual Node.js imports with node: protocol
+        if (id.startsWith('node:')) {
           return true;
         }
         
-        return nodeModules.includes(id);
+        // Exclude build scripts from bundling (absolute path check)
+        if (id.includes('/scripts/generate.ts') || id.includes('\\scripts\\generate.ts')) {
+          return true;
+        }
+        
+        // Allow everything else (including minified variable names like 'fs')
+        return false;
       },
       output: {
         manualChunks: (id) => {
