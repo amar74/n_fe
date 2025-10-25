@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AccountsList } from './components/AccountsList';
 import { CreateAccountModal } from './components/CreateAccountModal';
@@ -295,4 +295,4 @@ function AccountsPage() {
   );
 }
 
-export default memo(AccountsPage);
+export default AccountsPage;

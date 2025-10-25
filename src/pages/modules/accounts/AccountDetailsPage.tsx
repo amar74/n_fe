@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import React from 'react';
 import { TabNavigation } from './components/TabNavigation';
 import { AccountStatsCards } from './components/AccountStatsCards';
 import { AccountInformationForm } from './components/AccountInformationForm';
@@ -153,4 +153,4 @@ function AccountDetailsPage() {
   );
 }
 
-export default memo(AccountDetailsPage);
+export default AccountDetailsPage;
