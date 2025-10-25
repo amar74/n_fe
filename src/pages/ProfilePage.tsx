@@ -76,14 +76,7 @@ export default function ProfilePage() {
       icon: User,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
-    },
-    {
-      label: 'Performance',
-      value: '95%',
-      icon: TrendingUp,
-      color: 'text-[#161950]',
-      bgColor: 'bg-[#161950]/5',
-    },
+    }, 
   ];
 
   // Quick action links
