@@ -1,2 +1,20 @@
 node_modules
 dist/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.*.local
+*.env
+
+# Build artifacts
+*.tar.gz
+*.zip
+
+# OS files
+.DS_Store
+
+# Editor directories
+.vscode/
+.idea/
