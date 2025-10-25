@@ -16,6 +16,7 @@ export default defineConfig({
   build: {
     sourcemap: false, // Disable source maps for production
     // Force new build hash - scripts exclusion fix
+    // Force new build hash - fs module exclusion fix
     rollupOptions: {
       // Note: Do NOT mark Node.js modules as external for browser builds
       // The resolve.alias configuration below handles them correctly
