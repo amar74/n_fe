@@ -106,7 +106,7 @@ importers:
         version: 5.85.3(react@19.1.1)
       '@zodios/core':
         specifier: ^10.9.6
-        version: 10.9.6(axios@1.11.0)(zod@4.0.17)
+        version: 10.9.6(axios@1.11.0)(zod@3.25.76)
       axios:
         specifier: ^1.11.0
         version: 1.11.0
@@ -174,8 +174,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.1.7(@types/react@19.1.10))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       zod:
-        specifier: ^4.0.17
-        version: 4.0.17
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@eslint/js':
         specifier: ^9.33.0
@@ -3095,9 +3095,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.0.17:
-    resolution: {integrity: sha512-1PHjlYRevNxxdy2JZ8JcNAw7rX8V9P1AKkP+x/xZfxB0K5FYfuV+Ug6P/6NVSR2jHQ+FzDDoDHS04nYUsOIyLQ==}
-
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
@@ -4591,11 +4588,6 @@ snapshots:
       axios: 1.11.0
       zod: 3.25.76
 
-  '@zodios/core@10.9.6(axios@1.11.0)(zod@4.0.17)':
-    dependencies:
-      axios: 1.11.0
-      zod: 4.0.17
-
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:
       acorn: 8.15.0
@@ -5863,5 +5855,3 @@ snapshots:
   yocto-queue@0.1.0: {}
 
   zod@3.25.76: {}
-
-  zod@4.0.17: {}

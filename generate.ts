@@ -42,3 +42,30 @@ await generateZodClientFromOpenAPI({
     withAlias: true,
   }
 });
+
+// Post-generation fix: Remove problematic Zodios exports without baseURL
+// These cause "pt is not a constructor" errors in production
+console.log('\n🔧 Fixing generated files...');
+const fs = await import('fs');
+const path = await import('path');
+
+const generatedDir = './src/types/generated/';
+const files = fs.readdirSync(generatedDir).filter((f: string) => f.endsWith('.ts'));
+
+let fixedCount = 0;
+for (const file of files) {
+  const filePath = path.join(generatedDir, file);
+  let content = fs.readFileSync(filePath, 'utf-8');
+  
+  // Remove lines like: export const SomeApi = new Zodios(endpoints);
+  const originalContent = content;
+  content = content.replace(/^export const \w+Api = new Zodios\(endpoints\);$/gm, '');
+  
+  if (content !== originalContent) {
+    fs.writeFileSync(filePath, content);
+    fixedCount++;
+    console.log(`  ✓ Fixed ${file}`);
+  }
+}
+
+console.log(`✅ Fixed ${fixedCount} files to prevent constructor errors\n`);
