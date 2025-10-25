@@ -1,5 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/lib/query-client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notesApi } from '@/services/api/notesApi';
 import {
   Note,
@@ -20,6 +19,7 @@ export const notesKeys = {
 
 export function useNotes(params: NotesListParams = {}) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const notesQuery = useQuery({
     queryKey: notesKeys.list(params),

@@ -1,41 +1,9 @@
-import { QueryClient } from '@tanstack/react-query';
-
 /**
- * Centralized TanStack Query client configuration
+ * Query key factory utilities
  * Following Development.md strict patterns for query management
+ * 
+ * Note: QueryClient instance moved to main.tsx to fix bundling issues
  */
-
-// Debug: Log QueryClient to see what it actually is
-console.log('QueryClient type:', typeof QueryClient);
-console.log('QueryClient value:', QueryClient);
-
-if (typeof QueryClient !== 'function') {
-  console.error('❌ QueryClient is not a function! It is:', QueryClient);
-  throw new Error('QueryClient import failed - not a constructor');
-}
-
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // Cache data for 5 minutes by default
-      staleTime: 1000 * 60 * 5,
-      // Keep unused data in cache for 10 minutes
-      gcTime: 1000 * 60 * 10,
-      // Reduce retry attempts to prevent long delays
-      retry: 1,
-      // Faster retry delay
-      retryDelay: 1000,
-      refetchOnWindowFocus: import.meta.env.PROD,
-      refetchOnReconnect: import.meta.env.PROD,
-      // Reduce network idle timeout
-      networkMode: 'online',
-    },
-    mutations: {
-      retry: 1,
-      throwOnError: false,
-    },
-  },
-});
 
 /**
  * Global query key factory for consistent namespacing

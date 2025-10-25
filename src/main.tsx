@@ -1,11 +1,30 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import AppRouter from './routes/AppRouter';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import './index.css';
-import { queryClient } from './lib/query-client';
+
+// Create QueryClient here in main.tsx to ensure proper bundling
+// Moving from lib/query-client.ts to fix "pt is not a constructor" error
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
+      retry: 1,
+      retryDelay: 1000,
+      refetchOnWindowFocus: import.meta.env.PROD,
+      refetchOnReconnect: import.meta.env.PROD,
+      networkMode: 'online',
+    },
+    mutations: {
+      retry: 1,
+      throwOnError: false,
+    },
+  },
+});
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
