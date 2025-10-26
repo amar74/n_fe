@@ -24,13 +24,20 @@ export function CreateAccountModal({
   const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   
   const getUserName = () => {
-    const email = authState.user?.email || '';
+    // First priority: Get name from user profile
+    const userName = (authState.user as any)?.name;
+    if (userName && userName.trim()) {
+      return userName;
+    }
     
+    // Second priority: Extract from email
+    const email = authState.user?.email || '';
     if (email && email.includes('@')) {
       const namePart = email.split('@')[0];
       return namePart; // Return as-is (e.g., "amar74.soft")
     }
     
+    // Fallback to email
     if (email) {
       return email;
     }
@@ -56,6 +63,27 @@ export function CreateAccountModal({
     created_by: getUserName(),
     created_at: currentDate,
   });
+
+  // Update created_by when user data loads or changes
+  useEffect(() => {
+    // Get user name from auth state
+    const userName = (authState.user as any)?.name;
+    const email = authState.user?.email || '';
+    
+    let currentUserName = 'Unknown User';
+    if (userName && userName.trim()) {
+      currentUserName = userName;
+    } else if (email && email.includes('@')) {
+      currentUserName = email.split('@')[0];
+    } else if (email) {
+      currentUserName = email;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      created_by: currentUserName
+    }));
+  }, [authState.user]);
 
   const [isZipLoading, setIsZipLoading] = useState(false);
   const [zipAutoFilled, setZipAutoFilled] = useState(false);

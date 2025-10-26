@@ -6,6 +6,16 @@ export const AuthUserResponse = z
     org_id: z.union([z.string(), z.null()]).optional(),
     role: z.union([z.string(), z.null()]),
     email: z.string(),
+    name: z.union([z.string(), z.null()]).optional(),
+    phone: z.union([z.string(), z.null()]).optional(),
+    bio: z.union([z.string(), z.null()]).optional(),
+    address: z.union([z.string(), z.null()]).optional(),
+    city: z.union([z.string(), z.null()]).optional(),
+    state: z.union([z.string(), z.null()]).optional(),
+    zip_code: z.union([z.string(), z.null()]).optional(),
+    country: z.union([z.string(), z.null()]).optional(),
+    timezone: z.union([z.string(), z.null()]).optional(),
+    language: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
 export const ValidationError = z

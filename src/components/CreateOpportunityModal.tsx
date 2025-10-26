@@ -51,6 +51,26 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
   });
 
   const [errors, setErrors] = useState<Partial<OpportunityFormData>>({});
+
+  // Update opportunityApprover when user data loads or changes
+  useEffect(() => {
+    const userName = (user as any)?.name;
+    const userEmail = user?.email || '';
+    
+    let approverName = '';
+    if (userName && userName.trim()) {
+      approverName = userName;
+    } else if (userEmail) {
+      approverName = userEmail;
+    }
+    
+    if (approverName) {
+      setFormData(prev => ({
+        ...prev,
+        opportunityApprover: approverName
+      }));
+    }
+  }, [user]);
   
   const [accounts, setAccounts] = useState<AccountListItem[]>([]);
   const [isAccountsLoading, setIsAccountsLoading] = useState(false);
@@ -61,11 +81,15 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
   const [aiEnhancementResults, setAiEnhancementResults] = useState<any>(null);
   const [showEnhancementPanel, setShowEnhancementPanel] = useState(false);
   const [isZipLookupLoading, setIsZipLookupLoading] = useState(false);
+  const [hasAIRun, setHasAIRun] = useState(false); // Track if AI has already run
 
   const { enhanceAccountData, enhanceOpportunityData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,
     confidenceThreshold: 0.7,
     onSuggestionReceived: (suggestion) => {
+      // Only apply suggestions if AI hasn't run yet (prevents overwriting user selections)
+      if (hasAIRun) return;
+      
       const fieldMap: Record<string, keyof OpportunityFormData> = {
         'company_name': 'opportunityName',
         'client_name': 'opportunityName',
@@ -248,14 +272,18 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
       
       setAiEnhancementResults(result);
       setShowEnhancementPanel(true);
+      setHasAIRun(true); // Mark AI as completed
     } catch (err) {
       setAiEnhancementError('enhance failed. Please try again.');
     } finally {
       setIsAIEnhancing(false);
     }
-  }, [formData.companyWebsite, formData.opportunityName, formData.location, formData.marketSector, formData.projectDescription, enhanceAccountData]);
+  }, [formData.companyWebsite, formData.opportunityName, formData.location, formData.marketSector, formData.projectDescription, enhanceOpportunityData]);
 
   useEffect(() => {
+    // Only run AI enhancement once - don't run if it already ran
+    if (hasAIRun) return;
+    
     if (formData.companyWebsite && formData.companyWebsite.trim() && 
         !formData.companyWebsite.includes('xyz.com') && 
         !isAIEnhancing && !isAILoading) {
@@ -269,7 +297,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [formData.companyWebsite, isAIEnhancing, isAILoading, handleAIEnhancement]);
+  }, [formData.companyWebsite, isAIEnhancing, isAILoading, hasAIRun, handleAIEnhancement]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<OpportunityFormData> = {};
@@ -331,6 +359,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
         projectDescription: '',
       });
       setErrors({});
+      setHasAIRun(false); // Reset AI flag for next time
       onClose();
     } else {
     }
@@ -354,6 +383,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
       opportunityApprover: String(user?.name || user?.email || ''),
       projectDescription: '',
     });
+    setHasAIRun(false); // Reset AI flag for next time
     onClose();
   };
 
@@ -645,49 +675,25 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
             </div>
 
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Sales Stage
-                </label>
-                <div className="relative">
-                  <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <select
-                    value={formData.salesStage}
-                    onChange={(e) => handleInputChange('salesStage', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400 appearance-none cursor-pointer"
-                  >
-                    <option value="">Select Stage</option>
-                    <option value="prospecting">Prospecting</option>
-                    <option value="qualification">Qualification</option>
-                    <option value="proposal">Proposal</option>
-                    <option value="negotiation">Negotiation</option>
-                    <option value="closed-won">Closed Won</option>
-                    <option value="closed-lost">Closed Lost</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  Market Sector
-                </label>
-                <div className="relative">
-                  <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <select
-                    value={formData.marketSector}
-                    onChange={(e) => handleInputChange('marketSector', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400 appearance-none cursor-pointer"
-                  >
-                    <option value="">Select Sector</option>
-                    <option value="transportation">Transportation</option>
-                    <option value="technology">Technology</option>
-                    <option value="energy">Energy</option>
-                    <option value="utilities">Utilities</option>
-                    <option value="real-estate">Real Estate</option>
-                    <option value="healthcare">Healthcare</option>
-                  </select>
-                </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-gray-700">
+                Sales Stage
+              </label>
+              <div className="relative">
+                <Target className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={formData.salesStage}
+                  onChange={(e) => handleInputChange('salesStage', e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400 appearance-none cursor-pointer"
+                >
+                  <option value="">Select Stage</option>
+                  <option value="prospecting">Prospecting</option>
+                  <option value="qualification">Qualification</option>
+                  <option value="proposal">Proposal</option>
+                  <option value="negotiation">Negotiation</option>
+                  <option value="closed-won">Closed Won</option>
+                  <option value="closed-lost">Closed Lost</option>
+                </select>
               </div>
             </div>
           </div>
@@ -720,7 +726,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
                   Opportunity Approver
-                  <span className="text-xs text-gray-500 ml-2">(Current User)</span>
+                  <span className="text-xs text-gray-500 ml-2">(Logged in user)</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -729,7 +735,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
                     value={formData.opportunityApprover}
                     readOnly
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium bg-gray-50 text-gray-600 cursor-not-allowed"
-                    placeholder="Current user"
+                    placeholder="Loading user..."
                   />
                 </div>
               </div>

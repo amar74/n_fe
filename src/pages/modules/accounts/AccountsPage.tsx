@@ -41,45 +41,20 @@ function AccountsPage() {
     refetchAccounts,
   } = useAccountsPage();
 
-  // Local state to manage account approval status for optimistic updates
-  const [localApprovals, setLocalApprovals] = useState<Record<string, string>>({});
-
-  // Sync localStorage with backend data when accounts load
-  useEffect(() => {
-    const approvals: Record<string, string> = {};
-    originalAccounts.forEach(account => {
-      // Use backend approval_status if available, otherwise check localStorage
-      if ((account as any).approval_status) {
-        approvals[account.account_id] = (account as any).approval_status;
-      }
-    });
-    setLocalApprovals(approvals);
-    
-    // Update localStorage with backend data
-    localStorage.setItem('accountApprovals', JSON.stringify(approvals));
-  }, [originalAccounts]);
-
-  // Memoize accounts with approval status to prevent infinite loops
+  // Use accounts directly from backend with approval status
   const accounts = useMemo(() => {
     return originalAccounts.map(account => ({
       ...account,
-      approval_status: localApprovals[account.account_id] || (account as any).approval_status || 'pending',
+      approval_status: (account as any).approval_status || 'pending',
     }));
-  }, [originalAccounts, localApprovals]);
+  }, [originalAccounts]);
 
   const handleApproveAccount = async (accountId: string, notes: string) => {
     try {
-      // Call backend API to approve account
-      await apiClient.post(`/api/accounts/${accountId}/approve`, { notes });
+      // Call backend API to approve account (apiClient already has /api in baseURL)
+      await apiClient.post(`/accounts/${accountId}/approve`, { notes });
       
-      // Update local state to reflect the change immediately
-      setLocalApprovals(prev => {
-        const updated = { ...prev, [accountId]: 'approved' };
-        localStorage.setItem('accountApprovals', JSON.stringify(updated));
-        return updated;
-      });
-      
-      // Refetch accounts to get updated data from backend
+      // Refetch accounts to get updated data from backend (auto-refresh)
       await refetchAccounts();
       
       toast.success('✅ Account approved successfully! The account is now active.');
@@ -91,17 +66,10 @@ function AccountsPage() {
 
   const handleDeclineAccount = async (accountId: string, notes: string) => {
     try {
-      // Call backend API to decline account
-      await apiClient.post(`/api/accounts/${accountId}/decline`, { notes });
+      // Call backend API to decline account (apiClient already has /api in baseURL)
+      await apiClient.post(`/accounts/${accountId}/decline`, { notes });
       
-      // Update local state to reflect the change immediately
-      setLocalApprovals(prev => {
-        const updated = { ...prev, [accountId]: 'declined' };
-        localStorage.setItem('accountApprovals', JSON.stringify(updated));
-        return updated;
-      });
-      
-      // Refetch accounts to get updated data from backend
+      // Refetch accounts to get updated data from backend (auto-refresh)
       await refetchAccounts();
       
       toast.error('❌ Account declined.');

@@ -94,7 +94,9 @@ export function useAuth() {
               
               if (response.ok) {
                 try {
-                  const userData = await response.json();
+                  const responseData = await response.json();
+                  // Backend returns { user: {...} } wrapper
+                  const userData = responseData.user || responseData;
                   authManager.setAuthState(true, userData);
                   setBackendUser(userData);
                   setIsAuthenticated(true);
