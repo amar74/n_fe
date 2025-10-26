@@ -12,7 +12,7 @@ import {
   Star
 } from 'lucide-react';
 import { toast } from 'sonner';
-import axios from 'axios';
+import { apiClient } from '@/services/api/client';
 
 interface Survey {
   id: string;
@@ -45,8 +45,6 @@ export default function PublicSurveyPage() {
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
-
   useEffect(() => {
     if (surveyId) {
       loadSurvey();
@@ -57,7 +55,7 @@ export default function PublicSurveyPage() {
     try {
       setLoading(true);
       // Public endpoint - no auth required
-      const response = await axios.get(`${API_BASE_URL}/public/surveys/${surveyId}`);
+      const response = await apiClient.get(`/public/surveys/${surveyId}`);
       setSurvey(response.data);
     } catch (error: any) {
       console.error('Error loading survey:', error);
@@ -111,7 +109,7 @@ export default function PublicSurveyPage() {
     try {
       setSubmitting(true);
       
-      await axios.post(`${API_BASE_URL}/public/surveys/${surveyId}/submit`, {
+      await apiClient.post(`/public/surveys/${surveyId}/submit`, {
         response_data: responses,
         contact_name: contactName,
         contact_email: contactEmail,
