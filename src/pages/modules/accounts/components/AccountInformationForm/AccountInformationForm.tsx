@@ -37,20 +37,28 @@ export function AccountInformationForm({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const handleZipCodeChange = async (zipCode: string) => {
-    const cleanedZip = zipCode.replace(/\D/g, '').slice(0, 5);
+    // Allow digits and hyphen for ZIP+4 format (e.g., 90210-1234)
+    const cleanedZip = zipCode.replace(/[^\d-]/g, '').slice(0, 10);
     
     handleFieldChange('client_address_zip_code', cleanedZip);
 
     setZipError('');
     setZipAutoFilled(false);
 
-    if (cleanedZip.length > 0 && cleanedZip.length < 5) {
-      setZipError('USA ZIP code must be 5 digits');
+    // Extract just digits for validation
+    const digitsOnly = cleanedZip.replace(/\D/g, '');
+
+    if (digitsOnly.length > 0 && digitsOnly.length < 5) {
+      setZipError('USA ZIP code must be at least 5 digits');
       setAvailableCities([]);
       return;
     }
 
-    if (cleanedZip.length !== 5 || !/^\d{5}$/.test(cleanedZip)) {
+    // Valid formats: 5 digits (12345) or 9 digits with hyphen (12345-6789)
+    const isValid5Digit = /^\d{5}$/.test(cleanedZip);
+    const isValidZipPlus4 = /^\d{5}-\d{4}$/.test(cleanedZip);
+
+    if (!isValid5Digit && !isValidZipPlus4) {
       setAvailableCities([]);
       return;
     }
@@ -246,8 +254,14 @@ export function AccountInformationForm({
 
     if (!formData.client_address_zip_code) {
       errors.client_address_zip_code = 'ZIP code is required';
-    } else if (!/^\d{5}$/.test(formData.client_address_zip_code)) {
-      errors.client_address_zip_code = 'ZIP code must be exactly 5 digits';
+    } else {
+      // Support both 5-digit (12345) and ZIP+4 format (12345-6789)
+      const isValid5Digit = /^\d{5}$/.test(formData.client_address_zip_code);
+      const isValidZipPlus4 = /^\d{5}-\d{4}$/.test(formData.client_address_zip_code);
+      
+      if (!isValid5Digit && !isValidZipPlus4) {
+        errors.client_address_zip_code = 'ZIP code must be 5 digits (e.g., 90210) or ZIP+4 format (e.g., 90210-1234)';
+      }
     }
 
     if (!formData.client_address_state) {
@@ -455,18 +469,17 @@ export function AccountInformationForm({
               
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
-                  ZIP Code (5 digits)<span className="text-red-600">*</span>
+                  ZIP Code<span className="text-red-600">*</span>
                   {isZipLoading && <span className="text-xs text-blue-600 ml-2">🔍 Looking up...</span>}
                 </label>
                 <input
                   type="text"
                   inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={5}
+                  maxLength={10}
                   value={formData.client_address_zip_code || ''}
                   onChange={(e) => handleZipCodeChange(e.target.value)}
                   disabled={!isEditing}
-                  placeholder="e.g., 85001 (5 digits)"
+                  placeholder="e.g., 90210 or 90210-1234"
                   className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
                     ${validationErrors.client_address_zip_code || zipError ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : ''}
                     ${zipAutoFilled && !validationErrors.client_address_zip_code ? 'bg-green-50 border-green-500 focus:border-green-500 focus:ring-green-100' : 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-indigo-100 hover:border-gray-400'}`}
