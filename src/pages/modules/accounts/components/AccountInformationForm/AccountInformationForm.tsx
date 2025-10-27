@@ -141,7 +141,7 @@ export function AccountInformationForm({
     }
   };
 
-  const handleStateChange = (state: string) => {
+  const handleStateChange = async (state: string) => {
     const stateToCode: Record<string, string> = {
       Alabama: 'AL', Alaska: 'AK', Arizona: 'AZ', Arkansas: 'AR', California: 'CA',
       Colorado: 'CO', Connecticut: 'CT', Delaware: 'DE', Florida: 'FL', Georgia: 'GA',
@@ -164,6 +164,73 @@ export function AccountInformationForm({
     }
 
     handleFieldChange('client_address_state', state);
+    
+    // If city is already selected, auto-fill ZIP code
+    if (formData.client_address_city && state && isEditing) {
+      await lookupZipFromCityState(formData.client_address_city, state);
+    }
+  };
+
+  const handleCityChange = async (city: string) => {
+    handleFieldChange('client_address_city', city);
+    
+    // If state is already selected, auto-fill ZIP code
+    if (formData.client_address_state && city && isEditing) {
+      await lookupZipFromCityState(city, formData.client_address_state);
+    }
+  };
+
+  const lookupZipFromCityState = async (city: string, state: string) => {
+    if (!city || !state) return;
+
+    setIsZipLoading(true);
+    
+    try {
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      
+      if (!apiKey) {
+        console.warn('Google Maps API key not found, cannot auto-fill ZIP');
+        setIsZipLoading(false);
+        return;
+      }
+
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)},${encodeURIComponent(state)},US&key=${apiKey}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Google Maps API request failed');
+      }
+
+      const data = await response.json();
+
+      if (data.status === 'OK' && data.results && data.results.length > 0) {
+        const result = data.results[0];
+        const addressComponents = result.address_components;
+
+        let zipCode = '';
+
+        for (const component of addressComponents) {
+          if (component.types.includes('postal_code')) {
+            zipCode = component.long_name;
+            break;
+          }
+        }
+
+        if (zipCode) {
+          handleFieldChange('client_address_zip_code', zipCode);
+          setZipAutoFilled(true);
+          setZipError('');
+          console.log(`✅ Auto-filled ZIP: ${zipCode} for ${city}, ${state}`);
+        } else {
+          console.log(`⚠️ No ZIP code found for ${city}, ${state}`);
+        }
+      }
+    } catch (err) {
+      console.error('Error looking up ZIP from city/state:', err);
+    } finally {
+      setIsZipLoading(false);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -357,7 +424,7 @@ export function AccountInformationForm({
                   type="text"
                   value={formData.client_address_line1}
                   onChange={(e) => handleFieldChange('client_address_line1', e.target.value)}
-                  disabled={!isEditing || !!accountId}
+                  disabled={!isEditing}
                   placeholder="Enter street address"
                   className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none disabled:opacity-100 disabled:cursor-not-allowed
                     ${validationErrors.client_address_line1 ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
@@ -376,7 +443,7 @@ export function AccountInformationForm({
                   type="text"
                   value={formData.client_address_line2 || ''}
                   onChange={(e) => onFormChange('client_address_line2', e.target.value)}
-                  disabled={!isEditing || !!accountId}
+                  disabled={!isEditing}
                   placeholder="Apartment, suite, etc. (optional)"
                   className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
                 />
@@ -398,7 +465,7 @@ export function AccountInformationForm({
                   maxLength={5}
                   value={formData.client_address_zip_code || ''}
                   onChange={(e) => handleZipCodeChange(e.target.value)}
-                  disabled={!isEditing || !!accountId}
+                  disabled={!isEditing}
                   placeholder="e.g., 85001 (5 digits)"
                   className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
                     ${validationErrors.client_address_zip_code || zipError ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : ''}
@@ -454,8 +521,8 @@ export function AccountInformationForm({
                   <div className="relative w-full">
                     <select
                       value={formData.client_address_city || ''}
-                      onChange={(e) => handleFieldChange('client_address_city', e.target.value)}
-                      disabled={!isEditing || !!accountId}
+                      onChange={(e) => handleCityChange(e.target.value)}
+                      disabled={!isEditing}
                       className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
                         ${validationErrors.client_address_city ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-indigo-100'}`}
                     >
@@ -474,8 +541,8 @@ export function AccountInformationForm({
                   <input
                     type="text"
                     value={formData.client_address_city || ''}
-                    onChange={(e) => handleFieldChange('client_address_city', e.target.value)}
-                    disabled={!isEditing || !!accountId}
+                    onChange={(e) => handleCityChange(e.target.value)}
+                    disabled={!isEditing}
                     placeholder="Enter city name"
                     className={`w-full h-11 px-3.5 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-400 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
                       ${validationErrors.client_address_city ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-100'}`}
