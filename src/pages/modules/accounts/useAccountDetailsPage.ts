@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAccountDetail, useAccounts } from '@/hooks/useAccounts';
 import { TabType, AccountFormData, AccountStatsCard } from './AccountDetailsPage.types';
 import { MOCK_RECENT_ACTIVITY } from './AccountDetailsPage.constants';
+import { STATE_ABBREVIATION_TO_NAME } from './components/CreateAccountModal/CreateAccountModal.constants';
 
 export function useAccountDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +28,12 @@ export function useAccountDetailsPage() {
 
   useEffect(() => {
     if (account) {
+      // Convert state abbreviation to full name for dropdown
+      const stateValue = account.client_address?.state;
+      const fullStateName = stateValue && stateValue.length === 2 
+        ? STATE_ABBREVIATION_TO_NAME[stateValue] || stateValue 
+        : stateValue;
+
       setFormData({
         client_name: account.client_name || '',
         client_type: account.client_type || '',
@@ -34,7 +41,7 @@ export function useAccountDetailsPage() {
         client_address_line1: account.client_address?.line1 || '',
         client_address_line2: account.client_address?.line2,
         client_address_city: account.client_address?.city,
-        client_address_state: account.client_address?.state,
+        client_address_state: fullStateName,
         client_address_zip_code: account.client_address?.pincode ? String(account.client_address.pincode) : '',
         company_website: account.company_website || '',
         hosting_area: account.hosting_area || '',
@@ -91,6 +98,12 @@ export function useAccountDetailsPage() {
   const handleEditToggle = () => {
     if (isEditing && formData) {
       if (account) {
+        // Convert state abbreviation to full name for dropdown
+        const stateValue = account.client_address?.state;
+        const fullStateName = stateValue && stateValue.length === 2 
+          ? STATE_ABBREVIATION_TO_NAME[stateValue] || stateValue 
+          : stateValue;
+
         setFormData({
           client_name: account.client_name || '',
           client_type: account.client_type || '',
@@ -98,7 +111,7 @@ export function useAccountDetailsPage() {
           client_address_line1: account.client_address?.line1 || '',
           client_address_line2: account.client_address?.line2,
           client_address_city: account.client_address?.city,
-          client_address_state: account.client_address?.state,
+          client_address_state: fullStateName,
           client_address_zip_code: account.client_address?.pincode ? String(account.client_address.pincode) : '',
           company_website: account.company_website || '',
           hosting_area: account.hosting_area || '',
@@ -123,15 +136,21 @@ export function useAccountDetailsPage() {
   const handleSaveChanges = async () => {
     if (!account?.account_id || !formData) return;
 
+    // Convert full state name back to abbreviation for database
+    const stateAbbreviation = formData.client_address_state 
+      ? Object.entries(STATE_ABBREVIATION_TO_NAME).find(([abbr, name]) => name === formData.client_address_state)?.[0] || formData.client_address_state
+      : undefined;
+
     const updateData = {
       client_name: formData.client_name,
       client_type: formData.client_type as any,
       market_sector: formData.market_sector,
+      msa_in_place: formData.msa_in_place,
       client_address: {
         line1: formData.client_address_line1,
         line2: formData.client_address_line2 || undefined,
         city: formData.client_address_city || undefined,
-        state: formData.client_address_state && formData.client_address_state !== "" ? formData.client_address_state : undefined,
+        state: stateAbbreviation,
         pincode: formData.client_address_zip_code ? parseInt(formData.client_address_zip_code) : undefined,
       },
       company_website: formData.company_website || undefined,
