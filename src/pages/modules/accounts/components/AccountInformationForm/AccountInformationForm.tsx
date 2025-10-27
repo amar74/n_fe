@@ -413,14 +413,18 @@ export function AccountInformationForm({
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   State<span className="text-red-600">*</span>
+                  {!formData.client_address_state && accountId && (
+                    <span className="text-amber-600 text-xs ml-2">(Missing - Please add)</span>
+                  )}
                 </label>
                 <div className="relative w-full">
                   <select
                     value={formData.client_address_state || ''}
                     onChange={(e) => handleStateChange(e.target.value)}
-                    disabled={!isEditing || !!accountId}
+                    disabled={!isEditing}
                     className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
-                      ${validationErrors.client_address_state ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-indigo-100'}`}
+                      ${validationErrors.client_address_state ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-indigo-100'}
+                      ${!formData.client_address_state && accountId ? 'border-amber-300' : ''}`}
                   >
                     <option value="">Select State</option>
                     {US_STATES.map((state) => (
@@ -435,6 +439,9 @@ export function AccountInformationForm({
                 </div>
                 {validationErrors.client_address_state && (
                   <p className="text-xs text-red-600 mt-1">{validationErrors.client_address_state}</p>
+                )}
+                {!formData.client_address_state && accountId && (
+                  <p className="text-xs text-amber-600 mt-1">⚠️ State is missing. Please select a state to complete the address.</p>
                 )}
               </div>
 
