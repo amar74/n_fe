@@ -90,23 +90,49 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
       // Only apply suggestions if AI hasn't run yet (prevents overwriting user selections)
       if (hasAIRun) return;
       
+      console.log('🤖 AI Suggestions received:', suggestion);
+      
       const fieldMap: Record<string, keyof OpportunityFormData> = {
+        // Company/Client names
         'company_name': 'opportunityName',
         'client_name': 'opportunityName',
         'opportunity_name': 'opportunityName',
+        
+        // Location fields
         'address': 'location',
         'location': 'location',
+        'city': 'city',
+        'state': 'state',
+        'zip_code': 'zipCode',
+        'zipcode': 'zipCode',
+        
+        // Industry/Market sector
         'industry': 'marketSector',
         'market_sector': 'marketSector',
+        
+        // Project details
         'project_value': 'projectValue',
         'project_description': 'projectDescription',
-        'sales_stage': 'salesStage'
+        'description': 'projectDescription',
+        
+        // Sales stage
+        'sales_stage': 'salesStage',
+        'stage': 'salesStage'
       };
 
-      suggestion.suggestions?.forEach((s: any) => {
-        const field = fieldMap[s.field];
-        if (field) setFormData(prev => ({ ...prev, [field]: s.value }));
-      });
+      if (suggestion.suggestions && Array.isArray(suggestion.suggestions)) {
+        suggestion.suggestions.forEach((s: any) => {
+          const targetField = fieldMap[s.field];
+          if (targetField) {
+            console.log(`✅ Applying ${s.field} → ${targetField}: ${s.value}`);
+            setFormData(prev => ({ ...prev, [targetField]: s.value }));
+          } else {
+            console.log(`⚠️ No mapping for field: ${s.field}`);
+          }
+        });
+      } else {
+        console.log('⚠️ No suggestions array in response');
+      }
     },
     onError: (error) => setAiEnhancementError(error)
   });
@@ -116,7 +142,14 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
     
     setIsAccountsLoading(true);
     accountsApi.listAccounts({ page: 1, size: 100 })
-      .then(res => setAccounts(res.accounts || []))
+      .then(res => {
+        // Filter to show only approved accounts
+        const approvedAccounts = (res.accounts || []).filter(account => 
+          (account as any).approval_status === 'approved'
+        );
+        console.log(`[CreateOpportunity] Loaded ${approvedAccounts.length} approved accounts out of ${res.accounts?.length || 0} total`);
+        setAccounts(approvedAccounts);
+      })
       .catch(() => setAccountsError('Load failed'))
       .finally(() => setIsAccountsLoading(false));
   }, [isOpen]);
@@ -513,10 +546,10 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
                     disabled={isAccountsLoading}
                   >
                     <option value="">
-                      {isAccountsLoading ? 'Loading accounts...' : 
+                      {isAccountsLoading ? 'Loading approved accounts...' : 
                        accountsError ? 'Error loading accounts' :
-                       accounts.length === 0 ? 'No accounts available' :
-                       'Select Account'}
+                       accounts.length === 0 ? 'No approved accounts available' :
+                       'Select Approved Account'}
                     </option>
                     {accounts.map((account) => (
                       <option key={account.account_id} value={account.account_id}>
@@ -529,7 +562,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
                     <p className="text-amber-800 text-sm flex items-center gap-2">
                       <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
-                      No accounts found. Please create an account first before creating opportunities.
+                      No approved accounts found. Only approved accounts can be used for opportunities. Please create and approve an account first.
                     </p>
                   </div>
                 )}

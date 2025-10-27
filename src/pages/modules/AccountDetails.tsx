@@ -883,7 +883,7 @@ const AccountDetails: React.FC = () => {
                   <FormItem>
                     <FormLabel>Phone *</FormLabel>
                     <FormControl>
-                      <Input placeholder="+1 (555) 123-4567" {...field} />
+                      <Input placeholder="(123) 456-7890" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,4 +1,5 @@
 import { AccountListItem } from '@/types/accounts';
+import { getCityCoordinates, GeocodingResult } from '@/lib/geocoding-service';
 
 export interface CityAggregate {
   city: string;
@@ -10,19 +11,9 @@ export interface CityAggregate {
   position: { lat: number; lng: number };
 }
 
-const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  // California Cities
-  'Oakland': { lat: 37.8044, lng: -122.2712 },
-  'Long Beach': { lat: 33.7701, lng: -118.1937 },
-  'San Diego': { lat: 32.7157, lng: -117.1611 },
-  'Orange': { lat: 33.7879, lng: -117.8531 },
-  'Los Angeles': { lat: 34.0522, lng: -118.2437 },
-  'San Francisco': { lat: 37.7749, lng: -122.4194 },
-  'Sacramento': { lat: 38.5816, lng: -121.4944 },
-  'San Jose': { lat: 37.3382, lng: -121.8863 },
-  'Fresno': { lat: 36.7378, lng: -119.7871 },
-  
-  // Major US Cities
+// Fallback coordinates for major cities (used when geocoding fails)
+const FALLBACK_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  // Major US Cities (fallback only)
   'New York': { lat: 40.7128, lng: -74.0060 },
   'Chicago': { lat: 41.8781, lng: -87.6298 },
   'Houston': { lat: 29.7604, lng: -95.3698 },
@@ -44,82 +35,180 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Nashville': { lat: 36.1627, lng: -86.7816 },
   'Charlotte': { lat: 35.2271, lng: -80.8431 },
   
+  // California Cities
+  'Los Angeles': { lat: 34.0522, lng: -118.2437 },
+  'San Francisco': { lat: 37.7749, lng: -122.4194 },
+  'Sacramento': { lat: 38.5816, lng: -121.4944 },
+  'San Jose': { lat: 37.3382, lng: -121.8863 },
+  'Fresno': { lat: 36.7378, lng: -119.7871 },
+  
+  // Kansas Cities (from your original issue)
+  'Shawnee': { lat: 39.0228, lng: -94.7200 },
+  'Lenexa': { lat: 38.9536, lng: -94.7336 },
+  'Manhattan': { lat: 39.1836, lng: -96.5717 },
+  'Wichita': { lat: 37.6872, lng: -97.3301 },
+  'Overland Park': { lat: 38.9822, lng: -94.6708 },
+  'Olathe': { lat: 38.8814, lng: -94.8191 },
+  'Topeka': { lat: 39.0473, lng: -95.6752 },
+  'Lawrence': { lat: 38.9717, lng: -95.2353 },
+  
+  // Alaska Cities
+  'Fairbanks': { lat: 64.8378, lng: -147.7164 },
+  'Anchorage': { lat: 61.2181, lng: -149.9003 },
+  'Juneau': { lat: 58.3019, lng: -134.4197 },
+  'Sitka': { lat: 57.0531, lng: -135.3300 },
+  'Ketchikan': { lat: 55.3422, lng: -131.6461 },
+  
+  // Hawaii Cities
+  'Honolulu': { lat: 21.3099, lng: -157.8581 },
+  'Hilo': { lat: 19.7297, lng: -155.0900 },
+  
+  // Additional Major Cities
+  'Memphis': { lat: 35.1495, lng: -90.0490 },
+  'Louisville': { lat: 38.2527, lng: -85.7585 },
+  'Milwaukee': { lat: 43.0389, lng: -87.9065 },
+  'St. Louis': { lat: 38.6270, lng: -90.1994 },
+  'Salt Lake City': { lat: 40.7608, lng: -111.8910 },
+  'Boise': { lat: 43.6150, lng: -116.2023 },
+  'Richmond': { lat: 37.5407, lng: -77.4360 },
+  'Orlando': { lat: 28.5383, lng: -81.3792 },
+  
   // Oklahoma Cities
   'Oklahoma City': { lat: 35.4676, lng: -97.5164 },
   'Tulsa': { lat: 36.1540, lng: -95.9928 },
   'Broken Arrow': { lat: 36.0526, lng: -95.7969 },
   'Norman': { lat: 35.2226, lng: -97.4395 },
   'Edmond': { lat: 35.6528, lng: -97.4781 },
-  'Moore': { lat: 35.3395, lng: -97.4867 },
   'Midwest City': { lat: 35.4495, lng: -97.3967 },
   'Enid': { lat: 36.3956, lng: -97.8784 },
   'Stillwater': { lat: 36.1156, lng: -97.0584 },
   'Lawton': { lat: 34.6036, lng: -98.3959 },
-  
-  // Additional Major Cities
-  'Memphis': { lat: 35.1495, lng: -90.0490 },
-  'Louisville': { lat: 38.2527, lng: -85.7585 },
-  'Milwaukee': { lat: 43.0389, lng: -87.9065 },
-  'Kansas City': { lat: 39.0997, lng: -94.5786 },
-  'Columbus': { lat: 39.9612, lng: -82.9988 },
-  'Indianapolis': { lat: 39.7684, lng: -86.1581 },
-  'Jacksonville': { lat: 30.3322, lng: -81.6557 },
-  'Fort Worth': { lat: 32.7555, lng: -97.3308 },
-  'Baltimore': { lat: 39.2904, lng: -76.6122 },
-  'Washington': { lat: 38.9072, lng: -77.0369 },
-  'Washington DC': { lat: 38.9072, lng: -77.0369 },
-  'Albuquerque': { lat: 35.0844, lng: -106.6504 },
-  'Tucson': { lat: 32.2226, lng: -110.9747 },
-  'Mesa': { lat: 33.4152, lng: -111.8315 },
-  'Virginia Beach': { lat: 36.8529, lng: -75.9780 },
-  'Omaha': { lat: 41.2565, lng: -95.9345 },
-  'Colorado Springs': { lat: 38.8339, lng: -104.8214 },
-  'Raleigh': { lat: 35.7796, lng: -78.6382 },
 };
 
-export function getRiskLevel(healthScore: number): 'Low' | 'Medium' | 'High' {
-  if (healthScore > 70) return 'Low';
-  if (healthScore >= 40) return 'Medium';
+function getRiskLevel(avgHealthScore: number): 'Low' | 'Medium' | 'High' {
+  if (avgHealthScore >= 70) return 'Low';
+  if (avgHealthScore >= 40) return 'Medium';
   return 'High';
 }
 
-export function getRiskColor(riskLevel: 'Low' | 'Medium' | 'High'): string {
+function getRiskColor(riskLevel: 'Low' | 'Medium' | 'High'): string {
   switch (riskLevel) {
     case 'Low':
-      return '#039855'; // Green
+      return '#10B981'; // Green
     case 'Medium':
-      return '#DC6803'; // Orange
+      return '#F59E0B'; // Yellow
     case 'High':
       return '#D92D20'; // Red
   }
 }
 
-function getCityCoordinates(city: string): { lat: number; lng: number } | null {
+/**
+ * Get coordinates for a city using dynamic geocoding
+ * Falls back to hardcoded coordinates if geocoding fails
+ */
+async function getCityCoordinates(city: string, state?: string | null): Promise<{ lat: number; lng: number } | null> {
   const normalizedCity = city.trim();
   
-  // Exact match
-  if (CITY_COORDINATES[normalizedCity]) {
-    console.log(`[Utils] ✅ Found exact coordinates for ${normalizedCity}`);
-    return CITY_COORDINATES[normalizedCity];
+  try {
+    // First, try dynamic geocoding
+    console.log(`[Map Utils] 🔍 Geocoding: ${normalizedCity}${state ? `, ${state}` : ''}`);
+    
+    const geocodingResult = await getCityCoordinates(normalizedCity, state);
+    
+    if (geocodingResult) {
+      console.log(`[Map Utils] ✅ Geocoded: ${normalizedCity} → ${geocodingResult.coordinates.lat}, ${geocodingResult.coordinates.lng}`);
+      return geocodingResult.coordinates;
+    }
+    
+  } catch (error) {
+    console.warn(`[Map Utils] ⚠️ Geocoding failed for ${normalizedCity}:`, error);
   }
   
-  // Partial match
-  const partialMatch = Object.keys(CITY_COORDINATES).find(key => 
-    normalizedCity.toLowerCase().includes(key.toLowerCase()) ||
-    key.toLowerCase().includes(normalizedCity.toLowerCase())
-  );
-  
-  if (partialMatch) {
-    console.log(`[Utils] ✅ Found partial match for ${normalizedCity}: ${partialMatch}`);
-    return CITY_COORDINATES[partialMatch];
+  // Fallback to hardcoded coordinates
+  if (FALLBACK_COORDINATES[normalizedCity]) {
+    console.log(`[Map Utils] 🔄 Using fallback coordinates for ${normalizedCity}`);
+    return FALLBACK_COORDINATES[normalizedCity];
   }
   
-  // No match found
-  console.warn(`[Utils] ⚠️ No coordinates found for city: "${normalizedCity}". Skipping this location.`);
+  // No coordinates available
+  console.warn(`[Map Utils] ❌ No coordinates found for city: "${normalizedCity}"${state ? ` in ${state}` : ''}. Skipping this location.`);
   return null;
 }
 
-export function calculateCityAggregates(accounts: AccountListItem[]): CityAggregate[] {
+export async function calculateCityAggregates(accounts: AccountListItem[]): Promise<CityAggregate[]> {
+  const cityMap = new Map<string, AccountListItem[]>();
+  
+  accounts.forEach(account => {
+    const city = account.client_address?.city?.trim();
+    
+    if (!city) {
+      return;
+    }
+    
+    if (!cityMap.has(city)) {
+      cityMap.set(city, []);
+    }
+    cityMap.get(city)!.push(account);
+  });
+  
+  const aggregates: CityAggregate[] = [];
+  
+  // Process cities in parallel for better performance
+  const cityPromises = Array.from(cityMap.entries()).map(async ([city, cityAccounts]) => {
+    const accountCount = cityAccounts.length;
+    
+    const healthScores = cityAccounts
+      .map(acc => acc.ai_health_score || 0)
+      .filter(score => score > 0);
+    
+    // abhishek.softication - quick fix, need proper solution
+    const avgHealthScore = healthScores.length > 0
+      ? healthScores.reduce((sum, score) => sum + score, 0) / healthScores.length
+      : 0;
+    
+    // Sum all account values and convert to millions
+    const totalValueInDollars = cityAccounts.reduce((sum, acc) => sum + (acc.total_value || 0), 0);
+    const totalValue = totalValueInDollars / 1000000; // Convert to millions
+    
+    const riskLevel = getRiskLevel(avgHealthScore);
+    const riskColor = getRiskColor(riskLevel);
+    
+    // Get coordinates for this city (use state from first account in the group)
+    const state = cityAccounts[0]?.client_address?.state;
+    const position = await getCityCoordinates(city, state);
+    
+    // Skip cities without valid coordinates
+    if (!position) {
+      console.warn(`[Map Utils] ⚠️ Skipping ${city}${state ? `, ${state}` : ''} (${accountCount} accounts) - no coordinates available`);
+      return null;
+    }
+    
+    return {
+      city,
+      accountCount,
+      avgHealthScore,
+      totalValue,
+      riskLevel,
+      riskColor,
+      position,
+    };
+  });
+  
+  // Wait for all geocoding requests to complete
+  const results = await Promise.all(cityPromises);
+  
+  // Filter out null results (cities without coordinates)
+  const validAggregates = results.filter((aggregate): aggregate is CityAggregate => aggregate !== null);
+  
+  console.log(`[Map Utils] ✅ Processed ${validAggregates.length}/${cityMap.size} cities with coordinates`);
+  
+  return validAggregates;
+}
+
+// Legacy function for backward compatibility (now uses async geocoding)
+export function calculateCityAggregatesSync(accounts: AccountListItem[]): CityAggregate[] {
+  console.warn('[Map Utils] ⚠️ calculateCityAggregatesSync is deprecated. Use calculateCityAggregates instead.');
+  
   const cityMap = new Map<string, AccountListItem[]>();
   
   accounts.forEach(account => {
@@ -144,24 +233,21 @@ export function calculateCityAggregates(accounts: AccountListItem[]): CityAggreg
       .map(acc => acc.ai_health_score || 0)
       .filter(score => score > 0);
     
-    // abhishek.softication - quick fix, need proper solution
     const avgHealthScore = healthScores.length > 0
       ? healthScores.reduce((sum, score) => sum + score, 0) / healthScores.length
       : 0;
     
-    // Sum all account values and convert to millions
     const totalValueInDollars = cityAccounts.reduce((sum, acc) => sum + (acc.total_value || 0), 0);
-    const totalValue = totalValueInDollars / 1000000; // Convert to millions
+    const totalValue = totalValueInDollars / 1000000;
     
     const riskLevel = getRiskLevel(avgHealthScore);
     const riskColor = getRiskColor(riskLevel);
     
-    // Get coordinates for this city
-    const position = getCityCoordinates(city);
+    // Use fallback coordinates only
+    const position = FALLBACK_COORDINATES[city];
     
-    // Skip cities without valid coordinates
     if (!position) {
-      console.warn(`[Utils] ⚠️ Skipping ${city} (${accountCount} accounts) - no coordinates available`);
+      console.warn(`[Map Utils] ⚠️ Skipping ${city} (${accountCount} accounts) - no fallback coordinates available`);
       return;
     }
     
@@ -176,5 +262,5 @@ export function calculateCityAggregates(accounts: AccountListItem[]): CityAggreg
     });
   });
   
-  return aggregates.sort((a, b) => b.accountCount - a.accountCount);
+  return aggregates;
 }

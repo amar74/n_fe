@@ -13,6 +13,7 @@ type AccountInformationFormProps = {
   onSave: () => void;
   onCancel: () => void;
   errors?: Record<string, string>;
+  account?: any; // The full account object from backend with created_by_name, updated_by_name, etc.
 }
 
 export function AccountInformationForm({
@@ -24,6 +25,7 @@ export function AccountInformationForm({
   onSave,
   onCancel,
   errors = {},
+  account,
 }: AccountInformationFormProps) {
   const [isZipLoading, setIsZipLoading] = useState(false);
   const [zipAutoFilled, setZipAutoFilled] = useState(false);
@@ -339,7 +341,7 @@ export function AccountInformationForm({
                   type="text"
                   value={formData.client_address_line1}
                   onChange={(e) => handleFieldChange('client_address_line1', e.target.value)}
-                  disabled={!isEditing}
+                  disabled={!isEditing || !!accountId}
                   placeholder="Enter street address"
                   className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none disabled:opacity-100 disabled:cursor-not-allowed
                     ${validationErrors.client_address_line1 ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
@@ -358,7 +360,7 @@ export function AccountInformationForm({
                   type="text"
                   value={formData.client_address_line2 || ''}
                   onChange={(e) => onFormChange('client_address_line2', e.target.value)}
-                  disabled={!isEditing}
+                  disabled={!isEditing || !!accountId}
                   placeholder="Apartment, suite, etc. (optional)"
                   className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
                 />
@@ -380,7 +382,7 @@ export function AccountInformationForm({
                   maxLength={5}
                   value={formData.client_address_zip_code || ''}
                   onChange={(e) => handleZipCodeChange(e.target.value)}
-                  disabled={!isEditing}
+                  disabled={!isEditing || !!accountId}
                   placeholder="e.g., 85001 (5 digits)"
                   className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
                     ${validationErrors.client_address_zip_code || zipError ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : ''}
@@ -400,7 +402,7 @@ export function AccountInformationForm({
                   <select
                     value={formData.client_address_state || ''}
                     onChange={(e) => handleStateChange(e.target.value)}
-                    disabled={!isEditing}
+                    disabled={!isEditing || !!accountId}
                     className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
                       ${validationErrors.client_address_state ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-indigo-100'}`}
                   >
@@ -430,7 +432,7 @@ export function AccountInformationForm({
                     <select
                       value={formData.client_address_city || ''}
                       onChange={(e) => handleFieldChange('client_address_city', e.target.value)}
-                      disabled={!isEditing}
+                      disabled={!isEditing || !!accountId}
                       className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
                         ${validationErrors.client_address_city ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-indigo-100'}`}
                     >
@@ -450,7 +452,7 @@ export function AccountInformationForm({
                     type="text"
                     value={formData.client_address_city || ''}
                     onChange={(e) => handleFieldChange('client_address_city', e.target.value)}
-                    disabled={!isEditing}
+                    disabled={!isEditing || !!accountId}
                     placeholder="Enter city name"
                     className={`w-full h-11 px-3.5 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 placeholder:text-[#9CA3AF] text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-400 focus:outline-none focus:ring-2 disabled:opacity-100 disabled:cursor-not-allowed
                       ${validationErrors.client_address_city ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-100'}`}
@@ -526,11 +528,11 @@ export function AccountInformationForm({
               
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
-                  Created By
+                  {accountId ? 'Updated By' : 'Created By'}
                 </label>
                 <div className="w-full h-11 px-3.5 py-2.5 bg-gray-100 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 flex items-center">
                   <span className="text-gray-600 text-sm font-medium font-['Outfit'] leading-tight">
-                    amar74.soft
+                    {accountId ? (account?.updated_by_name || account?.created_by_name || 'Unknown') : (account?.created_by_name || 'Current User')}
                   </span>
                 </div>
               </div>
@@ -538,11 +540,15 @@ export function AccountInformationForm({
               
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
-                  Date Created
+                  {accountId ? 'Date Updated' : 'Date Created'}
                 </label>
                 <div className="w-full h-11 px-3.5 py-2.5 bg-gray-100 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 flex items-center">
                   <span className="text-gray-600 text-sm font-medium font-['Outfit'] leading-tight">
-                    {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    {accountId && account?.updated_at
+                      ? new Date(account.updated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                      : account?.created_at
+                      ? new Date(account.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                      : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </span>
                 </div>
               </div>
@@ -555,30 +561,19 @@ export function AccountInformationForm({
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Account Approver
                 </label>
-                {(() => {
-                  const storedApprovals = localStorage.getItem('accountApprovals');
-                  const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
-                  const approvalStatus = accountId ? approvalMap[accountId] : null;
-                  const approvedBy = approvalStatus === 'approved' ? 'amar74.soft' : null;
-
-                  if (!approvedBy) {
-                    return (
-                      <div className="w-full h-11 px-3.5 py-2.5 bg-gray-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-200 flex items-center">
-                        <span className="text-gray-400 text-sm font-normal font-['Outfit'] leading-tight">
-                          Not yet approved
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div className="w-full h-11 px-3.5 py-2.5 bg-blue-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-blue-200 flex items-center">
-                      <span className="text-[#4361EE] text-sm font-semibold font-['Outfit'] leading-tight">
-                        {approvedBy}
-                      </span>
-                    </div>
-                  );
-                })()}
+                {account?.account_approver ? (
+                  <div className="w-full h-11 px-3.5 py-2.5 bg-blue-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-blue-200 flex items-center">
+                    <span className="text-[#4361EE] text-sm font-semibold font-['Outfit'] leading-tight">
+                      {account.account_approver}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="w-full h-11 px-3.5 py-2.5 bg-gray-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-200 flex items-center">
+                    <span className="text-gray-400 text-sm font-normal font-['Outfit'] leading-tight">
+                      Not yet approved
+                    </span>
+                  </div>
+                )}
               </div>
 
               
@@ -586,39 +581,25 @@ export function AccountInformationForm({
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Approval date & time
                 </label>
-                {(() => {
-                  // will optimize later - abhishek.softication
-                  const storedApprovals = localStorage.getItem('accountApprovals');
-                  const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
-                  const approvalStatus = accountId ? approvalMap[accountId] : null;
-                  const approvalDate = approvalStatus === 'approved' 
-                    ? new Date().toLocaleDateString('en-US', { 
+                {account?.approval_date ? (
+                  <div className="w-full h-11 px-3.5 py-2.5 bg-blue-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-blue-200 flex items-center">
+                    <span className="text-slate-700 text-sm font-medium font-['Outfit'] leading-tight">
+                      {new Date(account.approval_date).toLocaleString('en-US', { 
                         year: 'numeric', 
                         month: 'long', 
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
-                      })
-                    : null;
-
-                  if (!approvalDate) {
-                    return (
-                      <div className="w-full h-11 px-3.5 py-2.5 bg-gray-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-200 flex items-center">
-                        <span className="text-gray-400 text-sm font-normal font-['Outfit'] leading-tight">
-                          dd/mm/yyyy, --:-- --
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div className="w-full h-11 px-3.5 py-2.5 bg-blue-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-blue-200 flex items-center">
-                      <span className="text-slate-700 text-sm font-medium font-['Outfit'] leading-tight">
-                        {approvalDate}
-                      </span>
-                    </div>
-                  );
-                })()}
+                      })}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="w-full h-11 px-3.5 py-2.5 bg-gray-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-200 flex items-center">
+                    <span className="text-gray-400 text-sm font-normal font-['Outfit'] leading-tight">
+                      dd/mm/yyyy, --:-- --
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 

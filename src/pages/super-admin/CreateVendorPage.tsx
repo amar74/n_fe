@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
+import { copyToClipboard as copyTextToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -60,12 +61,12 @@ export default function CreateVendorPage() {
   // Copy to clipboard
   const copyToClipboard = async (text: string, label: string, fieldId: string) => {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyTextToClipboard(text);
       setCopiedField(fieldId);
       toast.success(`${label} copied to clipboard`);
       setTimeout(() => setCopiedField(null), 2000);
     } catch (error) {
-      // Fallback for older browsers
+      toast.error('Failed to copy. Please copy manually');
       const textArea = document.createElement('textarea');
       textArea.value = text;
       document.body.appendChild(textArea);

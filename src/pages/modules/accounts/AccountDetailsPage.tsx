@@ -106,6 +106,7 @@ function AccountDetailsPage() {
                   onSave={handleSaveChanges}
                   onCancel={handleEditToggle}
                   errors={updateErrors}
+                  account={account}
                 />
               )}
               

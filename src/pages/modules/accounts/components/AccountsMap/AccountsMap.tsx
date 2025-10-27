@@ -25,21 +25,43 @@ function AccountsMap({ accounts }: AccountsMapProps) {
     return accounts.map(a => `${a.account_id}-${a.client_address?.city || ''}`).join('|');
   }, [accounts]);
 
-  // Memoize city aggregates - recalculate when accounts change
-  const cityAggregates = useMemo(() => {
-    console.log('[AccountsMap] 📊 Recalculating city aggregates from', accounts.length, 'accounts');
-    console.log('[AccountsMap] Account cities:', accounts.map(a => `${a.client_address?.city || 'No city'}, ${a.client_address?.state || 'No state'}`));
-    
-    const aggregates = calculateCityAggregates(accounts);
-    
-    console.log('[AccountsMap] ✅ Result:', aggregates.length, 'cities with valid coordinates');
-    if (aggregates.length > 0) {
-      console.log('[AccountsMap] Cities:', aggregates.map(a => `${a.city} (${a.accountCount} accounts, pos: ${a.position.lat.toFixed(2)}, ${a.position.lng.toFixed(2)})`));
-    } else {
-      console.warn('[AccountsMap] ⚠️ No valid city aggregates created! Check if accounts have city and state data.');
-    }
-    
-    return aggregates;
+  // State for city aggregates (now async)
+  const [cityAggregates, setCityAggregates] = useState<CityAggregate[]>([]);
+  const [isLoadingAggregates, setIsLoadingAggregates] = useState(false);
+
+  // Calculate city aggregates when accounts change
+  useEffect(() => {
+    const calculateAggregates = async () => {
+      if (accounts.length === 0) {
+        setCityAggregates([]);
+        return;
+      }
+
+      console.log('[AccountsMap] 📊 Recalculating city aggregates from', accounts.length, 'accounts');
+      console.log('[AccountsMap] Account cities:', accounts.map(a => `${a.client_address?.city || 'No city'}, ${a.client_address?.state || 'No state'}`));
+      
+      setIsLoadingAggregates(true);
+      
+      try {
+        const aggregates = await calculateCityAggregates(accounts);
+        
+        console.log('[AccountsMap] ✅ Result:', aggregates.length, 'cities with valid coordinates');
+        if (aggregates.length > 0) {
+          console.log('[AccountsMap] Cities:', aggregates.map(a => `${a.city} (${a.accountCount} accounts, pos: ${a.position.lat.toFixed(2)}, ${a.position.lng.toFixed(2)})`));
+        } else {
+          console.warn('[AccountsMap] ⚠️ No valid city aggregates created! Check if accounts have city and state data.');
+        }
+        
+        setCityAggregates(aggregates);
+      } catch (error) {
+        console.error('[AccountsMap] ❌ Error calculating city aggregates:', error);
+        setCityAggregates([]);
+      } finally {
+        setIsLoadingAggregates(false);
+      }
+    };
+
+    calculateAggregates();
   }, [accounts]);
 
   useEffect(() => {
@@ -139,8 +161,8 @@ function AccountsMap({ accounts }: AccountsMapProps) {
 
   // Update markers when cityAggregates or accountsKey changes
   useEffect(() => {
-    if (!isLoaded || !mapRef.current || cityAggregates.length === 0) {
-      console.log('[AccountsMap] Skipping marker update - isLoaded:', isLoaded, 'cityAggregates:', cityAggregates.length);
+    if (!isLoaded || !mapRef.current || cityAggregates.length === 0 || isLoadingAggregates) {
+      console.log('[AccountsMap] Skipping marker update - isLoaded:', isLoaded, 'cityAggregates:', cityAggregates.length, 'isLoading:', isLoadingAggregates);
       return;
     }
 
@@ -379,6 +401,20 @@ function AccountsMap({ accounts }: AccountsMapProps) {
         ref={mapRef} 
         className="h-72 relative bg-[#F5F3F2] rounded-2xl border border-gray-200 overflow-hidden"
       />
+      
+      {/* Loading indicator for geocoding */}
+      {isLoadingAggregates && (
+        <div className="absolute top-4 left-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded flex items-center gap-2 z-10">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-700"></div>
+          <span>Loading city coordinates...</span>
+        </div>
+      )}
+      
+      {error && (
+        <div className="absolute top-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-10">
+          <strong>Map Error:</strong> {error}
+        </div>
+      )}
     </>
   );
 }

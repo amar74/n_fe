@@ -66,8 +66,12 @@ export const useCreateOpportunity = () => {
 
   return useMutation({
     mutationFn: (data: CreateOpportunityRequest) => opportunitiesApi.createOpportunity(data),
-    onSuccess: (newOpportunity) => {
-      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.lists() });
+    onSuccess: async (newOpportunity) => {
+      // Invalidate all opportunity queries
+      await queryClient.invalidateQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.all });
+      
+      // Force refetch of all list queries to immediately show new opportunity
+      await queryClient.refetchQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.lists() });
       
       // Add the new opportunity to the cache
       queryClient.setQueryData(
@@ -78,7 +82,8 @@ export const useCreateOpportunity = () => {
       toast.success(`Opportunity "${newOpportunity.project_name}" created successfully`);
     },
     onError: (error: any) => {
-      toast.error('create failed');
+      const message = error?.response?.data?.detail || 'Failed to create opportunity';
+      toast.error(message);
     },
   });
 };
@@ -92,19 +97,24 @@ export const useUpdateOpportunity = () => {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateOpportunityRequest }) =>
       opportunitiesApi.updateOpportunity(id, data),
-    onSuccess: (updatedOpportunity) => {
+    onSuccess: async (updatedOpportunity) => {
       // Update the specific opportunity in cache
       queryClient.setQueryData(
         OPPORTUNITY_QUERY_KEYS.detail(updatedOpportunity.id),
         updatedOpportunity
       );
 
-      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.lists() });
+      // Invalidate all opportunity queries
+      await queryClient.invalidateQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.all });
+      
+      // Force refetch of lists
+      await queryClient.refetchQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.lists() });
 
       toast.success(`Opportunity "${updatedOpportunity.project_name}" updated successfully`);
     },
     onError: (error: any) => {
-      toast.error('update failed');
+      const message = error?.response?.data?.detail || 'Failed to update opportunity';
+      toast.error(message);
     },
   });
 };
@@ -117,12 +127,15 @@ export const useDeleteOpportunity = () => {
 
   return useMutation({
     mutationFn: (id: string) => opportunitiesApi.deleteOpportunity(id),
-    onSuccess: (_, deletedId) => {
+    onSuccess: async (_, deletedId) => {
       // Remove from cache
       queryClient.removeQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.detail(deletedId) });
       
-      // Invalidate opportunities list
-      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.lists() });
+      // Invalidate all opportunity queries
+      await queryClient.invalidateQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.all });
+      
+      // Force refetch of lists to immediately update UI
+      await queryClient.refetchQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.lists() });
 
       toast.success('Opportunity deleted successfully');
     },

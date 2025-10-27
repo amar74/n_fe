@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
+import { copyToClipboard } from '@/utils/clipboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -388,9 +389,13 @@ export default function VendorListPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {
-                        navigator.clipboard.writeText(createdVendor.userId);
-                        toast({ title: 'Copied!', description: 'User ID copied to clipboard' });
+                      onClick={async () => {
+                        try {
+                          await copyToClipboard(createdVendor.userId);
+                          toast({ title: 'Copied!', description: 'User ID copied to clipboard' });
+                        } catch (err) {
+                          toast({ title: 'Copy failed', description: 'Please copy manually' });
+                        }
                       }}
                     >
                       Copy
@@ -409,9 +414,13 @@ export default function VendorListPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {
-                        navigator.clipboard.writeText(createdVendor.email);
-                        toast({ title: 'Copied!', description: 'Email copied to clipboard' });
+                      onClick={async () => {
+                        try {
+                          await copyToClipboard(createdVendor.email);
+                          toast({ title: 'Copied!', description: 'Email copied to clipboard' });
+                        } catch (err) {
+                          toast({ title: 'Copy failed', description: 'Please copy manually' });
+                        }
                       }}
                     >
                       Copy
@@ -430,9 +439,13 @@ export default function VendorListPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => {
-                        navigator.clipboard.writeText(createdVendor.password);
-                        toast({ title: 'Copied!', description: 'Password copied to clipboard' });
+                      onClick={async () => {
+                        try {
+                          await copyToClipboard(createdVendor.password);
+                          toast({ title: 'Copied!', description: 'Password copied to clipboard' });
+                        } catch (err) {
+                          toast({ title: 'Copy failed', description: 'Please copy manually' });
+                        }
                       }}
                     >
                       Copy
@@ -452,9 +465,13 @@ export default function VendorListPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => {
-                          navigator.clipboard.writeText(createdVendor.orgId!);
-                          toast({ title: 'Copied!', description: 'Organization ID copied to clipboard' });
+                        onClick={async () => {
+                          try {
+                            await copyToClipboard(createdVendor.orgId!);
+                            toast({ title: 'Copied!', description: 'Organization ID copied to clipboard' });
+                          } catch (err) {
+                            toast({ title: 'Copy failed', description: 'Please copy manually' });
+                          }
                         }}
                       >
                         Copy

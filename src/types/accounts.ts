@@ -24,13 +24,21 @@ export interface ContactFormData {
   title?: string;
 }
 
+// USA phone number regex - accepts formats like:
+// (123) 456-7890, 123-456-7890, 123 456 7890, 1234567890, +1 123 456 7890
+const USA_PHONE_REGEX = /^(\+1\s?)?(\([0-9]{3}\)|[0-9]{3})[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}$/;
+
 export const contactFormSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   email: z
     .string()
     .email('Invalid email address')
     .max(255, 'Email must be less than 255 characters'),
-  phone: z.string().min(1, 'Phone is required').max(20, 'Phone must be less than 20 characters'),
+  phone: z
+    .string()
+    .min(1, 'Phone is required')
+    .max(20, 'Phone must be less than 20 characters')
+    .regex(USA_PHONE_REGEX, 'Please enter a valid USA phone number (e.g., (123) 456-7890, 123-456-7890, or 1234567890)'),
   title: z.string().max(100, 'Title must be less than 100 characters').optional(),
 });
 

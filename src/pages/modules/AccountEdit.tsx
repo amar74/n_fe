@@ -294,6 +294,17 @@ const AccountEdit: React.FC = () => {
       return;
     }
 
+    // USA phone number validation
+    const usaPhoneRegex = /^(\+1\s?)?(\([0-9]{3}\)|[0-9]{3})[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}$/;
+    if (!usaPhoneRegex.test(contactForm.phone.trim())) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a valid USA phone number (e.g., (123) 456-7890, 123-456-7890, or 1234567890).',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       await addContact({
         accountId: account.account_id,
@@ -347,6 +358,17 @@ const AccountEdit: React.FC = () => {
       toast({
         title: 'Validation Error',
         description: 'Please enter a valid email address.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // USA phone number validation
+    const usaPhoneRegex = /^(\+1\s?)?(\([0-9]{3}\)|[0-9]{3})[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}$/;
+    if (!usaPhoneRegex.test(contactForm.phone.trim())) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a valid USA phone number (e.g., (123) 456-7890, 123-456-7890, or 1234567890).',
         variant: 'destructive',
       });
       return;
@@ -1029,7 +1051,7 @@ const AccountEdit: React.FC = () => {
                 id="contact-phone"
                 value={contactForm.phone}
                 onChange={e => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="+1-555-0123"
+                placeholder="(123) 456-7890"
                 className="mt-1"
               />
             </div>
@@ -1111,7 +1133,7 @@ const AccountEdit: React.FC = () => {
                 id="edit-contact-phone"
                 value={contactForm.phone}
                 onChange={e => setContactForm(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="+1-555-0123"
+                placeholder="(123) 456-7890"
                 className="mt-1"
               />
             </div>

@@ -176,9 +176,14 @@ export function useAccounts(options?: {
     mutationFn: async (data: AccountCreate): Promise<{ status_code: number; account_id: string; message: string }> => {
       return await accountsApi.createAccount(data);
     },
-    onSuccess: data => {
-      queryClient.invalidateQueries({ queryKey: accountsQueryKeys.list() });
-      queryClient.invalidateQueries({ queryKey: accountsQueryKeys.detail(data.account_id) });
+    onSuccess: async (data) => {
+      // Invalidate all accounts list queries (any pagination/filter combination)
+      await queryClient.invalidateQueries({ queryKey: accountsKeys.all });
+      // Refetch the current query to immediately show new data
+      await queryClient.refetchQueries({ 
+        queryKey: accountsQueryKeys.list({ ...queryParams, page: currentPage, size: pageSize }),
+        exact: true 
+      });
       toast.success('Account Created', {
         description: data.message || 'Account created sucessfully'
       });
@@ -201,8 +206,13 @@ export function useAccounts(options?: {
       return await accountsApi.updateAccount(accountId, data);
     },
     onSuccess: async (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: accountsQueryKeys.detail(variables.accountId) });
-      queryClient.invalidateQueries({ queryKey: accountsQueryKeys.list() });
+      // Invalidate all accounts queries
+      await queryClient.invalidateQueries({ queryKey: accountsKeys.all });
+      // Refetch current list
+      await queryClient.refetchQueries({ 
+        queryKey: accountsQueryKeys.list({ ...queryParams, page: currentPage, size: pageSize }),
+        exact: true 
+      });
       toast.success('Account Updated', {
         description: data.message || 'Account updated sucessfully'
       });
@@ -218,9 +228,16 @@ export function useAccounts(options?: {
     mutationFn: async (accountId: string): Promise<{ status_code: number; message: string }> => {
       return await accountsApi.deleteAccount(accountId);
     },
-    onSuccess: (data, accountId) => {
+    onSuccess: async (data, accountId) => {
+      // Remove the deleted account's detail query
       queryClient.removeQueries({ queryKey: accountsQueryKeys.detail(accountId) });
-      queryClient.invalidateQueries({ queryKey: accountsQueryKeys.list() });
+      // Invalidate all accounts queries
+      await queryClient.invalidateQueries({ queryKey: accountsKeys.all });
+      // Refetch current list immediately
+      await queryClient.refetchQueries({ 
+        queryKey: accountsQueryKeys.list({ ...queryParams, page: currentPage, size: pageSize }),
+        exact: true 
+      });
       toast.success('Account Deleted', {
         description: data.message || 'Account deleted successfully'
       });

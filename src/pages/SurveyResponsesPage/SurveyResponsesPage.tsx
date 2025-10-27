@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/services/api/client';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface Survey {
   id: string;
@@ -187,10 +188,14 @@ export default function SurveyResponsesPage() {
     toast.info('Export functionality coming soon');
   };
 
-  const handleCopySurveyLink = () => {
+  const handleCopySurveyLink = async () => {
     const surveyLink = `${window.location.origin}/survey/${surveyId}`;
-    navigator.clipboard.writeText(surveyLink);
-    toast.success('Survey link copied to clipboard!');
+    try {
+      await copyToClipboard(surveyLink);
+      toast.success('Survey link copied to clipboard!');
+    } catch (err) {
+      toast.error('Failed to copy link. Please copy manually.');
+    }
   };
 
   const handleShareSurvey = () => {

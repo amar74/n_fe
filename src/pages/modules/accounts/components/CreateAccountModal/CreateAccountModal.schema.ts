@@ -4,7 +4,9 @@ import { AccountCreate } from '@/types/accounts';
 import { UIAccountFormData } from './CreateAccountModal.types';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+// USA phone number regex - accepts formats like:
+// (123) 456-7890, 123-456-7890, 123 456 7890, 1234567890, +1 123 456 7890
+const usaPhoneRegex = /^(\+1\s?)?(\([0-9]{3}\)|[0-9]{3})[\s\-]?[0-9]{3}[\s\-]?[0-9]{4}$/;
 const postalCodeRegex = /^[0-9]{5,6}$/;
 
 export const createAccountUISchema = z.object({
@@ -71,9 +73,8 @@ export const createAccountUISchema = z.object({
       .string()
       .min(1, 'Primary contact phone is required')
       .refine((val) => {
-        const cleanPhone = val.replace(/[\s\-\(\)]/g, '');
-        return phoneRegex.test(cleanPhone);
-      }, 'Please enter a valid phone number'),
+        return usaPhoneRegex.test(val.trim());
+      }, 'Please enter a valid USA phone number (e.g., (123) 456-7890, 123-456-7890, or 1234567890)'),
     
     title: z.union([z.string(), z.null()]).optional(),
   }),
@@ -96,9 +97,8 @@ export const createAccountUISchema = z.object({
       .string()
       .min(1, 'Contact phone is required')
       .refine((val) => {
-        const cleanPhone = val.replace(/[\s\-\(\)]/g, '');
-        return phoneRegex.test(cleanPhone);
-      }, 'Please enter a valid phone number'),
+        return usaPhoneRegex.test(val.trim());
+      }, 'Please enter a valid USA phone number (e.g., (123) 456-7890, 123-456-7890, or 1234567890)'),
     
     title: z.union([z.string(), z.null()]).optional(),
   })).optional(),
