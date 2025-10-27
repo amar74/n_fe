@@ -37,8 +37,17 @@ export function AccountInformationForm({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const handleZipCodeChange = async (zipCode: string) => {
-    // Allow digits and hyphen for ZIP+4 format (e.g., 90210-1234)
-    const cleanedZip = zipCode.replace(/[^\d-]/g, '').slice(0, 10);
+    // Allow digits and hyphen, max 10 characters total
+    let cleanedZip = zipCode.replace(/[^\d-]/g, '');
+    
+    // Auto-format: If user types 5 digits and continues, auto-add hyphen
+    // e.g., "730015" becomes "73001-5"
+    if (cleanedZip.length === 6 && !cleanedZip.includes('-')) {
+      cleanedZip = cleanedZip.slice(0, 5) + '-' + cleanedZip.slice(5);
+    }
+    
+    // Limit to 10 characters max (12345-6789)
+    cleanedZip = cleanedZip.slice(0, 10);
     
     handleFieldChange('client_address_zip_code', cleanedZip);
 
@@ -48,16 +57,18 @@ export function AccountInformationForm({
     // Extract just digits for validation
     const digitsOnly = cleanedZip.replace(/\D/g, '');
 
+    // Show helpful hints but don't block typing
     if (digitsOnly.length > 0 && digitsOnly.length < 5) {
-      setZipError('USA ZIP code must be at least 5 digits');
+      setZipError('USA ZIP code needs at least 5 digits');
       setAvailableCities([]);
       return;
     }
 
-    // Valid formats: 5 digits (12345) or 9 digits with hyphen (12345-6789)
+    // Only trigger auto-lookup for valid complete formats
     const isValid5Digit = /^\d{5}$/.test(cleanedZip);
     const isValidZipPlus4 = /^\d{5}-\d{4}$/.test(cleanedZip);
 
+    // Allow typing but only auto-fill when format is complete
     if (!isValid5Digit && !isValidZipPlus4) {
       setAvailableCities([]);
       return;
