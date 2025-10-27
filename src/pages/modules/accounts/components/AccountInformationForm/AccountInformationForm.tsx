@@ -3,6 +3,7 @@ import { AccountFormData } from '../../AccountDetailsPage.types';
 import { CLIENT_TYPES, FORM_FIELD_LABELS } from '../../AccountDetailsPage.constants';
 import { MARKET_SECTORS, US_STATES, HOSTING_AREAS } from '../CreateAccountModal/CreateAccountModal.constants';
 import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
+import { useAuth } from '@/hooks/useAuth';
 
 type AccountInformationFormProps = {
   formData: AccountFormData;
@@ -27,6 +28,7 @@ export function AccountInformationForm({
   errors = {},
   account,
 }: AccountInformationFormProps) {
+  const { user } = useAuth();
   const [isZipLoading, setIsZipLoading] = useState(false);
   const [zipAutoFilled, setZipAutoFilled] = useState(false);
   const [zipError, setZipError] = useState<string>('');
@@ -298,10 +300,24 @@ export function AccountInformationForm({
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Client type
                 </label>
-                <div className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] flex items-center">
-                  <span className="text-slate-700 text-sm font-normal font-['Outfit'] leading-tight">
-                    {formData.client_type || 'tier_1'}
-                  </span>
+                <div className="relative w-full">
+                  <select
+                    value={formData.client_type || 'tier_1'}
+                    onChange={(e) => onFormChange('client_type', e.target.value)}
+                    disabled={!isEditing}
+                    className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                  >
+                    {CLIENT_TYPES.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4.79199 7.39581L10.0003 12.6041L15.2087 7.39581" stroke="#667085" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
 
@@ -515,11 +531,22 @@ export function AccountInformationForm({
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   MSA in place
                 </label>
-                <div className="w-full h-11 px-3.5 py-2.5 bg-emerald-50 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-emerald-200 flex items-center justify-center">
-                  <span className="text-[#10B981] text-xs font-semibold font-['Outfit'] leading-none uppercase">
+                <button
+                  type="button"
+                  onClick={() => isEditing && onFormChange('msa_in_place', !formData.msa_in_place)}
+                  disabled={!isEditing}
+                  className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border flex items-center justify-center transition-all duration-200 ${
+                    formData.msa_in_place 
+                      ? 'bg-emerald-50 border-emerald-200' 
+                      : 'bg-gray-50 border-gray-200'
+                  } ${isEditing ? 'cursor-pointer hover:opacity-80' : 'cursor-not-allowed'}`}
+                >
+                  <span className={`text-xs font-semibold font-['Outfit'] leading-none uppercase ${
+                    formData.msa_in_place ? 'text-[#10B981]' : 'text-gray-400'
+                  }`}>
                     {formData.msa_in_place ? 'Yes' : 'No'}
                   </span>
-                </div>
+                </button>
               </div>
             </div>
 
@@ -532,7 +559,13 @@ export function AccountInformationForm({
                 </label>
                 <div className="w-full h-11 px-3.5 py-2.5 bg-gray-100 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 flex items-center">
                   <span className="text-gray-600 text-sm font-medium font-['Outfit'] leading-tight">
-                    {accountId ? (account?.updated_by_name || account?.created_by_name || 'Unknown') : (account?.created_by_name || 'Current User')}
+                    {accountId 
+                      ? (isEditing 
+                          ? (user?.name || user?.email || 'Current User')
+                          : (account?.updated_by_name || account?.created_by_name || 'Unknown')
+                        )
+                      : (account?.created_by_name || user?.name || user?.email || 'Current User')
+                    }
                   </span>
                 </div>
               </div>
