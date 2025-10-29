@@ -26,7 +26,9 @@ import {
   Users,
   Calendar,
   Star,
-  MoreVertical
+  MoreVertical,
+  CheckCircle,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/services/api/client';
@@ -42,6 +44,7 @@ interface Survey {
   total_responses?: number;
   response_rate?: number;
   avg_rating?: number;
+  is_employee_survey?: boolean;  // Flag to distinguish employee vs account surveys
 }
 
 const statusColors = {
@@ -99,8 +102,19 @@ export default function SurveysPage() {
     navigate('/surveys/builder');
   };
 
-  const handleViewSurvey = (surveyId: string) => {
-    navigate(`/surveys/${surveyId}`);
+  const handleViewSurvey = (surveyId: string, status: string, surveyType: string) => {
+    // If draft, open in edit mode
+    if (status === 'draft') {
+      // Route to appropriate builder based on survey type
+      if (surveyType === 'employee_satisfaction' || surveyType === 'employee_feedback') {
+        navigate(`/surveys/${surveyId}/employee-edit`);
+      } else {
+        navigate(`/surveys/${surveyId}/edit`);
+      }
+    } else {
+      // If published, view responses
+      navigate(`/surveys/${surveyId}`);
+    }
   };
 
   const handleEditSurvey = (surveyId: string) => {
@@ -129,9 +143,15 @@ export default function SurveysPage() {
       account_feedback: 'Account Feedback',
       nps: 'NPS Survey',
       opportunity_feedback: 'Opportunity Feedback',
+      employee_satisfaction: 'Employee Satisfaction',
+      employee_feedback: 'Employee Feedback',
       general: 'General Survey'
     };
     return labels[type] || type;
+  };
+
+  const isEmployeeSurvey = (type: string) => {
+    return type === 'employee_satisfaction' || type === 'employee_feedback';
   };
 
   return (
@@ -154,7 +174,14 @@ export default function SurveysPage() {
               className="h-11 px-5 py-2 bg-indigo-950 rounded-lg flex items-center gap-2.5 hover:bg-indigo-900 transition-colors"
             >
               <Plus className="h-4 w-4" />
-              <span className="text-white text-xs font-medium font-outfit leading-normal">Create Survey</span>
+              <span className="text-white text-xs font-medium font-outfit leading-normal">Client Survey</span>
+            </button>
+            <button 
+              onClick={() => navigate('/surveys/employee-builder')}
+              className="h-11 px-5 py-2 bg-gray-900 rounded-lg flex items-center gap-2.5 hover:bg-gray-800 transition-colors"
+            >
+              <Users className="h-4 w-4" />
+              <span className="text-white text-xs font-medium font-outfit leading-normal">Employee Survey</span>
             </button>
           </div>
         </div>
@@ -242,14 +269,30 @@ export default function SurveysPage() {
               <div key={survey.id} className="p-6 bg-white rounded-2xl border border-gray-200 hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                      {survey.title}
-                    </h3>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                        {survey.title}
+                      </h3>
+                      {survey.status === 'active' && (
+                        <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                      )}
+                      {survey.status === 'draft' && (
+                        <FileText className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                      )}
+                    </div>
                     <div className="flex items-center gap-2 mb-2">
                       <Badge className={statusColors[survey.status as keyof typeof statusColors]}>
                         {statusLabels[survey.status as keyof typeof statusLabels]}
                       </Badge>
-                      <Badge variant="outline" className="border border-gray-300 text-gray-700">
+                      <Badge 
+                        variant="outline" 
+                        className={`border ${
+                          isEmployeeSurvey(survey.survey_type)
+                            ? 'border-purple-300 bg-purple-50 text-purple-700'
+                            : 'border-blue-300 bg-blue-50 text-blue-700'
+                        }`}
+                      >
+                        {isEmployeeSurvey(survey.survey_type) ? '👥 ' : '🏢 '}
                         {getSurveyTypeLabel(survey.survey_type)}
                       </Badge>
                     </div>
@@ -289,23 +332,25 @@ export default function SurveysPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1 border border-gray-300 hover:border-indigo-500 hover:bg-indigo-50"
-                      onClick={() => handleViewSurvey(survey.id)}
+                      className={`flex-1 ${
+                        survey.status === 'draft'
+                          ? 'border-2 border-indigo-500 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                          : 'border border-gray-300 hover:border-indigo-500 hover:bg-indigo-50'
+                      }`}
+                      onClick={() => handleViewSurvey(survey.id, survey.status, survey.survey_type)}
                     >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
+                      {survey.status === 'draft' ? (
+                        <>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Draft
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </>
+                      )}
                     </Button>
-                    
-                    {survey.status === 'draft' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditSurvey(survey.id)}
-                        className="border border-gray-300 hover:border-indigo-500 hover:bg-indigo-50"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    )}
                     
                     {survey.total_responses && survey.total_responses > 0 && (
                       <Button

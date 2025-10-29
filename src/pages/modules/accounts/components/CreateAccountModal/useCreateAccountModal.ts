@@ -244,12 +244,17 @@ export function useCreateAccountModal(
     setIsSubmitting(true);
     
     try {
-      // Strip the state field from client_address before sending to backend
-      const { state, ...addressWithoutState } = formData.client_address;
-      const backendFormData: AccountCreate = {
+      // Convert UI form data to backend format - keep state field
+      const backendFormData = {
         ...formData,
-        client_address: addressWithoutState,
-      };
+        client_address: {
+          line1: formData.client_address.line1,
+          line2: formData.client_address.line2,
+          city: formData.client_address.city,
+          state: formData.client_address.state, // Keep state field for database
+          pincode: formData.client_address.pincode,
+        },
+      } as AccountCreate;
       await onSubmit(backendFormData);
       // resetForm();
     } catch (error) {

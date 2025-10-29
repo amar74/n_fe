@@ -329,47 +329,73 @@ export function CreateAccountModal({
   };
 
   const handleZipCodeChange = async (zipCode: string) => {
-    const cleanedZip = zipCode.replace(/\D/g, '').slice(0, 5);
+    // Allow digits and hyphen, max 10 characters total
+    let cleanedZip = zipCode.replace(/[^\d-]/g, '');
+    
+    // Auto-format: If user types 5 digits and continues, auto-add hyphen
+    // e.g., "730015" becomes "73001-5"
+    if (cleanedZip.length === 6 && !cleanedZip.includes('-')) {
+      cleanedZip = cleanedZip.slice(0, 5) + '-' + cleanedZip.slice(5);
+    }
+    
+    // Limit to 10 characters max (12345-6789)
+    cleanedZip = cleanedZip.slice(0, 10);
     
     setFormData(prev => ({ ...prev, client_address_zip_code: cleanedZip }));
     
     setZipAutoFilled(false);
     setZipError('');
 
-    if (cleanedZip.length === 5 && /^\d{5}$/.test(cleanedZip)) {
-      setIsZipLoading(true);
+    // Extract just digits for validation
+    const digitsOnly = cleanedZip.replace(/\D/g, '');
+
+    // Show helpful hints but don't block typing
+    if (digitsOnly.length > 0 && digitsOnly.length < 5) {
+      setZipError('USA ZIP code needs at least 5 digits');
+      setAvailableCities([]);
+      return;
+    }
+
+    // Only trigger auto-lookup for valid complete formats
+    const isValid5Digit = /^\d{5}$/.test(cleanedZip);
+    const isValidZipPlus4 = /^\d{5}-\d{4}$/.test(cleanedZip);
+
+    // Allow typing but only auto-fill when format is complete
+    if (!isValid5Digit && !isValidZipPlus4) {
+      setAvailableCities([]);
+      return;
+    }
+
+    setIsZipLoading(true);
+    
+    try {
+      const result = await lookupByZipCode(cleanedZip);
       
-      try {
-        const result = await lookupByZipCode(cleanedZip);
+      if (result) {
+        const stateFullName = STATE_ABBREVIATION_TO_NAME[result.stateCode] || result.stateCode;
         
-        if (result) {
-          const stateFullName = STATE_ABBREVIATION_TO_NAME[result.stateCode] || result.stateCode;
-          
-          const cities = getCitiesByState(result.stateCode);
-          setAvailableCities(cities);
-          
-          setFormData(prev => ({
-            ...prev,
-            client_address_city: result.city,
-            client_address_state: stateFullName
-          }));
-          setZipAutoFilled(true);
-          setZipError('');
-        } else {
-          setZipError('Invalid ZIP code or location not found');
-          setZipAutoFilled(false);
-          setAvailableCities([]);
-        }
-      } catch (error) {
-        console.error('ZIP lookup error:', error);
-        setZipError('Failed to lookup ZIP code');
+        const cities = getCitiesByState(result.stateCode);
+        setAvailableCities(cities);
+        
+        setFormData(prev => ({
+          ...prev,
+          client_address_city: result.city,
+          client_address_state: stateFullName
+        }));
+        setZipAutoFilled(true);
+        setZipError('');
+      } else {
+        setZipError('Invalid ZIP code or location not found');
         setZipAutoFilled(false);
         setAvailableCities([]);
-      } finally {
-        setIsZipLoading(false);
       }
-    } else if (cleanedZip.length > 0 && cleanedZip.length < 5) {
-      setZipError('ZIP code must be 5 digits');
+    } catch (error) {
+      console.error('ZIP lookup error:', error);
+      setZipError('Failed to lookup ZIP code');
+      setZipAutoFilled(false);
+      setAvailableCities([]);
+    } finally {
+      setIsZipLoading(false);
     }
   };
 
@@ -634,7 +660,7 @@ export function CreateAccountModal({
                       pattern="[0-9]*"
                       value={formData.client_address_zip_code}
                       onChange={(e) => handleZipCodeChange(e.target.value)}
-                      maxLength={5}
+                      maxLength={10}
                       className={`h-12 px-4 py-2.5 pr-10 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-black text-sm font-normal font-['Outfit'] leading-tight placeholder:text-[#667085] focus:outline-none transition-all ${
                         zipAutoFilled 
                           ? 'bg-green-50 border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-100' 
@@ -642,7 +668,7 @@ export function CreateAccountModal({
                           ? 'bg-red-50 border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100'
                           : 'bg-white border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'
                       }`}
-                      placeholder="Enter 5-digit ZIP code (e.g., 10001)"
+                      placeholder="e.g., 90210 or 90210-1234"
                     />
                     {zipAutoFilled && !isZipLoading ? (
                       <svg className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

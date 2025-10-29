@@ -37,16 +37,25 @@ export function AccountInformationForm({
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const handleZipCodeChange = async (zipCode: string) => {
-    // Allow digits and hyphen, max 10 characters total
+    // Allow only digits and hyphen
     let cleanedZip = zipCode.replace(/[^\d-]/g, '');
     
-    // Auto-format: If user types 5 digits and continues, auto-add hyphen
-    // e.g., "730015" becomes "73001-5"
-    if (cleanedZip.length === 6 && !cleanedZip.includes('-')) {
+    // Remove any hyphen that's not at position 5 (after 5 digits)
+    if (cleanedZip.includes('-')) {
+      const hyphenIndex = cleanedZip.indexOf('-');
+      // Only keep hyphen if it's at position 5 (after 5 digits)
+      if (hyphenIndex !== 5) {
+        // Remove the hyphen and just keep the digits
+        cleanedZip = cleanedZip.replace(/-/g, '');
+      }
+    }
+    
+    // Auto-format: If user types 6 or more digits without hyphen, auto-add hyphen after 5th digit
+    if (cleanedZip.length >= 6 && !cleanedZip.includes('-')) {
       cleanedZip = cleanedZip.slice(0, 5) + '-' + cleanedZip.slice(5);
     }
     
-    // Limit to 10 characters max (12345-6789)
+    // Limit to 10 characters max (12345-6789 = 5 digits + hyphen + 4 digits)
     cleanedZip = cleanedZip.slice(0, 10);
     
     handleFieldChange('client_address_zip_code', cleanedZip);

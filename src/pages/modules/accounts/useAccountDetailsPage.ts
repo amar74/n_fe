@@ -65,7 +65,7 @@ export function useAccountDetailsPage() {
       {
         id: 'total-value',
         title: 'Total Value',
-        value: account.total_value ? `$${account.total_value}M` : '$0M',
+        value: account.total_value ? `$${(account.total_value / 1000000).toFixed(1)}M` : '$0M',
         icon: 'DollarSign',
       },
       {

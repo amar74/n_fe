@@ -25,6 +25,14 @@ import AIAnalysisPage from '@/pages/modules/opportunities/AIAnalysisPage';
 import PipelineOverviewPage from '@/pages/modules/opportunities/PipelineOverviewPage';
 import ProposalsPage from '@/pages/modules/proposals/ProposalsPage';
 import ResourcesPage from '@/pages/modules/resources/ResourcesPage';
+import ResourcesDashboardPage from '@/pages/modules/resources/ResourcesDashboardPage';
+import OnboardingPage from '@/pages/modules/resources/OnboardingPage';
+import EmployeeSearchPage from '@/pages/modules/resources/EmployeeSearchPage';
+import EmployeeManagementPage from '@/pages/modules/resources/EmployeeManagementPage';
+import PermissionsPage from '@/pages/modules/resources/PermissionsPage';
+import AnalyticsPage from '@/pages/modules/resources/AnalyticsPage';
+import TestIntegration from '@/pages/modules/resources/TestIntegration';
+import { StaffingDashboard, CreateStaffPlan } from '@/pages/modules/staffing';
 import ContractsPage from '@/pages/modules/contracts/ContractsPage';
 import ProjectsPage from '@/pages/modules/projects/ProjectsPage';
 import FinancePage from '@/pages/modules/finance/FinancePage';
@@ -36,7 +44,10 @@ import ProfileSettingsPage from '@/pages/ProfileSettingsPage';
 import OrganizationSettingsPage from '@/pages/OrganizationSettingsPage';
 // Custom Survey System Pages
 import SurveysPage from '@/pages/SurveysPage/SurveysPage';
+import AccountSurveyDashboard from '@/pages/AccountSurveyDashboard/AccountSurveyDashboard';
+import EmployeeSurveyDashboard from '@/pages/EmployeeSurveyDashboard/EmployeeSurveyDashboard';
 import SurveyBuilderPage from '@/pages/SurveyBuilderPage/SurveyBuilderPage';
+import EmployeeSurveyBuilderPage from '@/pages/EmployeeSurveyBuilderPage/EmployeeSurveyBuilderPage';
 import SurveyResponsesPage from '@/pages/SurveyResponsesPage/SurveyResponsesPage';
 import SurveyAnalyticsPage from '@/pages/SurveyAnalyticsPage/SurveyAnalyticsPage';
 import SurveyPreviewPage from '@/pages/SurveyPreviewPage/SurveyPreviewPage';
@@ -61,11 +72,14 @@ import SuperAdminDashboardPage from '@/pages/super-admin/SuperAdminDashboardPage
 import VendorListPage from '@/pages/super-admin/VendorListPage';
 import VendorProfilePage from '@/pages/super-admin/VendorProfilePage';
 import CreateVendorPage from '@/pages/super-admin/CreateVendorPage';
+// Error Pages
+import { NotFoundPage, ErrorBoundaryPage } from '@/pages/ErrorPages';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <MainLayout />,
+    errorElement: <ErrorBoundaryPage />,
     children: [
       {
         index: true,
@@ -101,7 +115,39 @@ const router = createBrowserRouter([
       },
       {
         path: 'module/resources',
-        element: <ResourcesPage />,
+        element: <ResourcesDashboardPage />,
+      },
+      {
+        path: 'module/resources/onboarding',
+        element: <OnboardingPage />,
+      },
+      {
+        path: 'module/resources/search',
+        element: <EmployeeSearchPage />,
+      },
+      {
+        path: 'module/resources/management',
+        element: <EmployeeManagementPage />,
+      },
+      {
+        path: 'module/resources/permissions',
+        element: <PermissionsPage />,
+      },
+      {
+        path: 'module/resources/analytics',
+        element: <AnalyticsPage />,
+      },
+      {
+        path: 'module/resources/test',
+        element: <TestIntegration />,
+      },
+      {
+        path: 'staffing-plan',
+        element: <StaffingDashboard />,
+      },
+      {
+        path: 'staffing-plan/create',
+        element: <CreateStaffPlan />,
       },
       {
         path: 'module/contracts',
@@ -122,6 +168,14 @@ const router = createBrowserRouter([
       {
         path: 'module/kpis',
         element: <KpisPage />,
+      },
+      {
+        path: 'module/survey/account',
+        element: <AccountSurveyDashboard />,
+      },
+      {
+        path: 'module/survey/employee',
+        element: <EmployeeSurveyDashboard />,
       },
       {
         path: 'module/notes',
@@ -169,12 +223,28 @@ const router = createBrowserRouter([
         element: <SurveysPage />,
       },
       {
+        path: 'surveys/account-dashboard',
+        element: <AccountSurveyDashboard />,
+      },
+      {
+        path: 'surveys/employee-dashboard',
+        element: <EmployeeSurveyDashboard />,
+      },
+      {
         path: 'surveys/builder',
         element: <SurveyBuilderPage />,
       },
       {
+        path: 'surveys/employee-builder',
+        element: <EmployeeSurveyBuilderPage />,
+      },
+      {
         path: 'surveys/:surveyId/edit',
         element: <SurveyBuilderPage />,
+      },
+      {
+        path: 'surveys/:surveyId/employee-edit',
+        element: <EmployeeSurveyBuilderPage />,
       },
       {
         path: 'surveys/:surveyId',
@@ -212,6 +282,7 @@ const router = createBrowserRouter([
   {
     path: '/admin',
     element: <AdminLayout />,
+    errorElement: <ErrorBoundaryPage />,
     children: [
       {
         path: 'dashboard',
@@ -231,6 +302,7 @@ const router = createBrowserRouter([
   {
     path: '/super-admin',
     element: <Outlet />,
+    errorElement: <ErrorBoundaryPage />,
     children: [
       {
         path: 'dashboard',
@@ -253,6 +325,7 @@ const router = createBrowserRouter([
   {
     path: '/auth',
     element: <AuthLayout />,
+    errorElement: <ErrorBoundaryPage />,
     children: [
       {
         path: 'login',
@@ -347,6 +420,11 @@ const router = createBrowserRouter([
         element: <MyOpportunities />,
       },
     ],
+  },
+  // Catch-all 404 route
+  {
+    path: '*',
+    element: <NotFoundPage />,
   },
 ]);
 

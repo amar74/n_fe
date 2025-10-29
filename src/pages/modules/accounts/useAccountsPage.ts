@@ -5,6 +5,7 @@ import { useAccounts } from '@/hooks/useAccounts';
 import { AccountStatsData, FilterState } from './AccountsPage.types';
 import { AccountCreate, AccountListItem } from '@/types/accounts';
 import { ClientType } from './components/CreateAccountModal/CreateAccountModal.types';
+import { STATE_ABBREVIATION_TO_NAME } from './components/CreateAccountModal/CreateAccountModal.constants';
 import { tr } from 'date-fns/locale';
 
 export function useAccountsPage() {
@@ -91,6 +92,11 @@ export function useAccountsPage() {
 
   const handleCreateAccountSubmit = async (formData: any) => {
     try {
+      // Convert full state name to abbreviation for database
+      const stateAbbreviation = formData.client_address_state 
+        ? Object.entries(STATE_ABBREVIATION_TO_NAME).find(([abbr, name]) => name === formData.client_address_state)?.[0] || formData.client_address_state
+        : null;
+
       const accountData: AccountCreate = {
         company_website: formData.company_website || null,
         client_name: formData.client_name,
@@ -98,6 +104,7 @@ export function useAccountsPage() {
           line1: formData.client_address_line1,
           line2: formData.client_address_line2 || null,
           city: formData.client_address_city || null,
+          state: stateAbbreviation,
           pincode: formData.client_address_zip_code ? parseInt(formData.client_address_zip_code) : null,
         },
         primary_contact: {

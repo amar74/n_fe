@@ -1,98 +1,66 @@
-import { memo } from 'react';
-import { Link } from 'react-router-dom';
-import { Package, Plus, Search, Filter } from 'lucide-react';
+import { useState } from 'react';
+import { Upload, Search, TrendingUp, BarChart3 } from 'lucide-react';
+import OnboardingPage from './OnboardingPage';
+import EmployeeSearchPage from './EmployeeSearchPage';
+import ResourceOptimizationPage from './ResourceOptimizationPage';
 
-function ResourcesPage() {
+type TabType = 'create' | 'search' | 'optimization' | 'analysis';
+
+export default function ResourcesPage() {
+  const [activeTab, setActiveTab] = useState<TabType>('create');
+
+  const tabs = [
+    { id: 'create' as TabType, label: 'Create/Upload', icon: Upload },
+    { id: 'search' as TabType, label: 'Search', icon: Search },
+    { id: 'optimization' as TabType, label: 'Resource Optimization', icon: TrendingUp },
+    { id: 'analysis' as TabType, label: 'Competitor Analysis', icon: BarChart3 },
+  ];
+
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
-      <div className="flex flex-col w-full p-6 gap-6">
-        
-        <div className="flex justify-between items-end">
-          
-          <div className="flex flex-col gap-3">
-            
-            <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
-                Dashboard
-              </Link>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Resources</span>
-            </div>
-            
-            
-            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">Resources</h1>
-          </div>
-
-          
-          <div className="flex items-start gap-3">
-            
-            <button 
-              className="h-11 px-5 py-2 bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg flex items-center gap-2.5 hover:from-slate-900 hover:to-black transition-all shadow-lg"
-            >
-              <Plus className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-outfit leading-normal">Add Resource</span>
-            </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Tab Navigation */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-8">
+          <div className="flex gap-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-6 py-4 font-semibold text-sm flex items-center gap-2 border-b-2 transition-all ${
+                    isActive
+                      ? 'border-blue-600 text-blue-600 bg-blue-50'
+                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
+      </div>
 
-        
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[
-            { label: 'Total Resources', value: '0', icon: Package, color: 'text-blue-600', bg: 'bg-blue-50' },
-            { label: 'Available', value: '0', icon: Package, color: 'text-green-600', bg: 'bg-green-50' },
-            { label: 'Allocated', value: '0', icon: Package, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-            { label: 'Maintenance', value: '0', icon: Package, color: 'text-red-600', bg: 'bg-red-50' },
-          ].map((stat, index) => (
-            <div key={index} className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 text-sm font-medium font-outfit">{stat.label}</span>
-                <div className={`p-2 ${stat.bg} rounded-lg`}>
-                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                </div>
-              </div>
-              <div className="text-[#1A1A1A] text-3xl font-bold font-outfit">{stat.value}</div>
+      {/* Tab Content */}
+      <div>
+        {activeTab === 'create' && <OnboardingPage />}
+        {activeTab === 'search' && <EmployeeSearchPage />}
+        {activeTab === 'optimization' && <ResourceOptimizationPage />}
+        {activeTab === 'analysis' && (
+          <div className="p-8 text-center">
+            <div className="bg-white rounded-2xl border border-gray-200 p-12">
+              <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Competitor Analysis</h2>
+              <p className="text-gray-600">Coming Soon - Analyze competitor resources and market positioning</p>
             </div>
-          ))}
-        </div>
-
-        
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-6">
-          
-          <div className="flex items-center gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search resources..."
-                className="w-full h-12 pl-12 pr-4 bg-gray-50 rounded-lg border border-gray-200 text-sm font-outfit focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-              />
-            </div>
-            <button className="h-12 px-4 bg-gray-50 rounded-lg border border-gray-200 flex items-center gap-2 hover:bg-gray-100 transition-colors">
-              <Filter className="w-5 h-5 text-gray-600" />
-              <span className="text-gray-700 text-sm font-medium font-outfit">Filter</span>
-            </button>
           </div>
-
-          
-          <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <div className="p-4 bg-slate-50 rounded-full">
-              <Package className="w-12 h-12 text-slate-600" />
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <h3 className="text-[#1A1A1A] text-xl font-semibold font-outfit">No resources yet</h3>
-              <p className="text-gray-500 text-sm font-outfit text-center max-w-md">
-                Manage your team members, equipment, and materials. Track resource allocation and availability.
-              </p>
-            </div>
-            <button className="mt-4 h-11 px-6 py-2 bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg flex items-center gap-2 hover:from-slate-900 hover:to-black transition-all shadow-lg">
-              <Plus className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-outfit">Add Your First Resource</span>
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
-export default memo(ResourcesPage);

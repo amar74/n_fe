@@ -165,7 +165,7 @@ export function AccountCard({ account, onClick }: AccountCardProps) {
           <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center justify-between w-full">
               <span className={`font-['Inter:Semi_Bold',_sans-serif] font-semibold ${colors.text} text-[28px] whitespace-nowrap`}>
-                ${account.total_value?.toLocaleString() || '0'}
+                ${account.total_value ? (account.total_value / 1000000).toFixed(1) : '0.0'}M
               </span>
               <div className={`${colors.bg} flex gap-2 items-center px-3 py-1 rounded-full relative`}>
                 <div aria-hidden="true" className={`absolute ${colors.border} border-solid inset-0 pointer-events-none rounded-full`} />

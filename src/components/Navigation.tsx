@@ -4,7 +4,7 @@ import { useAuth } from '@hooks/useAuth';
 import { 
   TrendingUp, Users, FileText, Package, FileSignature, 
   FolderKanban, DollarSign, ShoppingCart, BarChart3, 
-  Bell, ChevronDown, LogOut, User, Settings, Building2 
+  Bell, ChevronDown, ChevronRight, LogOut, User, Settings, Building2, ClipboardList 
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/useToast';
@@ -13,12 +13,33 @@ const menuItems = [
   { icon: TrendingUp, label: 'Opportunities', path: '/module/opportunities' },
   { icon: Users, label: 'Accounts', path: '/module/accounts' },
   { icon: FileText, label: 'Proposals', path: '/module/proposals' },
-  { icon: Package, label: 'Resources', path: '/module/resources' },
+  { 
+    icon: Package, 
+    label: 'Resources', 
+    path: '/module/resources',
+    children: [
+      { icon: Package, label: 'Dashboard', path: '/module/resources' },
+      { icon: Users, label: 'Onboarding', path: '/module/resources/onboarding' },
+      { icon: Users, label: 'Search', path: '/module/resources/search' },
+      { icon: Users, label: 'Management', path: '/module/resources/management' },
+      { icon: FileText, label: 'Staff Planning', path: '/staffing-plan' },
+    ]
+  },
   { icon: FileSignature, label: 'Contracts', path: '/module/contracts' },
   { icon: FolderKanban, label: 'Projects', path: '/module/projects' },
   { icon: DollarSign, label: 'Finance', path: '/module/finance' },
   { icon: ShoppingCart, label: 'Procurements', path: '/module/procurement' },
   { icon: BarChart3, label: "KPI's", path: '/module/kpis' },
+  { 
+    icon: ClipboardList, 
+    label: 'Surveys', 
+    path: '/surveys',
+    children: [
+      { icon: ClipboardList, label: 'View All Surveys', path: '/surveys' },
+      { icon: Building2, label: 'Account Survey', path: '/surveys/account-dashboard' },
+      { icon: Users, label: 'Employee Survey', path: '/surveys/employee-dashboard' },
+    ]
+  },
 ];
 
 // will optimize later - guddy.tech
@@ -31,9 +52,22 @@ export default function Navigation() {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path);
+  };
+
+  const hasActiveChild = (children?: any[]) => {
+    if (!children) return false;
+    return children.some(child => location.pathname.startsWith(child.path));
+  };
+
+  const toggleMenu = (label: string) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [label]: !prev[label]
+    }));
   };
 
   const handleSignOut = async () => {
@@ -137,6 +171,101 @@ export default function Navigation() {
                     {menuItems.map((item) => {
                       const Icon = item.icon;
                       const active = isActive(item.path);
+                      const hasChildren = item.children && item.children.length > 0;
+                      const childActive = hasActiveChild(item.children);
+                      const isExpanded = hasChildren && (expandedMenus[item.label] || childActive);
+                      
+                      if (hasChildren) {
+                        return (
+                          <div key={item.label} className="flex flex-col gap-1">
+                            <button
+                              onClick={() => toggleMenu(item.label)}
+                              className={`relative rounded-xl flex items-center transition-all duration-200 overflow-hidden group ${
+                                shouldExpand ? 'px-4 py-3 gap-3' : 'p-3 justify-center'
+                              } ${
+                                childActive
+                                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/30 scale-[1.02]'
+                                  : 'hover:bg-slate-800/60 hover:scale-[1.02]'
+                              }`}
+                              title={!shouldExpand ? item.label : undefined}
+                            >
+                              {childActive && shouldExpand && (
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full shadow-lg"></div>
+                              )}
+                              
+                              <Icon 
+                                className={`flex-shrink-0 transition-all duration-200 ${
+                                  shouldExpand ? 'w-5 h-5' : 'w-6 h-6'
+                                } ${
+                                  childActive 
+                                    ? 'text-white' 
+                                    : 'text-slate-400 group-hover:text-white'
+                                }`} 
+                                strokeWidth={childActive ? 2.5 : 2}
+                              />
+                              {shouldExpand && (
+                                <>
+                                  <span className={`flex-1 text-sm font-semibold font-outfit leading-tight whitespace-nowrap transition-colors duration-200 ${
+                                    childActive 
+                                      ? 'text-white' 
+                                      : 'text-slate-300 group-hover:text-white'
+                                  }`}>
+                                    {item.label}
+                                  </span>
+                                  <ChevronRight 
+                                    className={`w-4 h-4 transition-transform duration-200 ${
+                                      isExpanded ? 'rotate-90' : ''
+                                    } ${
+                                      childActive ? 'text-white' : 'text-slate-400 group-hover:text-white'
+                                    }`}
+                                  />
+                                </>
+                              )}
+                            </button>
+                            
+                            {shouldExpand && isExpanded && item.children && (
+                              <div className="flex flex-col gap-1 ml-4 pl-4 border-l-2 border-slate-700/50">
+                                {item.children.map((child) => {
+                                  const ChildIcon = child.icon;
+                                  const childIsActive = isActive(child.path);
+                                  return (
+                                    <Link
+                                      key={child.path}
+                                      to={child.path}
+                                      className={`relative rounded-xl flex items-center transition-all duration-200 overflow-hidden group px-3 py-2.5 gap-3 ${
+                                        childIsActive
+                                          ? 'bg-slate-700/50 shadow-md scale-[1.02]'
+                                          : 'hover:bg-slate-800/40 hover:scale-[1.02]'
+                                      }`}
+                                    >
+                                      {childIsActive && (
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-400 rounded-r-full shadow-lg"></div>
+                                      )}
+                                      
+                                      <ChildIcon 
+                                        className={`flex-shrink-0 w-4 h-4 transition-all duration-200 ${
+                                          childIsActive 
+                                            ? 'text-indigo-300' 
+                                            : 'text-slate-400 group-hover:text-white'
+                                        }`} 
+                                        strokeWidth={childIsActive ? 2.5 : 2}
+                                      />
+                                      <span className={`flex-1 text-xs font-semibold font-outfit leading-tight whitespace-nowrap transition-colors duration-200 ${
+                                        childIsActive 
+                                          ? 'text-indigo-200' 
+                                          : 'text-slate-300 group-hover:text-white'
+                                      }`}>
+                                        {child.label}
+                                      </span>
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                      
                       return (
                         <Link
                           key={item.path}
