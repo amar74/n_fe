@@ -5,6 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { 
   ArrowLeft, 
   Save, 
   User, 
@@ -19,7 +27,9 @@ import {
   Lock,
   Trash2,
   AlertTriangle,
-  Check
+  Check,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
@@ -159,8 +169,6 @@ export default function ProfileSettingsPage() {
 
   const [notifications, setNotifications] = useState({
     emailNotifications: true,
-    pushNotifications: false,
-    weeklyDigest: true,
   });
 
   const getInitials = () => {
@@ -636,7 +644,6 @@ export default function ProfileSettingsPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    
                     <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900">Email Notifications</h4>
@@ -652,48 +659,6 @@ export default function ProfileSettingsPage() {
                         <span
                           className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                             notifications.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">Push Notifications</h4>
-                        <p className="text-sm text-gray-600">Receive push notifications on your devices</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setNotifications({ ...notifications, pushNotifications: !notifications.pushNotifications })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          notifications.pushNotifications ? 'bg-[#161950]' : 'bg-gray-300'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            notifications.pushNotifications ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">Weekly Digest</h4>
-                        <p className="text-sm text-gray-600">Receive a weekly summary of your activity</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setNotifications({ ...notifications, weeklyDigest: !notifications.weeklyDigest })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                          notifications.weeklyDigest ? 'bg-[#161950]' : 'bg-gray-300'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            notifications.weeklyDigest ? 'translate-x-6' : 'translate-x-1'
                           }`}
                         />
                       </button>
@@ -747,9 +712,7 @@ export default function ProfileSettingsPage() {
                         <p className="text-sm text-gray-600">Update your account password</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-[#161950] text-[#161950] hover:bg-[#161950] hover:text-white">
-                      Change
-                    </Button>
+                    <ChangePasswordDialog />
                   </div>
 
                   
@@ -809,5 +772,175 @@ export default function ProfileSettingsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ChangePasswordDialog() {
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (formData.newPassword !== formData.confirmPassword) {
+      toast({
+        title: 'Passwords do not match',
+        description: 'Please make sure both password fields match.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (formData.newPassword.length < 8) {
+      toast({
+        title: 'Password too short',
+        description: 'Password must be at least 8 characters long.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await apiClient.post('/auth/change-password', null, {
+        params: {
+          current_password: formData.currentPassword,
+          new_password: formData.newPassword,
+        }
+      });
+
+      toast({
+        title: 'Password Updated',
+        description: 'Your password has been changed successfully.',
+      });
+      
+      setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setOpen(false);
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      toast({
+        title: 'Failed to Change Password',
+        description: error.response?.data?.detail || 'Please check your current password and try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="border-[#161950] text-[#161950] hover:bg-[#161950] hover:text-white">
+          Change
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">Change Password</DialogTitle>
+          <DialogDescription>
+            Enter your current password and choose a new password.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="currentPassword">Current Password</Label>
+            <div className="relative">
+              <Input
+                id="currentPassword"
+                type={showCurrentPassword ? 'text' : 'password'}
+                value={formData.currentPassword}
+                onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                placeholder="Enter current password"
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">New Password</Label>
+            <div className="relative">
+              <Input
+                id="newPassword"
+                type={showNewPassword ? 'text' : 'password'}
+                value={formData.newPassword}
+                onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                placeholder="Enter new password (min 8 characters)"
+                required
+                minLength={8}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                placeholder="Confirm new password"
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setOpen(false);
+                setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-[#161950] hover:bg-[#161950]/90 text-white"
+            >
+              {isSubmitting ? 'Updating...' : 'Update Password'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

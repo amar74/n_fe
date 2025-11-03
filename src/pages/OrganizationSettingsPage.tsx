@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/services/api/client';
 import { 
   Building2, 
   Users, 
@@ -20,11 +22,67 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Camera
+  Camera,
+  Target
 } from 'lucide-react';
 
 export default function OrganizationSettingsPage() {
   const { data: organization, isLoading, error } = useMyOrganization();
+
+  // Fetch recent activity
+  const { data: recentActivity } = useQuery({
+    queryKey: ['orgRecentActivity'],
+    queryFn: async () => {
+      const [accountsRes, opportunitiesRes] = await Promise.all([
+        apiClient.get('/accounts?page=1&page_size=3').catch(() => ({ data: { accounts: [] } })),
+        apiClient.get('/opportunities?page=1&page_size=3').catch(() => ({ data: { opportunities: [] } })),
+      ]);
+      
+      const activities = [];
+      
+      // Add recent accounts
+      if (accountsRes.data?.accounts) {
+        accountsRes.data.accounts.forEach((account: any) => {
+          activities.push({
+            id: account.account_id,
+            type: 'account',
+            title: `New account: ${account.client_name}`,
+            time: new Date(account.created_at),
+            icon: Building2,
+            color: 'bg-blue-500',
+          });
+        });
+      }
+      
+      // Add recent opportunities
+      if (opportunitiesRes.data?.opportunities) {
+        opportunitiesRes.data.opportunities.forEach((opp: any) => {
+          activities.push({
+            id: opp.id,
+            type: 'opportunity',
+            title: `New opportunity: ${opp.project_name}`,
+            time: new Date(opp.created_at),
+            icon: Target,
+            color: 'bg-green-500',
+          });
+        });
+      }
+      
+      // Sort by time (most recent first) and take top 5
+      return activities.sort((a, b) => b.time.getTime() - a.time.getTime()).slice(0, 5);
+    },
+    enabled: !!organization,
+  });
+
+  const formatTimeAgo = (date: Date) => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    return date.toLocaleDateString();
+  };
 
   const getInitials = (name: string) => {
     return name
@@ -82,28 +140,28 @@ export default function OrganizationSettingsPage() {
   const stats = [
     {
       label: 'Profile Complete',
-      value: `${organization.profile_completion}%`,
+      value: `${organization.profile_completion || 0}%`,
       icon: TrendingUp,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
       label: 'Team Members',
-      value: '12',
+      value: String(organization.team_members_count || 0),
       icon: Users,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
     },
     {
       label: 'Active Since',
-      value: '2024',
+      value: organization.created_at ? new Date(organization.created_at).getFullYear().toString() : 'N/A',
       icon: Award,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
       label: 'Status',
-      value: 'Active',
+      value: organization.status || 'Active',
       icon: CheckCircle,
       color: 'text-[#161950]',
       bgColor: 'bg-[#161950]/5',
@@ -125,7 +183,7 @@ export default function OrganizationSettingsPage() {
       icon: Users,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
-      link: '/organization',
+      link: '/module/resources/management',
     },
     {
       title: 'Security Settings',
@@ -239,22 +297,22 @@ export default function OrganizationSettingsPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-600">Profile Completion</span>
-                      <span className={`text-lg font-bold ${getCompletionColor(organization.profile_completion)}`}>
-                        {organization.profile_completion}%
+                      <span className={`text-lg font-bold ${getCompletionColor(Number(organization.profile_completion || 0))}`}>
+                        {Number(organization.profile_completion || 0)}%
                       </span>
                     </div>
                     <div className="flex-1 bg-gray-200 rounded-full h-3">
                       <div 
-                        className={`${getCompletionBgColor(organization.profile_completion)} h-3 rounded-full transition-all duration-300`}
-                        style={{ width: `${organization.profile_completion}%` }}
+                        className={`${getCompletionBgColor(Number(organization.profile_completion || 0))} h-3 rounded-full transition-all duration-300`}
+                        style={{ width: `${organization.profile_completion || 0}%` }}
                       ></div>
                     </div>
-                    {organization.profile_completion < 100 && (
+                    {Number(organization.profile_completion || 0) < 100 && (
                       <p className="text-xs text-gray-600">
                         Complete your organization profile to unlock all features
                       </p>
                     )}
-                    {organization.profile_completion === 100 && (
+                    {Number(organization.profile_completion || 0) === 100 && (
                       <div className="flex items-center gap-2 text-green-600 text-sm">
                         <CheckCircle className="h-4 w-4" />
                         <span>Profile Complete!</span>
@@ -284,13 +342,14 @@ export default function OrganizationSettingsPage() {
                             </div>
                             <span className="text-sm font-medium text-gray-600">{stat.label}</span>
                           </div>
-                          <span className="text-sm font-semibold text-gray-900">{stat.value}</span>
+                          <span className="text-sm font-semibold text-gray-900">{String(stat.value)}</span>
                         </div>
                       );
                     })}
                   </div>
                 </CardContent>
               </Card>
+
             </div>
           </div>
 
@@ -379,91 +438,85 @@ export default function OrganizationSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {quickActions.map((action) => {
                   const Icon = action.icon;
-                  const CardElement = action.disabled ? 'div' : Link;
-                  const cardProps = action.disabled ? {} : { to: action.link };
-                  
-                  return (
-                    <CardElement key={action.title} {...cardProps}>
-                      <Card className={`border border-gray-100 shadow-md transition-all duration-200 ${
-                        action.disabled 
-                          ? 'opacity-60 cursor-not-allowed' 
-                          : 'hover:shadow-xl hover:-translate-y-1 cursor-pointer'
-                      } group`}>
-                        <CardContent className="p-6">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start gap-4">
-                              <div className={`w-12 h-12 ${action.bgColor} rounded-xl flex items-center justify-center ${
-                                action.disabled ? '' : 'group-hover:scale-110'
-                              } transition-transform`}>
-                                <Icon className={`h-6 w-6 ${action.color}`} />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className={`font-semibold text-gray-900 mb-1 ${
-                                  action.disabled ? '' : 'group-hover:text-[#161950]'
-                                } transition-colors`}>
-                                  {action.title}
-                                  {action.disabled && (
-                                    <Badge className="ml-2 bg-gray-100 text-gray-600 text-xs">
-                                      Coming Soon
-                                    </Badge>
-                                  )}
-                                </h4>
-                                <p className="text-sm text-gray-600">{action.description}</p>
-                              </div>
+                  const cardContent = (
+                    <Card className={`border border-gray-100 shadow-md transition-all duration-200 ${
+                      action.disabled 
+                        ? 'opacity-60 cursor-not-allowed' 
+                        : 'hover:shadow-xl hover:-translate-y-1 cursor-pointer'
+                    } group`}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-4">
+                            <div className={`w-12 h-12 ${action.bgColor} rounded-xl flex items-center justify-center ${
+                              action.disabled ? '' : 'group-hover:scale-110'
+                            } transition-transform`}>
+                              <Icon className={`h-6 w-6 ${action.color}`} />
                             </div>
-                            {!action.disabled && (
-                              <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-[#161950] group-hover:translate-x-1 transition-all" />
-                            )}
+                            <div className="flex-1">
+                              <h4 className={`font-semibold text-gray-900 mb-1 ${
+                                action.disabled ? '' : 'group-hover:text-[#161950]'
+                              } transition-colors`}>
+                                {action.title}
+                                {action.disabled && (
+                                  <Badge className="ml-2 bg-gray-100 text-gray-600 text-xs">
+                                    Coming Soon
+                                  </Badge>
+                                )}
+                              </h4>
+                              <p className="text-sm text-gray-600">{action.description}</p>
+                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </CardElement>
+                          {!action.disabled && (
+                            <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-[#161950] group-hover:translate-x-1 transition-all" />
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                  
+                  return action.disabled ? (
+                    <div key={action.title}>
+                      {cardContent}
+                    </div>
+                  ) : (
+                    <Link key={action.title} to={action.link}>
+                      {cardContent}
+                    </Link>
                   );
                 })}
               </div>
             </div>
 
-            
-            <Card className="border border-gray-100 shadow-md">
-              <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight">
-                  <Clock className="h-5 w-5 text-[#161950]" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Organization settings viewed</p>
-                      <p className="text-xs text-gray-500">Just now</p>
+            <div>
+              <h3 className="text-2xl font-extrabold text-gray-900 mb-5 tracking-tight leading-tight">Recent Activity</h3>
+              <Card className="border border-gray-100 shadow-md">
+                <CardContent className="p-6">
+                  {!recentActivity || recentActivity.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Clock className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-sm text-gray-500">No recent activity</p>
+                      <p className="text-xs text-gray-400 mt-1">Start by creating accounts or opportunities</p>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Organization details updated</p>
-                      <p className="text-xs text-gray-500">2 hours ago</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentActivity.map((activity: any) => (
+                        <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                          <div className={`w-2 h-2 ${activity.color} rounded-full mt-2 flex-shrink-0`}></div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900">
+                              {activity.title}
+                            </p>
+                            <p className="text-xs text-gray-500">{formatTimeAgo(activity.time)}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">New team member added</p>
-                      <p className="text-xs text-gray-500">1 day ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">Organization created</p>
-                      <p className="text-xs text-gray-500">3 days ago</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
             
             <Card className="border-2 border-white/20 shadow-2xl bg-gradient-to-br from-[#161950] via-[#1e2563] to-[#2a3175] text-white overflow-hidden relative">

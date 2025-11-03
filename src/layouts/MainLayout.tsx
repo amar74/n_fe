@@ -14,7 +14,7 @@ export default function MainLayout() {
   
   // Only fetch organization if user has an org_id (super admins may not have one)
   const hasOrgId = backendUser?.org_id !== null && backendUser?.org_id !== undefined;
-  const { data: organization, isLoading: isOrgLoading } = useMyOrganization(hasOrgId);
+  const { data: organization, isLoading: isOrgLoading, error: orgError, isError: isOrgError } = useMyOrganization(hasOrgId);
 
   useEffect(() => {
     // Only handle redirects after initial auth is complete
@@ -28,6 +28,20 @@ export default function MainLayout() {
 
     const currentPath = location.pathname;
 
+    // If user has org_id but organization doesn't exist (404 error), redirect to organization creation
+    if (
+      hasOrgId &&
+      !isOrgLoading &&
+      isOrgError &&
+      (orgError as any)?.response?.status === 404 &&
+      !currentPath.startsWith('/organization/create') &&
+      !currentPath.startsWith('/auth/')
+    ) {
+      console.log('[MainLayout] User has org_id but organization not found (404). Redirecting to organization creation.');
+      navigate('/organization/create', { replace: true });
+      return;
+    }
+
     // If user doesn't have org_id and isn't already on org creation or auth pages
     if (
       (backendUser.org_id === null) &&
@@ -38,9 +52,9 @@ export default function MainLayout() {
       return;
     }
 
-    // If user has org_id but is on organization create page, redirect to dashboard
+    // If user has org_id and organization exists, but is on organization create page, redirect to dashboard
     // This handles the case where user just created an organization and should go to dashboard
-    if (backendUser.org_id && currentPath.startsWith('/organization/create')) {
+    if (backendUser.org_id && !isOrgLoading && organization && currentPath.startsWith('/organization/create')) {
       navigate('/', { replace: true });
       return;
     }
@@ -55,6 +69,9 @@ export default function MainLayout() {
       // Wait for organization data to load
       if (isOrgLoading) return;
       
+      // If organization doesn't exist (404), don't check profile completion - will be handled by redirect above
+      if (isOrgError) return;
+      
       // Only redirect to profile update if profile is significantly incomplete (< 50%)
       // This allows users with mostly complete profiles to access the dashboard
       if (organization && typeof organization.profile_completion === 'number' && organization.profile_completion < 50) {
@@ -62,7 +79,7 @@ export default function MainLayout() {
         return;
       }
     }
-  }, [backendUser, isAuthenticated, initialAuthComplete, organization, isOrgLoading, navigate, location.pathname]);
+  }, [backendUser, isAuthenticated, initialAuthComplete, organization, isOrgLoading, isOrgError, orgError, hasOrgId, navigate, location.pathname]);
 
   // Show loading only during initial auth check
   if (!initialAuthComplete) {

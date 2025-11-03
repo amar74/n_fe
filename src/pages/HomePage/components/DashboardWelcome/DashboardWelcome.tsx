@@ -18,7 +18,10 @@ import {
   Building2,
   Calendar,
   Target,
-  Activity
+  Activity,
+  Clock,
+  Plus,
+  FileCheck
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -130,6 +133,51 @@ function DashboardWelcome() {
     enabled: !!backendUser,
   });
 
+  // Fetch recent activity
+  const { data: recentActivity } = useQuery({
+    queryKey: ['recentActivity'],
+    queryFn: async () => {
+      const [accountsRes, opportunitiesRes] = await Promise.all([
+        apiClient.get('/accounts?page=1&page_size=3').catch(() => ({ data: { accounts: [] } })),
+        apiClient.get('/opportunities?page=1&page_size=3').catch(() => ({ data: { opportunities: [] } })),
+      ]);
+      
+      const activities = [];
+      
+      // Add recent accounts
+      if (accountsRes.data?.accounts) {
+        accountsRes.data.accounts.forEach((account: any) => {
+          activities.push({
+            id: account.account_id,
+            type: 'account',
+            title: `New account created: ${account.client_name}`,
+            time: new Date(account.created_at),
+            icon: Building2,
+            color: 'bg-blue-500',
+          });
+        });
+      }
+      
+      // Add recent opportunities
+      if (opportunitiesRes.data?.opportunities) {
+        opportunitiesRes.data.opportunities.forEach((opp: any) => {
+          activities.push({
+            id: opp.id,
+            type: 'opportunity',
+            title: `New opportunity: ${opp.project_name}`,
+            time: new Date(opp.created_at),
+            icon: Target,
+            color: 'bg-green-500',
+          });
+        });
+      }
+      
+      // Sort by time (most recent first) and take top 5
+      return activities.sort((a, b) => b.time.getTime() - a.time.getTime()).slice(0, 5);
+    },
+    enabled: !!backendUser,
+  });
+
   // Analytics/Stats data - Now using dynamic data from API
   const stats = [
     {
@@ -175,6 +223,16 @@ function DashboardWelcome() {
   
   const userName = backendUser?.email?.split('@')[0] || 'User';
   const displayName = userName.charAt(0).toUpperCase() + userName.slice(1);
+
+  const formatTimeAgo = (date: Date) => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <div className="min-h-full bg-gradient-to-br from-gray-50 to-gray-100">
@@ -269,51 +327,86 @@ function DashboardWelcome() {
           </div>
         </div>
 
-        
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <Card className="border-0 shadow-md">
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Link to="/module/accounts">
-                  <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors">
-                    <Users className="h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-semibold">New Account</div>
-                      <div className="text-xs text-gray-500">Create account</div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Link to="/module/accounts">
+                    <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors">
+                      <Users className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-semibold">New Account</div>
+                        <div className="text-xs text-gray-500">Create account</div>
+                      </div>
+                    </Button>
+                  </Link>
+                  <Link to="/module/opportunities">
+                    <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4 hover:bg-green-50 hover:text-green-700 hover:border-green-300 transition-colors">
+                      <TrendingUp className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-semibold">New Opportunity</div>
+                        <div className="text-xs text-gray-500">Track new lead</div>
+                      </div>
+                    </Button>
+                  </Link>
+                  <Link to="/module/proposals">
+                    <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 transition-colors">
+                      <FileText className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-semibold">New Proposal</div>
+                        <div className="text-xs text-gray-500">Create proposal</div>
+                      </div>
+                    </Button>
+                  </Link>
+                  <Link to="/module/notes/create">
+                    <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4 hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-300 transition-colors">
+                      <StickyNote className="h-5 w-5" />
+                      <div className="text-left">
+                        <div className="font-semibold">New Note</div>
+                        <div className="text-xs text-gray-500">Add documentation</div>
+                      </div>
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+            <Card className="border-0 shadow-md">
+              <CardContent className="p-6">
+                {!recentActivity || recentActivity.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Clock className="h-8 w-8 text-gray-400" />
                     </div>
-                  </Button>
-                </Link>
-                <Link to="/module/opportunities">
-                  <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4 hover:bg-green-50 hover:text-green-700 hover:border-green-300 transition-colors">
-                    <TrendingUp className="h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-semibold">New Opportunity</div>
-                      <div className="text-xs text-gray-500">Track new lead</div>
-                    </div>
-                  </Button>
-                </Link>
-                <Link to="/module/proposals">
-                  <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 transition-colors">
-                    <FileText className="h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-semibold">New Proposal</div>
-                      <div className="text-xs text-gray-500">Create proposal</div>
-                    </div>
-                  </Button>
-                </Link>
-                <Link to="/module/notes/create">
-                  <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4 hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-300 transition-colors">
-                    <StickyNote className="h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-semibold">New Note</div>
-                      <div className="text-xs text-gray-500">Add documentation</div>
-                    </div>
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+                    <p className="text-sm text-gray-500">No recent activity</p>
+                    <p className="text-xs text-gray-400 mt-1">Start by creating accounts or opportunities</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentActivity.map((activity: any) => {
+                      const ActivityIcon = activity.icon;
+                      return (
+                        <div key={activity.id} className="flex items-start gap-3">
+                          <div className={`w-2 h-2 ${activity.color} rounded-full mt-2 flex-shrink-0`}></div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {activity.title}
+                            </p>
+                            <p className="text-xs text-gray-500">{formatTimeAgo(activity.time)}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
