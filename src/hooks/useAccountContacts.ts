@@ -24,7 +24,7 @@ export function useAccountContacts(accountId: string) {
    // TODO: need to fix this - jhalak32
 			const result = await accountsApi.getContacts(accountId);
 			const fetchEnd = performance.now();
-			console.log('🔍 API Response - getContacts:', {
+			console.log('API Response - getContacts:', {
 				accountId,
 				resultType: Array.isArray(result) ? 'Array' : 'Object',
 				contactsCount: Array.isArray(result) ? result.length : 0,
@@ -55,7 +55,7 @@ export function useAccountContacts(accountId: string) {
       return await accountsApi.addContact(accountId, contact);
     },
     onSuccess: async (data, variables) => {
-      console.log('✅ Contact added, invalidating queries for:', variables.accountId);
+      console.log('Contact added, invalidating queries for:', variables.accountId);
       
       // Invalidate first to mark as stale
       queryClient.invalidateQueries({ 
@@ -72,7 +72,7 @@ export function useAccountContacts(accountId: string) {
         type: 'active'
       });
       
-      console.log('✅ Queries refetched');
+      console.log('Queries refetched');
       
       toast.success('Contact Added', {
         description: 'Contact added successfully'
@@ -95,7 +95,7 @@ export function useAccountContacts(accountId: string) {
       contactId: string;
       contact: ContactUpdateRequest;
     }): Promise<{ status_code: number; message: string }> => {
-      console.log('🔄 API Call - Update Contact:', {
+      console.log('API Call - Update Contact:', {
         accountId,
         contactId,
         contactData: contact,

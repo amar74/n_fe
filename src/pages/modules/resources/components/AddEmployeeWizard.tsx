@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Upload, FileText, Sparkles, Loader2, CheckCircle, Link2, User, ChevronRight, ChevronLeft, Award, Briefcase, Building2, DollarSign } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
 
@@ -55,6 +55,28 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
   const { isCreating } = useEmployees();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
+
+  // Reset to step 1 when modal is closed and reopened
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset state when modal closes
+      console.log('Modal closed - resetting to step 1');
+      setCurrentStep(1);
+    } else {
+      console.log('Modal opened - starting at step 1');
+    }
+  }, [isOpen]);
+
+  // Debug: Log step changes
+  useEffect(() => {
+    console.log(`Current Step: ${currentStep} of ${totalSteps}`);
+    
+    // Scroll to top when step changes for better UX
+    const contentArea = document.querySelector('.overflow-y-auto');
+    if (contentArea) {
+      contentArea.scrollTop = 0;
+    }
+  }, [currentStep]);
 
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '',
@@ -128,15 +150,15 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
       const extracted = await response.json();
       
       console.log('='.repeat(60));
-      console.log('✅ PROFILE EXTRACTION RESPONSE:');
+      console.log('PROFILE EXTRACTION RESPONSE:');
       console.log('='.repeat(60));
-      console.log('Name:', extracted.name);
+      console.log('Name:', extracted.name || 'NOT FOUND');
+      console.log('Email:', extracted.email || 'NOT FOUND (LinkedIn does not provide)');
+      console.log('Phone:', extracted.phone || 'NOT FOUND (LinkedIn does not provide)');
       console.log('Title:', extracted.title);
       console.log('Experience:', extracted.total_experience_years, 'years');
-      console.log('Top Skills:', extracted.top_skills);
-      console.log('Sectors:', extracted.sectors);
-      console.log('Services:', extracted.services);
-      console.log('Match:', extracted.match_percentage + '%');
+      console.log('Top Skills:', extracted.top_skills?.length || 0);
+      console.log('Sectors:', extracted.sectors?.length || 0);
       console.log('Full Response:', extracted);
       
       const yearsExp = extracted.total_experience_years || 5;
@@ -160,11 +182,12 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
       if (extracted.services?.length > 0) setSelectedServices(extracted.services);
       if (extracted.project_types?.length > 0) setSelectedProjectTypes(extracted.project_types);
       
-      console.log(`✅ Auto-filled: ${extracted.top_skills?.length || 0} skills, ${extracted.sectors?.length || 0} sectors, ${extracted.services?.length || 0} services`);
+      console.log(`Auto-filled: ${extracted.top_skills?.length || 0} skills, ${extracted.sectors?.length || 0} sectors, ${extracted.services?.length || 0} services`);
       
       // Show success notification
       if (extracted.name || extracted.title || extracted.top_skills?.length > 0) {
-        alert(`✅ Profile Extracted!\n\nName: ${extracted.name}\nTitle: ${extracted.title}\nExperience: ${extracted.total_experience_years} years\nSkills: ${extracted.top_skills?.length || 0}\nSectors: ${extracted.sectors?.length || 0}\n\nClick Next to review all extracted data!`);
+        const hasContact = extracted.email || extracted.phone;
+        alert(`Profile Extracted!\n\nName: ${extracted.name}\nTitle: ${extracted.title}\nExperience: ${extracted.total_experience_years} years\nSkills: ${extracted.top_skills?.length || 0}\nSectors: ${extracted.sectors?.length || 0}\n\n${!hasContact ? '⚠️ Note: LinkedIn does not show email/phone publicly.\nPlease enter manually in Step 2.\n\n' : ''}Click Next to review all extracted data!`);
         
         // Auto-advance to Step 2 after extraction
         setTimeout(() => setCurrentStep(2), 1000);
@@ -194,14 +217,16 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
 
       const parsed = await response.json();
       
-      console.log('✅ CV parsed by AI:', parsed);
+      console.log('CV parsed by AI:', parsed);
+      console.log('Extracted Email:', parsed.email || 'NOT FOUND');
+      console.log('Extracted Phone:', parsed.phone || 'NOT FOUND');
       
       // Auto-populate all fields from CV
       setFormData(prev => ({
         ...prev,
         name: parsed.name || prev.name,
-        email: parsed.email || prev.email,
-        phone: parsed.phone || prev.phone,
+        email: parsed.email || prev.email || '',
+        phone: parsed.phone || prev.phone || '',
         jobTitle: parsed.title || prev.jobTitle,
         department: parsed.sectors?.[0] || prev.department,
         experience: parsed.total_experience_years ? `${parsed.total_experience_years} years` : prev.experience,
@@ -221,11 +246,16 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
         setFormData(prev => ({ ...prev, hourlyRate: rate, location }));
       }
       
-      console.log(`✅ Auto-populated: ${parsed.top_skills?.length || 0} skills, ${parsed.sectors?.length || 0} sectors`);
+      console.log(`Auto-populated: ${parsed.top_skills?.length || 0} skills, ${parsed.sectors?.length || 0} sectors`);
       
       // Show success notification
       if (parsed.name || parsed.title || parsed.top_skills?.length > 0) {
-        alert(`✅ CV Extracted!\n\nName: ${parsed.name}\nTitle: ${parsed.title}\nExperience: ${parsed.total_experience_years} years\nSkills: ${parsed.top_skills?.length || 0}\nSectors: ${parsed.sectors?.length || 0}\n\nClick Next to review all extracted data!`);
+        const contactInfo = [];
+        if (parsed.email) contactInfo.push(`Email: ${parsed.email}`);
+        if (parsed.phone) contactInfo.push(`Phone: ${parsed.phone}`);
+        const contactStr = contactInfo.length > 0 ? `\n${contactInfo.join('\n')}` : '\n⚠️ Email/Phone not found in CV - please enter manually';
+        
+        alert(`CV Extracted!\n\nName: ${parsed.name}\nTitle: ${parsed.title}\nExperience: ${parsed.total_experience_years} years\nSkills: ${parsed.top_skills?.length || 0}\nSectors: ${parsed.sectors?.length || 0}${contactStr}\n\nClick Next to review all extracted data!`);
         
         // Auto-advance to Step 2 after extraction
         setTimeout(() => setCurrentStep(2), 1000);
@@ -239,39 +269,57 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
     }
   };
 
+  const handleNext = () => {
+    console.log(`Next button clicked - Current: ${currentStep}, Total: ${totalSteps}`);
+    if (currentStep < totalSteps) {
+      console.log(`Moving from step ${currentStep} to ${currentStep + 1}`);
+      setCurrentStep(prev => prev + 1);
+    } else {
+      console.log('Already on last step - cannot go next');
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      console.log(`Previous clicked: Moving from step ${currentStep} to ${currentStep - 1}`);
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Don't auto-advance or submit - only explicit button clicks should navigate
+    e.stopPropagation();
+    
     console.log('Form submitted at step:', currentStep);
     
-    // Only submit if we're on the final step AND user explicitly clicked submit
-    if (currentStep === totalSteps) {
-      console.log('Final step - submitting employee data');
-      console.log('Creating employee:', formData.name);
-      
-      // Send only essential data for fast employee creation
-      const employeeData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        jobTitle: formData.jobTitle,
-        department: formData.department,
-        location: formData.location,
-        billRate: formData.hourlyRate,
-        experience: formData.experience,
-        skills: selectedSkills,
-        sectors: selectedSectors,
-        services: selectedServices,
-        projectTypes: selectedProjectTypes,
-        cvFile: uploadedFiles.resume?.[0],
-      };
-      
-      console.log('Submitting data:', employeeData);
-      onSubmit(employeeData);
-    } else {
-      // Prevent auto-advance on Enter key - user must click "Next Step"
-      console.log('Intermediate step - preventing auto-submit');
+    // CRITICAL: Only submit if we're on the final step (Step 4)
+    if (currentStep !== totalSteps) {
+      console.log('Not on final step - ignoring Enter key submit');
+      return;
     }
+    
+    console.log('Final step (4) - submitting employee data');
+    console.log('Creating employee:', formData.name);
+    
+    // Send only essential data for fast employee creation
+    const employeeData = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      jobTitle: formData.jobTitle,
+      department: formData.department,
+      location: formData.location,
+      billRate: formData.hourlyRate,
+      experience: formData.experience,
+      skills: selectedSkills,
+      sectors: selectedSectors,
+      services: selectedServices,
+      projectTypes: selectedProjectTypes,
+      cvFile: uploadedFiles.resume?.[0],
+    };
+    
+    console.log('Submitting data:', employeeData);
+    onSubmit(employeeData);
   };
 
   const steps = [
@@ -284,7 +332,7 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
   const CurrentStepIcon = steps[currentStep - 1]?.icon || Upload;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-white/10 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-7xl w-full max-h-[92vh] overflow-hidden shadow-xl border border-gray-200">
         
         {/* Header - Clean & Classic */}
@@ -292,7 +340,10 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Add New Employee</h2>
-              <p className="text-sm text-gray-600 mt-1">Step {currentStep} of {totalSteps}: {steps[currentStep - 1]?.title}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                <span className="font-semibold" style={{ color: '#161950' }}>Step {currentStep} of {totalSteps}:</span>{' '}
+                {steps[currentStep - 1]?.title}
+              </p>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-all">
               <X className="w-5 h-5 text-gray-500" />
@@ -310,10 +361,10 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                 <div key={step.number} className="flex items-center flex-1">
                   <div className="flex items-center gap-3 flex-1">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-                      isActive ? 'bg-black text-white' :
-                      isCompleted ? 'bg-gray-800 text-white' :
+                      isActive ? 'text-white' :
+                      isCompleted ? 'text-white' :
                       'bg-gray-200 text-gray-500'
-                    }`}>
+                    }`} style={isActive || isCompleted ? { backgroundColor: '#161950' } : {}}>
                       {isCompleted ? <CheckCircle className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
                     </div>
                     <div>
@@ -324,8 +375,8 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                   </div>
                   {idx < steps.length - 1 && (
                     <div className={`h-px flex-1 mx-2 ${
-                      step.number < currentStep ? 'bg-gray-800' : 'bg-gray-300'
-                    }`} />
+                      step.number < currentStep ? '' : 'bg-gray-300'
+                    }`} style={step.number < currentStep ? { backgroundColor: '#161950' } : {}} />
                   )}
                 </div>
               );
@@ -349,12 +400,29 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
         )}
 
         {/* Content Area */}
-        <form onSubmit={handleSubmit}>
+        <form 
+          onSubmit={handleSubmit}
+          onKeyDown={(e) => {
+            // Prevent Enter key from submitting form on non-final steps
+            if (e.key === 'Enter' && currentStep !== totalSteps) {
+              e.preventDefault();
+              console.log('Enter key blocked on step', currentStep);
+            }
+          }}
+        >
           <div className="overflow-y-auto p-8" style={{ maxHeight: 'calc(92vh - 250px)' }}>
             
             {/* STEP 1: Extract & Upload */}
           {currentStep === 1 && (
             <div className="space-y-4">
+              {/* Important Note */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-900">
+                  <span className="font-semibold">Note:</span> LinkedIn profiles don't show email/phone publicly. 
+                  For best results, upload a CV/Resume that includes contact information.
+                </p>
+              </div>
+
               {/* LinkedIn/Profile Extract */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="mb-5">
@@ -390,7 +458,8 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                         type="button"
                         onClick={handleProfileExtract}
                         disabled={isExtractingFromProfile}
-                        className="w-full h-11 px-6 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="w-full h-11 px-6 text-white rounded-lg font-semibold hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        style={{ backgroundColor: '#161950' }}
                       >
                         {isExtractingFromProfile ? (
                           <>
@@ -598,7 +667,7 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                     <p className="text-xs text-gray-600 mb-1">Low Range</p>
                     <p className="text-sm font-bold text-gray-900">${Math.round(parseInt(formData.hourlyRate || '60') * 0.9)}/hr</p>
                   </div>
-                  <div className="p-3 bg-gray-900 text-white rounded-lg text-center">
+                  <div className="p-3 text-white rounded-lg text-center" style={{ backgroundColor: '#161950' }}>
                     <p className="text-xs mb-1">Suggested</p>
                     <p className="text-sm font-bold">${parseInt(formData.hourlyRate || '60')}/hr</p>
                   </div>
@@ -629,9 +698,10 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                         onClick={() => toggleSelection(skill, selectedSkills, setSelectedSkills)}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                           selectedSkills.includes(skill)
-                            ? 'bg-gray-900 text-white'
+                            ? 'text-white'
                             : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                         }`}
+                        style={selectedSkills.includes(skill) ? { backgroundColor: '#161950' } : {}}
                       >
                         {skill}
                       </button>
@@ -656,9 +726,10 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                         onClick={() => toggleSelection(sector, selectedSectors, setSelectedSectors)}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                           selectedSectors.includes(sector)
-                            ? 'bg-gray-900 text-white'
+                            ? 'text-white'
                             : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                         }`}
+                        style={selectedSectors.includes(sector) ? { backgroundColor: '#161950' } : {}}
                       >
                         {sector}
                       </button>
@@ -683,9 +754,10 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                         onClick={() => toggleSelection(service, selectedServices, setSelectedServices)}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                           selectedServices.includes(service)
-                            ? 'bg-gray-900 text-white'
+                            ? 'text-white'
                             : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                         }`}
+                        style={selectedServices.includes(service) ? { backgroundColor: '#161950' } : {}}
                       >
                         {service}
                       </button>
@@ -710,9 +782,10 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                         onClick={() => toggleSelection(type, selectedProjectTypes, setSelectedProjectTypes)}
                         className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                           selectedProjectTypes.includes(type)
-                            ? 'bg-gray-900 text-white'
+                            ? 'text-white'
                             : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                         }`}
+                        style={selectedProjectTypes.includes(type) ? { backgroundColor: '#161950' } : {}}
                       >
                         {type}
                       </button>
@@ -728,12 +801,13 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
 
           {/* STEP 4: Document Checklist */}
           {currentStep === 4 && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-gray-900" />
                   Document Upload Checklist
                 </h3>
+                <p className="text-sm text-gray-600 mb-6">Upload required documents for employee verification and onboarding</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {DOCUMENT_TYPES.map((docType) => {
@@ -744,39 +818,47 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                     return (
                       <div
                         key={docType.id}
-                        className={`p-4 rounded-lg border transition-all ${
+                        className={`p-4 rounded-lg border-2 transition-all ${
                           isUploaded
-                            ? 'bg-gray-50 border-gray-900'
+                            ? 'bg-green-50/50 border-green-500'
                             : isSelected
-                            ? 'bg-white border-gray-400'
-                            : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                            ? 'bg-blue-50/30 border-blue-400'
+                            : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
                         }`}
                       >
                         <div className="flex items-start gap-3">
-                          <input
-                            type="checkbox"
-                            id={docType.id}
-                            checked={isSelected}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedDocuments([...selectedDocuments, docType.id]);
-                              } else {
-                                setSelectedDocuments(selectedDocuments.filter(d => d !== docType.id));
-                                const { [docType.id]: removed, ...rest } = uploadedFiles;
-                                setUploadedFiles(rest);
-                              }
-                            }}
-                            className="w-6 h-6 text-indigo-600 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 mt-1"
-                          />
+                          <div className="relative flex items-center justify-center mt-0.5">
+                            <input
+                              type="checkbox"
+                              id={docType.id}
+                              checked={isSelected}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedDocuments([...selectedDocuments, docType.id]);
+                                } else {
+                                  setSelectedDocuments(selectedDocuments.filter(d => d !== docType.id));
+                                  const { [docType.id]: removed, ...rest } = uploadedFiles;
+                                  setUploadedFiles(rest);
+                                }
+                              }}
+                              className="peer h-5 w-5 shrink-0 rounded border-2 border-gray-300 ring-offset-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer
+                                checked:bg-[#161950] checked:border-[#161950] 
+                                hover:border-gray-400 transition-colors"
+                              style={{ accentColor: '#161950' }}
+                            />
+                            {isSelected && (
+                              <CheckCircle className="absolute w-3.5 h-3.5 text-white pointer-events-none" />
+                            )}
+                          </div>
                           <div className="flex-1">
-                            <label htmlFor={docType.id} className="cursor-pointer">
-                              <div className="flex items-center gap-2 mb-2">
-                                <DocIcon className="w-5 h-5 text-indigo-600" />
+                            <label htmlFor={docType.id} className="cursor-pointer block">
+                              <div className="flex items-center gap-2 mb-1">
+                                <DocIcon className={`w-4 h-4 ${isUploaded ? 'text-green-600' : isSelected ? 'text-blue-600' : 'text-gray-500'}`} />
                                 <p className="text-sm font-semibold text-gray-900">{docType.label}</p>
                               </div>
                             </label>
                             {isSelected && (
-                              <div className="mt-3">
+                              <div className="mt-2">
                                 <input
                                   type="file"
                                   id={`file-${docType.id}`}
@@ -786,20 +868,21 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                                 />
                                 <label
                                   htmlFor={`file-${docType.id}`}
-                                  className={`block text-center px-4 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
-                                    isUploaded
-                                      ? 'bg-gray-900 text-white hover:bg-gray-800'
-                                      : 'bg-black text-white hover:bg-gray-800'
+                                  className={`block text-center px-3 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+                                    isUploaded 
+                                      ? 'text-white hover:opacity-90' 
+                                      : 'text-white hover:opacity-90'
                                   }`}
+                                  style={{ backgroundColor: '#161950' }}
                                 >
                                   {isUploaded ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                      <CheckCircle className="w-4 h-4" />
-                                      {uploadedFiles[docType.id].name.slice(0, 15)}...
+                                    <span className="flex items-center justify-center gap-1.5">
+                                      <CheckCircle className="w-3.5 h-3.5" />
+                                      <span className="truncate">{uploadedFiles[docType.id].name.slice(0, 16)}{uploadedFiles[docType.id].name.length > 16 ? '...' : ''}</span>
                                     </span>
                                   ) : (
-                                    <span className="flex items-center justify-center gap-2">
-                                      <Upload className="w-4 h-4" />
+                                    <span className="flex items-center justify-center gap-1.5">
+                                      <Upload className="w-3.5 h-3.5" />
                                       Upload File
                                     </span>
                                   )}
@@ -814,24 +897,27 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                 </div>
 
                 {/* Summary */}
-                <div className="mt-6 p-5 bg-gray-50 border border-gray-200 rounded-lg">
-                  <p className="text-sm font-bold text-gray-900 mb-3">Onboarding Summary</p>
+                <div className="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg">
+                  <p className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" style={{ color: '#161950' }} />
+                    Onboarding Summary
+                  </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="p-3 bg-white border border-gray-300 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-gray-900">{selectedSkills.length}</p>
-                      <p className="text-xs text-gray-600">Skills</p>
+                    <div className="p-4 bg-white border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 transition-colors">
+                      <p className="text-3xl font-bold" style={{ color: '#161950' }}>{selectedSkills.length}</p>
+                      <p className="text-xs text-gray-600 font-medium mt-1">Skills</p>
                     </div>
-                    <div className="p-3 bg-white border border-gray-300 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-gray-900">{selectedSectors.length}</p>
-                      <p className="text-xs text-gray-600">Sectors</p>
+                    <div className="p-4 bg-white border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 transition-colors">
+                      <p className="text-3xl font-bold" style={{ color: '#161950' }}>{selectedSectors.length}</p>
+                      <p className="text-xs text-gray-600 font-medium mt-1">Sectors</p>
                     </div>
-                    <div className="p-3 bg-white border border-gray-300 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-gray-900">{selectedServices.length}</p>
-                      <p className="text-xs text-gray-600">Services</p>
+                    <div className="p-4 bg-white border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 transition-colors">
+                      <p className="text-3xl font-bold" style={{ color: '#161950' }}>{selectedServices.length}</p>
+                      <p className="text-xs text-gray-600 font-medium mt-1">Services</p>
                     </div>
-                    <div className="p-3 bg-white border border-gray-300 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-gray-900">{selectedDocuments.length}</p>
-                      <p className="text-xs text-gray-600">Documents</p>
+                    <div className="p-4 bg-white border-2 border-gray-200 rounded-lg text-center hover:border-blue-300 transition-colors">
+                      <p className="text-3xl font-bold" style={{ color: '#161950' }}>{selectedDocuments.length}</p>
+                      <p className="text-xs text-gray-600 font-medium mt-1">Documents</p>
                     </div>
                   </div>
                 </div>
@@ -847,7 +933,7 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
               {currentStep > 1 && (
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(currentStep - 1)}
+                  onClick={handlePrevious}
                   disabled={isCreating}
                   className="px-5 py-2 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-all border border-gray-300 flex items-center gap-2"
                 >
@@ -860,8 +946,8 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
             <div className="flex-1 text-center">
               <div className="w-48 mx-auto bg-gray-200 rounded-full h-1.5">
                 <div 
-                  className="bg-gray-900 h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+                  className="h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${(currentStep / totalSteps) * 100}%`, backgroundColor: '#161950' }}
                 />
               </div>
               <p className="text-xs text-gray-600 mt-2">
@@ -882,8 +968,15 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
               {currentStep < totalSteps ? (
                 <button
                   type="button"
-                  onClick={() => setCurrentStep(currentStep + 1)}
-                  className="px-6 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all flex items-center gap-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Next Step button clicked');
+                    handleNext();
+                  }}
+                  disabled={isCreating}
+                  className="px-6 py-2 text-white rounded-lg font-semibold hover:opacity-90 transition-all flex items-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ backgroundColor: '#161950' }}
                 >
                   Next Step
                   <ChevronRight className="w-4 h-4" />
@@ -892,7 +985,8 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                 <button
                   type="submit"
                   disabled={isCreating}
-                  className="px-6 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2 text-white rounded-lg font-semibold hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2 shadow-md hover:shadow-lg"
+                  style={{ backgroundColor: '#161950' }}
                 >
                   {isCreating ? (
                     <>

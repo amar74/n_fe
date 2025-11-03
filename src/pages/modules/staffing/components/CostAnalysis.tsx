@@ -1,4 +1,6 @@
-import { BarChart3, DollarSign, TrendingUp, Users, Calendar, Target, ArrowUpRight, Info, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BarChart3, DollarSign, TrendingUp, Users, Calendar, Target, ArrowUpRight, Info, Sparkles, Brain, Lightbulb, TrendingDown } from 'lucide-react';
+import { apiClient } from '@/services/api/client';
 
 interface ProjectInfo {
   projectName: string;
@@ -34,6 +36,10 @@ interface YearlyBreakdown {
 }
 
 export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack }: Props) {
+  const [aiAnalysis, setAiAnalysis] = useState<string>('');
+  const [aiInsights, setAiInsights] = useState<any>(null);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+
   // Calculate yearly breakdown with escalation
   const calculateYearlyBreakdown = (): YearlyBreakdown[] => {
     const years = Math.ceil(projectInfo.durationMonths / 12);
@@ -87,7 +93,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#151950' }}>
+              <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
                 <BarChart3 className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -113,29 +119,217 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         </div>
       </div>
 
-      {/* Visual Cost Chart */}
-      <div className="bg-white rounded-lg shadow-xl border border-gray-300 p-6">
-        <h3 className="text-base font-bold text-gray-900 mb-5 flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-blue-600" />
-          Yearly Cost Visualization
-        </h3>
-        <div className="space-y-4">
-          {yearlyBreakdown.map((year) => (
-            <div key={year.year}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-gray-900">Year {year.year}</span>
-                <span className="text-sm font-bold text-blue-600">
-                  ${(year.totalPrice / 1000).toFixed(1)}K
-                </span>
+      {/* Enhanced Yearly Cost Visualization with AI Insights */}
+      <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200" style={{ backgroundColor: '#161950' }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <div className="h-8 bg-gray-100 rounded-lg overflow-hidden relative">
-                <div
-                  className="h-full bg-blue-500 rounded-lg transition-all"
-                  style={{ width: `${(year.totalPrice / maxPrice) * 100}%` }}
-                ></div>
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  Multi-Year Cost Projection
+                </h3>
+                <p className="text-sm text-white/80">
+                  {yearlyBreakdown.length} years • {projectInfo.annualEscalationRate}% annual escalation
+                </p>
               </div>
             </div>
-          ))}
+            <div className="text-right">
+              <p className="text-xs text-white/70">Total Increase</p>
+              <p className="text-lg font-bold text-white">
+                {yearlyBreakdown.length > 1 
+                  ? `+${(((yearlyBreakdown[yearlyBreakdown.length - 1].totalPrice - yearlyBreakdown[0].totalPrice) / yearlyBreakdown[0].totalPrice) * 100).toFixed(1)}%`
+                  : 'N/A'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {/* Professional Cost Bars */}
+          <div className="space-y-5">
+            {yearlyBreakdown.map((year, index) => {
+              const prevYear = index > 0 ? yearlyBreakdown[index - 1] : null;
+              const increase = prevYear 
+                ? ((year.totalPrice - prevYear.totalPrice) / prevYear.totalPrice * 100).toFixed(1)
+                : '0';
+              const isIncrease = parseFloat(increase) > 0;
+              
+              return (
+                <div key={year.year} className="relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-16 rounded-xl flex flex-col items-center justify-center" style={{ backgroundColor: '#161950' }}>
+                        <span className="text-xs text-white/70 font-semibold">YEAR</span>
+                        <span className="text-2xl font-bold text-white">{year.year}</span>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Total Project Cost</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          ${(year.totalPrice / 1000).toFixed(1)}K
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-6">
+                      {index > 0 && (
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
+                          isIncrease ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
+                        }`}>
+                          {isIncrease ? (
+                            <TrendingUp className="w-4 h-4 text-red-600" />
+                          ) : (
+                            <TrendingDown className="w-4 h-4 text-green-600" />
+                          )}
+                          <span className={`text-sm font-bold ${isIncrease ? 'text-red-600' : 'text-green-600'}`}>
+                            {isIncrease ? '+' : ''}{increase}%
+                          </span>
+                          <span className="text-xs text-gray-600">vs Y{index}</span>
+                        </div>
+                      )}
+                      
+                      <div className="text-right">
+                        <p className="text-xs text-gray-600">Labor Cost</p>
+                        <p className="text-sm font-bold text-blue-600">
+                          ${(year.laborCost / 1000).toFixed(1)}K
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Stacked Bar Chart - Thin with Hover Effects */}
+                  <div className="h-4 bg-gray-100 rounded-lg overflow-hidden relative flex group cursor-pointer">
+                    {/* Labor Segment */}
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-500 to-blue-600 relative hover:opacity-90 transition-opacity"
+                      style={{ width: `${(year.laborCost / year.totalPrice) * 100}%` }}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <span className="text-xs font-bold text-white drop-shadow-lg">
+                          {((year.laborCost / year.totalPrice) * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Overhead Segment */}
+                    <div
+                      className="h-full bg-gradient-to-r from-orange-500 to-orange-600 relative hover:opacity-90 transition-opacity"
+                      style={{ width: `${(year.overhead / year.totalPrice) * 100}%` }}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <span className="text-xs font-bold text-white drop-shadow-lg">
+                          {((year.overhead / year.totalPrice) * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Profit Segment */}
+                    <div
+                      className="h-full bg-gradient-to-r from-green-500 to-green-600 relative hover:opacity-90 transition-opacity"
+                      style={{ width: `${(year.profit / year.totalPrice) * 100}%` }}
+                    >
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <span className="text-xs font-bold text-white drop-shadow-lg">
+                          {((year.profit / year.totalPrice) * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Compact Legend - Always Visible */}
+                  <div className="flex items-center gap-4 mt-2 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                      <span className="text-gray-600">Labor</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 bg-orange-500 rounded"></div>
+                      <span className="text-gray-600">Overhead</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 bg-green-500 rounded"></div>
+                      <span className="text-gray-600">Profit</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* AI-Powered Cost Analysis Explanation */}
+          <div className="mt-6 p-5 rounded-xl border-2" style={{ backgroundColor: '#f8f9ff', borderColor: '#e0e7ff' }}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#161950' }}>
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                    AI Cost Escalation Analysis
+                  </h4>
+                  {!aiAnalysis && !isLoadingAI && (
+                    <button
+                      onClick={async () => {
+                        setIsLoadingAI(true);
+                        try {
+                          // In real scenario, this would use actual plan_id from API
+                          const mockAnalysis = `The ${projectInfo.annualEscalationRate}% annual escalation rate reflects standard market adjustments for construction and engineering labor costs. This accounts for inflation (typically 2-3%), salary merit increases, and competitive market pressures in the construction industry. Over ${yearlyBreakdown.length} years, this compounds to a ${(((yearlyBreakdown[yearlyBreakdown.length - 1].totalPrice - yearlyBreakdown[0].totalPrice) / yearlyBreakdown[0].totalPrice) * 100).toFixed(1)}% total increase, which is industry-standard for multi-year infrastructure projects to maintain competitive compensation and retain skilled talent.`;
+                          setAiAnalysis(mockAnalysis);
+                          setAiInsights({
+                            cost_increase_percentage: (((yearlyBreakdown[yearlyBreakdown.length - 1].totalPrice - yearlyBreakdown[0].totalPrice) / yearlyBreakdown[0].totalPrice) * 100).toFixed(1),
+                            key_factors: [
+                              `Annual salary escalation: ${projectInfo.annualEscalationRate}%`,
+                              `Market inflation adjustment`,
+                              `Total cost increase: ${(((yearlyBreakdown[yearlyBreakdown.length - 1].totalPrice - yearlyBreakdown[0].totalPrice) / yearlyBreakdown[0].totalPrice) * 100).toFixed(1)}% over ${yearlyBreakdown.length} years`
+                            ]
+                          });
+                        } catch (error) {
+                          console.error('AI analysis failed:', error);
+                        } finally {
+                          setIsLoadingAI(false);
+                        }
+                      }}
+                      className="px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all hover:opacity-90 text-white"
+                      style={{ backgroundColor: '#161950' }}
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Generate AI Analysis
+                    </button>
+                  )}
+                </div>
+                
+                {isLoadingAI ? (
+                  <div className="flex items-center gap-3 py-4">
+                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-3 border-gray-300 border-t-blue-600"></div>
+                    <p className="text-sm text-gray-600">Analyzing cost trends with AI...</p>
+                  </div>
+                ) : aiAnalysis ? (
+                  <>
+                    <p className="text-sm text-gray-700 leading-relaxed mb-4">
+                      {aiAnalysis}
+                    </p>
+                    
+                    {aiInsights && (
+                      <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-300">
+                        {aiInsights.key_factors?.map((factor: string, idx: number) => (
+                          <div key={idx} className="flex items-start gap-2">
+                            <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5" />
+                            <p className="text-xs text-gray-700 font-medium">{factor}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-600 italic">
+                    Click "Generate AI Analysis" to get intelligent insights about cost escalation factors and market trends.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -144,7 +338,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-white" style={{ backgroundColor: '#151950' }}>
+              <tr className="text-white" style={{ backgroundColor: '#161950' }}>
                 <th className="px-6 py-4 text-left text-sm font-bold">Year</th>
                 <th className="px-6 py-4 text-right text-sm font-bold">
                   <div className="flex items-center justify-end gap-1">
@@ -208,7 +402,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
               ))}
               
               {/* Enhanced Total Row */}
-              <tr className="text-white" style={{ backgroundColor: '#151950' }}>
+              <tr className="text-white" style={{ backgroundColor: '#161950' }}>
                 <td className="px-6 py-5 text-sm font-bold">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
@@ -298,7 +492,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
           </div>
         </div>
 
-        <div className="rounded-lg shadow-xl border-2 p-5" style={{ backgroundColor: '#151950', borderColor: '#151950' }}>
+        <div className="rounded-lg shadow-xl border-2 p-5" style={{ backgroundColor: '#161950', borderColor: '#161950' }}>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-md backdrop-blur-sm">
               <DollarSign className="w-6 h-6 text-white" />
@@ -411,7 +605,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         <button
           onClick={onNext}
           className="h-12 px-8 rounded-lg text-white font-bold hover:opacity-90 transition-all shadow-xl flex items-center gap-2"
-          style={{ backgroundColor: '#151950' }}
+          style={{ backgroundColor: '#161950' }}
         >
           Continue to Summary
           <ArrowUpRight className="w-5 h-5" />

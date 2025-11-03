@@ -138,7 +138,7 @@ export function CreateAccountModal({
 
   // Handler for Google Places Autocomplete
   const handlePlaceSelect = (value: string, placeDetails?: google.maps.places.PlaceResult) => {
-    console.log('📍 Place selected:', value, placeDetails);
+    console.log('Place selected:', value, placeDetails);
     
     if (!placeDetails || !placeDetails.address_components) {
       // User manually typed an address
@@ -174,7 +174,7 @@ export function CreateAccountModal({
       }
     });
 
-    console.log('📍 Parsed address:', { street, city, state, zipCode });
+    console.log('Parsed address:', { street, city, state, zipCode });
 
     // Update form with parsed address
     setFormData(prev => ({

@@ -120,9 +120,10 @@ export default function Navigation() {
     <div className="h-screen flex bg-white">
       
       <aside 
-        className={`bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex flex-col flex-shrink-0 transition-all duration-300 shadow-2xl ${
+        className={`flex flex-col flex-shrink-0 transition-all duration-300 shadow-2xl ${
           shouldExpand ? 'w-64' : 'w-20'
         }`}
+        style={{ backgroundColor: 'var(--color-indigo-950)' }}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
@@ -134,7 +135,7 @@ export default function Navigation() {
             <div className="flex flex-col gap-8">
               
               <div className="flex items-center gap-3 overflow-hidden px-1">
-                <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-500/30">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg" style={{ backgroundColor: '#161950' }}>
                   <svg width="20" height="22" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clipPath="url(#clip0_1234_1155)">
                       <path d="M7.08764 6.87988H6.05859V7.94044H7.08764V6.87988Z" fill="#FFFFFF"/>
@@ -184,9 +185,10 @@ export default function Navigation() {
                                 shouldExpand ? 'px-4 py-3 gap-3' : 'p-3 justify-center'
                               } ${
                                 childActive
-                                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/30 scale-[1.02]'
-                                  : 'hover:bg-slate-800/60 hover:scale-[1.02]'
+                                  ? 'shadow-lg scale-[1.02]'
+                                  : 'hover:bg-white/10 hover:scale-[1.02]'
                               }`}
+                              style={childActive ? { backgroundColor: '#161950' } : {}}
                               title={!shouldExpand ? item.label : undefined}
                             >
                               {childActive && shouldExpand && (
@@ -234,8 +236,8 @@ export default function Navigation() {
                                       to={child.path}
                                       className={`relative rounded-xl flex items-center transition-all duration-200 overflow-hidden group px-3 py-2.5 gap-3 ${
                                         childIsActive
-                                          ? 'bg-slate-700/50 shadow-md scale-[1.02]'
-                                          : 'hover:bg-slate-800/40 hover:scale-[1.02]'
+                                          ? 'bg-white/15 shadow-md scale-[1.02]'
+                                          : 'hover:bg-white/10 hover:scale-[1.02]'
                                       }`}
                                     >
                                       {childIsActive && (
@@ -274,9 +276,10 @@ export default function Navigation() {
                             shouldExpand ? 'px-4 py-3 gap-3' : 'p-3 justify-center'
                           } ${
                             active
-                              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg shadow-indigo-500/30 scale-[1.02]'
-                              : 'hover:bg-slate-800/60 hover:scale-[1.02]'
+                              ? 'shadow-lg scale-[1.02]'
+                              : 'hover:bg-white/10 hover:scale-[1.02]'
                           }`}
+                          style={active ? { backgroundColor: '#161950' } : {}}
                           title={!shouldExpand ? item.label : undefined}
                         >
                           
@@ -315,7 +318,7 @@ export default function Navigation() {
             <button
               onClick={handleSignOut}
               disabled={isSigningOut}
-              className={`bg-slate-800/50 rounded-xl border border-slate-700/50 flex justify-center items-center hover:bg-red-600/20 hover:border-red-500/50 transition-all duration-200 disabled:opacity-50 overflow-hidden group ${
+              className={`bg-white/10 rounded-xl border border-white/20 flex justify-center items-center hover:bg-red-600/20 hover:border-red-500/50 transition-all duration-200 disabled:opacity-50 overflow-hidden group ${
                 shouldExpand ? 'px-4 py-3.5 gap-3' : 'p-3.5'
               }`}
               title={!shouldExpand ? 'Log-out' : undefined}
@@ -367,7 +370,7 @@ export default function Navigation() {
                 className="flex items-center gap-3"
               >
                 <Avatar className="w-11 h-11">
-                  <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-600 text-white text-sm font-semibold">
+                  <AvatarFallback className="text-white text-sm font-semibold" style={{ backgroundColor: '#161950' }}>
                     {getUserDisplayName().charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

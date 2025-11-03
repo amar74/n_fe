@@ -43,12 +43,22 @@ import { toast } from 'sonner';
 import { apiClient } from '@/services/api/client';
 import { copyToClipboard } from '@/utils/clipboard';
 
+interface SurveyQuestion {
+  id: string;
+  type: string;
+  headline: string;
+  required?: boolean;
+  options?: string[];
+  range?: number;
+}
+
 interface Survey {
   id: string;
   title: string;
   description: string;
   status: string;
   created_at: string;
+  questions?: SurveyQuestion[];
 }
 
 interface SurveyResponse {
@@ -91,9 +101,9 @@ export default function SurveyResponsesPage() {
 
   // Debug: Log when responses state changes
   useEffect(() => {
-    console.log('📊 Responses state updated:', responses.length, 'items');
+    console.log('Responses state updated:', responses.length, 'items');
     if (responses.length > 0) {
-      console.log('📊 First response sample:', responses[0]);
+      console.log('First response sample:', responses[0]);
     }
   }, [responses]);
 
@@ -105,35 +115,35 @@ export default function SurveyResponsesPage() {
       try {
         const surveyResponse = await apiClient.get(`/surveys/${surveyId}`);
         setSurvey(surveyResponse.data);
-        console.log('✅ Survey loaded:', surveyResponse.data);
+        console.log('Survey loaded:', surveyResponse.data);
       } catch (surveyError: any) {
-        console.error('❌ Survey load error:', surveyError);
+        console.error('Survey load error:', surveyError);
         throw surveyError;
       }
       
       // Load responses separately to catch specific errors
       try {
         const responsesResponse = await apiClient.get(`/surveys/${surveyId}/responses`);
-        console.log('📥 Raw responses data:', responsesResponse.data);
-        console.log('📊 Data type:', typeof responsesResponse.data);
-        console.log('📊 Is Array:', Array.isArray(responsesResponse.data));
+        console.log('Raw responses data:', responsesResponse.data);
+        console.log('Data type:', typeof responsesResponse.data);
+        console.log('Is Array:', Array.isArray(responsesResponse.data));
         
         // Set responses - handle both array and object formats
         if (Array.isArray(responsesResponse.data)) {
-          console.log(`✅ Setting ${responsesResponse.data.length} responses`);
+          console.log(`Setting ${responsesResponse.data.length} responses`);
           setResponses(responsesResponse.data);
         } else if (responsesResponse.data?.responses) {
-          console.log(`✅ Setting ${responsesResponse.data.responses.length} responses from object`);
+          console.log(`Setting ${responsesResponse.data.responses.length} responses from object`);
           setResponses(responsesResponse.data.responses);
         } else {
-          console.warn('⚠️ No responses data found, setting empty array');
+          console.warn('No responses data found, setting empty array');
           setResponses([]);
         }
       } catch (responsesError: any) {
-        console.error('❌ Responses load error:', responsesError);
-        console.error('❌ Error response:', responsesError.response);
-        console.error('❌ Error status:', responsesError.response?.status);
-        console.error('❌ Error data:', responsesError.response?.data);
+        console.error('Responses load error:', responsesError);
+        console.error('Error response:', responsesError.response);
+        console.error('Error status:', responsesError.response?.status);
+        console.error('Error data:', responsesError.response?.data);
         
         // Don't throw - just show empty responses
         setResponses([]);
@@ -144,7 +154,7 @@ export default function SurveyResponsesPage() {
       }
       
     } catch (error: any) {
-      console.error('💥 Fatal error loading survey:', error);
+      console.error('Fatal error loading survey:', error);
       if (error.response?.status === 404) {
         toast.error('Survey not found');
       } else {
@@ -152,7 +162,7 @@ export default function SurveyResponsesPage() {
       }
     } finally {
       setLoading(false);
-      console.log('🏁 Loading complete. Responses count:', responses.length);
+      console.log('Loading complete. Responses count:', responses.length);
     }
   };
 
@@ -173,14 +183,14 @@ export default function SurveyResponsesPage() {
   });
 
   // Debug logging
-  console.log('🔍 Total responses:', responses.length);
-  console.log('🔍 Filtered responses:', filteredResponses.length);
-  console.log('🔍 Search term:', searchTerm);
-  console.log('🔍 Status filter:', statusFilter);
+  console.log('Total responses:', responses.length);
+  console.log('Filtered responses:', filteredResponses.length);
+  console.log('Search term:', searchTerm);
+  console.log('Status filter:', statusFilter);
   if (responses.length > 0 && filteredResponses.length === 0) {
-    console.log('⚠️ All responses filtered out! First response:', responses[0]);
-    console.log('⚠️ Contact data:', responses[0].contact);
-    console.log('⚠️ Meta data:', responses[0].meta);
+    console.log('All responses filtered out! First response:', responses[0]);
+    console.log('Contact data:', responses[0].contact);
+    console.log('Meta data:', responses[0].meta);
   }
 
   const handleExportData = () => {
@@ -228,15 +238,31 @@ export default function SurveyResponsesPage() {
     return `${minutes}m ${remainingSeconds}s`;
   };
 
+  const getQuestionById = (questionId: string): SurveyQuestion | null => {
+    if (!survey?.questions) return null;
+    return survey.questions.find(q => q.id === questionId) || null;
+  };
+
   const renderResponseData = (responseData: Record<string, any>) => {
-    return Object.entries(responseData).map(([key, value]) => (
-      <div key={key} className="mb-2">
-        <span className="font-medium text-gray-700">{key}:</span>{' '}
-        <span className="text-gray-600">
-          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-        </span>
-      </div>
-    ));
+    return Object.entries(responseData).map(([questionId, answer]) => {
+      const question = getQuestionById(questionId);
+      
+      return (
+        <div key={questionId} className="mb-4 pb-4 border-b border-gray-200 last:border-0 last:pb-0 last:mb-0">
+          <div className="flex items-start gap-2 mb-2">
+            <MessageSquare className="h-4 w-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+            <p className="font-medium text-gray-900 text-sm">
+              {question?.headline || `Question ${questionId}`}
+            </p>
+          </div>
+          <div className="ml-6 bg-white border border-gray-200 rounded-lg p-3">
+            <p className="text-gray-700 text-sm">
+              {typeof answer === 'object' ? JSON.stringify(answer, null, 2) : String(answer)}
+            </p>
+          </div>
+        </div>
+      );
+    });
   };
 
   if (loading) {
@@ -533,10 +559,15 @@ export default function SurveyResponsesPage() {
                         </div>
                       </div>
 
-                      {/* Response Data */}
                       <div className="mt-4 border-t border-gray-200 pt-4">
-                        <h4 className="text-sm font-semibold text-[#1A1A1A] mb-3">Response Details</h4>
-                        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                        <div className="flex items-center gap-2 mb-4">
+                          <MessageSquare className="h-5 w-5 text-indigo-600" />
+                          <h4 className="text-base font-semibold text-[#1A1A1A]">Survey Responses</h4>
+                          <span className="text-sm text-gray-500">
+                            ({Object.keys(response.response_data).length} {Object.keys(response.response_data).length === 1 ? 'answer' : 'answers'})
+                          </span>
+                        </div>
+                        <div className="bg-gradient-to-br from-gray-50 to-indigo-50 rounded-xl p-5 space-y-1">
                           {renderResponseData(response.response_data)}
                         </div>
                       </div>

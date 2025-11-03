@@ -347,10 +347,10 @@ export default function EmployeeSearchPage() {
                     onClick={() => setSearchMode('filters')}
                     className={`px-3 py-2.5 rounded-lg border font-semibold text-xs transition-all flex items-center justify-center gap-1.5 ${
                       searchMode === 'filters'
-                        ? 'text-white border-[#151950]'
-                        : 'bg-white text-gray-700 border-gray-300 hover:text-[#151950]'
+                        ? 'text-white border-[#161950]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:text-[#161950]'
                     }`}
-                    style={searchMode === 'filters' ? { backgroundColor: '#151950' } : {}}
+                    style={searchMode === 'filters' ? { backgroundColor: '#161950' } : {}}
                   >
                     <Filter className="w-3.5 h-3.5" />
                     Filters
@@ -359,10 +359,10 @@ export default function EmployeeSearchPage() {
                     onClick={() => setSearchMode('ai')}
                     className={`px-3 py-2.5 rounded-lg border font-semibold text-xs transition-all flex items-center justify-center gap-1.5 ${
                       searchMode === 'ai'
-                        ? 'text-white border-[#151950]'
-                        : 'bg-white text-gray-700 border-gray-300 hover:text-[#151950]'
+                        ? 'text-white border-[#161950]'
+                        : 'bg-white text-gray-700 border-gray-300 hover:text-[#161950]'
                     }`}
-                    style={searchMode === 'ai' ? { backgroundColor: '#151950' } : {}}
+                    style={searchMode === 'ai' ? { backgroundColor: '#161950' } : {}}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                     AI Search
@@ -437,7 +437,7 @@ export default function EmployeeSearchPage() {
                         onClick={handleAISearch}
                         disabled={!aiQuery.trim()}
                         className="w-full h-11 px-5 py-2 rounded-lg text-white text-sm font-semibold font-outfit hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        style={{ backgroundColor: '#151950' }}
+                        style={{ backgroundColor: '#161950' }}
                       >
                         <Sparkles className="w-4 h-4" />
                         AI Search
@@ -506,7 +506,7 @@ export default function EmployeeSearchPage() {
                       <div className="border-t border-gray-200 pt-4 mt-4">
                         <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#151950' }}>
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
                               <Filter className="w-4 h-4 text-white" />
                             </div>
                             <div>
@@ -515,7 +515,7 @@ export default function EmployeeSearchPage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 px-2.5 py-1 bg-white rounded-full">
-                            <span className="text-xs font-semibold" style={{ color: '#151950' }}>
+                            <span className="text-xs font-semibold" style={{ color: '#161950' }}>
                               {searchCriteria.skills.length + searchCriteria.sectors.length + 
                                searchCriteria.services.length + searchCriteria.projectTypes.length}
                             </span>
@@ -527,12 +527,12 @@ export default function EmployeeSearchPage() {
                         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <Target className="w-4 h-4" style={{ color: '#151950' }} />
+                              <Target className="w-4 h-4" style={{ color: '#161950' }} />
                               <label className="text-[#344054] text-xs font-semibold font-outfit">
                                 Skills Matrix
                               </label>
                               {searchCriteria.skills.length > 0 && (
-                                <span className="px-2 py-0.5 text-white rounded-full text-xs font-bold" style={{ backgroundColor: '#151950' }}>
+                                <span className="px-2 py-0.5 text-white rounded-full text-xs font-bold" style={{ backgroundColor: '#161950' }}>
                                   {searchCriteria.skills.length}
                                 </span>
                               )}
@@ -555,7 +555,7 @@ export default function EmployeeSearchPage() {
                             }))}
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-100 text-xs h-24 bg-white"
                             style={{ borderColor: '#ccc' }}
-                            onFocus={(e) => e.target.style.borderColor = '#151950'}
+                            onFocus={(e) => e.target.style.borderColor = '#161950'}
                             onBlur={(e) => e.target.style.borderColor = '#ccc'}
                           >
                             {SKILLS_OPTIONS.map(skill => (
@@ -574,12 +574,12 @@ export default function EmployeeSearchPage() {
                         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <Briefcase className="w-4 h-4" style={{ color: '#151950' }} />
+                              <Briefcase className="w-4 h-4" style={{ color: '#161950' }} />
                               <label className="text-[#344054] text-xs font-semibold font-outfit">
                                 Sectors Matrix
                               </label>
                               {searchCriteria.sectors.length > 0 && (
-                                <span className="px-2 py-0.5 text-white rounded-full text-xs font-bold" style={{ backgroundColor: '#151950' }}>
+                                <span className="px-2 py-0.5 text-white rounded-full text-xs font-bold" style={{ backgroundColor: '#161950' }}>
                                   {searchCriteria.sectors.length}
                                 </span>
                               )}
@@ -602,7 +602,7 @@ export default function EmployeeSearchPage() {
                             }))}
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-100 text-xs h-24 bg-white"
                             style={{ borderColor: '#ccc' }}
-                            onFocus={(e) => e.target.style.borderColor = '#151950'}
+                            onFocus={(e) => e.target.style.borderColor = '#161950'}
                             onBlur={(e) => e.target.style.borderColor = '#ccc'}
                           >
                             {SECTORS_OPTIONS.map(sector => (
@@ -621,12 +621,12 @@ export default function EmployeeSearchPage() {
                         <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <Award className="w-4 h-4" style={{ color: '#151950' }} />
+                              <Award className="w-4 h-4" style={{ color: '#161950' }} />
                               <label className="text-[#344054] text-xs font-semibold font-outfit">
                                 Services Matrix
                               </label>
                               {searchCriteria.services.length > 0 && (
-                                <span className="px-2 py-0.5 text-white rounded-full text-xs font-bold" style={{ backgroundColor: '#151950' }}>
+                                <span className="px-2 py-0.5 text-white rounded-full text-xs font-bold" style={{ backgroundColor: '#161950' }}>
                                   {searchCriteria.services.length}
                                 </span>
                               )}
@@ -649,7 +649,7 @@ export default function EmployeeSearchPage() {
                             }))}
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-100 text-xs h-24 bg-white"
                             style={{ borderColor: '#ccc' }}
-                            onFocus={(e) => e.target.style.borderColor = '#151950'}
+                            onFocus={(e) => e.target.style.borderColor = '#161950'}
                             onBlur={(e) => e.target.style.borderColor = '#ccc'}
                           >
                             {SERVICES_OPTIONS.map(service => (
@@ -668,12 +668,12 @@ export default function EmployeeSearchPage() {
                         <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <List className="w-4 h-4" style={{ color: '#151950' }} />
+                              <List className="w-4 h-4" style={{ color: '#161950' }} />
                               <label className="text-[#344054] text-xs font-semibold font-outfit">
                                 Project Types
                               </label>
                               {searchCriteria.projectTypes.length > 0 && (
-                                <span className="px-2 py-0.5 text-white rounded-full text-xs font-bold" style={{ backgroundColor: '#151950' }}>
+                                <span className="px-2 py-0.5 text-white rounded-full text-xs font-bold" style={{ backgroundColor: '#161950' }}>
                                   {searchCriteria.projectTypes.length}
                                 </span>
                               )}
@@ -696,7 +696,7 @@ export default function EmployeeSearchPage() {
                             }))}
                             className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-100 text-xs h-24 bg-white"
                             style={{ borderColor: '#ccc' }}
-                            onFocus={(e) => e.target.style.borderColor = '#151950'}
+                            onFocus={(e) => e.target.style.borderColor = '#161950'}
                             onBlur={(e) => e.target.style.borderColor = '#ccc'}
                           >
                             {PROJECT_TYPES_OPTIONS.map(type => (
@@ -889,7 +889,7 @@ export default function EmployeeSearchPage() {
                                 <button
                                   onClick={() => handleScheduleInterview(candidate)}
                                   className="flex-1 h-10 px-4 rounded-lg text-white text-sm font-semibold font-outfit hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                                  style={{ backgroundColor: '#151950' }}
+                                  style={{ backgroundColor: '#161950' }}
                                 >
                                   <Calendar className="w-4 h-4" />
                                   Schedule Interview

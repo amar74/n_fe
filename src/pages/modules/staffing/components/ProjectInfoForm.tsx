@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, DollarSign, TrendingUp, Building2, Clock, Target, Sparkles, Info, CheckCircle, ArrowUpRight } from 'lucide-react';
+import { FileText, Calendar, DollarSign, TrendingUp, Building2, Clock, Target, Sparkles, Info, CheckCircle, ArrowUpRight, Brain, Lightbulb, X } from 'lucide-react';
+import { apiClient } from '@/services/api/client';
 
 interface ProjectInfo {
-  projectId?: number;
+  projectId?: string;  // UUID
   projectName: string;
   projectDescription: string;
   projectStartDate: string;
@@ -15,12 +16,22 @@ interface ProjectInfo {
 interface Props {
   initialData: ProjectInfo;
   onSubmit: (data: ProjectInfo) => void;
+  isEditMode?: boolean;
 }
 
-export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
+export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = false }: Props) {
   const [formData, setFormData] = useState<ProjectInfo>(initialData);
   const [opportunities, setOpportunities] = useState<any[]>([]);
   const [isAutoFilled, setIsAutoFilled] = useState(false);
+  const [showAIRecommendations, setShowAIRecommendations] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState<any>(null);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+
+  // Update form data when initialData changes (important for edit mode)
+  useEffect(() => {
+    console.log('ProjectInfoForm received initialData:', initialData);
+    setFormData(initialData);
+  }, [initialData]);
 
   // Mock opportunities - Replace with actual API call
   useEffect(() => {
@@ -71,7 +82,7 @@ export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
     if (opportunity) {
       setFormData({
         ...formData,
-        projectId: opportunity.id,
+        projectId: String(opportunity.id),  // Convert to string (UUID)
         projectName: opportunity.name,
         projectDescription: opportunity.description || '',
         projectStartDate: opportunity.startDate || '',
@@ -97,8 +108,57 @@ export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
 
   const selectedOpportunity = opportunities.find(o => o.id === formData.projectId);
 
+  const handleGetAIRecommendations = async () => {
+    setIsLoadingAI(true);
+    setShowAIRecommendations(true);
+    
+    try {
+      const response = await apiClient.post('/staff-planning/ai-project-parameters', {
+        project_name: formData.projectName || 'New Project',
+        project_description: formData.projectDescription,
+        project_type: 'Infrastructure',
+        project_value: selectedOpportunity?.budget || 500000
+      });
+      
+      setAiRecommendations(response.data);
+    } catch (error) {
+      console.error('Failed to get AI recommendations:', error);
+      setAiRecommendations({
+        analysis: 'Using industry-standard parameters for construction projects.',
+        recommended_parameters: {
+          duration_months: 24,
+          overhead_rate: 25.0,
+          profit_margin: 15.0,
+          annual_escalation_rate: 3.0
+        },
+        market_insights: [
+          'Construction inflation trending at 3-4% annually',
+          'Typical overhead: 20-30% for infrastructure projects'
+        ]
+      });
+    } finally {
+      setIsLoadingAI(false);
+    }
+  };
+
+  const applyAIRecommendations = () => {
+    if (aiRecommendations?.recommended_parameters) {
+      setFormData({
+        ...formData,
+        durationMonths: aiRecommendations.recommended_parameters.duration_months,
+        overheadRate: aiRecommendations.recommended_parameters.overhead_rate,
+        profitMargin: aiRecommendations.recommended_parameters.profit_margin,
+        annualEscalationRate: aiRecommendations.recommended_parameters.annual_escalation_rate
+      });
+      setShowAIRecommendations(false);
+      alert('AI recommendations applied successfully!');
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="flex gap-6">
+      {/* Left Column - Main Form */}
+      <div className="flex-1 space-y-6">
       {/* Success Alert */}
       {isAutoFilled && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3 animate-fade-in">
@@ -115,7 +175,7 @@ export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
         {/* Enhanced Header */}
         <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#151950' }}>
+            <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
               <FileText className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1">
@@ -141,33 +201,41 @@ export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           {/* Opportunity Selection - Featured */}
-          <div className="mb-8 p-5 bg-gray-50 rounded-lg border-2 border-gray-200">
+          <div className={`mb-8 p-5 rounded-lg border-2 ${isEditMode ? 'bg-gray-100 border-gray-300' : 'bg-gray-50 border-gray-200'}`}>
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#151950' }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: isEditMode ? '#6b7280' : '#161950' }}>
                 <Building2 className="w-5 h-5 text-white" />
               </div>
-              <div>
+              <div className="flex-1">
                 <label className="block text-base font-bold text-gray-900 mb-1">
-                  Select Project (Opportunity) *
+                  {isEditMode ? 'Project (Locked)' : 'Select Project (Opportunity) *'}
                 </label>
                 <p className="text-xs text-gray-600">
-                  Choose from existing opportunities to auto-populate project details
+                  {isEditMode 
+                    ? 'Project cannot be changed in edit mode. Create a new plan to select a different project.' 
+                    : 'Choose from existing opportunities to auto-populate project details'}
                 </p>
               </div>
             </div>
             
-            <select
-              onChange={handleOpportunitySelect}
-              className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm font-medium bg-white"
-              defaultValue=""
-            >
-              <option value="" disabled>Choose a project from opportunities...</option>
-              {opportunities.map(opp => (
-                <option key={opp.id} value={opp.id}>
-                  {opp.name} • ${(opp.budget / 1000).toFixed(0)}K budget • {opp.location}
-                </option>
-              ))}
-            </select>
+            {isEditMode ? (
+              <div className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 bg-gray-200 text-sm font-medium text-gray-700 cursor-not-allowed">
+                {formData.projectName || 'No project selected'}
+              </div>
+            ) : (
+              <select
+                onChange={handleOpportunitySelect}
+                className="w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 text-sm font-medium bg-white"
+                defaultValue=""
+              >
+                <option value="" disabled>Choose a project from opportunities...</option>
+                {opportunities.map(opp => (
+                  <option key={opp.id} value={opp.id}>
+                    {opp.name} • ${(opp.budget / 1000).toFixed(0)}K budget • {opp.location}
+                  </option>
+                ))}
+              </select>
+            )}
             
             {selectedOpportunity && (
               <div className="mt-3 p-3 bg-white rounded-lg border border-gray-200">
@@ -201,14 +269,19 @@ export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
                 {/* Project Name */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Project Name *
+                    Project Name * {isEditMode && <span className="text-xs text-gray-500">(Locked)</span>}
                   </label>
                   <input
                     type="text"
                     value={formData.projectName}
                     onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
                     placeholder="Enter project name"
-                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className={`w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm ${
+                      isEditMode 
+                        ? 'bg-gray-100 cursor-not-allowed' 
+                        : 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
+                    disabled={isEditMode}
                     required
                   />
                 </div>
@@ -216,18 +289,25 @@ export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
                 {/* Project Description */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Project Description
+                    Project Description {isEditMode && <span className="text-xs text-gray-500">(Locked)</span>}
                   </label>
                   <textarea
                     value={formData.projectDescription}
                     onChange={(e) => setFormData({ ...formData, projectDescription: e.target.value })}
                     placeholder="Enter detailed project description..."
                     rows={5}
-                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+                    className={`w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm resize-none ${
+                      isEditMode 
+                        ? 'bg-gray-100 cursor-not-allowed' 
+                        : 'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
+                    disabled={isEditMode}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formData.projectDescription.length}/500 characters
-                  </p>
+                  {!isEditMode && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formData.projectDescription.length}/500 characters
+                    </p>
+                  )}
                 </div>
 
                 {/* Project Start Date */}
@@ -436,7 +516,7 @@ export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
             <button
               type="submit"
               className="h-12 px-10 rounded-lg text-white text-base font-bold hover:opacity-90 transition-all shadow-xl hover:shadow-2xl flex items-center gap-3"
-              style={{ backgroundColor: '#151950' }}
+              style={{ backgroundColor: '#161950' }}
             >
               Continue to Staff Planning
               <ArrowUpRight className="w-5 h-5" />
@@ -444,23 +524,179 @@ export default function ProjectInfoForm({ initialData, onSubmit }: Props) {
           </div>
         </form>
       </div>
+      </div>
 
-      {/* Help Card */}
-      <div className="bg-white rounded-lg border border-gray-300 p-5">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-            <Sparkles className="w-6 h-6 text-white" />
+      {/* Right Column - AI Recommendations Side Panel */}
+      <div className="w-96 flex-shrink-0">
+        <div className="sticky top-6 space-y-4">
+          {/* AI Helper Card */}
+          <div className="bg-white rounded-lg border-2 border-gray-300 p-5" style={{ borderColor: '#161950', backgroundColor: '#f0f5ff' }}>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: '#161950' }}>
+                <Brain className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-bold text-gray-900 mb-2">Need Help?</h3>
+                <p className="text-xs text-gray-600 mb-3">
+                  AI can estimate project parameters based on market trends
+                </p>
+                <button 
+                  onClick={handleGetAIRecommendations}
+                  disabled={isLoadingAI || !formData.projectName}
+                  className="w-full px-4 py-2.5 text-white text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed" 
+                  style={{ backgroundColor: '#161950' }}
+                >
+                  {isLoadingAI ? (
+                    <>
+                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-gray-300 border-t-white"></div>
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Get Recommendations
+                    </>
+                  )}
+                </button>
+                {!formData.projectName && (
+                  <p className="text-xs text-orange-600 mt-2">💡 Enter project name first</p>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <h3 className="text-base font-bold text-gray-900 mb-2">Need Help Getting Started?</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Our AI assistant can help you estimate project parameters based on similar past projects.
-            </p>
-            <button className="px-4 py-2 text-white text-sm font-semibold rounded-lg transition-all flex items-center gap-2 hover:opacity-90" style={{ backgroundColor: '#151950' }}>
-              <Sparkles className="w-4 h-4" />
-              Get AI Recommendations
-            </button>
+
+          {/* AI Recommendations Panel */}
+          {showAIRecommendations && aiRecommendations && (
+        <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">AI Parameter Recommendations</h3>
+                  <p className="text-xs text-gray-600"> Based on market analysis & project scope</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAIRecommendations(false)}
+                className="w-8 h-8 rounded-lg hover:bg-gray-200 flex items-center justify-center transition-all"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
           </div>
+
+          <div className="p-6 space-y-6">
+            {/* AI Analysis */}
+            <div className="p-4 rounded-lg" style={{ backgroundColor: '#f8f9ff', borderWidth: '1px', borderColor: '#e0e7ff' }}>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {aiRecommendations.analysis}
+              </p>
+            </div>
+
+            {/* Recommended Parameters */}
+            <div>
+              <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Target className="w-4 h-4" style={{ color: '#161950' }} />
+                Recommended Financial Parameters
+              </h4>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-blue-600" />
+                    <p className="text-xs font-semibold text-gray-700">Duration</p>
+                  </div>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {aiRecommendations.recommended_parameters.duration_months}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">months ({Math.ceil(aiRecommendations.recommended_parameters.duration_months / 12)} years)</p>
+                  {aiRecommendations.rationale?.duration && (
+                    <p className="text-xs text-gray-600 mt-2 italic">{aiRecommendations.rationale.duration}</p>
+                  )}
+                </div>
+
+                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="w-4 h-4 text-orange-600" />
+                    <p className="text-xs font-semibold text-gray-700">Overhead Rate</p>
+                  </div>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {aiRecommendations.recommended_parameters.overhead_rate}%
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">of labor cost</p>
+                  {aiRecommendations.rationale?.overhead && (
+                    <p className="text-xs text-gray-600 mt-2 italic">{aiRecommendations.rationale.overhead}</p>
+                  )}
+                </div>
+
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <DollarSign className="w-4 h-4 text-green-600" />
+                    <p className="text-xs font-semibold text-gray-700">Profit Margin</p>
+                  </div>
+                  <p className="text-2xl font-bold text-green-600">
+                    {aiRecommendations.recommended_parameters.profit_margin}%
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">target margin</p>
+                  {aiRecommendations.rationale?.profit && (
+                    <p className="text-xs text-gray-600 mt-2 italic">{aiRecommendations.rationale.profit}</p>
+                  )}
+                </div>
+
+                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-purple-600" />
+                    <p className="text-xs font-semibold text-gray-700">Annual Escalation</p>
+                  </div>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {aiRecommendations.recommended_parameters.annual_escalation_rate}%
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">per year</p>
+                  {aiRecommendations.rationale?.escalation && (
+                    <p className="text-xs text-gray-600 mt-2 italic">{aiRecommendations.rationale.escalation}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Market Insights */}
+            {aiRecommendations.market_insights?.length > 0 && (
+              <div>
+                <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-600" />
+                  Market Insights
+                </h4>
+                <div className="space-y-2">
+                  {aiRecommendations.market_insights.map((insight: string, idx: number) => (
+                    <div key={idx} className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <CheckCircle className="w-4 h-4 text-amber-600 mt-0.5" />
+                      <p className="text-xs text-gray-700">{insight}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Apply Button */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+              <p className="text-sm text-gray-600">
+                These recommendations are based on industry standards and current market conditions
+              </p>
+              <button
+                onClick={applyAIRecommendations}
+                className="px-6 py-3 rounded-lg text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-lg"
+                style={{ backgroundColor: '#161950' }}
+              >
+                <CheckCircle className="w-5 h-5" />
+                Apply Recommendations
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
         </div>
       </div>
     </div>

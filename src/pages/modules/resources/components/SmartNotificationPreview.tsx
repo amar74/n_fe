@@ -68,7 +68,7 @@ The ${companyName} Team
         </div>
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg" style={{ backgroundColor: '#f0f0ff' }}>
-            <User className="w-5 h-5" style={{ color: '#151950' }} />
+            <User className="w-5 h-5" style={{ color: '#161950' }} />
           </div>
           <div>
             <p className="text-xs text-gray-500 font-medium">Name</p>
@@ -110,7 +110,7 @@ The ${companyName} Team
       {/* AI Features */}
       <div className="p-6 border-t border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
         <div className="flex items-start gap-3 mb-4">
-          <Sparkles className="w-5 h-5 mt-0.5" style={{ color: '#151950' }} />
+          <Sparkles className="w-5 h-5 mt-0.5" style={{ color: '#161950' }} />
           <div>
             <h4 className="text-sm font-bold text-gray-900 mb-2">AI Personalization Features</h4>
             <ul className="space-y-2 text-sm text-gray-700">

@@ -53,7 +53,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: '#151950' }}>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: '#161950' }}>
                 <CheckCircle className="w-7 h-7 text-white" />
               </div>
               <div>
@@ -85,7 +85,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         <div className="bg-white rounded-lg shadow-xl border border-gray-300">
           <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#151950' }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-lg font-bold text-[#1A1A1A]">Project Summary</h3>
@@ -141,7 +141,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         <div className="bg-white rounded-lg shadow-xl border border-gray-300">
           <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#151950' }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
                 <DollarSign className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-lg font-bold text-[#1A1A1A]">Financial Breakdown</h3>
@@ -217,7 +217,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
           <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#151950' }}>
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -240,7 +240,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
               <div key={index} className="p-5 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:shadow-lg transition-all group">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform" style={{ backgroundColor: '#151950' }}>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform" style={{ backgroundColor: '#161950' }}>
                       <Users className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -329,7 +329,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
 
       {/* Detailed Financial Breakdown */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200" style={{ backgroundColor: '#151950' }}>
+        <div className="px-6 py-4 border-b border-gray-200" style={{ backgroundColor: '#161950' }}>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />
             Complete Financial Breakdown
@@ -414,7 +414,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
             </div>
 
             {/* Total Price - Featured */}
-            <div className="flex items-center justify-between p-6 rounded-xl shadow-xl" style={{ backgroundColor: '#151950' }}>
+            <div className="flex items-center justify-between p-6 rounded-xl shadow-xl" style={{ backgroundColor: '#161950' }}>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                   <DollarSign className="w-6 h-6 text-white" />
@@ -435,7 +435,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
       </div>
 
       {/* Ready to Save Banner */}
-      <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 rounded-xl shadow-2xl border-2 border-green-600 p-6">
+      <div className="rounded-xl shadow-2xl border-2 p-6" style={{ backgroundColor: '#161950', borderColor: '#161950' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg">
@@ -459,8 +459,8 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
               onClick={onSave}
               className="h-12 px-8 bg-white rounded-lg flex items-center gap-2 hover:bg-gray-100 transition-all shadow-xl"
             >
-              <Save className="w-5 h-5 text-gray-700" />
-              <span className="text-sm font-bold text-gray-700">Save Plan</span>
+              <Save className="w-5 h-5" style={{ color: '#161950' }} />
+              <span className="text-sm font-bold" style={{ color: '#161950' }}>Save Plan</span>
             </button>
             <button
               onClick={onExport}
@@ -482,11 +482,11 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
           ← Back to Cost Analysis
         </button>
         
-        <div className="flex items-center gap-3 px-5 py-3 bg-green-50 rounded-lg border border-green-200">
-          <CheckCircle className="w-5 h-5 text-green-600" />
+        <div className="flex items-center gap-3 px-5 py-3 rounded-lg border-2" style={{ backgroundColor: '#f0f0ff', borderColor: '#161950' }}>
+          <CheckCircle className="w-5 h-5" style={{ color: '#161950' }} />
           <div className="text-left">
-            <p className="text-sm font-bold text-green-900">All Steps Completed</p>
-            <p className="text-xs text-green-700">Ready to save your staffing plan</p>
+            <p className="text-sm font-bold text-gray-900">All Steps Completed</p>
+            <p className="text-xs text-gray-700">Ready to save your staffing plan</p>
           </div>
         </div>
       </div>

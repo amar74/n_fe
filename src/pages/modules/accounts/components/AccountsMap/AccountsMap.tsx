@@ -27,16 +27,16 @@ function AccountsMap({ accounts }: AccountsMapProps) {
 
   // Memoize city aggregates - instant synchronous calculation
   const cityAggregates = useMemo(() => {
-    console.log('[AccountsMap] 📊 Calculating city aggregates from', accounts.length, 'accounts');
+    console.log('[AccountsMap] Calculating city aggregates from', accounts.length, 'accounts');
     console.log('[AccountsMap] Account cities:', accounts.map(a => `${a.client_address?.city || 'No city'}, ${a.client_address?.state || 'No state'}`));
     
     const aggregates = calculateCityAggregates(accounts);
     
-    console.log('[AccountsMap] ✅ Result:', aggregates.length, 'cities with valid coordinates');
+    console.log('[AccountsMap] Result:', aggregates.length, 'cities with valid coordinates');
     if (aggregates.length > 0) {
       console.log('[AccountsMap] Cities:', aggregates.map(a => `${a.city} (${a.accountCount} accounts, pos: ${a.position.lat.toFixed(2)}, ${a.position.lng.toFixed(2)})`));
     } else {
-      console.warn('[AccountsMap] ⚠️ No valid city aggregates created! Check if accounts have city and state data.');
+      console.warn('[AccountsMap] No valid city aggregates created! Check if accounts have city and state data.');
     }
     
     return aggregates;
@@ -150,7 +150,7 @@ function AccountsMap({ accounts }: AccountsMapProps) {
       return;
     }
 
-    console.log('[AccountsMap] 🔄 UPDATING MARKERS for', cityAggregates.length, 'cities with accounts:', accountsKey);
+    console.log('[AccountsMap] UPDATING MARKERS for', cityAggregates.length, 'cities with accounts:', accountsKey);
     
     // Clear existing markers
     markersRef.current.forEach(marker => marker.setMap(null));
@@ -282,7 +282,7 @@ function AccountsMap({ accounts }: AccountsMapProps) {
 
     const initializeMap = async () => {
       try {
-        console.log('[AccountsMap] 🌍 Initializing Google Maps...');
+        console.log('[AccountsMap] Initializing Google Maps...');
         setError(null);
 
         // Use centralized loader to prevent conflicts
@@ -295,14 +295,14 @@ function AccountsMap({ accounts }: AccountsMapProps) {
           throw new Error('Google Maps API failed to load');
         }
 
-        console.log('[AccountsMap] ✅ Google Maps loaded successfully');
+        console.log('[AccountsMap] Google Maps loaded successfully');
         setIsLoaded(true);
 
       } catch (err: any) {
         if (!mounted) return;
         
         const errorMessage = err.message || 'Failed to load Google Maps';
-        console.error('[AccountsMap] ❌ Map initialization error:', errorMessage);
+        console.error('[AccountsMap] Map initialization error:', errorMessage);
         setError(errorMessage);
       }
     };

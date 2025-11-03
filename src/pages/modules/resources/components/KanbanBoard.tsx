@@ -25,7 +25,7 @@ type KanbanBoardProps = {
     accepted: Employee[];
     rejected: Employee[];
   };
-  onStageChange: (employeeId: string, newStage: string) => void;
+  onStageChange: (employeeId: string, newStage: string, notes?: string) => void;
   onEmployeeClick: (employee: Employee) => void;
   onDownloadCV: (cvUrl: string, name: string) => void;
 };
@@ -97,7 +97,9 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
   const handleDrop = (e: React.DragEvent, newStage: string) => {
     e.preventDefault();
     if (draggedEmployee && draggedEmployee.stage !== newStage) {
-      onStageChange(draggedEmployee.id, newStage);
+      // Open employee details modal which will handle stage change confirmation
+      onEmployeeClick(draggedEmployee);
+      // The EmployeeDetailsModal will handle the stage change with proper confirmation
     }
     setDraggedEmployee(null);
     setDragOverStage(null);

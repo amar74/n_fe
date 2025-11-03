@@ -32,7 +32,7 @@ export function AISkillsGapWidget({ totalEmployees }: AISkillsGapWidgetProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-white rounded-xl shadow-sm">
-              <Sparkles className="w-6 h-6" style={{ color: '#151950' }} />
+              <Sparkles className="w-6 h-6" style={{ color: '#161950' }} />
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900">AI Skills Gap Analysis</h3>
@@ -136,7 +136,7 @@ export function AISkillsGapWidget({ totalEmployees }: AISkillsGapWidgetProps) {
             <p className="text-sm font-bold text-gray-900">Need to hire more talent?</p>
             <p className="text-xs text-gray-600 mt-1">AI recommends filling {totalGap} positions for upcoming projects</p>
           </div>
-          <button className="px-4 py-2 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md" style={{ backgroundColor: '#151950' }}>
+          <button className="px-4 py-2 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md" style={{ backgroundColor: '#161950' }}>
             <div className="flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               Start Hiring

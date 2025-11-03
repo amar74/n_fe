@@ -249,9 +249,9 @@ export function AccountInformationForm({
           handleFieldChange('client_address_zip_code', zipCode);
           setZipAutoFilled(true);
           setZipError('');
-          console.log(`✅ Auto-filled ZIP: ${zipCode} for ${city}, ${state}`);
+          console.log(`Auto-filled ZIP: ${zipCode} for ${city}, ${state}`);
         } else {
-          console.log(`⚠️ No ZIP code found for ${city}, ${state}`);
+          console.log(`No ZIP code found for ${city}, ${state}`);
         }
       }
     } catch (err) {

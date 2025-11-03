@@ -10,7 +10,6 @@ export { default as AnalyticsPage } from './AnalyticsPage';
 
 // Components
 export { KanbanBoard } from './components/KanbanBoard';
-export { AddEmployeeCVModal } from './components/AddEmployeeCVModal';
 export { AddEmployeeWizard } from './components/AddEmployeeWizard';
 export { EmployeeDetailsModal } from './components/EmployeeDetailsModal';
 export { StageChangeModal } from './components/StageChangeModal';

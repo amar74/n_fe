@@ -9,7 +9,7 @@ type EmployeeDetailsModalProps = {
   employee: Employee | null;
   isOpen: boolean;
   onClose: () => void;
-  onStageChange: (employeeId: string, newStage: string) => void;
+  onStageChange: (employeeId: string, newStage: string, notes?: string) => void;
   onDownloadCV: (cvUrl: string, name: string) => void;
 };
 
@@ -84,11 +84,11 @@ export function EmployeeDetailsModal({ employee, isOpen, onClose, onStageChange,
     // Approve only this specific field
     setApprovedFields(new Set(approvedFields).add(verification.field));
     // In real implementation, would call API to update this field
-    console.log(`✅ Approved ${verification.field}: ${verification.suggested}`);
+    console.log(`Approved ${verification.field}: ${verification.suggested}`);
   };
 
   const handleRejectVerification = (verification: AIVerification) => {
-    console.log(`❌ Rejected ${verification.field}`);
+    console.log(`Rejected ${verification.field}`);
   };
   
   const handleStageClick = (stage: string) => {
@@ -133,8 +133,8 @@ ${scheduleData.sendEmail ? '✅ Interview invitation email sent to candidate' : 
     `.trim();
     
     // Move to review stage with schedule notes
-    await onStageChange(employee.id, 'review');
-    console.log(`✅ Interview scheduled`, scheduleNotes);
+    await onStageChange(employee.id, 'review', scheduleNotes);
+    console.log(`Interview scheduled`, scheduleNotes);
   };
   
   const getPlatformIcon = (platform: string) => {
@@ -179,8 +179,8 @@ Interviewer: ${feedback.interviewerName}
 ${feedback.notes}
     `.trim();
     
-    await onStageChange(employee.id, nextStage);
-    console.log(`✅ Interview completed - moving to ${nextStage}`, fullNotes);
+    await onStageChange(employee.id, nextStage, fullNotes);
+    console.log(`Interview completed - moving to ${nextStage}`, fullNotes);
   };
   
   const handleStageConfirm = async (notes: string) => {
@@ -188,13 +188,13 @@ ${feedback.notes}
     setIsStageModalOpen(false);
     onClose();
     
-    // Update in background
-    await onStageChange(employee.id, targetStage);
-    console.log(`✅ Stage changed to ${targetStage} with notes:`, notes);
+    // Update in background with notes
+    await onStageChange(employee.id, targetStage, notes);
+    console.log(`Stage changed to ${targetStage} with notes:`, notes);
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-white/10 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
@@ -419,11 +419,18 @@ ${feedback.notes}
               {/* Change Stage */}
               <div className="p-6 bg-white border border-gray-200 rounded-xl">
                 <h3 className="text-sm font-bold text-gray-900 mb-4">Move to Stage</h3>
+                {(employee.stage === 'accepted' || employee.stage === 'rejected') && (
+                  <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <p className="text-xs text-gray-600">
+                      ℹ️ This application is in final stage. All actions are disabled.
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <button
                     onClick={() => handleStageClick('review')}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-semibold hover:bg-blue-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={employee.stage === 'review'}
+                    disabled={employee.stage === 'review' || employee.stage === 'accepted' || employee.stage === 'rejected'}
                   >
                     <Briefcase className="w-4 h-4" />
                     Move to Review
@@ -431,7 +438,7 @@ ${feedback.notes}
                   <button
                     onClick={() => handleStageClick('accepted')}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-50 text-green-700 rounded-xl font-semibold hover:bg-green-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={employee.stage === 'accepted'}
+                    disabled={employee.stage === 'accepted' || employee.stage === 'rejected'}
                   >
                     <CheckCircle className="w-4 h-4" />
                     Accept
@@ -439,7 +446,7 @@ ${feedback.notes}
                   <button
                     onClick={() => handleStageClick('rejected')}
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-700 rounded-xl font-semibold hover:bg-red-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={employee.stage === 'rejected'}
+                    disabled={employee.stage === 'accepted' || employee.stage === 'rejected'}
                   >
                     <XCircle className="w-4 h-4" />
                     Reject

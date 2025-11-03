@@ -22,7 +22,7 @@ export function useContacts(accountId: string) {
     const contactsList = contactsData?.contacts || [];
     const primaryContact = accountDetail?.primary_contact;
     
-    console.log('🔍 useContacts - Raw data:', {
+    console.log('useContacts - Raw data:', {
       contactsData,
       contactsList,
       contactsListLength: contactsList.length,
@@ -37,12 +37,12 @@ export function useContacts(accountId: string) {
     
     // If primary contact exists in list, return as is
     if (primaryExists) {
-      console.log('✅ Primary exists in list, returning contactsList:', contactsList);
+      console.log('Primary exists in list, returning contactsList:', contactsList);
       return contactsList;
     }
     
     // Otherwise, add primary contact to the beginning of the list
-    console.log('⚠️ Adding primary to beginning of list');
+    console.log('Adding primary to beginning of list');
     return [primaryContact, ...contactsList];
   }, [contactsData?.contacts, accountDetail?.primary_contact]);
   // State

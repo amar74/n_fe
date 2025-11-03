@@ -184,19 +184,19 @@ function getCityCoordinates(city: string, state?: string | null): { lat: number;
   if (state) {
     const cityStateKey = `${normalizedCity}, ${state.trim()}`;
     if (CITY_COORDINATES[cityStateKey]) {
-      console.log(`[Map Utils] ✅ Found coordinates for ${cityStateKey}`);
+      console.log(`[Map Utils] Found coordinates for ${cityStateKey}`);
       return CITY_COORDINATES[cityStateKey];
     }
   }
   
   // Second, try city name only (exact match)
   if (CITY_COORDINATES[normalizedCity]) {
-    console.log(`[Map Utils] ✅ Found coordinates for ${normalizedCity}`);
+    console.log(`[Map Utils] Found coordinates for ${normalizedCity}`);
     return CITY_COORDINATES[normalizedCity];
   }
   
   // No coordinates available
-  console.warn(`[Map Utils] ⚠️ No coordinates found for "${normalizedCity}"${state ? `, ${state}` : ''}. Add to CITY_COORDINATES.`);
+  console.warn(`[Map Utils] No coordinates found for "${normalizedCity}"${state ? `, ${state}` : ''}. Add to CITY_COORDINATES.`);
   return null;
 }
 
@@ -242,7 +242,7 @@ export function calculateCityAggregates(accounts: AccountListItem[]): CityAggreg
     
     // Skip cities without valid coordinates
     if (!position) {
-      console.warn(`[Map Utils] ⚠️ Skipping ${city}${state ? `, ${state}` : ''} (${accountCount} accounts)`);
+      console.warn(`[Map Utils] Skipping ${city}${state ? `, ${state}` : ''} (${accountCount} accounts)`);
       return;
     }
     
@@ -257,7 +257,7 @@ export function calculateCityAggregates(accounts: AccountListItem[]): CityAggreg
     });
   });
   
-  console.log(`[Map Utils] ✅ Processed ${aggregates.length}/${cityMap.size} cities with coordinates`);
+  console.log(`[Map Utils] Processed ${aggregates.length}/${cityMap.size} cities with coordinates`);
   
   return aggregates;
 }

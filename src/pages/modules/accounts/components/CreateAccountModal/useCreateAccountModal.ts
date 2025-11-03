@@ -105,7 +105,7 @@ export function useCreateAccountModal(
         }
       }
 
-      console.debug('🗺️ CreateAccountModal: Address components extracted:', {
+      console.debug('CreateAccountModal: Address components extracted:', {
         line1,
         line2: line2Components.join(', '),
         city: cityValue,

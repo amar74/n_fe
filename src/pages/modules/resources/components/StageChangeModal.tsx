@@ -87,29 +87,28 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
     onClose();
   };
 
+  const isReverseMove = () => {
+    const stageOrder = ['pending', 'review', 'accepted', 'rejected'];
+    const fromIndex = stageOrder.indexOf(currentStage);
+    const toIndex = stageOrder.indexOf(targetStage);
+    return fromIndex > toIndex && toIndex >= 0;
+  };
+
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border-2" style={{ borderColor: '#161950' }}>
         {/* Header */}
-        <div className={`p-6 border-b border-gray-200 bg-gradient-to-r ${
-          config.color === 'green' ? 'from-green-50 to-emerald-50' :
-          config.color === 'red' ? 'from-red-50 to-pink-50' :
-          config.color === 'blue' ? 'from-blue-50 to-indigo-50' :
-          'from-gray-50 to-slate-50'
-        }`}>
+        <div className="p-6 border-b border-gray-200" style={{ backgroundColor: '#f0f5ff' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-3 bg-white rounded-xl shadow-sm ${
-                config.color === 'green' ? 'text-green-600' :
-                config.color === 'red' ? 'text-red-600' :
-                config.color === 'blue' ? 'text-blue-600' :
-                'text-gray-600'
-              }`}>
+              <div className="p-3 bg-white rounded-xl shadow-sm" style={{ color: '#161950' }}>
                 <IconComponent className="w-6 h-6" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">{config.title}</h2>
-                <p className="text-sm text-gray-600 mt-1">{config.description}</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {isReverseMove() ? '⚠️ Reverse move - moving backwards in process' : config.description}
+                </p>
               </div>
             </div>
             <button
@@ -123,13 +122,27 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
 
         {/* Content */}
         <div className="p-6 space-y-4">
-          <div>
-            <p className="text-sm text-gray-700 mb-4">
-              You are moving <span className="font-semibold">{employeeName}</span> from{' '}
-              <span className="font-semibold capitalize">{currentStage}</span> to{' '}
-              <span className="font-semibold capitalize">{targetStage}</span>.
-            </p>
+          {/* Stage Change Visual */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 p-3 bg-gray-100 rounded-lg text-center">
+              <p className="text-xs text-gray-600 mb-1">From</p>
+              <p className="text-sm font-bold text-gray-900 capitalize">{currentStage}</p>
+            </div>
+            <div className="text-2xl" style={{ color: '#161950' }}>→</div>
+            <div className="flex-1 p-3 rounded-lg text-center text-white" style={{ backgroundColor: '#161950' }}>
+              <p className="text-xs mb-1">To</p>
+              <p className="text-sm font-bold capitalize">{targetStage}</p>
+            </div>
           </div>
+
+          {/* Reverse Move Warning */}
+          {isReverseMove() && (
+            <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <p className="text-xs text-orange-800 font-medium">
+                ⚠️ This is a reverse move. The candidate's status will revert to an earlier stage.
+              </p>
+            </div>
+          )}
 
           {/* AI Suggestion */}
           {isGenerating && (
@@ -152,7 +165,7 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
           {/* Review Notes */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Review Notes {targetStage === 'accepted' ? '(Add interview feedback)' : ''}
+              Review Notes {isReverseMove() ? '(Required for reverse move)' : targetStage === 'accepted' ? '(Add interview feedback)' : '(Optional)'}
             </label>
             <textarea
               value={notes}
@@ -179,12 +192,9 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
           </button>
           <button
             onClick={handleConfirm}
-            disabled={isGenerating || !notes.trim()}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
-              config.color === 'green' ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white' :
-              config.color === 'red' ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white' :
-              'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
-            }`}
+            disabled={isGenerating || (isReverseMove() && !notes.trim())}
+            className="px-6 py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-white hover:opacity-90"
+            style={{ backgroundColor: config.color === 'green' ? '#10b981' : config.color === 'red' ? '#ef4444' : '#161950' }}
           >
             <IconComponent className="w-5 h-5" />
             Confirm & {config.color === 'green' ? 'Accept' : config.color === 'red' ? 'Reject' : 'Move'}

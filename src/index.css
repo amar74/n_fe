@@ -3,6 +3,10 @@
 
 @import 'tailwindcss';
 
+:root {
+  --color-indigo-950: #161950;
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';

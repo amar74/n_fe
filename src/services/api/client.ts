@@ -11,7 +11,7 @@ export const API_BASE_URL_WITH_PREFIX = `${API_BASE_URL}/api`;
 // Create axios instance
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL_WITH_PREFIX,
-  timeout: 30000, // Increased to 30s for AI processing
+  timeout: 10000, // 10s timeout - AI endpoints have their own timeouts
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

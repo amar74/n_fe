@@ -20,10 +20,7 @@ export const createQueryKeys = <T extends string>(feature: T) => ({
     [...createQueryKeys(feature).details(), id] as const,
 });
 
-/**
- * Utility function to invalidate all queries for a feature
- * Useful for global state management and cache cleanup
- */
+// Invalidate all queries for a feature
 export const invalidateFeature = (feature: string) => {
   return queryClient.invalidateQueries({ 
     queryKey: [feature],
@@ -31,10 +28,7 @@ export const invalidateFeature = (feature: string) => {
   });
 };
 
-/**
- * Utility function to remove all queries for a feature
- * Useful for logout scenarios or when switching contexts
- */
+// Remove all queries for a feature
 export const removeFeatureQueries = (feature: string) => {
   return queryClient.removeQueries({ 
     queryKey: [feature],

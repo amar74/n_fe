@@ -114,19 +114,19 @@ export function useEmployees(status?: string) {
   // Create employee with optimistic update
   const createMutation = useMutation({
     mutationFn: async (data: EmployeeCreate) => {
-      console.log('⚡ Sending create request to backend...');
+      console.log('Sending create request to backend...');
       const startTime = Date.now();
       const response = await apiClient.post<Employee>(`${BASE_URL}/api/resources/employees`, data);
-      console.log(`✅ Backend responded in ${Date.now() - startTime}ms`);
+      console.log(`Backend responded in ${Date.now() - startTime}ms`);
       return response.data;
     },
     onSuccess: (newEmployee) => {
-      console.log('✅ Employee created successfully:', newEmployee.id);
+      console.log('Employee created successfully:', newEmployee.id);
       // Invalidate queries to refetch updated list
       queryClient.invalidateQueries({ queryKey: employeeKeys.all });
     },
     onError: (error: any) => {
-      console.error('❌ Create mutation failed:', error.message);
+      console.error('Create mutation failed:', error.message);
     },
   });
 
@@ -153,9 +153,13 @@ export function useEmployees(status?: string) {
 
   // Change stage with optimistic update
   const changeStageMutation = useMutation({
-    mutationFn: async ({ id, stage }: { id: string; stage: string }) => {
+    mutationFn: async ({ id, stage, notes }: { id: string; stage: string; notes?: string }) => {
       const response = await apiClient.patch<Employee>(
-        `${BASE_URL}/api/resources/employees/${id}/stage?new_stage=${stage}`
+        `${BASE_URL}/api/resources/employees/${id}/stage`,
+        { 
+          new_stage: stage,
+          notes: notes || undefined
+        }
       );
       return response.data;
     },

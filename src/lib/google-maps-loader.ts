@@ -29,7 +29,7 @@ class GoogleMapsLoader {
     
     // Set up global auth failure handler
     window.gm_authFailure = () => {
-      console.error('❌ Google Maps authentication failed');
+      console.error('Google Maps authentication failed');
       this.handleAuthFailure('Google Maps API authentication failed. Check your API key and restrictions.');
     };
   }
@@ -42,33 +42,33 @@ class GoogleMapsLoader {
   }
 
   private handleAuthFailure(message: string) {
-    console.error('🔐 Auth failure:', message);
+    console.error('Auth failure:', message);
     this.callbacks.forEach(cb => cb());
   }
 
   async load(options: GoogleMapsLoadOptions = {}): Promise<void> {
-    console.log('🔍 GoogleMapsLoader.load() called');
+    console.log('GoogleMapsLoader.load() called');
     
     // If already loaded, return immediately
     if (this.isLoaded && window.google?.maps?.places) {
-      console.log('✅ Google Maps already loaded and ready');
+      console.log('Google Maps already loaded and ready');
       return Promise.resolve();
     }
 
     // If currently loading, wait for existing promise
     if (this.isLoading && this.loadPromise) {
-      console.log('⏳ Google Maps is already loading, waiting for existing promise...');
+      console.log('Google Maps is already loading, waiting for existing promise...');
       return this.loadPromise;
     }
 
     // Check for API key
     if (!this.apiKey) {
       const error = 'Google Maps API key is missing. Set VITE_GOOGLE_MAPS_API_KEY in your .env file';
-      console.error('❌', error);
+      console.error(error);
       throw new Error(error);
     }
 
-    console.log('🔑 API Key found:', this.apiKey.substring(0, 10) + '...');
+    console.log('API Key found:', this.apiKey.substring(0, 10) + '...');
 
     // Start loading
     this.isLoading = true;
@@ -77,11 +77,11 @@ class GoogleMapsLoader {
       const existingScript = document.getElementById('google-maps-script');
       
       if (existingScript) {
-        console.log('📜 Existing script found in DOM');
+        console.log('Existing script found in DOM');
         
         // Script exists and API is ready
         if (window.google?.maps?.places?.Autocomplete) {
-          console.log('✅ Google Maps script found and Places API ready');
+          console.log('Google Maps script found and Places API ready');
           this.isLoaded = true;
           this.isLoading = false;
           resolve();
@@ -89,24 +89,24 @@ class GoogleMapsLoader {
         }
         
         // Script exists but not ready - remove it and reload
-        console.log('⚠️ Script exists but not ready, removing and reloading...');
+        console.log('Script exists but not ready, removing and reloading...');
         existingScript.remove();
       }
 
       // Create unique callback name
       const callbackName = `googleMapsCallback_${Date.now()}`;
-      console.log('🎯 Creating callback:', callbackName);
+      console.log('Creating callback:', callbackName);
       
       let timeoutId: NodeJS.Timeout;
       
       window[callbackName] = () => {
-        console.log('✅ Google Maps callback fired!');
+        console.log('Google Maps callback fired!');
         clearTimeout(timeoutId);
         
         // Verify Places API is available
         if (!window.google?.maps?.places?.Autocomplete) {
           const error = 'Google Maps loaded but Places API not available. Ensure Places API is enabled in Google Cloud Console.';
-          console.error('❌', error);
+          console.error(error);
           console.error('Available:', {
             google: !!window.google,
             maps: !!window.google?.maps,
@@ -118,7 +118,7 @@ class GoogleMapsLoader {
           return;
         }
 
-        console.log('✅ Places API verified and ready');
+        console.log('Places API verified and ready');
         this.isLoaded = true;
         this.isLoading = false;
         resolve();
@@ -131,8 +131,8 @@ class GoogleMapsLoader {
       timeoutId = setTimeout(() => {
         this.isLoading = false;
         const error = `Timeout: Google Maps didn't load in 15s. Check: 1) API key valid, 2) Places API enabled, 3) Billing enabled, 4) Referrer restrictions (add ${window.location.origin}/* to allowed referrers)`;
-        console.error('❌', error);
-        console.error('🔍 Debug info:', {
+        console.error(error);
+        console.error('Debug info:', {
           apiKey: this.apiKey ? 'Present' : 'Missing',
           scriptExists: !!document.getElementById('google-maps-script'),
           windowGoogle: !!window.google,
@@ -146,7 +146,7 @@ class GoogleMapsLoader {
       const libraries = options.libraries || ['places'];
       const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&libraries=${libraries.join(',')}&callback=${callbackName}`;
 
-      console.log('📍 Loading Google Maps API with callback...');
+      console.log('Loading Google Maps API with callback...');
       
       // Create and inject script
       const script = document.createElement('script');
@@ -159,12 +159,12 @@ class GoogleMapsLoader {
         clearTimeout(timeoutId);
         this.isLoading = false;
         const errorMessage = 'Failed to load Google Maps script. Check: 1) Internet connection, 2) API key valid, 3) No browser console errors';
-        console.error('❌', errorMessage, error);
+        console.error(errorMessage, error);
         reject(new Error(errorMessage));
         delete window[callbackName];
       };
 
-      console.log('📄 Appending script to document head...');
+      console.log('Appending script to document head...');
       document.head.appendChild(script);
     });
 

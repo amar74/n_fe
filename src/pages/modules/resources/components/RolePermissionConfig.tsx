@@ -67,7 +67,7 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl" style={{ backgroundColor: '#f0f0ff' }}>
-            <Shield className="w-6 h-6" style={{ color: '#151950' }} />
+            <Shield className="w-6 h-6" style={{ color: '#161950' }} />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Role & Permission Configuration</h2>
@@ -87,7 +87,7 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
           className="w-full h-14 pl-12 pr-4 rounded-xl border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 transition-all font-medium"
           style={{ borderColor: '#ccc' }}
           onFocus={(e) => {
-            e.target.style.borderColor = '#151950';
+            e.target.style.borderColor = '#161950';
             e.target.style.boxShadow = '0 0 0 2px rgba(21, 25, 80, 0.1)';
           }}
           onBlur={(e) => {
@@ -155,7 +155,7 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
                                   onChange={() => togglePermission(employee.id, perm.id)}
                                   className="w-4 h-4 border-gray-300 rounded focus:ring-2"
                                   style={{ 
-                                    accentColor: '#151950',
+                                    accentColor: '#161950',
                                   }}
                                 />
                                 <span className="text-sm text-gray-700 group-hover:text-gray-900 font-medium">
@@ -204,7 +204,7 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
                             <button
                               onClick={() => handleEditClick(employee.id, permissions)}
                               className="flex items-center gap-1 px-3 py-2 text-white rounded-lg text-xs font-semibold hover:opacity-90 transition-all"
-                              style={{ backgroundColor: '#151950' }}
+                              style={{ backgroundColor: '#161950' }}
                             >
                               <Edit2 className="w-3 h-3" />
                               Edit
@@ -224,7 +224,7 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
       {/* Info Box */}
       <div className="p-6 rounded-xl" style={{ backgroundColor: '#f0f0ff', borderColor: '#d0d0ff', borderWidth: '1px' }}>
         <div className="flex items-start gap-3">
-          <Shield className="w-6 h-6 mt-1" style={{ color: '#151950' }} />
+          <Shield className="w-6 h-6 mt-1" style={{ color: '#161950' }} />
           <div>
             <h3 className="text-sm font-bold text-gray-900 mb-2">Role-Based Access Control (RBAC)</h3>
             <p className="text-sm text-gray-700 leading-relaxed">
@@ -232,8 +232,8 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
             </p>
             <div className="mt-3 pt-3 border-t" style={{ borderColor: '#d0d0ff' }}>
               <p className="text-xs text-gray-600 font-medium">
-                API Endpoints: <code className="px-2 py-1 bg-white rounded" style={{ color: '#151950' }}>GET /api/roles</code> • 
-                <code className="ml-2 px-2 py-1 bg-white rounded" style={{ color: '#151950' }}>PATCH /api/users/:id/permissions</code>
+                API Endpoints: <code className="px-2 py-1 bg-white rounded" style={{ color: '#161950' }}>GET /api/roles</code> • 
+                <code className="ml-2 px-2 py-1 bg-white rounded" style={{ color: '#161950' }}>PATCH /api/users/:id/permissions</code>
               </p>
             </div>
           </div>

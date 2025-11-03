@@ -132,7 +132,7 @@ function OnboardingPage() {
 
   const handleAddEmployee = async (data: any) => {
     try {
-      console.log('📝 Creating employee:', data.name);
+      console.log('Creating employee:', data.name);
       
       // Step 1: Create employee with minimal data (FAST - no AI processing)
       const newEmployee = await createEmployee({
@@ -149,23 +149,23 @@ function OnboardingPage() {
         use_ai_suggestion: false, // ⚡ CRITICAL: No AI processing on backend
       });
       
-      console.log('✅ Employee created:', newEmployee.id);
+      console.log('Employee created:', newEmployee.id);
       
       // Step 2: Close modal immediately (instant UX feedback)
       setIsAddModalOpen(false);
       
       // Step 3: Upload CV in background ONLY if provided (non-blocking)
       if (data.cvFile && newEmployee.id) {
-        console.log('📤 Uploading CV in background...');
+        console.log('Uploading CV in background...');
         // Fire and forget - don't wait
         uploadResume({ employeeId: newEmployee.id, file: data.cvFile })
-          .then(() => console.log('✅ CV uploaded and parsed'))
-          .catch(err => console.warn('⚠️ CV upload failed (non-critical):', err));
+          .then(() => console.log('CV uploaded and parsed'))
+          .catch(err => console.warn('CV upload failed (non-critical):', err));
       }
       
       // Data will auto-refresh via React Query (cache invalidation)
     } catch (error: any) {
-      console.error('❌ Failed to create employee:', error);
+      console.error('Failed to create employee:', error);
       const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
       
       // Show user-friendly error
@@ -177,18 +177,24 @@ function OnboardingPage() {
     }
   };
 
-  const handleStageChange = async (employeeId: string, newStage: string) => {
-    console.log(`🔄 Changing stage for ${employeeId} to ${newStage}`);
+  const handleStageChange = async (employeeId: string, newStage: string, notes?: string) => {
+    console.log(`Changing stage for ${employeeId} to ${newStage}`, notes ? `with notes: ${notes}` : '');
     
     // Optimistic update - UI updates immediately (before API call)
     const originalEmployees = [...apiEmployees];
     
     try {
       // Update in background - user doesn't wait
-      changeStage({ id: employeeId, stage: newStage })
-        .then(() => console.log(`✅ Stage changed to ${newStage}`))
+      // Pass notes to API if provided
+      changeStage({ id: employeeId, stage: newStage, notes })
+        .then(() => {
+          console.log(`Stage changed to ${newStage}`);
+          if (notes) {
+            console.log(`Notes saved: ${notes}`);
+          }
+        })
         .catch((error) => {
-          console.error('❌ Stage change failed:', error);
+          console.error('Stage change failed:', error);
           // React Query will revert on error
         });
       
@@ -207,7 +213,7 @@ function OnboardingPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    console.log(`✅ CV download initiated for ${name}`);
+    console.log(`CV download initiated for ${name}`);
   };
 
   const handleUpdatePermissions = (employeeId: string, permissions: string[]) => {
@@ -267,7 +273,8 @@ function OnboardingPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => window.location.href = '/staffing-plan'}
-              className="h-11 px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center gap-2.5 hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg"
+              className="h-11 px-5 py-2 rounded-lg flex items-center gap-2.5 hover:opacity-90 transition-all shadow-lg"
+              style={{ backgroundColor: '#161950' }}
             >
               <Users className="w-5 h-5 text-white" />
               <span className="text-white text-sm font-semibold font-outfit leading-normal">
@@ -287,7 +294,8 @@ function OnboardingPage() {
 
             <button 
               onClick={() => setIsAddModalOpen(true)}
-              className="h-11 px-5 py-2 bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg flex items-center gap-2.5 hover:from-slate-900 hover:to-black transition-all shadow-lg"
+              className="h-11 px-5 py-2 rounded-lg flex items-center gap-2.5 hover:opacity-90 transition-all shadow-lg"
+              style={{ backgroundColor: '#161950' }}
             >
               <Plus className="w-5 h-5 text-white" />
               <span className="text-white text-sm font-semibold font-outfit leading-normal">
@@ -303,9 +311,10 @@ function OnboardingPage() {
             onClick={() => setActiveTab('onboarding')}
             className={`flex-1 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
               activeTab === 'onboarding'
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                ? 'text-white shadow-md'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
+            style={activeTab === 'onboarding' ? { backgroundColor: '#161950' } : {}}
           >
             📋 Employee Onboarding
           </button>
@@ -313,9 +322,10 @@ function OnboardingPage() {
             onClick={() => setActiveTab('permissions')}
             className={`flex-1 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
               activeTab === 'permissions'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                ? 'text-white shadow-md'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
+            style={activeTab === 'permissions' ? { backgroundColor: '#161950' } : {}}
           >
             🔐 Role & Permissions
           </button>
@@ -323,9 +333,10 @@ function OnboardingPage() {
             onClick={() => setActiveTab('analytics')}
             className={`flex-1 px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
               activeTab === 'analytics'
-                ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-md'
+                ? 'text-white shadow-md'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
             }`}
+            style={activeTab === 'analytics' ? { backgroundColor: '#161950' } : {}}
           >
             📊 AI Analytics
           </button>

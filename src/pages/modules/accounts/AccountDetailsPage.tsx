@@ -6,6 +6,7 @@ import { RecentActivity } from './components/RecentActivity';
 import { NotesTab } from './notes';
 import { ContactsTab } from './contacts';
 import { OpportunitiesTab } from './opportunities';
+import { TeamTab } from './team';
 import { useAccountDetailsPage } from './useAccountDetailsPage';
 
 function AccountDetailsPage() {
@@ -118,12 +119,16 @@ function AccountDetailsPage() {
                 <ContactsTab accountId={account.account_id} />
               )}
               
+              {activeTab === 'team' && (
+                <TeamTab accountId={account.account_id} />
+              )}
+              
               {activeTab === 'opportunities' && (
                 <OpportunitiesTab accountId={account.account_id} />
               )}
               
               
-              {!['overview', 'notes', 'contacts', 'opportunities'].includes(activeTab) && (
+              {!['overview', 'notes', 'contacts', 'team', 'opportunities'].includes(activeTab) && (
                 <div className="bg-neutral-50 border border-[#f0f0f0] rounded-[28px] p-6 w-full">
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <h3 className="font-inter font-semibold text-[#0f0901] text-[18px] mb-2">

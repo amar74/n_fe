@@ -33,6 +33,7 @@ import PermissionsPage from '@/pages/modules/resources/PermissionsPage';
 import AnalyticsPage from '@/pages/modules/resources/AnalyticsPage';
 import TestIntegration from '@/pages/modules/resources/TestIntegration';
 import { StaffingDashboard, CreateStaffPlan } from '@/pages/modules/staffing';
+import ViewStaffPlan from '@/pages/modules/staffing/ViewStaffPlan';
 import ContractsPage from '@/pages/modules/contracts/ContractsPage';
 import ProjectsPage from '@/pages/modules/projects/ProjectsPage';
 import FinancePage from '@/pages/modules/finance/FinancePage';
@@ -147,6 +148,14 @@ const router = createBrowserRouter([
       },
       {
         path: 'staffing-plan/create',
+        element: <CreateStaffPlan />,
+      },
+      {
+        path: 'staffing-plan/:id',
+        element: <ViewStaffPlan />,
+      },
+      {
+        path: 'staffing-plan/edit/:id',
         element: <CreateStaffPlan />,
       },
       {

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useStaffPlanning } from '@/hooks/useStaffPlanning';
 import { 
   Plus, 
   Users, 
@@ -25,7 +26,8 @@ import {
   ArrowDownRight,
   Sparkles,
   Activity,
-  Briefcase
+  Briefcase,
+  RefreshCw
 } from 'lucide-react';
 
 interface StaffPlan {
@@ -45,54 +47,69 @@ export default function StaffingDashboard() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // API Integration
+  const { useStaffPlansList, deleteStaffPlan } = useStaffPlanning();
+  const { data: apiPlans, isLoading, error: apiError, refetch } = useStaffPlansList(filterStatus === 'all' ? undefined : filterStatus);
 
-  // Enhanced mock data
+  // Log any API errors
+  if (apiError) {
+    console.error('API Error fetching staff plans:', apiError);
+  }
+
+  // Calculate stats from real data
+  const totalPlans = apiPlans?.length || 0;
+  const activePlans = apiPlans?.filter(p => p.status === 'active').length || 0;
+  const draftPlans = apiPlans?.filter(p => p.status === 'draft').length || 0;
+  const totalBudget = apiPlans?.reduce((sum, p) => sum + (p.total_price || 0), 0) || 0;
+
+  // Dynamic stats based on actual data
   const stats = [
     {
       label: 'Total Staff Plans',
-      value: '24',
+      value: String(totalPlans),
       icon: FileText,
       bgColor: 'bg-gray-50',
       iconBg: 'bg-gray-100',
       iconColor: 'text-gray-600',
-      change: '+3',
-      changePercent: '+14%',
+      change: totalPlans > 0 ? `+${totalPlans}` : '0',
+      changePercent: totalPlans > 0 ? 'New' : '0%',
       changeType: 'positive' as const,
       subtitle: 'Across all projects'
     },
     {
       label: 'Active Projects',
-      value: '8',
+      value: String(activePlans),
       icon: CheckCircle,
       bgColor: 'bg-green-50',
       iconBg: 'bg-green-100',
       iconColor: 'text-green-600',
-      change: '+2',
-      changePercent: '+25%',
+      change: activePlans > 0 ? `+${activePlans}` : '0',
+      changePercent: activePlans > 0 ? 'Active' : '0%',
       changeType: 'positive' as const,
       subtitle: 'Currently running'
     },
     {
-      label: 'Total Workforce',
-      value: '156',
-      icon: Users,
+      label: 'Draft Plans',
+      value: String(draftPlans),
+      icon: Clock,
       bgColor: 'bg-blue-50',
       iconBg: 'bg-blue-100',
       iconColor: 'text-blue-600',
-      change: '+28',
-      changePercent: '+18%',
+      change: draftPlans > 0 ? `+${draftPlans}` : '0',
+      changePercent: draftPlans > 0 ? 'Draft' : '0%',
       changeType: 'positive' as const,
-      subtitle: 'Staff allocated'
+      subtitle: 'Pending finalization'
     },
     {
       label: 'Total Budget',
-      value: '$8.4M',
+      value: totalBudget > 0 ? `$${(totalBudget / 1000000).toFixed(1)}M` : '$0',
       icon: DollarSign,
       bgColor: 'bg-orange-50',
       iconBg: 'bg-orange-100',
       iconColor: 'text-orange-600',
-      change: '+$1.2M',
-      changePercent: '+16%',
+      change: totalBudget > 0 ? `$${(totalBudget / 1000).toFixed(0)}K` : '$0',
+      changePercent: totalBudget > 0 ? 'Total' : '0%',
       changeType: 'positive' as const,
       subtitle: 'All active plans'
     }
@@ -125,86 +142,155 @@ export default function StaffingDashboard() {
     }
   ];
 
-  const staffPlans: StaffPlan[] = [
-    {
-      id: 1,
-      projectName: 'High-Rise Construction - Downtown Plaza',
-      teamSize: 18,
-      duration: 24,
-      totalCost: 850000,
-      status: 'active',
-      createdAt: '2025-01-15',
-      startDate: '2025-02-01',
-      utilizationRate: 92,
-      departments: ['Engineering', 'Management', 'Quality']
-    },
-    {
-      id: 2,
-      projectName: 'Bridge Infrastructure Development',
-      teamSize: 24,
-      duration: 36,
-      totalCost: 1250000,
-      status: 'active',
-      createdAt: '2025-01-10',
-      startDate: '2025-03-01',
-      utilizationRate: 88,
-      departments: ['Civil', 'Structural', 'Environmental']
-    },
-    {
-      id: 3,
-      projectName: 'Urban Planning - Smart City Initiative',
-      teamSize: 12,
-      duration: 18,
-      totalCost: 620000,
-      status: 'active',
-      createdAt: '2025-01-20',
-      startDate: '2025-04-01',
-      utilizationRate: 75,
-      departments: ['Planning', 'Design', 'IT']
-    },
-    {
-      id: 4,
-      projectName: 'Airport Terminal Expansion',
-      teamSize: 32,
-      duration: 42,
-      totalCost: 1850000,
-      status: 'active',
-      createdAt: '2025-01-05',
-      startDate: '2025-05-01',
-      utilizationRate: 95,
-      departments: ['Aviation', 'Structural', 'Mechanical']
-    },
-    {
-      id: 5,
-      projectName: 'Residential Complex - Phase 2',
-      teamSize: 14,
-      duration: 20,
-      totalCost: 480000,
-      status: 'draft',
-      createdAt: '2025-01-25',
-      startDate: '2025-06-01',
-      utilizationRate: 0,
-      departments: ['Residential', 'Architecture']
-    },
-    {
-      id: 6,
-      projectName: 'Water Treatment Facility Upgrade',
-      teamSize: 10,
-      duration: 15,
-      totalCost: 380000,
-      status: 'completed',
-      createdAt: '2024-11-10',
-      startDate: '2024-12-01',
-      utilizationRate: 100,
-      departments: ['Environmental', 'Mechanical']
+  // Transform API data to match UI format (with validation)
+  const staffPlans: StaffPlan[] = (apiPlans || [])
+    .filter(plan => {
+      // Filter out invalid objects (like error responses)
+      if (!plan || typeof plan !== 'object') return false;
+      if (!('id' in plan) || !('project_name' in plan)) return false;
+      if ('type' in plan || 'loc' in plan || 'msg' in plan) return false; // Skip validation errors
+      return true;
+    })
+    .map(plan => ({
+      id: plan.id,
+      projectName: plan.project_name,
+      teamSize: plan.team_size || 0, // From API (allocation count)
+      duration: plan.duration_months,
+      totalCost: plan.total_price,
+      status: plan.status as 'draft' | 'active' | 'completed' | 'archived',
+      createdAt: plan.created_at,
+      startDate: plan.project_start_date,
+      utilizationRate: 0, // Can be calculated if needed
+      departments: []
+    }));
+
+  // Debug logging
+  console.log('Staff Plans Data:', { 
+    apiPlans, 
+    staffPlans, 
+    totalPlans,
+    filterStatus,
+    isLoading,
+    apiError
+  });
+
+  // Also log when data changes
+  useEffect(() => {
+    if (apiPlans) {
+      console.log(`Fetched ${apiPlans.length} staff plans from API`);
+      console.log('Plans:', apiPlans);
     }
-  ];
+  }, [apiPlans]);
+
+  // Refetch data when component mounts or filter changes
+  useEffect(() => {
+    refetch();
+  }, [filterStatus]);
 
   const filteredPlans = staffPlans.filter(plan => {
-    const matchesStatus = filterStatus === 'all' || plan.status === filterStatus;
     const matchesSearch = plan.projectName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
+    return matchesSearch;
   });
+
+  const handleDeletePlan = async (planId: number) => {
+    if (confirm('Are you sure you want to delete this staff plan?')) {
+      try {
+        await deleteStaffPlan.mutateAsync(planId);
+        refetch();
+      } catch (error) {
+        console.error('Failed to delete plan:', error);
+      }
+    }
+  };
+
+  const handleExportReport = () => {
+    if (staffPlans.length === 0) {
+      alert('No plans to export');
+      return;
+    }
+
+    try {
+      // Create comprehensive export data
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        summary: {
+          totalPlans: totalPlans,
+          activePlans: activePlans,
+          draftPlans: draftPlans,
+          totalBudget: totalBudget,
+        },
+        plans: staffPlans.map(plan => ({
+          id: plan.id,
+          projectName: plan.projectName,
+          status: plan.status,
+          duration: `${plan.duration} months`,
+          teamSize: plan.teamSize,
+          totalCost: `$${plan.totalCost.toLocaleString()}`,
+          startDate: plan.startDate,
+          createdAt: plan.createdAt,
+          utilizationRate: plan.utilizationRate ? `${plan.utilizationRate}%` : 'N/A',
+        })),
+      };
+
+      // Export as JSON
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `staff_planning_report_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      alert('Report exported successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export report');
+    }
+  };
+
+  const handleGenerateInsights = () => {
+    if (staffPlans.length === 0) {
+      alert('No data available for insights. Create some staff plans first!');
+      return;
+    }
+
+    // Calculate insights
+    const avgDuration = staffPlans.reduce((sum, p) => sum + p.duration, 0) / staffPlans.length;
+    const avgCost = staffPlans.reduce((sum, p) => sum + p.totalCost, 0) / staffPlans.length;
+    const mostCommonStatus = staffPlans.reduce((acc: Record<string, number>, p) => {
+      acc[p.status] = (acc[p.status] || 0) + 1;
+      return acc;
+    }, {});
+    const topStatus = Object.entries(mostCommonStatus).sort((a, b) => b[1] - a[1])[0];
+
+    const insights = `
+📊 Staff Planning Insights
+
+📈 Key Metrics:
+• Total Plans: ${totalPlans}
+• Active Plans: ${activePlans} (${((activePlans/totalPlans)*100).toFixed(0)}%)
+• Draft Plans: ${draftPlans}
+• Total Budget: $${(totalBudget/1000000).toFixed(2)}M
+
+📉 Averages:
+• Average Duration: ${avgDuration.toFixed(1)} months
+• Average Cost: $${(avgCost/1000).toLocaleString()}
+
+🎯 Status Distribution:
+• Most Common: ${topStatus[0].toUpperCase()} (${topStatus[1]} plans)
+
+💡 Recommendations:
+${activePlans === 0 ? '• Consider activating draft plans to start resource allocation' : ''}
+${draftPlans > activePlans ? '• High number of drafts - review and finalize pending plans' : ''}
+${avgDuration > 24 ? '• Long project durations detected - consider breaking into phases' : ''}
+${staffPlans.length < 5 ? '• Create more plans to better track resource utilization' : '• Good planning coverage across projects'}
+    `.trim();
+
+    alert(insights);
+  };
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -257,7 +343,11 @@ export default function StaffingDashboard() {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
-            <button className="h-11 px-5 py-2 bg-white rounded-lg border border-gray-300 flex items-center gap-2.5 hover:bg-gray-50 transition-all">
+            <button 
+              onClick={handleExportReport}
+              disabled={staffPlans.length === 0}
+              className="h-11 px-5 py-2 bg-white rounded-lg border border-gray-300 flex items-center gap-2.5 hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <Download className="w-5 h-5 text-gray-700" />
               <span className="text-gray-700 text-sm font-semibold font-outfit">
                 Export Report
@@ -266,7 +356,7 @@ export default function StaffingDashboard() {
             <Link
               to="/staffing-plan/create"
               className="h-11 px-5 py-2 rounded-lg flex items-center gap-2.5 hover:opacity-90 transition-all shadow-lg"
-              style={{ backgroundColor: '#151950' }}
+              style={{ backgroundColor: '#161950' }}
             >
               <Plus className="w-5 h-5 text-white" />
               <span className="text-white text-sm font-semibold font-outfit leading-normal">
@@ -338,7 +428,7 @@ export default function StaffingDashboard() {
           <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: '#151950' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: '#161950' }}>
                   <Briefcase className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -376,6 +466,16 @@ export default function StaffingDashboard() {
                   <option value="archived">Archived</option>
                 </select>
                 
+                {/* Refresh Button */}
+                <button
+                  onClick={() => refetch()}
+                  disabled={isLoading}
+                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all disabled:opacity-50"
+                  title="Refresh plans"
+                >
+                  <RefreshCw className={`w-4 h-4 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
+                </button>
+
                 {/* View Toggle */}
                 <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
                   <button
@@ -405,7 +505,30 @@ export default function StaffingDashboard() {
 
           {/* Plans Content */}
           <div className="p-6">
-            {filteredPlans.length === 0 ? (
+            {apiError ? (
+              <div className="text-center py-16">
+                <div className="text-red-600 mb-4">
+                  <p className="text-lg font-bold">Error Loading Plans</p>
+                  <p className="text-sm mt-2">
+                    {typeof apiError === 'object' && apiError !== null 
+                      ? (apiError.message || JSON.stringify(apiError))
+                      : String(apiError) || 'Failed to fetch staff plans'}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => refetch()}
+                  className="px-6 py-3 text-white rounded-lg font-semibold hover:opacity-90 transition-all"
+                  style={{ backgroundColor: '#161950' }}
+                >
+                  Retry
+                </button>
+              </div>
+            ) : isLoading ? (
+              <div className="text-center py-16">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600"></div>
+                <p className="text-gray-600 mt-4">Loading staff plans...</p>
+              </div>
+            ) : filteredPlans.length === 0 ? (
               <div className="text-center py-16">
                 <Briefcase className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 mb-2">No Plans Found</h3>
@@ -415,7 +538,7 @@ export default function StaffingDashboard() {
                 <Link
                   to="/staffing-plan/create"
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-white font-semibold hover:opacity-90 transition-all shadow-lg"
-                  style={{ backgroundColor: '#151950' }}
+                  style={{ backgroundColor: '#161950' }}
                 >
                   <Plus className="w-5 h-5" />
                   Create Your First Plan
@@ -516,14 +639,24 @@ export default function StaffingDashboard() {
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-2">
-                          <button className="flex-1 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md hover:opacity-90" style={{ backgroundColor: '#151950' }}>
+                          <Link 
+                            to={`/staffing-plan/${plan.id}`}
+                            className="flex-1 px-3 py-2 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md hover:opacity-90" 
+                            style={{ backgroundColor: '#161950' }}
+                          >
                             <Eye className="w-3.5 h-3.5" />
                             View Details
-                          </button>
-                          <button className="px-3 py-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg text-xs font-bold transition-all">
+                          </Link>
+                          <Link 
+                            to={`/staffing-plan/edit/${plan.id}`}
+                            className="px-3 py-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg text-xs font-bold transition-all flex items-center justify-center"
+                          >
                             <Edit className="w-3.5 h-3.5" />
-                          </button>
-                          <button className="px-3 py-2 bg-white hover:bg-red-50 border border-red-300 text-red-600 rounded-lg transition-all">
+                          </Link>
+                          <button 
+                            onClick={() => handleDeletePlan(plan.id)}
+                            className="px-3 py-2 bg-white hover:bg-red-50 border border-red-300 text-red-600 rounded-lg transition-all"
+                          >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -582,15 +715,25 @@ export default function StaffingDashboard() {
                         
                         {/* Actions */}
                         <div className="flex items-center gap-2">
-                          <button className="px-5 py-2 text-white rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-md hover:opacity-90" style={{ backgroundColor: '#151950' }}>
+                          <Link 
+                            to={`/staffing-plan/${plan.id}`}
+                            className="px-5 py-2 text-white rounded-lg text-sm font-bold transition-all flex items-center gap-2 shadow-md hover:opacity-90" 
+                            style={{ backgroundColor: '#161950' }}
+                          >
                             <Eye className="w-4 h-4" />
                             View Details
-                          </button>
-                          <button className="px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg text-sm font-bold transition-all flex items-center gap-2">
+                          </Link>
+                          <Link 
+                            to={`/staffing-plan/edit/${plan.id}`}
+                            className="px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg text-sm font-bold transition-all flex items-center gap-2"
+                          >
                             <Edit className="w-4 h-4" />
                             Edit
-                          </button>
-                          <button className="px-3 py-2 bg-white hover:bg-red-50 border border-red-300 text-red-600 rounded-lg transition-all">
+                          </Link>
+                          <button 
+                            onClick={() => handleDeletePlan(plan.id)}
+                            className="px-3 py-2 bg-white hover:bg-red-50 border border-red-300 text-red-600 rounded-lg transition-all"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -604,7 +747,7 @@ export default function StaffingDashboard() {
         </div>
 
         {/* AI Recommendations Section */}
-        <div className="rounded-lg shadow-xl border p-6" style={{ backgroundColor: '#151950', borderColor: '#151950' }}>
+        <div className="rounded-lg shadow-xl border p-6" style={{ backgroundColor: '#161950', borderColor: '#161950' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#0f1440' }}>
@@ -617,7 +760,12 @@ export default function StaffingDashboard() {
                 </p>
               </div>
             </div>
-            <button className="px-6 py-3 bg-white rounded-lg font-bold text-sm hover:bg-gray-100 transition-all shadow-lg" style={{ color: '#151950' }}>
+            <button 
+              onClick={handleGenerateInsights}
+              disabled={staffPlans.length === 0}
+              className="px-6 py-3 bg-white rounded-lg font-bold text-sm hover:bg-gray-100 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" 
+              style={{ color: '#161950' }}
+            >
               Generate Insights
             </button>
           </div>

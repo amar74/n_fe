@@ -124,14 +124,14 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
         suggestion.suggestions.forEach((s: any) => {
           const targetField = fieldMap[s.field];
           if (targetField) {
-            console.log(`✅ Applying ${s.field} → ${targetField}: ${s.value}`);
+            console.log(`Applying ${s.field} → ${targetField}: ${s.value}`);
             setFormData(prev => ({ ...prev, [targetField]: s.value }));
           } else {
-            console.log(`⚠️ No mapping for field: ${s.field}`);
+            console.log(`No mapping for field: ${s.field}`);
           }
         });
       } else {
-        console.log('⚠️ No suggestions array in response');
+        console.log('No suggestions array in response');
       }
     },
     onError: (error) => setAiEnhancementError(error)

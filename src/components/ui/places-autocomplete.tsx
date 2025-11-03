@@ -35,7 +35,7 @@ export function PlacesAutocomplete({
 
     const initializeAutocomplete = async () => {
       try {
-        console.log('🌍 Initializing Google Places Autocomplete...');
+        console.log('Initializing Google Places Autocomplete...');
         setIsLoading(true);
         setError(null);
 
@@ -51,7 +51,7 @@ export function PlacesAutocomplete({
 
         // Verify input ref exists
         if (!inputRef.current) {
-          console.warn('⚠️ Input ref not available yet, retrying...');
+          console.warn('Input ref not available yet, retrying...');
           setTimeout(() => {
             if (mounted && !autocompleteRef.current) {
               initializeAutocomplete();
@@ -60,7 +60,7 @@ export function PlacesAutocomplete({
           return;
         }
 
-        console.log('✅ Google Maps loaded, creating Autocomplete instance...');
+        console.log('Google Maps loaded, creating Autocomplete instance...');
 
         // Create autocomplete instance
         const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
@@ -76,11 +76,11 @@ export function PlacesAutocomplete({
           const place = autocomplete.getPlace();
           
           if (!place) {
-            console.warn('⚠️ No place selected');
+            console.warn('No place selected');
             return;
           }
 
-          console.log('📍 Place selected:', place);
+          console.log('Place selected:', place);
 
           // Call parent onChange with place details
           const address = place.formatted_address || place.name || '';
@@ -91,13 +91,13 @@ export function PlacesAutocomplete({
 
         setIsReady(true);
         setIsLoading(false);
-        console.log('✅ Places Autocomplete ready');
+        console.log('Places Autocomplete ready');
 
       } catch (err) {
         if (!mounted) return;
         
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        console.error('❌ Failed to initialize Places Autocomplete:', errorMessage);
+        console.error('Failed to initialize Places Autocomplete:', errorMessage);
         setError(errorMessage);
         setIsLoading(false);
       }
