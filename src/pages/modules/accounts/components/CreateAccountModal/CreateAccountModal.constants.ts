@@ -1,5 +1,3 @@
-import { ClientType } from './CreateAccountModal.types';
-
 export const MARKET_SECTORS = [
   'Transportation',
   'Infrastructure', 
@@ -10,13 +8,13 @@ export const MARKET_SECTORS = [
   'Government',
 ] as const;
 
+// Define CLIENT_TYPES as a simple array to avoid initialization issues
+export const CLIENT_TYPES = ['tier_1', 'tier_2', 'tier_3'] as const;
 
-export const CLIENT_TYPES = Object.values(ClientType);
-
-export const CLIENT_TYPE_DISPLAY: Record<ClientType, string> = {
-  [ClientType.TIER_1]: 'Tier 1',
-  [ClientType.TIER_2]: 'Tier 2',
-  [ClientType.TIER_3]: 'Tier 3',
+export const CLIENT_TYPE_DISPLAY: Record<string, string> = {
+  'tier_1': 'Tier 1',
+  'tier_2': 'Tier 2',
+  'tier_3': 'Tier 3',
 } as const;
 
 export const HOSTING_AREAS = [
