@@ -178,6 +178,30 @@ function DashboardWelcome() {
     enabled: !!backendUser,
   });
 
+  // Format currency values to millions (M)
+  const formatToMillions = (value: string | number): string => {
+    if (!value) return '$0M';
+    
+    // If it's already a string like "$1,234,567", extract the number
+    const numericValue = typeof value === 'string' 
+      ? parseFloat(value.replace(/[$,]/g, '')) 
+      : value;
+    
+    if (isNaN(numericValue) || numericValue === 0) return '$0M';
+    
+    // Convert to millions
+    const millions = numericValue / 1000000;
+    
+    // Format with appropriate decimal places
+    if (millions >= 100) {
+      return `$${millions.toFixed(0)}M`; // $100M, $250M
+    } else if (millions >= 10) {
+      return `$${millions.toFixed(1)}M`; // $15.5M, $99.9M
+    } else {
+      return `$${millions.toFixed(2)}M`; // $1.25M, $9.99M
+    }
+  };
+
   // Analytics/Stats data - Now using dynamic data from API
   const stats = [
     {
@@ -209,7 +233,7 @@ function DashboardWelcome() {
     },
     {
       title: 'This Month Revenue',
-      value: statsLoading ? '...' : (dashboardStats?.monthly_revenue || '$0'),
+      value: statsLoading ? '...' : formatToMillions(dashboardStats?.monthly_revenue || '0'),
       change: statsLoading ? '...' : (dashboardStats?.revenue_change || '0%'),
       trend: 'up',
       icon: DollarSign,
