@@ -4,9 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAccounts } from '@/hooks/useAccounts';
 import { AccountStatsData, FilterState } from './AccountsPage.types';
 import { AccountCreate, AccountListItem } from '@/types/accounts';
-import { ClientType } from './components/CreateAccountModal/CreateAccountModal.types';
 import { STATE_ABBREVIATION_TO_NAME } from './components/CreateAccountModal/CreateAccountModal.constants';
-import { tr } from 'date-fns/locale';
 
 export function useAccountsPage() {
   const navigate = useNavigate();
@@ -114,7 +112,7 @@ export function useAccountsPage() {
           title: null,
         },
         secondary_contacts: [],
-        client_type: formData.client_type as ClientType,
+        client_type: formData.client_type as 'tier_1' | 'tier_2' | 'tier_3',
         market_sector: formData.market_sector || null,
       };
 

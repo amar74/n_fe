@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ClientType } from '../CreateAccountModal/CreateAccountModal.types';
+// Removed ClientType enum import to avoid initialization issues
 
 import { useAccounts } from '@/hooks/useAccounts';
 import { exportToCSV, exportToExcel } from '@/utils/exportUtils';
@@ -78,9 +78,9 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white border border-gray-200 shadow-lg">
                 <DropdownMenuItem onClick={() => onFilterChange('all')} className="cursor-pointer hover:bg-gray-100">All Accounts</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onFilterChange(ClientType.TIER_1)} className="cursor-pointer hover:bg-gray-100">Tier 1 Accounts</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onFilterChange(ClientType.TIER_2)} className="cursor-pointer hover:bg-gray-100">Tier 2 Accounts</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onFilterChange(ClientType.TIER_3)} className="cursor-pointer hover:bg-gray-100">Tier 3 Accounts</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onFilterChange('tier_1')} className="cursor-pointer hover:bg-gray-100">Tier 1 Accounts</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onFilterChange('tier_2')} className="cursor-pointer hover:bg-gray-100">Tier 2 Accounts</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onFilterChange('tier_3')} className="cursor-pointer hover:bg-gray-100">Tier 3 Accounts</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
