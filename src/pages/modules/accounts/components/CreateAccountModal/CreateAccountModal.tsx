@@ -228,15 +228,24 @@ export function CreateAccountModal({
       setShowAISuggestions(true);
 
       const autoApplied: string[] = [];
+      console.log('🤖 AI Account Enhancement Results:', result);
+      
+      // Lower confidence threshold for better auto-apply (0.6 instead of 0.85)
       Object.entries(result.suggestions).forEach(([field, suggestion]: [string, any]) => {
-        if (suggestion.confidence >= 0.85) {
+        if (suggestion.confidence >= 0.6) {
+          console.log(`✅ Auto-applying ${field}: ${suggestion.value} (confidence: ${suggestion.confidence})`);
           applySuggestion(field, suggestion.value);
           autoApplied.push(field);
+        } else {
+          console.log(`⚠️ Skipped ${field}: low confidence (${suggestion.confidence})`);
         }
       });
 
       if (autoApplied.length > 0) {
         setAppliedSuggestions(autoApplied);
+        console.log(`📊 Auto-applied ${autoApplied.length} account fields`);
+      } else {
+        console.log('⚠️ No fields met confidence threshold for auto-apply');
       }
 
     } catch (e) {
@@ -247,44 +256,110 @@ export function CreateAccountModal({
   };
 
   const applySuggestion = (field: string, value: any) => {
+    console.log(`📝 Applying suggestion for field "${field}":`, value);
+    
     switch (field) {
+      // Company/Client name variations
       case 'company_name':
-        setFormData(prev => ({ ...prev, client_name: value }));
+      case 'client_name':
+      case 'name':
+        if (value) setFormData(prev => ({ ...prev, client_name: value }));
         break;
         
+      // Industry/Market sector variations
       case 'industry':
-        setFormData(prev => ({ ...prev, market_sector: value }));
+      case 'market_sector':
+      case 'sector':
+        if (value) setFormData(prev => ({ ...prev, market_sector: value }));
         break;
         
+      // Client type
+      case 'client_type':
+      case 'tier':
+        if (value) setFormData(prev => ({ ...prev, client_type: value }));
+        break;
+        
+      // Hosting area
+      case 'hosting_area':
+      case 'region':
+        if (value) setFormData(prev => ({ ...prev, hosting_area: value }));
+        break;
+        
+      // Primary contact
       case 'primary_contact':
+      case 'contact_name':
         if (typeof value === 'object') {
-          if (value.name) {
-            setFormData(prev => ({ ...prev, primary_contact: value.name }));
-          }
-          
-          if (value.email) {
-            setFormData(prev => ({ ...prev, email_address: value.email }));
-          }
-          
+          if (value.name) setFormData(prev => ({ ...prev, primary_contact: value.name }));
+          if (value.email) setFormData(prev => ({ ...prev, email_address: value.email }));
           if (value.phone) {
             setPrimaryContactPhone(value.phone);
             setMainPhone(value.phone);
           }
+        } else if (value) {
+          setFormData(prev => ({ ...prev, primary_contact: value }));
         }
         break;
         
+      // Email
+      case 'email':
+      case 'email_address':
+      case 'contact_email':
+        if (value) setFormData(prev => ({ ...prev, email_address: value }));
+        break;
+        
+      // Phone
+      case 'phone':
+      case 'phone_number':
+      case 'contact_phone':
+        if (value) {
+          setPrimaryContactPhone(value);
+          setMainPhone(value);
+        }
+        break;
+        
+      // Address (object or individual fields)
       case 'address':
         if (typeof value === 'object') {
           setFormData(prev => ({
             ...prev,
-            client_address_line1: value.line1 || value.street || prev.client_address_line1,
+            client_address_line1: value.line1 || value.street || value.address || prev.client_address_line1,
             client_address_line2: value.line2 || prev.client_address_line2,
             client_address_city: value.city || prev.client_address_city,
             client_address_state: value.state || prev.client_address_state,
-            client_address_zip_code: value.pincode || value.zip || prev.client_address_zip_code
+            client_address_zip_code: value.pincode || value.zip || value.zipcode || prev.client_address_zip_code
           }));
         }
         break;
+        
+      // Individual address fields
+      case 'street_address':
+      case 'address_line1':
+      case 'line1':
+        if (value) setFormData(prev => ({ ...prev, client_address_line1: value }));
+        break;
+        
+      case 'address_line2':
+      case 'line2':
+        if (value) setFormData(prev => ({ ...prev, client_address_line2: value }));
+        break;
+        
+      case 'city':
+        if (value) setFormData(prev => ({ ...prev, client_address_city: value }));
+        break;
+        
+      case 'state':
+        if (value) setFormData(prev => ({ ...prev, client_address_state: value }));
+        break;
+        
+      case 'zip_code':
+      case 'zipcode':
+      case 'zip':
+      case 'postal_code':
+        if (value) setFormData(prev => ({ ...prev, client_address_zip_code: value }));
+        break;
+        
+      default:
+        console.log(`⚠️ Unknown field "${field}" - skipping`);
     }
   };
 

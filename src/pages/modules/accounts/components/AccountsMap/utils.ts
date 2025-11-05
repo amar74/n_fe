@@ -154,6 +154,18 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   'Springfield, Illinois': { lat: 39.7817, lng: -89.6501 },
   'Springfield, Massachusetts': { lat: 42.1015, lng: -72.5898 },
   'Springfield, Ohio': { lat: 39.9242, lng: -83.8088 },
+  
+  // Iowa Cities
+  'Dubuque': { lat: 42.5006, lng: -90.6648 },
+  'Dubuque, Iowa': { lat: 42.5006, lng: -90.6648 },
+  'Des Moines': { lat: 41.6005, lng: -93.6091 },
+  'Des Moines, Iowa': { lat: 41.6005, lng: -93.6091 },
+  'Cedar Rapids': { lat: 41.9779, lng: -91.6656 },
+  'Cedar Rapids, Iowa': { lat: 41.9779, lng: -91.6656 },
+  'Davenport': { lat: 41.5236, lng: -90.5776 },
+  'Davenport, Iowa': { lat: 41.5236, lng: -90.5776 },
+  'Iowa City': { lat: 41.6611, lng: -91.5302 },
+  'Iowa City, Iowa': { lat: 41.6611, lng: -91.5302 },
 };
 
 function getRiskLevel(avgHealthScore: number): 'Low' | 'Medium' | 'High' {

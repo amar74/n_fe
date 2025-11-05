@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
 
           <div className="flex flex-col gap-3 w-full">
             <Button
-              onClick={() => navigate('/reset-password', { state: { email: submittedEmail } })}
+              onClick={() => navigate('/auth/reset-password', { state: { email: submittedEmail } })}
               className="w-full bg-[#161950] hover:bg-[#1E2B5B]"
             >
               Enter OTP & Reset Password

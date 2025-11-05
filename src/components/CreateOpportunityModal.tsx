@@ -85,56 +85,73 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
 
   const { enhanceAccountData, enhanceOpportunityData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,
-    confidenceThreshold: 0.7,
+    confidenceThreshold: 0.6,  // Lowered from 0.7 for better auto-apply
     onSuggestionReceived: (suggestion) => {
       // Only apply suggestions if AI hasn't run yet (prevents overwriting user selections)
       if (hasAIRun) return;
       
       console.log('🤖 AI Suggestions received:', suggestion);
+      console.log('Full suggestion object:', JSON.stringify(suggestion, null, 2));
       
       const fieldMap: Record<string, keyof OpportunityFormData> = {
         // Company/Client names
         'company_name': 'opportunityName',
         'client_name': 'opportunityName',
         'opportunity_name': 'opportunityName',
+        'name': 'opportunityName',
         
         // Location fields
         'address': 'location',
         'location': 'location',
+        'street_address': 'location',
+        'address_line1': 'location',
         'city': 'city',
         'state': 'state',
         'zip_code': 'zipCode',
         'zipcode': 'zipCode',
+        'zip': 'zipCode',
+        'postal_code': 'zipCode',
         
         // Industry/Market sector
         'industry': 'marketSector',
         'market_sector': 'marketSector',
+        'sector': 'marketSector',
         
         // Project details
         'project_value': 'projectValue',
+        'value': 'projectValue',
+        'estimated_value': 'projectValue',
         'project_description': 'projectDescription',
         'description': 'projectDescription',
+        'project_desc': 'projectDescription',
         
         // Sales stage
         'sales_stage': 'salesStage',
-        'stage': 'salesStage'
+        'stage': 'salesStage',
+        'opportunity_stage': 'salesStage'
       };
 
+      let appliedCount = 0;
       if (suggestion.suggestions && Array.isArray(suggestion.suggestions)) {
         suggestion.suggestions.forEach((s: any) => {
           const targetField = fieldMap[s.field];
-          if (targetField) {
-            console.log(`Applying ${s.field} → ${targetField}: ${s.value}`);
+          if (targetField && s.value) {
+            console.log(`✅ Applying ${s.field} → ${targetField}: ${s.value} (confidence: ${s.confidence})`);
             setFormData(prev => ({ ...prev, [targetField]: s.value }));
+            appliedCount++;
           } else {
-            console.log(`No mapping for field: ${s.field}`);
+            console.log(`⚠️ Skipped ${s.field}: ${!targetField ? 'no mapping' : 'empty value'}`);
           }
         });
+        console.log(`📊 Auto-applied ${appliedCount}/${suggestion.suggestions.length} suggestions`);
       } else {
-        console.log('No suggestions array in response');
+        console.log('⚠️ No suggestions array in response');
       }
     },
-    onError: (error) => setAiEnhancementError(error)
+    onError: (error) => {
+      console.error('❌ AI Enhancement Error:', error);
+      setAiEnhancementError(error);
+    }
   });
 
   useEffect(() => {

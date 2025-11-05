@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -84,14 +84,27 @@ export default function LoginPage() {
           localStorage.setItem(STORAGE_CONSTANTS.REMEMBER_ME, 'true');
         }
 
-
         presets.authSuccess('Welcome back!');
 
-
-        // Navigate to root - MainLayout will handle redirects based on org_id
+        // Navigate based on fresh response data (not state) to avoid race conditions
+        // Use setTimeout to show toast before navigation
         setTimeout(() => {
-          navigate('/', { replace: true });
-        }, 500); // 0.5 seconds delay - enough for toast to show
+          if (authResponse?.user) {
+            // Check org_id from the fresh API response
+            // Handle both null and undefined (backend may not include the field)
+            if (!authResponse.user.org_id) {
+              console.log('[LoginPage] User has no org_id (from API response), redirecting to create organization');
+              navigate('/organization/create', { replace: true });
+            } else {
+              console.log('[LoginPage] User has org_id (from API response), redirecting to dashboard');
+              navigate('/', { replace: true });
+            }
+          } else {
+            // Fallback if no user data in response
+            console.log('[LoginPage] No user data in response, redirecting to dashboard');
+            navigate('/', { replace: true });
+          }
+        }, 500);
       }
     } catch (err) {
       const errorMessage = 'An unexpected error occurred. Please try again.';

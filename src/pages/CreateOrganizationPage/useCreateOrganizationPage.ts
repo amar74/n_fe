@@ -28,14 +28,28 @@ export function useCreateOrganizationPage() {
 
   const { enhanceAccountData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,
-    confidenceThreshold: 0.85,
+    confidenceThreshold: 0.6,  // Lowered from 0.85 for better auto-apply
     onSuggestionReceived: (suggestion) => {
-      // Apply each suggestion to the form
-      suggestion.suggestions.forEach((suggestionItem: any) => {
-        applySuggestion(suggestionItem.field, suggestionItem.value);
-      });
+      console.log('🤖 AI Organization Enhancement received:', suggestion);
+      console.log('Full suggestion object:', JSON.stringify(suggestion, null, 2));
+      
+      // Apply each suggestion to the form with logging
+      let appliedCount = 0;
+      if (suggestion.suggestions && Array.isArray(suggestion.suggestions)) {
+        suggestion.suggestions.forEach((suggestionItem: any) => {
+          if (suggestionItem.value) {
+            console.log(`✅ Applying ${suggestionItem.field}: ${suggestionItem.value} (confidence: ${suggestionItem.confidence})`);
+            applySuggestion(suggestionItem.field, suggestionItem.value);
+            appliedCount++;
+          }
+        });
+        console.log(`📊 Auto-applied ${appliedCount}/${suggestion.suggestions.length} organization fields`);
+      } else {
+        console.log('⚠️ No suggestions array in response');
+      }
     },
     onError: (error) => {
+      console.error('❌ AI Organization Enhancement Error:', error);
     }
   });
   
@@ -153,10 +167,16 @@ export function useCreateOrganizationPage() {
       setShowAISuggestions(true);
 
       const autoApplied: string[] = [];
+      console.log('📥 Processing AI suggestions for organization:', result);
+      
+      // Lower threshold (0.6 instead of 0.85) for better auto-apply
       Object.entries(result.suggestions).forEach(([field, suggestion]: [string, any]) => {
-        if (suggestion.confidence >= 0.85) {
+        if (suggestion.confidence >= 0.6 && suggestion.value) {
+          console.log(`✅ Auto-applying ${field}: ${suggestion.value} (confidence: ${suggestion.confidence})`);
           applySuggestion(field, suggestion.value);
           autoApplied.push(field);
+        } else {
+          console.log(`⚠️ Skipped ${field}: ${!suggestion.value ? 'empty value' : `low confidence (${suggestion.confidence})`}`);
         }
       });
 
@@ -164,13 +184,15 @@ export function useCreateOrganizationPage() {
         setAppliedSuggestions(autoApplied);
         toast({
           title: '🎉 AI Enhancement Complete',
-          description: `Auto-filled ${autoApplied.length} fields with high confidence data from your website.`,
+          description: `Auto-filled ${autoApplied.length} fields with data from your website.`,
         });
+        console.log(`📊 Auto-applied fields: ${autoApplied.join(', ')}`);
       } else {
         toast({
           title: '🔍 AI Analysis Complete',
-          description: 'Found suggestions for your organization. Review them below.',
+          description: 'AI suggestions available but below confidence threshold. Check suggestions panel.',
         });
+        console.log('⚠️ No fields met confidence threshold for auto-apply');
       }
 
     } catch (error) {
@@ -211,6 +233,12 @@ export function useCreateOrganizationPage() {
   }, [setValue, analyzeWebsite]);
 
   const handleSubmitForm = useCallback(async (data: CreateOrganizationFormData) => {
+    // Cancel any pending AI analysis when submitting
+    if (analysisTimeoutRef.current) {
+      clearTimeout(analysisTimeoutRef.current);
+      analysisTimeoutRef.current = null;
+    }
+    
     // Add protocol to website if missing
     let website = data.website;
     if (website && website.trim() && !website.startsWith('http')) {
@@ -246,15 +274,15 @@ export function useCreateOrganizationPage() {
         authManager.setAuthState(true, updatedUserData);
         localStorage.setItem('userInfo', JSON.stringify(updatedUserData));
         
-        // Navigate after state is updated
-        navigate('/', { replace: true });
+        // Navigate to organization settings after creation
+        navigate('/organization/settings', { replace: true });
       } catch (error) {
-        window.location.href = '/';
+        window.location.href = '/organization/settings';
       }
     } catch (error) {
       // Error handling is done in the centralized hook
     }
-  }, [createOrganization]);
+  }, [createOrganization, navigate]);
 
   const handleSignOut = useCallback(async () => {
     try {

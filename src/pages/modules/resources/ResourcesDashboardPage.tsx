@@ -1,18 +1,22 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, UserPlus, Shield, BarChart3, TrendingUp, Clock, CheckCircle, XCircle, AlertTriangle, ArrowRight, Sparkles } from 'lucide-react';
+import { useEmployeeAnalytics } from '@/hooks/useEmployees';
 
 function ResourcesDashboardPage() {
-  // Mock stats - will be replaced with API calls
+  // Fetch real stats from API
+  const { dashboard, isLoadingDashboard } = useEmployeeAnalytics();
+  
+  // Map API data to stats
   const stats = {
-    totalEmployees: 42,
-    activeEmployees: 39,
-    onBench: 3,
-    avgUtilization: 82,
-    monthlyBillable: 120000,
-    pendingCandidates: 8,
-    inReview: 5,
-    acceptedThisMonth: 6,
+    totalEmployees: dashboard?.total_employees || 0,
+    activeEmployees: dashboard?.active_count || 0,
+    onBench: 0, // TODO: Calculate from utilization data
+    avgUtilization: 0, // TODO: Calculate from employee utilization
+    monthlyBillable: 0, // TODO: Calculate from active employees billing rates
+    pendingCandidates: dashboard?.pending_count || 0,
+    inReview: dashboard?.review_count || 0,
+    acceptedThisMonth: dashboard?.accepted_count || 0,
   };
 
   const modules = [
@@ -78,6 +82,18 @@ function ResourcesDashboardPage() {
       badge: 'Coming Soon',
     },
   ];
+
+  // Show loading state while fetching dashboard stats
+  if (isLoadingDashboard) {
+    return (
+      <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard statistics...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">

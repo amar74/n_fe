@@ -39,12 +39,14 @@ export default defineConfig({
           }
           
           // Split by page/route
-          if (id.includes('/pages/modules/opportunities/')) {
-            return 'opportunities';
-          }
-          if (id.includes('/pages/modules/accounts/')) {
-            return 'accounts';
-          }
+          // Temporarily disable opportunities chunking to fix initialization error
+          // if (id.includes('/pages/modules/opportunities/')) {
+          //   return 'opportunities';
+          // }
+          // Temporarily disable accounts chunking to fix initialization error
+          // if (id.includes('/pages/modules/accounts/')) {
+          //   return 'accounts';
+          // }
           if (id.includes('/pages/modules/proposals/')) {
             return 'proposals';
           }

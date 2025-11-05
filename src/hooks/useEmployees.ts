@@ -280,7 +280,7 @@ export function useEmployeeAnalytics() {
         total_gap: number;
         critical_gaps: number;
         skill_gaps: SkillGap[];
-      }>(`${BASE_URL}/api/ai/skills-gap`);
+      }>(`${BASE_URL}/api/resources/ai/skills-gap`);
       return response.data;
     },
   });

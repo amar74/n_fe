@@ -27,6 +27,7 @@ export default function MainLayout() {
     }
 
     const currentPath = location.pathname;
+    const userOrgId = backendUser.org_id;
 
     // If user has org_id but organization doesn't exist (404 error), redirect to organization creation
     if (
@@ -44,7 +45,7 @@ export default function MainLayout() {
 
     // If user doesn't have org_id and isn't already on org creation or auth pages
     if (
-      (backendUser.org_id === null) &&
+      (userOrgId === null) &&
       !currentPath.startsWith('/organization/create') &&
       !currentPath.startsWith('/auth/')
     ) {
@@ -52,18 +53,15 @@ export default function MainLayout() {
       return;
     }
 
-    // If user has org_id and organization exists, but is on organization create page, redirect to dashboard
-    // This handles the case where user just created an organization and should go to dashboard
-    if (backendUser.org_id && !isOrgLoading && organization && currentPath.startsWith('/organization/create')) {
-      navigate('/', { replace: true });
-      return;
-    }
+    // Don't redirect from organization create page anymore
+    // Let the CreateOrganizationPage handle its own navigation after success
     
     // If user has org_id and is not on profile update or org create page, check profile completion
     if (
-      backendUser.org_id &&
+      userOrgId &&
       !currentPath.startsWith('/organization/update') &&
       !currentPath.startsWith('/organization/create') &&
+      !currentPath.startsWith('/organization/settings') &&
       !currentPath.startsWith('/auth/')
     ) {
       // Wait for organization data to load
@@ -79,7 +77,7 @@ export default function MainLayout() {
         return;
       }
     }
-  }, [backendUser, isAuthenticated, initialAuthComplete, organization, isOrgLoading, isOrgError, orgError, hasOrgId, navigate, location.pathname]);
+  }, [isAuthenticated, initialAuthComplete, isOrgLoading, isOrgError, hasOrgId, location.pathname]);
 
   // Show loading only during initial auth check
   if (!initialAuthComplete) {

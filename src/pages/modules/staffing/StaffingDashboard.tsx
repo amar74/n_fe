@@ -115,32 +115,8 @@ export default function StaffingDashboard() {
     }
   ];
 
-  const quickInsights = [
-    {
-      title: 'High Utilization',
-      description: '12 employees are over 90% utilized',
-      icon: AlertCircle,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50',
-      borderColor: 'border-yellow-200'
-    },
-    {
-      title: 'Budget Variance',
-      description: '3 plans are under budget by 15%',
-      icon: TrendingUp,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200'
-    },
-    {
-      title: 'Upcoming Reviews',
-      description: '5 plans need review this month',
-      icon: Clock,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200'
-    }
-  ];
+  // Real insights based on actual data - no mock data
+  const quickInsights = [];
 
   // Transform API data to match UI format (with validation)
   const staffPlans: StaffPlan[] = (apiPlans || [])
