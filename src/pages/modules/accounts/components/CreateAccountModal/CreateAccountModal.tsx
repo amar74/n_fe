@@ -1196,7 +1196,7 @@ export function CreateAccountModal({
                     <div>
                       <h3 className="text-lg font-semibold text-purple-900">AI Suggestions</h3>
                       <p className="text-sm text-purple-700">
-                        Found {Object.keys(aiSuggestions.suggestions).length} suggestions 
+                        Found {Object.keys(aiSuggestions?.suggestions || {}).length} suggestions 
                         ({appliedSuggestions.length} auto-applied)
                       </p>
                     </div>
@@ -1214,7 +1214,7 @@ export function CreateAccountModal({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(aiSuggestions.suggestions).map(([field, suggestion]: [string, any]) => (
+                  {Object.entries(aiSuggestions?.suggestions || {}).map(([field, suggestion]: [string, any]) => (
                     <div
                       key={field}
                       className={`p-4 rounded-lg border-2 ${
