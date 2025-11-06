@@ -3,11 +3,11 @@ import { Loader2, ActivitySquare } from 'lucide-react';
 import { RecentActivityItem } from '../../AccountDetailsPage.types';
 
 type RecentActivityProps = {
-  activities: RecentActivityItem[];
+  activities?: RecentActivityItem[];
   isLoading?: boolean;
 }
 
-export function RecentActivity({ activities, isLoading = false }: RecentActivityProps) {
+export function RecentActivity({ activities = [], isLoading = false }: RecentActivityProps) {
   // Define colors for each activity
   const activityColors = ['#16A34A', '#2563EB', '#9333EA']; // green, blue, purple
 
@@ -31,7 +31,7 @@ export function RecentActivity({ activities, isLoading = false }: RecentActivity
             <p className="text-sm text-gray-500 font-['Outfit']">Loading activities...</p>
           </div>
         </div>
-      ) : activities.length === 0 ? (
+      ) : !activities || activities.length === 0 ? (
         <div className="self-stretch flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <ActivitySquare className="w-12 h-12 text-gray-300" />
