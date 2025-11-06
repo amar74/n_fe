@@ -18,13 +18,25 @@ import { CreateOrganizationSchema, CreateOrganizationFormData } from './CreateOr
 export function useCreateOrganizationPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, initialAuthComplete, isAuthenticated } = useAuth();
+  const { user, backendUser, initialAuthComplete, isAuthenticated } = useAuth();
   const { createOrganization, isCreating: isSubmitting } = useOrganizations();
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAISuggestions, setShowAISuggestions] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<any>(null);
   const [appliedSuggestions, setAppliedSuggestions] = useState<string[]>([]);
+
+  // Redirect to dashboard if user already has an organization
+  useEffect(() => {
+    if (initialAuthComplete && backendUser?.org_id) {
+      console.log('[CreateOrgPage] User already has organization, redirecting to dashboard');
+      toast({
+        title: 'Organization Already Exists',
+        description: 'You already have an organization. Redirecting to dashboard.',
+      });
+      navigate('/', { replace: true });
+    }
+  }, [initialAuthComplete, backendUser, navigate, toast]);
 
   const { enhanceAccountData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
     autoApply: true,

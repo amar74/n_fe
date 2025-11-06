@@ -59,8 +59,15 @@ export default function MainLayout() {
       return;
     }
 
-    // Don't redirect from organization create page anymore
-    // Let the CreateOrganizationPage handle its own navigation after success
+    // If user HAS org_id and is on create page, redirect to dashboard (shouldn't create another org)
+    if (
+      userOrgId &&
+      currentPath.startsWith('/organization/create')
+    ) {
+      console.log('[MainLayout] User already has org_id, redirecting from create page to dashboard');
+      navigate('/', { replace: true });
+      return;
+    }
     
     // If user has org_id and is not on profile update or org create page, check profile completion
     if (
