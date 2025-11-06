@@ -257,11 +257,12 @@ export function useCreateOrganizationPage() {
       const organizationData: CreateOrgFormData = {
         name: data.name.trim(),
         address:
-          data.address?.line1 || data.address?.line2 || data.address?.city || data.address?.pincode
+          data.address?.line1 || data.address?.line2 || data.address?.city || data.address?.state || data.address?.pincode
             ? {
                 line1: data.address.line1?.trim() || '',
                 line2: data.address.line2?.trim() || undefined,
                 city: data.address.city?.trim() || undefined,
+                state: data.address.state?.trim() || undefined,
                 pincode: data.address.pincode || undefined,
               }
             : undefined,
