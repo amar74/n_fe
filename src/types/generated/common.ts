@@ -16,6 +16,9 @@ export const AuthUserResponse = z
     country: z.union([z.string(), z.null()]).optional(),
     timezone: z.union([z.string(), z.null()]).optional(),
     language: z.union([z.string(), z.null()]).optional(),
+    created_at: z.union([z.string(), z.null()]).optional(),
+    updated_at: z.union([z.string(), z.null()]).optional(),
+    last_login: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
 export const ValidationError = z
