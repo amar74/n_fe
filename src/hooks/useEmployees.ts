@@ -187,9 +187,13 @@ export function useEmployees(status?: string) {
         queryClient.setQueryData(employeeKeys.list(status), context.previousEmployees);
       }
     },
-    onSettled: () => {
+    onSettled: async () => {
       // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: employeeKeys.all });
+      await queryClient.invalidateQueries({ queryKey: employeeKeys.all });
+      await queryClient.invalidateQueries({ queryKey: employeeKeys.dashboard() });
+      
+      // Refetch the employee lists immediately
+      await queryClient.refetchQueries({ queryKey: employeeKeys.list() });
     },
   });
 
@@ -205,8 +209,13 @@ export function useEmployees(status?: string) {
       });
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: employeeKeys.all });
+    onSuccess: async () => {
+      // Invalidate all employee-related queries
+      await queryClient.invalidateQueries({ queryKey: employeeKeys.all });
+      await queryClient.invalidateQueries({ queryKey: employeeKeys.dashboard() });
+      
+      // Refetch the employee lists immediately
+      await queryClient.refetchQueries({ queryKey: employeeKeys.list() });
     },
   });
 
