@@ -138,8 +138,8 @@ function DashboardWelcome() {
     queryKey: ['recentActivity'],
     queryFn: async () => {
       const [accountsRes, opportunitiesRes] = await Promise.all([
-        apiClient.get('/accounts?page=1&page_size=3').catch(() => ({ data: { accounts: [] } })),
-        apiClient.get('/opportunities?page=1&page_size=3').catch(() => ({ data: { opportunities: [] } })),
+        apiClient.get('/accounts?page=1&size=3').catch(() => ({ data: { accounts: [] } })),
+        apiClient.get('/opportunities?page=1&size=3').catch(() => ({ data: { opportunities: [] } })),
       ]);
       
       const activities = [];
