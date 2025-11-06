@@ -144,7 +144,7 @@ export default function OrganizationUpdatePage() {
 
   const form = useForm<OrganizationUpdateFormData>({
     resolver: zodResolver(organizationUpdateSchema),
-    mode: 'onBlur', // Validate on blur for better UX
+    mode: 'onChange', // Validate on change to show errors immediately
     defaultValues: {
       name: '',
       website: '',
@@ -195,6 +195,11 @@ export default function OrganizationUpdatePage() {
       };
 
       form.reset(organizationData);
+      
+      // Trigger validation after loading data to show any missing required fields
+      setTimeout(() => {
+        form.trigger();
+      }, 100);
 
       const phoneNumber = organization.contact?.phone || '';
       let countryCode = '+1'; // Default to USA
@@ -505,7 +510,9 @@ export default function OrganizationUpdatePage() {
                                 field.onChange(e.target.value);
                                 handleFormDataChange('website', e.target.value);
                               }}
-                              className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-black text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
+                              className={`self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] text-black text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0 ${
+                                form.formState.errors.website ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
+                              }`}
                               disabled={isSubmitting || isUpdating}
                             />
                           </FormControl>
@@ -533,7 +540,9 @@ export default function OrganizationUpdatePage() {
                                 field.onChange(e.target.value);
                                 handleFormDataChange('organizationName', e.target.value);
                               }}
-                              className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-black text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
+                              className={`self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] text-black text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0 ${
+                                form.formState.errors.name ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
+                              }`}
                               disabled={isSubmitting || isUpdating}
                             />
                           </FormControl>
@@ -623,7 +632,9 @@ export default function OrganizationUpdatePage() {
                             disabled={isSubmitting || isUpdating || availableCities.length === 0}
                           >
                             <FormControl>
-                              <SelectTrigger className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-[#101828] text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus:ring-0">
+                              <SelectTrigger className={`self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] text-[#101828] text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus:ring-0 ${
+                                form.formState.errors.address?.city ? 'border-red-500' : 'border-gray-300'
+                              }`}>
                                 <SelectValue placeholder={availableCities.length > 0 ? "Select City" : "Select state first"} />
                               </SelectTrigger>
                             </FormControl>
@@ -659,7 +670,9 @@ export default function OrganizationUpdatePage() {
                             disabled={isSubmitting || isUpdating}
                           >
                             <FormControl>
-                              <SelectTrigger className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-[#101828] text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus:ring-0">
+                              <SelectTrigger className={`self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] text-[#101828] text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus:ring-0 ${
+                                form.formState.errors.address?.state ? 'border-red-500' : 'border-gray-300'
+                              }`}>
                                 <SelectValue placeholder="Select State" />
                               </SelectTrigger>
                             </FormControl>
@@ -699,7 +712,9 @@ export default function OrganizationUpdatePage() {
                                 field.onChange(value ? parseInt(value) : undefined);
                                 handleZipCodeChange(value);
                               }}
-                              className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-gray-500 text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
+                              className={`self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] text-gray-500 text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0 ${
+                                form.formState.errors.address?.pincode ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
+                              }`}
                               disabled={isSubmitting || isUpdating}
                             />
                           </FormControl>
@@ -731,7 +746,9 @@ export default function OrganizationUpdatePage() {
                                 field.onChange(e.target.value);
                                 handleFormDataChange('email', e.target.value);
                               }}
-                              className="self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-gray-300 text-black text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0"
+                              className={`self-stretch h-11 px-4 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] text-black text-sm font-normal font-['Outfit'] leading-tight focus:border-indigo-500 focus:shadow-[0px_0px_0px_4px_rgba(70,95,255,0.12)] focus-visible:ring-0 ${
+                                form.formState.errors.contact?.email ? 'border-red-500 focus:border-red-500' : 'border-gray-300'
+                              }`}
                               disabled={isSubmitting || isUpdating}
                             />
                           </FormControl>
