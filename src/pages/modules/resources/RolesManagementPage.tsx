@@ -122,7 +122,7 @@ function RolesManagementPage() {
         )}
 
         {/* System Roles */}
-        {!isLoading && (
+        {!isLoading && systemRoles && (
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Shield className="w-5 h-5 text-[#151950]" />
@@ -142,7 +142,7 @@ function RolesManagementPage() {
         )}
 
         {/* Custom Roles */}
-        {!isLoading && customRoles.length > 0 && (
+        {!isLoading && customRoles && customRoles.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Custom Roles</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -248,7 +248,7 @@ function RoleCard({
       </div>
       <p className="text-sm opacity-80 mb-3">{role.description}</p>
       <div className="flex items-center justify-between text-sm">
-        <span className="opacity-70">{role.permissions.length} permissions</span>
+        <span className="opacity-70">{role.permissions?.length ?? 0} permissions</span>
         {role.isSystem && (
           <span className="text-xs px-2 py-1 bg-white/50 rounded">System</span>
         )}
