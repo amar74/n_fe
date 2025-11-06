@@ -132,14 +132,22 @@ export function useCreateOrganizationPage() {
         break;
         
       case 'email':
+      case 'contact_email':
         setValue('contact.email', value, { shouldValidate: true });
         break;
         
       case 'phone':
+      case 'contact_phone':
         setValue('contact.phone', value, { shouldValidate: true });
+        break;
+      
+      case 'company_size':
+        // Store company size if needed (no form field for this currently)
+        console.log('Company size:', value);
         break;
         
       default:
+        console.log(`⚠️ Unknown field "${field}" - skipping`);
     }
   }, [setValue]);
 
