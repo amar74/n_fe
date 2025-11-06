@@ -10,6 +10,7 @@ import AcceptInvitePage from '@pages/AcceptInvitePage';
 import MainLayout from '@layouts/MainLayout';
 import AuthLayout from '@layouts/AuthLayout';
 import AdminLayout from '@layouts/AdminLayout';
+import SuperAdminLayout from '@layouts/SuperAdminLayout';
 import AdminSigninPage from '@pages/AdminSigninPage';
 import AdminDashboardPage from '@/pages/admin/DashboardPage';
 import AccountsPage from '@/pages/modules/accounts/AccountsPage';
@@ -320,7 +321,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/super-admin',
-    element: <Outlet />,
+    element: <SuperAdminLayout />,
     errorElement: <ErrorBoundaryPage />,
     children: [
       {

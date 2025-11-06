@@ -26,6 +26,12 @@ export default function MainLayout() {
       return;
     }
 
+    // Redirect super admins to their dashboard (they should not access vendor routes)
+    if (backendUser?.role === 'super_admin') {
+      navigate('/super-admin/dashboard', { replace: true });
+      return;
+    }
+
     const currentPath = location.pathname;
     const userOrgId = backendUser.org_id;
 
