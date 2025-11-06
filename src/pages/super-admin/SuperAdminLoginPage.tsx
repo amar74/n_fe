@@ -99,7 +99,7 @@ export default function SuperAdminLoginPage() {
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="#344054" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Back to dashboard</span>
+            <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Back to dashboard</span>
           </button>
 
           
@@ -107,10 +107,10 @@ export default function SuperAdminLoginPage() {
             
             <div className="self-stretch flex flex-col justify-start items-start gap-3">
               <div className="flex items-center gap-3">
-                <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2]">Super Admin</h1>
+                <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-inter leading-[1.2]">Super Admin</h1>
                 <span className="px-3 py-1 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] text-white text-xs font-semibold rounded-full">ADMIN</span>
               </div>
-              <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed">
+              <p className="text-[#667085] text-[14px] font-normal font-inter leading-relaxed">
                 Access the Super Admin Dashboard with elevated privileges
               </p>
             </div>
@@ -124,7 +124,7 @@ export default function SuperAdminLoginPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem className="self-stretch flex flex-col justify-start items-start gap-2">
-                      <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
+                      <FormLabel className="text-[#344054] text-[14px] font-medium font-inter leading-tight">
                         Email address<span className="text-[#F04438]">*</span>
                       </FormLabel>
                       <FormControl>
@@ -133,10 +133,10 @@ export default function SuperAdminLoginPage() {
                           type="email"
                           placeholder="superadmin@megapolis.com"
                           autoComplete="off"
-                          className="self-stretch h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                          className="self-stretch h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-inter focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
                         />
                       </FormControl>
-                      <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                      <FormMessage className="text-xs text-[#F04438] font-inter" />
                     </FormItem>
                   )}
                 />
@@ -147,7 +147,7 @@ export default function SuperAdminLoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem className="self-stretch flex flex-col justify-start items-start gap-2">
-                      <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
+                      <FormLabel className="text-[#344054] text-[14px] font-medium font-inter leading-tight">
                         Password<span className="text-[#F04438]">*</span>
                       </FormLabel>
                       <FormControl>
@@ -156,7 +156,7 @@ export default function SuperAdminLoginPage() {
                             {...field}
                             type={showPassword ? "text" : "password"}
                             placeholder="Enter admin password"
-                            className="self-stretch h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                            className="self-stretch h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-inter focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
                           />
                           <button
                             type="button"
@@ -172,7 +172,7 @@ export default function SuperAdminLoginPage() {
                           </button>
                         </div>
                       </FormControl>
-                      <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                      <FormMessage className="text-xs text-[#F04438] font-inter" />
                     </FormItem>
                   )}
                 />
@@ -191,7 +191,7 @@ export default function SuperAdminLoginPage() {
                             className="w-5 h-5 rounded-md border-2 border-[#D0D5DD] data-[state=checked]:bg-[#7C3AED] data-[state=checked]:border-[#7C3AED]"
                           />
                         </FormControl>
-                        <FormLabel className="text-[#344054] text-sm font-normal font-outfit leading-tight cursor-pointer select-none">
+                        <FormLabel className="text-[#344054] text-sm font-normal font-inter leading-tight cursor-pointer select-none">
                           Keep me logged in
                         </FormLabel>
                       </FormItem>
@@ -201,7 +201,7 @@ export default function SuperAdminLoginPage() {
 
                 
                 {form.formState.errors.root && (
-                  <div className="text-[#F04438] text-sm text-center self-stretch bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-outfit">
+                  <div className="text-[#F04438] text-sm text-center self-stretch bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-inter">
                     {form.formState.errors.root.message}
                   </div>
                 )}
@@ -209,7 +209,7 @@ export default function SuperAdminLoginPage() {
                 
                 <Button
                   type="submit"
-                  className="self-stretch h-[48px] px-5 py-3 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] rounded-lg text-white text-[15px] font-semibold font-outfit leading-tight hover:from-[#6D28D9] hover:to-[#4338CA] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
+                  className="self-stretch h-[48px] px-5 py-3 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] rounded-lg text-white text-[15px] font-semibold font-inter leading-tight hover:from-[#6D28D9] hover:to-[#4338CA] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Authenticating...' : 'Access Admin Portal'}
@@ -221,7 +221,7 @@ export default function SuperAdminLoginPage() {
                     <path d="M8 1.33334L3.33333 3.33334V7.33334C3.33333 10.6 5.66667 13.7333 8 14.6667C10.3333 13.7333 12.6667 10.6 12.6667 7.33334V3.33334L8 1.33334Z" fill="#7C3AED" fillOpacity="0.2" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M6.66667 8L7.66667 9L10 6.66667" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <span className="text-[#667085] text-xs font-medium font-outfit">Secure Admin Authentication</span>
+                  <span className="text-[#667085] text-xs font-medium font-inter">Secure Admin Authentication</span>
                 </div>
               </form>
             </Form>
@@ -312,7 +312,7 @@ export default function SuperAdminLoginPage() {
           <div className="inline-flex flex-col items-center gap-4">
             
             
-            <p className="text-center text-white text-opacity-80 text-base font-normal font-outfit leading-relaxed max-w-md">
+            <p className="text-center text-white text-opacity-80 text-base font-normal font-inter leading-relaxed max-w-md">
               Complete system control with elevated privileges for managing vendors, users, and platform operations
             </p>
           </div>

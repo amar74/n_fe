@@ -325,20 +325,20 @@ export default function EmployeeSurveyBuilderPage() {
   };
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
+    <div className="w-full h-full bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-sm font-normal font-outfit leading-tight">Dashboard</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Employee Survey Builder</span>
+              <span className="text-gray-500 text-sm font-normal font-inter leading-tight">Dashboard</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Employee Survey Builder</span>
             </div>
-            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">
+            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter leading-loose">
               {isEditMode ? 'Edit Employee Survey' : 'Employee Survey Builder'}
             </h1>
-            <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">
+            <p className="text-[#667085] text-sm font-normal font-inter leading-tight">
               {isEditMode ? 'Update your employee survey' : 'Create surveys for your employees to gather feedback and insights'}
             </p>
           </div>
@@ -357,10 +357,10 @@ export default function EmployeeSurveyBuilderPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Survey Details */}
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
-              <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Survey Details</h2>
+              <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Survey Details</h2>
               <div className="flex flex-col gap-4">
                 <div>
-                  <label className="block text-[#344054] text-sm font-medium font-outfit mb-2">Survey Title</label>
+                  <label className="block text-[#344054] text-sm font-medium font-inter mb-2">Survey Title</label>
                   <Input
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -369,7 +369,7 @@ export default function EmployeeSurveyBuilderPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[#344054] text-sm font-medium font-outfit mb-2">Description</label>
+                  <label className="block text-[#344054] text-sm font-medium font-inter mb-2">Description</label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -383,7 +383,7 @@ export default function EmployeeSurveyBuilderPage() {
 
             {/* Add Question */}
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
-              <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Add Question</h2>
+              <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Add Question</h2>
               <div className="grid grid-cols-2 gap-3">
                 {questionTypes.map(type => (
                   <Button
@@ -402,7 +402,7 @@ export default function EmployeeSurveyBuilderPage() {
             {/* Questions List */}
             {formData.questions.length > 0 && (
               <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
-                <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Questions ({formData.questions.length})</h2>
+                <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Questions ({formData.questions.length})</h2>
                 <div className="flex flex-col gap-4">
                   {formData.questions.map((question, index) => (
                     <div key={question.id} className="border border-gray-200 rounded-lg p-4 space-y-3 bg-gray-50">
@@ -486,8 +486,8 @@ export default function EmployeeSurveyBuilderPage() {
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <div className="flex justify-between items-start gap-6">
                 <div className="flex-1 flex flex-col gap-1">
-                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Select Employees</h2>
-                  <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">
+                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Select Employees</h2>
+                  <p className="text-[#667085] text-sm font-normal font-inter leading-tight">
                     Choose employees who will receive this survey
                   </p>
                 </div>
@@ -560,7 +560,7 @@ export default function EmployeeSurveyBuilderPage() {
 
             {/* Save & Publish Section */}
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
-              <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Save & Publish</h2>
+              <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Save & Publish</h2>
               <div className="flex flex-col gap-4">
                 {formData.targetEmployees.length > 0 && (
                   <div className="text-center py-4 bg-gray-50 rounded-lg">

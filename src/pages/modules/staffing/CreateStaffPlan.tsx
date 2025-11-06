@@ -354,7 +354,7 @@ export default function CreateStaffPlan() {
   // Show loading state when fetching plan data in edit mode
   if (isLoadingExistingPlan && isValidEditId) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-outfit flex items-center justify-center">
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-inter flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#161950' }} />
           <p className="text-gray-600">Loading staff plan...</p>
@@ -364,7 +364,7 @@ export default function CreateStaffPlan() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-outfit">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-inter">
       <div className="flex flex-col w-full">
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -376,7 +376,7 @@ export default function CreateStaffPlan() {
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
+                <h1 className="text-2xl font-bold text-[#1A1A1A] font-inter">
                   {isEditMode ? 'Edit Staffing Plan' : 'Create Staffing Plan'}
                 </h1>
                 <p className="text-sm text-gray-600 mt-0.5">

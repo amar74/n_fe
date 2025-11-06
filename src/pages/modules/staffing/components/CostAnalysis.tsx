@@ -97,7 +97,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                 <BarChart3 className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
+                <h2 className="text-2xl font-bold text-[#1A1A1A] font-inter">
                   Multi-Year Cost Analysis
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">

@@ -399,7 +399,8 @@ export function AccountInformationForm({
                   value={formData.client_name}
                   onChange={(e) => handleFieldChange('client_name', e.target.value)}
                   disabled={!isFieldEditable('client_name')}
-                  className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none disabled:opacity-100 disabled:cursor-not-allowed
+                  className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 focus:outline-none
+                    ${isFieldEditable('client_name') ? 'bg-white hover:border-gray-400' : 'bg-[#F3F3F3] cursor-not-allowed'}
                     ${validationErrors.client_name ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
                 />
                 {validationErrors.client_name && (
@@ -420,7 +421,8 @@ export function AccountInformationForm({
                     value={formData.client_type || 'tier_1'}
                     onChange={(e) => onFormChange('client_type', e.target.value)}
                     disabled={!isFieldEditable('client_type')}
-                    className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                    className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100
+                      ${isFieldEditable('client_type') ? 'bg-white hover:border-gray-400' : 'bg-[#F3F3F3] cursor-not-allowed'}`}
                   >
                     {CLIENT_TYPES.map((type) => (
                       <option key={type.value} value={type.value}>
@@ -446,7 +448,8 @@ export function AccountInformationForm({
                     value={formData.market_sector}
                     onChange={(e) => onFormChange('market_sector', e.target.value)}
                     disabled={!isFieldEditable('market_sector')}
-                    className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                    className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100
+                      ${isFieldEditable('market_sector') ? 'bg-white hover:border-gray-400' : 'bg-[#F3F3F3] cursor-not-allowed'}`}
                   >
                     {MARKET_SECTORS.map((sector) => (
                       <option key={sector} value={sector}>{sector}</option>
@@ -614,7 +617,8 @@ export function AccountInformationForm({
                   onChange={(e) => handleFieldChange('company_website', e.target.value)}
                   disabled={!isFieldEditable('company_website')}
                   placeholder="https://example.com"
-                  className={`w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 hover:border-gray-300 focus:outline-none disabled:opacity-100 disabled:cursor-not-allowed
+                  className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border text-slate-800 text-sm font-normal font-['Outfit'] leading-tight transition-all duration-200 focus:outline-none
+                    ${isFieldEditable('company_website') ? 'bg-white hover:border-gray-400' : 'bg-[#F3F3F3] cursor-not-allowed'}
                     ${validationErrors.company_website ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100' : 'border-[#E5E7EB] focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
                 />
                 {validationErrors.company_website && (
@@ -632,7 +636,8 @@ export function AccountInformationForm({
                     value={formData.hosting_area || ''}
                     onChange={(e) => onFormChange('hosting_area', e.target.value)}
                     disabled={!isFieldEditable('hosting_area')}
-                    className="w-full h-11 px-3.5 py-2.5 bg-[#FAFAF8] rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-100 disabled:cursor-not-allowed"
+                    className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border border-[#E5E7EB] text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100
+                      ${isFieldEditable('hosting_area') ? 'bg-white hover:border-gray-400' : 'bg-[#F3F3F3] cursor-not-allowed'}`}
                   >
                     <option value="">Select Hosting Area</option>
                     {HOSTING_AREAS.map((area) => (
@@ -656,11 +661,11 @@ export function AccountInformationForm({
                   type="button"
                   onClick={() => isFieldEditable('msa_in_place') && onFormChange('msa_in_place', !formData.msa_in_place)}
                   disabled={!isFieldEditable('msa_in_place')}
-                  className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border flex items-center justify-center transition-all duration-200 ${
-                    formData.msa_in_place 
-                      ? 'bg-emerald-50 border-emerald-200' 
-                      : 'bg-gray-50 border-gray-200'
-                  } ${isEditing ? 'cursor-pointer hover:opacity-80' : 'cursor-not-allowed'}`}
+                  className={`w-full h-11 px-3.5 py-2.5 rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border flex items-center justify-center transition-all duration-200 
+                    ${isFieldEditable('msa_in_place') 
+                      ? (formData.msa_in_place ? 'bg-emerald-50 border-emerald-200 hover:opacity-80 cursor-pointer' : 'bg-white border-gray-300 hover:border-gray-400 cursor-pointer')
+                      : 'bg-[#F3F3F3] border-gray-200 cursor-not-allowed'
+                    }`}
                 >
                   <span className={`text-xs font-semibold font-['Outfit'] leading-none uppercase ${
                     formData.msa_in_place ? 'text-[#10B981]' : 'text-gray-400'

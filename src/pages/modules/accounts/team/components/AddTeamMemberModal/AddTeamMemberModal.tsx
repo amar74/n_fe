@@ -25,11 +25,13 @@ export function AddTeamMemberModal({ isOpen, onClose, accountId }: AddTeamMember
   const { employees, isLoading: isLoadingEmployees } = useEmployees();
   const { addTeamMember, isAdding, teamMembers } = useAccountTeam(accountId);
 
-  // Filter employees: only show active/accepted, exclude already assigned members, and apply search
+  // Filter employees: only show ACTIVATED employees (status='active' AND user_id exists)
+  // Activated employees are those with user accounts created by admin
   const assignedEmployeeIds = new Set(teamMembers.map(tm => tm.employee_id));
   const filteredEmployees = (employees || []).filter(emp => {
-    // Only show active or accepted employees
-    if (emp.status !== 'active' && emp.status !== 'accepted') return false;
+    // Only show activated employees (those with user accounts)
+    const empData = emp as any;
+    if (emp.status !== 'active' || !empData.user_id) return false;
     
     // Exclude already assigned employees
     if (assignedEmployeeIds.has(emp.id)) return false;
@@ -81,7 +83,7 @@ export function AddTeamMemberModal({ isOpen, onClose, accountId }: AddTeamMember
         <DialogHeader>
           <DialogTitle>Add Team Member</DialogTitle>
           <p className="text-sm text-gray-500 mt-1">
-            Only active and accepted employees are available for team assignment
+            Only activated employees (with user accounts) are available for team assignment
           </p>
         </DialogHeader>
 
@@ -162,7 +164,7 @@ export function AddTeamMemberModal({ isOpen, onClose, accountId }: AddTeamMember
                 <p className="text-gray-500 text-sm max-w-md">
                   {searchQuery 
                     ? 'Try adjusting your search criteria.'
-                    : 'All active/accepted employees have already been assigned to this account.'}
+                    : 'All activated employees (with user accounts) have already been assigned to this account.'}
                 </p>
               </div>
             ) : (

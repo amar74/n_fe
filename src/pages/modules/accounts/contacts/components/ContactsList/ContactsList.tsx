@@ -66,10 +66,10 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
           <thead>
             <tr className="border-b border-gray-200">
               <th className="text-left py-3 px-4 text-[#667085] text-xs font-medium font-['Outfit'] uppercase tracking-wider">
-                Client Name
+                Title
               </th>
               <th className="text-left py-3 px-4 text-[#667085] text-xs font-medium font-['Outfit'] uppercase tracking-wider">
-                Role
+                Name
               </th>
               <th className="text-left py-3 px-4 text-[#667085] text-xs font-medium font-['Outfit'] uppercase tracking-wider">
                 Email
@@ -98,16 +98,17 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
                   className={`hover:bg-gray-50 transition-colors ${!isLastRow ? 'border-b border-gray-100' : ''}`}
                 >
                   
+                  {/* Title (Mr., Mrs., Ms., Dr.) */}
                   <td className="py-4 px-4">
-                    <span className="text-slate-800 text-sm font-medium font-['Outfit']">
-                      {contact.name}
+                    <span className="text-slate-800 text-sm font-normal font-['Outfit']">
+                      {contact.title || 'N/A'}
                     </span>
                   </td>
 
-                  
+                  {/* Name */}
                   <td className="py-4 px-4">
-                    <span className="text-slate-800 text-sm font-normal font-['Outfit']">
-                      {isPrimaryContact ? 'Primary Contact' : 'Secondary Contact'}
+                    <span className="text-slate-800 text-sm font-medium font-['Outfit']">
+                      {contact.name}
                     </span>
                   </td>
 

@@ -356,7 +356,7 @@ export default function ProfilePage() {
                   <div className="flex-1">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Last Login</p>
                     <p className="text-base font-bold text-gray-900">
-                      {formatLastLogin(backendUser?.updated_at as string | undefined)}
+                      {formatLastLogin((backendUser as any)?.last_login as string | undefined)}
                     </p>
                   </div>
                 </div>

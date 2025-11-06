@@ -10,7 +10,6 @@ import { TeamTab } from './team';
 import { useAccountDetailsPage } from './useAccountDetailsPage';
 
 function AccountDetailsPage() {
-  // TODO: need to fix this - rose11
   const {
     account,
     isLoading,
@@ -20,6 +19,7 @@ function AccountDetailsPage() {
     formData,
     statsCards,
     recentActivity,
+    isLoadingActivities,
     handleTabChange,
     handleEditToggle,
     handleFormChange,
@@ -149,7 +149,7 @@ function AccountDetailsPage() {
                 <AccountStatsCards stats={statsCards} />
                 
                 
-                <RecentActivity activities={recentActivity} />
+                <RecentActivity activities={recentActivity} isLoading={isLoadingActivities} />
               </div>
             )}
           </div>

@@ -1,0 +1,11 @@
+name,email,phone,job_title,role,department,location,bill_rate
+Michael Chen,michael.chen@company.com,555-0201,Site Engineer,employee,Civil Engineering,Boston,150
+Sarah Connor,sarah.connor@company.com,555-0202,Project Architect,manager,Architecture,Los Angeles,200
+David Martinez,david.martinez@company.com,555-0203,Structural Engineer,employee,Structural Engineering,Chicago,180
+Emily Davis,emily.davis@company.com,555-0204,Construction Manager,manager,Construction,Houston,190
+James Wilson,james.wilson@company.com,555-0205,Safety Officer,employee,Safety & Compliance,Phoenix,140
+Lisa Anderson,lisa.anderson@company.com,555-0206,Civil Engineer,employee,Civil Engineering,Denver,155
+Thomas Taylor,thomas.taylor@company.com,555-0207,Electrical Engineer,employee,Electrical,Miami,165
+Jennifer Moore,jennifer.moore@company.com,555-0208,HVAC Engineer,employee,HVAC,Portland,145
+Daniel White,daniel.white@company.com,555-0209,Plumbing Supervisor,manager,Plumbing,Dallas,170
+Maria Garcia,maria.garcia@company.com,555-0210,Quality Control Inspector,employee,Quality Control,San Diego,125

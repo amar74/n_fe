@@ -70,11 +70,11 @@ export default function ForgotPasswordPage() {
           </div>
           
           <div className="text-center space-y-3">
-            <h1 className="text-[#101828] text-[32px] font-semibold font-outfit">Check Your Email</h1>
-            <p className="text-[#667085] text-[15px] font-normal font-outfit leading-relaxed">
+            <h1 className="text-[#101828] text-[32px] font-semibold font-inter">Check Your Email</h1>
+            <p className="text-[#667085] text-[15px] font-normal font-inter leading-relaxed">
               We've sent password reset instructions to:
             </p>
-            <p className="text-[#161950] text-[16px] font-semibold font-outfit">
+            <p className="text-[#161950] text-[16px] font-semibold font-inter">
               {submittedEmail}
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
             </ul>
           </div>
 
-          <div className="text-center text-sm text-[#667085] font-outfit">
+          <div className="text-center text-sm text-[#667085] font-inter">
             Didn't receive the email? Check your spam folder or{' '}
             <button
               onClick={() => {
@@ -131,7 +131,7 @@ export default function ForgotPasswordPage() {
           className="inline-flex justify-start items-center gap-1.5 transition-all duration-200 hover:opacity-70 hover:gap-2 self-start"
         >
           <ArrowLeft className="w-5 h-5 text-[#344054]" />
-          <span className="text-[#344054] text-sm font-normal font-outfit">Back to Sign In</span>
+          <span className="text-[#344054] text-sm font-normal font-inter">Back to Sign In</span>
         </button>
 
         <div className="flex flex-col gap-3">
@@ -141,10 +141,10 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
           
-          <h1 className="text-[#101828] text-[32px] font-semibold font-outfit text-center">
+          <h1 className="text-[#101828] text-[32px] font-semibold font-inter text-center">
             Forgot Password?
           </h1>
-          <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed text-center">
+          <p className="text-[#667085] text-[14px] font-normal font-inter leading-relaxed text-center">
             No worries! Enter your email address and we'll send you instructions to reset your password.
           </p>
         </div>
@@ -156,7 +156,7 @@ export default function ForgotPasswordPage() {
               name="email"
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-2">
-                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-inter">
                     Email address<span className="text-[#F04438]">*</span>
                   </FormLabel>
                   <FormControl>
@@ -165,23 +165,23 @@ export default function ForgotPasswordPage() {
                       type="email"
                       placeholder="Enter your email"
                       autoComplete="email"
-                      className="h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                      className="h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-inter focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
                     />
                   </FormControl>
-                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                  <FormMessage className="text-xs text-[#F04438] font-inter" />
                 </FormItem>
               )}
             />
 
             {form.formState.errors.root && (
-              <div className="text-[#F04438] text-sm text-center bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-outfit">
+              <div className="text-[#F04438] text-sm text-center bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-inter">
                 {form.formState.errors.root.message}
               </div>
             )}
 
             <Button
               type="submit"
-              className="w-full h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-outfit hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-inter hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Sending...' : 'Send Reset Link'}

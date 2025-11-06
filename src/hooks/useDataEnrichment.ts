@@ -99,7 +99,7 @@ export function useDataEnrichment(options: SuggestionOptions = {}) {
         company_website: websiteUrl,
         current_data: partialData, // Changed from partial_data to match backend schema
       }, {
-        timeout: 40000, // 40 seconds timeout for AI enhancement
+        timeout: 60000, // 60 seconds timeout for AI enhancement
       });
       const result = response.data;
       
@@ -133,7 +133,7 @@ export function useDataEnrichment(options: SuggestionOptions = {}) {
       }
       
       return {
-        suggestions: suggestions,
+        enhanced_data: suggestions,
         processing_time_ms: result.processing_time_ms,
         warnings: result.warnings || [],
         suggestions_applied: result.suggestions_applied || 0
@@ -142,12 +142,14 @@ export function useDataEnrichment(options: SuggestionOptions = {}) {
     } catch (err: any) {
       let errorMessage = 'enhance failed data';
       
-      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || err.message?.includes('timeout of')) {
         errorMessage = 'AI processing is taking longer than expected. Please try again.';
       } else if (err.response?.status === 408) {
         errorMessage = 'AI processing timeout. Please try again.';
       } else if (err.response?.status === 429) {
         errorMessage = 'AI service is busy. Please try again in a few moments.';
+      } else if (err.response?.status === 500 || err.response?.status === 503) {
+        errorMessage = 'AI service is temporarily unavailable. Please try again later.';
       } else if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.message) {

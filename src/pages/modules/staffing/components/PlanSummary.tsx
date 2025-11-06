@@ -57,7 +57,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
                 <CheckCircle className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
+                <h2 className="text-2xl font-bold text-[#1A1A1A] font-inter">
                   Plan Summary
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">

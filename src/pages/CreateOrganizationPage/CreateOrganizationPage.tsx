@@ -34,7 +34,7 @@ function CreateOrganizationPage() {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2D3C8B]"></div>
-          <p className="text-gray-600 text-sm font-outfit">Initializing...</p>
+          <p className="text-gray-600 text-sm font-inter">Initializing...</p>
         </div>
       </div>
     );
@@ -46,14 +46,14 @@ function CreateOrganizationPage() {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2D3C8B]"></div>
-          <p className="text-gray-600 text-sm font-outfit">Redirecting...</p>
+          <p className="text-gray-600 text-sm font-inter">Redirecting...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-outfit">
+    <div className="min-h-screen bg-white flex flex-col font-inter">
       
       <header className="w-full border-b border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex items-center justify-between">
@@ -119,7 +119,7 @@ function CreateOrganizationPage() {
 
           
           <div className="text-center mb-12 flex flex-col items-center justify-center">
-            <h1 className="text-[36px] font-bold text-gray-900 mb-4 font-outfit tracking-tight">
+            <h1 className="text-[36px] font-bold text-gray-900 mb-4 font-inter tracking-tight">
               Create Your Organization
             </h1>
             <p className="text-gray-600 text-[16px] mx-auto font-poppins leading-relaxed text-center">
@@ -218,7 +218,7 @@ function CreateOrganizationPage() {
                         <Sparkles className="h-5 w-5 text-purple-600" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-purple-900 font-outfit">AI Suggestions</h3>
+                        <h3 className="text-lg font-semibold text-purple-900 font-inter">AI Suggestions</h3>
                         <p className="text-sm text-purple-700 font-poppins">
                           Found {Object.keys(aiSuggestions.suggestions || {}).length} suggestions 
                           ({appliedSuggestions.length} auto-applied)

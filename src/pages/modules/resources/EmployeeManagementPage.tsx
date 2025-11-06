@@ -1,222 +1,259 @@
 import { memo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Download, Eye, Filter, Users, TrendingUp, Clock, CheckCircle, DollarSign, Mail, Phone, MapPin, Briefcase, Award, Star, Plus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Download, Eye, Filter, Users, TrendingUp, Clock, CheckCircle, DollarSign, Mail, Phone, MapPin, Briefcase, Award, Star, Plus, Edit, Trash2, Loader2, Save, X } from 'lucide-react';
+import { useEmployees } from '@/hooks/useEmployees';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Employee = {
   id: string;
-  number: string;
+  employee_number: string;
   name: string;
   email: string;
-  phone: string;
-  department: string;
-  role: string;
-  location: string;
-  billRate: number;
-  utilization: number;
-  status: 'active' | 'on_bench' | 'on_leave';
-  skills: string[];
-  currentProjects: string[];
-  photo?: string;
-  startDate: string;
+  phone?: string;
+  department?: string;
+  role?: string;
+  job_title?: string;
+  location?: string;
+  bill_rate?: number;
+  status: string;
+  skills?: string[];
+  created_at: string;
 };
 
-const mockEmployees: Employee[] = [
-  {
-    id: '1',
-    number: 'EMP-001',
-    name: 'Mike Johnson',
-    email: 'mike.j@company.com',
-    phone: '+1 234 567 8902',
-    department: 'Engineering',
-    role: 'DevOps Engineer',
-    location: 'Austin, TX',
-    billRate: 230,
-    utilization: 95,
-    status: 'active',
-    skills: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-    currentProjects: ['Project Alpha', 'Project Beta'],
-    startDate: '2024-01-15',
-  },
-  {
-    id: '2',
-    number: 'EMP-002',
-    name: 'Sarah Anderson',
-    email: 'sarah.a@company.com',
-    phone: '+1 234 567 8903',
-    department: 'Design',
-    role: 'UI/UX Designer',
-    location: 'New York, NY',
-    billRate: 180,
-    utilization: 88,
-    status: 'active',
-    skills: ['Figma', 'Adobe XD', 'User Research', 'Prototyping'],
-    currentProjects: ['Project Gamma'],
-    startDate: '2024-02-20',
-  },
-  {
-    id: '3',
-    number: 'EMP-003',
-    name: 'David Chen',
-    email: 'david.c@company.com',
-    phone: '+1 234 567 8904',
-    department: 'Engineering',
-    role: 'Senior Developer',
-    location: 'San Francisco, CA',
-    billRate: 220,
-    utilization: 45,
-    status: 'on_bench',
-    skills: ['React', 'TypeScript', 'Node.js', 'GraphQL'],
-    currentProjects: [],
-    startDate: '2023-11-10',
-  },
-  {
-    id: '4',
-    number: 'EMP-004',
-    name: 'Emily Rodriguez',
-    email: 'emily.r@company.com',
-    phone: '+1 234 567 8905',
-    department: 'Product',
-    role: 'Product Manager',
-    location: 'Remote',
-    billRate: 250,
-    utilization: 92,
-    status: 'active',
-    skills: ['Agile', 'Product Strategy', 'Roadmapping', 'Analytics'],
-    currentProjects: ['Project Alpha', 'Project Delta'],
-    startDate: '2024-03-05',
-  },
-];
-
 function EmployeeManagementPage() {
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
+  const navigate = useNavigate();
+  // Fetch only accepted and active employees
+  const { employees: allEmployees, isLoading, updateEmployee, deleteEmployee, isUpdating, isDeleting } = useEmployees();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'on_bench' | 'on_leave'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'accepted'>('all');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+
+  // Filter to show only ACTIVE employees (with user accounts) - this is the "Active Employee Page"
+  const employees: Employee[] = (allEmployees as any[] || []).filter((emp: any) => 
+    emp.status === 'active' && emp.user_id != null
+  );
 
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         emp.number.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || emp.status === filterStatus;
-    return matchesSearch && matchesFilter;
+                         emp.employee_number.toLowerCase().includes(searchQuery.toLowerCase());
+    // Remove filterStatus check since we only show active employees now
+    return matchesSearch;
   });
 
   const stats = {
     total: employees.length,
-    active: employees.filter(e => e.status === 'active').length,
-    onBench: employees.filter(e => e.status === 'on_bench').length,
-    avgUtilization: Math.round(employees.reduce((sum, e) => sum + e.utilization, 0) / employees.length),
-    monthlyBillable: employees.reduce((sum, e) => sum + (e.billRate * 160 * (e.utilization / 100)), 0),
+    active: employees.length, // All employees here are active
+    avgBillRate: employees.length > 0 
+      ? Math.round(employees.reduce((sum, e) => sum + (e.bill_rate || 0), 0) / employees.length)
+      : 0,
+    monthlyBillable: employees.reduce((sum, e) => sum + ((e.bill_rate || 0) * 160), 0),
   };
 
+  const handleDelete = async (employeeId: string) => {
+    if (!window.confirm('Are you sure you want to delete this employee?')) return;
+    
+    try {
+      await deleteEmployee(employeeId);
+      toast.success('Employee deleted successfully');
+      if (selectedEmployee?.id === employeeId) {
+        setSelectedEmployee(null);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Failed to delete employee');
+    }
+  };
+
+  const handleStatusChange = async (employeeId: string, newStatus: string) => {
+    try {
+      await updateEmployee({ id: employeeId, data: { status: newStatus } });
+      toast.success('Employee status updated successfully');
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Failed to update status');
+    }
+  };
+
+  const handleExport = () => {
+    if (employees.length === 0) {
+      toast.error('No employees to export');
+      return;
+    }
+
+    try {
+      // CSV Headers
+      const headers = [
+        'Employee Number',
+        'Name',
+        'Email',
+        'Phone',
+        'Department',
+        'Role',
+        'Job Title',
+        'Location',
+        'Bill Rate',
+        'Status',
+        'Skills',
+        'Joined Date'
+      ];
+
+      // CSV Rows
+      const rows = employees.map(emp => [
+        emp.employee_number,
+        emp.name,
+        emp.email,
+        emp.phone || 'N/A',
+        emp.department || 'N/A',
+        emp.role || 'N/A',
+        emp.job_title || 'N/A',
+        emp.location || 'N/A',
+        emp.bill_rate ? `$${emp.bill_rate}/hr` : 'N/A',
+        emp.status,
+        (emp.skills || []).join('; '),
+        new Date(emp.created_at).toLocaleDateString()
+      ]);
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      ].join('\n');
+
+      // Download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `employees_export_${new Date().toISOString().split('T')[0]}.csv`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+
+      toast.success(`Exported ${employees.length} employees successfully`);
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast.error('Failed to export employees');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="w-full min-h-screen bg-[#F5F3F2] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+          <p className="text-gray-600">Loading employees...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900 transition-colors">
+              <Link to="/" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900 transition-colors">
                 Dashboard
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <Link to="/module/resources" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900 transition-colors">
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <Link to="/module/resources" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900 transition-colors">
                 Resources
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-semibold font-outfit leading-tight">Employee Management</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-semibold font-inter leading-tight">Active Employees</span>
             </div>
             
             <div>
-              <h1 className="text-[#1A1A1A] text-3xl font-bold font-outfit leading-loose">
-                Employee Management
+              <h1 className="text-[#1A1A1A] text-3xl font-bold font-inter leading-loose">
+                Active Employees
               </h1>
               <p className="text-gray-600 text-sm font-medium mt-1">
-                Track active employees, utilization, and performance metrics
+                Manage activated employee accounts - view profiles, credentials, CV, and project assignments
               </p>
             </div>
           </div>
           
-          <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold">
-            <Plus className="w-5 h-5" />
-            Add Employee
-          </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={handleExport}
+              disabled={employees.length === 0}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:border-blue-500 hover:text-blue-600 transition-all duration-200 shadow-sm hover:shadow-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              title={employees.length === 0 ? 'No employees to export' : 'Export to CSV'}
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </button>
+            <Link to="/module/resources/onboarding">
+              <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold">
+                <Plus className="w-5 h-5" />
+                Add Employee
+              </button>
+            </Link>
+          </div>
         </div>
 
-        {/* Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-white rounded-xl shadow-sm">
-                <Users className="w-6 h-6 text-blue-600" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-200 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">{stats.total}</div>
+                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Total Employees</div>
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
-                <div className="text-sm font-medium text-gray-600">Total Employees</div>
+              <div className="p-3 bg-white rounded-xl shadow-sm">
+                <Users className="w-7 h-7 text-blue-600" />
               </div>
             </div>
-            <div className="w-full bg-blue-200 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" style={{ width: '100%' }}></div>
+            <div className="w-full bg-blue-200 rounded-full h-1.5 mt-4">
+              <div className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" style={{ width: '100%' }}></div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-white rounded-xl shadow-sm">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 border border-green-200 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">{stats.active}</div>
+                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Active Now</div>
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900">{stats.active}</div>
-                <div className="text-sm font-medium text-gray-600">Active</div>
+              <div className="p-3 bg-white rounded-xl shadow-sm">
+                <CheckCircle className="w-7 h-7 text-green-600" />
               </div>
             </div>
-            <div className="w-full bg-green-200 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600" style={{ width: '93%' }}></div>
+            <div className="w-full bg-green-200 rounded-full h-1.5 mt-4">
+              <div className="h-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-600" style={{ width: stats.total > 0 ? `${(stats.active / stats.total) * 100}%` : '0%' }}></div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-white rounded-xl shadow-sm">
-                <Clock className="w-6 h-6 text-amber-600" />
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-5 border border-purple-200 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">${stats.avgBillRate}</div>
+                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Avg Rate/Hour</div>
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900">{stats.onBench}</div>
-                <div className="text-sm font-medium text-gray-600">On Bench</div>
+              <div className="p-3 bg-white rounded-xl shadow-sm">
+                <DollarSign className="w-7 h-7 text-purple-600" />
               </div>
             </div>
-            <div className="w-full bg-amber-200 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-600" style={{ width: '7%' }}></div>
+            <div className="w-full bg-purple-200 rounded-full h-1.5 mt-4">
+              <div className="h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-600" style={{ width: '60%' }}></div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-5 border border-emerald-200 shadow-lg hover:shadow-xl transition-all">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">${(stats.monthlyBillable / 1000).toFixed(0)}K</div>
+                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Monthly Value</div>
+              </div>
               <div className="p-3 bg-white rounded-xl shadow-sm">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900">{stats.avgUtilization}%</div>
-                <div className="text-sm font-medium text-gray-600">Avg Utilization</div>
+                <TrendingUp className="w-7 h-7 text-emerald-600" />
               </div>
             </div>
-            <div className="w-full bg-purple-200 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-600" style={{ width: `${stats.avgUtilization}%` }}></div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 shadow-lg hover:shadow-xl transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-white rounded-xl shadow-sm">
-                <DollarSign className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-gray-900">${(stats.monthlyBillable / 1000).toFixed(0)}K</div>
-                <div className="text-sm font-medium text-gray-600">Monthly Billable</div>
-              </div>
-            </div>
-            <div className="w-full bg-green-200 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600" style={{ width: '75%' }}></div>
+            <div className="w-full bg-emerald-200 rounded-full h-1.5 mt-4">
+              <div className="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-green-600" style={{ width: '75%' }}></div>
             </div>
           </div>
         </div>
@@ -235,191 +272,254 @@ function EmployeeManagementPage() {
               />
             </div>
             
-            <div className="flex items-center bg-gray-100 rounded-xl p-1">
-              <button
-                onClick={() => setFilterStatus('all')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  filterStatus === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setFilterStatus('active')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  filterStatus === 'active' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
-                }`}
-              >
-                Active
-              </button>
-              <button
-                onClick={() => setFilterStatus('on_bench')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
-                  filterStatus === 'on_bench' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
-                }`}
-              >
-                On Bench
-              </button>
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg">
+              <p className="text-sm font-semibold text-green-700">
+                Showing {stats.active} activated employee{stats.active !== 1 ? 's' : ''} with user accounts
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Employee Directory */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">Employee Directory</h2>
-            <p className="text-sm text-gray-600 mt-1">{filteredEmployees.length} employees found</p>
+        {filteredEmployees.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No Employees Found</h3>
+            <p className="text-gray-600 mb-6">
+              {searchQuery 
+                ? 'No active employees match your search.' 
+                : 'No activated employees yet. Accept and activate employees from the Onboarding page first.'}
+            </p>
+            <Link to="/module/resources/onboarding">
+              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                <Plus className="w-5 h-5 inline mr-2" />
+                Onboard Employee
+              </button>
+            </Link>
           </div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            <div className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Employee Directory</h2>
+              <p className="text-sm text-gray-600 mt-1">{filteredEmployees.length} employees found</p>
+            </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Employee</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Contact</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Department</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Role</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Utilization</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Bill Rate</th>
-                  <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Status</th>
-                  <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredEmployees.map((employee) => (
-                  <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-xl flex items-center justify-center shadow-md">
-                          <Users className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">{employee.name}</p>
-                          <p className="text-xs text-gray-500 font-medium">{employee.number}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <Mail className="w-3.5 h-3.5 text-gray-400" />
-                          <span className="font-medium">{employee.email}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <Phone className="w-3.5 h-3.5 text-gray-400" />
-                          <span className="font-medium">{employee.phone}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                        {employee.department}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-900 font-semibold">{employee.role}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-bold text-gray-900">{employee.utilization}%</span>
-                        </div>
-                        <div className="w-32 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full transition-all ${
-                              employee.utilization >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-                              employee.utilization >= 50 ? 'bg-gradient-to-r from-blue-500 to-indigo-600' :
-                              'bg-gradient-to-r from-amber-500 to-orange-600'
-                            }`}
-                            style={{ width: `${employee.utilization}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-bold text-gray-900">${employee.billRate}/hr</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        employee.status === 'active' ? 'bg-green-100 text-green-700' :
-                        employee.status === 'on_bench' ? 'bg-amber-100 text-amber-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {employee.status === 'on_bench' ? 'On Bench' : 
-                         employee.status === 'on_leave' ? 'On Leave' : 'Active'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => setSelectedEmployee(employee)}
-                          className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="View Details"
-                        >
-                          <Eye className="w-4 h-4 text-blue-600" />
-                        </button>
-                        <button className="p-2 hover:bg-green-50 rounded-lg transition-colors" title="Assign Project">
-                          <Briefcase className="w-4 h-4 text-green-600" />
-                        </button>
-                      </div>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Employee</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Contact</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Department</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Role</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Bill Rate</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Status</th>
+                    <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Actions</th>
                   </tr>
-                ))}
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredEmployees.map((employee) => (
+                    <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-xl flex items-center justify-center shadow-md">
+                            <span className="text-blue-600 font-bold text-lg">
+                              {employee.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-900">{employee.name}</p>
+                            <p className="text-xs text-gray-500 font-medium">{employee.employee_number}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                            <Mail className="w-3.5 h-3.5 text-gray-400" />
+                            <span className="font-medium">{employee.email}</span>
+                          </div>
+                          {employee.phone && (
+                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                              <Phone className="w-3.5 h-3.5 text-gray-400" />
+                              <span className="font-medium">{employee.phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {employee.department ? (
+                          <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                            {employee.department}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">Not set</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-900 font-semibold">
+                          {employee.role || employee.job_title || 'Not assigned'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-bold text-gray-900">
+                          ${employee.bill_rate ? employee.bill_rate.toFixed(0) : 'N/A'}/hr
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${
+                          employee.status === 'active' ? 'bg-green-100 text-green-700' :
+                          employee.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {employee.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => navigate(`/module/resources/management/profile/${employee.id}`)}
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                            title="View Full Profile"
+                          >
+                            <Eye className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
+                          </button>
+                          <button
+                            onClick={() => setEditingEmployee(employee)}
+                            className="p-2 hover:bg-indigo-50 rounded-lg transition-colors group"
+                            title="Edit Employee"
+                          >
+                            <Edit className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" />
+                          </button>
+                          {employee.status === 'accepted' && (
+                            <button
+                              onClick={() => handleStatusChange(employee.id, 'active')}
+                              disabled={isUpdating}
+                              className="p-2 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50 group"
+                              title="Activate Employee"
+                            >
+                              {isUpdating ? (
+                                <Loader2 className="w-4 h-4 text-green-600 animate-spin" />
+                              ) : (
+                                <CheckCircle className="w-4 h-4 text-green-600 group-hover:scale-110 transition-transform" />
+                              )}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDelete(employee.id)}
+                            disabled={isDeleting}
+                            className="p-2 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 group"
+                            title="Delete Employee"
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="w-4 h-4 text-red-600 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4 text-red-600 group-hover:scale-110 transition-transform" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
         </div>
+        )}
 
-        {/* Skills Matrix Preview */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900">Skills Matrix</h2>
-              <p className="text-sm text-gray-600 mt-1">Top skills across your team</p>
+        {employees.length > 0 && (
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Skills Matrix</h2>
+                <p className="text-sm text-gray-600 mt-1">Top skills across your team</p>
+              </div>
             </div>
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
-              View Full Matrix
-            </button>
-          </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {['React', 'TypeScript', 'Node.js', 'Python', 'AWS', 'Docker', 'Figma', 'Product Strategy', 'Agile', 'GraphQL', 'Kubernetes', 'UI/UX'].map((skill, idx) => {
-              const count = employees.filter(e => e.skills.includes(skill)).length;
-              return (
-                <div key={idx} className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 text-center">
-                  <p className="text-2xl font-bold text-gray-900">{count}</p>
-                  <p className="text-xs text-gray-600 font-medium mt-1">{skill}</p>
-                </div>
-              );
-            })}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {(() => {
+                const allSkills = employees.flatMap(e => e.skills || []);
+                const skillCounts = allSkills.reduce((acc: any, skill) => {
+                  acc[skill] = (acc[skill] || 0) + 1;
+                  return acc;
+                }, {});
+                const topSkills = Object.entries(skillCounts)
+                  .sort(([, a]: any, [, b]: any) => b - a)
+                  .slice(0, 12);
+                
+                return topSkills.length > 0 ? topSkills.map(([skill, count]: any, idx) => (
+                  <div key={idx} className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 text-center">
+                    <p className="text-2xl font-bold text-gray-900">{count}</p>
+                    <p className="text-xs text-gray-600 font-medium mt-1">{skill}</p>
+                  </div>
+                )) : (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-gray-500 text-sm">No skills data available</p>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Employee Details Modal */}
       {selectedEmployee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 px-8 py-6 flex items-center justify-between rounded-t-2xl">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Users className="w-8 h-8 text-blue-600" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedEmployee(null)}>
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl flex items-center justify-center shadow-lg">
+                    <span className="text-blue-600 font-bold text-2xl">
+                      {selectedEmployee.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                    </span>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{selectedEmployee.name}</h2>
+                    <p className="text-sm text-gray-600">
+                      {selectedEmployee.role || selectedEmployee.job_title || 'Employee'} 
+                      {selectedEmployee.department && ` • ${selectedEmployee.department}`}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedEmployee.name}</h2>
-                  <p className="text-sm text-gray-600">{selectedEmployee.role} • {selectedEmployee.department}</p>
-                </div>
+                <button
+                  onClick={() => setSelectedEmployee(null)}
+                  className="px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-300"
+                >
+                  Close
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedEmployee(null)}
-                className="px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors border border-gray-300"
-              >
-                Close
-              </button>
+              
+              <div className="flex items-center gap-3">
+                {selectedEmployee.status === 'accepted' && (
+                  <button
+                    onClick={() => {
+                      handleStatusChange(selectedEmployee.id, 'active');
+                      setSelectedEmployee(null);
+                    }}
+                    disabled={isUpdating}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Activate Employee
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    handleDelete(selectedEmployee.id);
+                    setSelectedEmployee(null);
+                  }}
+                  disabled={isDeleting}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 transition-colors disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Employee
+                </button>
+              </div>
             </div>
 
             <div className="p-8 space-y-6">
-              {/* Contact Info */}
               <div>
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Contact Information</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -430,101 +530,304 @@ function EmployeeManagementPage() {
                       <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <Phone className="w-5 h-5 text-green-600" />
-                    <div>
-                      <p className="text-xs text-gray-500 font-medium">Phone</p>
-                      <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.phone}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <MapPin className="w-5 h-5 text-purple-600" />
-                    <div>
-                      <p className="text-xs text-gray-500 font-medium">Location</p>
-                      <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.location}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <DollarSign className="w-5 h-5 text-green-600" />
-                    <div>
-                      <p className="text-xs text-gray-500 font-medium">Bill Rate</p>
-                      <p className="text-sm text-gray-900 font-semibold">${selectedEmployee.billRate}/hr</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Skills */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Skills & Expertise</h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedEmployee.skills.map((skill, idx) => (
-                    <span key={idx} className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 text-sm font-semibold rounded-lg">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Current Projects */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Current Projects</h3>
-                {selectedEmployee.currentProjects.length > 0 ? (
-                  <div className="space-y-2">
-                    {selectedEmployee.currentProjects.map((project, idx) => (
-                      <div key={idx} className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-200">
-                        <Briefcase className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm font-semibold text-gray-900">{project}</span>
+                  {selectedEmployee.phone && (
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                      <Phone className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">Phone</p>
+                        <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.phone}</p>
                       </div>
+                    </div>
+                  )}
+                  {selectedEmployee.location && (
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                      <MapPin className="w-5 h-5 text-purple-600" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">Location</p>
+                        <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.location}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedEmployee.bill_rate && (
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">Bill Rate</p>
+                        <p className="text-sm text-gray-900 font-semibold">${selectedEmployee.bill_rate.toFixed(0)}/hr</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedEmployee.skills && selectedEmployee.skills.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Skills & Expertise</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedEmployee.skills.map((skill, idx) => (
+                      <span key={idx} className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 text-sm font-semibold rounded-lg">
+                        {skill}
+                      </span>
                     ))}
                   </div>
-                ) : (
-                  <div className="p-6 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                    <Clock className="w-8 h-8 text-amber-600 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-amber-800">Available for Project Assignment</p>
-                    <button className="mt-3 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700 transition-colors">
-                      Assign to Project
-                    </button>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Utilization */}
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Utilization Metrics</h3>
-                <div className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm font-semibold text-gray-700">Current Utilization</span>
-                    <span className="text-3xl font-bold text-gray-900">{selectedEmployee.utilization}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-4">
-                    <div 
-                      className={`h-4 rounded-full transition-all ${
-                        selectedEmployee.utilization >= 80 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-                        selectedEmployee.utilization >= 50 ? 'bg-gradient-to-r from-blue-500 to-indigo-600' :
-                        'bg-gradient-to-r from-amber-500 to-orange-600'
-                      }`}
-                      style={{ width: `${selectedEmployee.utilization}%` }}
-                    ></div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-4">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Employment Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <Award className="w-5 h-5 text-indigo-600" />
                     <div>
-                      <p className="text-xs text-gray-600 font-medium">Billable Hours/Month</p>
-                      <p className="text-lg font-bold text-gray-900">{Math.round(160 * (selectedEmployee.utilization / 100))}h</p>
+                      <p className="text-xs text-gray-500 font-medium">Employee Number</p>
+                      <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.employee_number}</p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
                     <div>
-                      <p className="text-xs text-gray-600 font-medium">Monthly Value</p>
-                      <p className="text-lg font-bold text-gray-900">
-                        ${((selectedEmployee.billRate * 160 * (selectedEmployee.utilization / 100)) / 1000).toFixed(1)}K
+                      <p className="text-xs text-gray-500 font-medium">Status</p>
+                      <p className="text-sm text-gray-900 font-semibold capitalize">{selectedEmployee.status}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Joined Date</p>
+                      <p className="text-sm text-gray-900 font-semibold">
+                        {new Date(selectedEmployee.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
+                  {selectedEmployee.bill_rate && (
+                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                      <DollarSign className="w-5 h-5 text-emerald-600" />
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">Monthly Capacity</p>
+                        <p className="text-sm text-gray-900 font-semibold">
+                          ${((selectedEmployee.bill_rate * 160) / 1000).toFixed(1)}K
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {editingEmployee && (
+        <EditEmployeeModal
+          employee={editingEmployee}
+          onClose={() => setEditingEmployee(null)}
+          onSave={async (updatedData) => {
+            try {
+              await updateEmployee({ id: editingEmployee.id, data: updatedData });
+              toast.success('Employee updated successfully');
+              setEditingEmployee(null);
+            } catch (error: any) {
+              toast.error(error.response?.data?.detail || 'Failed to update employee');
+            }
+          }}
+          isUpdating={isUpdating}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditEmployeeModal({ 
+  employee, 
+  onClose, 
+  onSave, 
+  isUpdating 
+}: { 
+  employee: Employee; 
+  onClose: () => void; 
+  onSave: (data: any) => Promise<void>; 
+  isUpdating: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: employee.name,
+    email: employee.email,
+    phone: employee.phone || '',
+    job_title: employee.job_title || '',
+    role: employee.role || '',
+    department: employee.department || '',
+    location: employee.location || '',
+    bill_rate: employee.bill_rate || 0,
+    skills: (employee.skills || []).join(', '),
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSave({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone || undefined,
+      job_title: formData.job_title || undefined,
+      role: formData.role || undefined,
+      department: formData.department || undefined,
+      location: formData.location || undefined,
+      bill_rate: formData.bill_rate || undefined,
+      skills: formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-200 rounded-xl flex items-center justify-center">
+                <Edit className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Edit Employee</h2>
+                <p className="text-sm text-gray-600">{employee.name} • {employee.employee_number}</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="job_title">Job Title</Label>
+              <Input
+                id="job_title"
+                value={formData.job_title}
+                onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Input
+                id="role"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="department">Department</Label>
+              <Input
+                id="department"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="City, State"
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bill_rate">Bill Rate ($/hour)</Label>
+              <Input
+                id="bill_rate"
+                type="number"
+                value={formData.bill_rate}
+                onChange={(e) => setFormData({ ...formData, bill_rate: parseFloat(e.target.value) || 0 })}
+                min="0"
+                step="0.01"
+                className="border-gray-300"
+              />
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="skills">Skills (comma-separated)</Label>
+              <Input
+                id="skills"
+                value={formData.skills}
+                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                placeholder="React, TypeScript, Node.js"
+                className="border-gray-300"
+              />
+              <p className="text-xs text-gray-500">Separate multiple skills with commas</p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isUpdating}
+              className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUpdating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

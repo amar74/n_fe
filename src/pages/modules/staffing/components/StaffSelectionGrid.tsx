@@ -73,24 +73,27 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
   const [aiRecommendations, setAiRecommendations] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
 
-  // Fetch actual employees from database (accepted employees only)
-  const { employees: apiEmployees, isLoading } = useEmployees('accepted');
+  // Fetch actual employees from database (all employees, will filter for activated)
+  const { employees: apiEmployees, isLoading } = useEmployees();
   
   // Transform API employees to Employee format
-  const employees: Employee[] = (apiEmployees || []).map(emp => ({
-    id: emp.id,
-    name: emp.name,
-    role: emp.job_title || emp.role || 'Staff Member',
-    level: emp.experience?.includes('10') || emp.experience?.includes('Senior') ? 'Senior' :
-           emp.experience?.includes('5') || emp.experience?.includes('Mid') ? 'Mid' : 'Junior',
-    hourlyRate: 100 + Math.floor(Math.random() * 100), // Default rate, should be in employee data
-    skills: emp.skills || [],
-    availability: 'Available',
-    department: emp.location || 'General',
-    experience: emp.experience || 'Not specified',
-    job_title: emp.job_title,
-    status: emp.status
-  }));
+  // Filter for ACTIVATED employees only (status='active' AND user_id exists)
+  const employees: Employee[] = (apiEmployees || [])
+    .filter((emp: any) => emp.status === 'active' && emp.user_id != null)
+    .map(emp => ({
+      id: emp.id,
+      name: emp.name,
+      role: emp.job_title || emp.role || 'Staff Member',
+      level: emp.experience?.includes('10') || emp.experience?.includes('Senior') ? 'Senior' :
+             emp.experience?.includes('5') || emp.experience?.includes('Mid') ? 'Mid' : 'Junior',
+      hourlyRate: 100 + Math.floor(Math.random() * 100), // Default rate, should be in employee data
+      skills: emp.skills || [],
+      availability: 'Available',
+      department: emp.location || 'General',
+      experience: emp.experience || 'Not specified',
+      job_title: emp.job_title,
+      status: emp.status
+    }));
 
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -188,7 +191,7 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                 <Users className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
+                <h2 className="text-2xl font-bold text-[#1A1A1A] font-inter">
                   Staff Planning
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">

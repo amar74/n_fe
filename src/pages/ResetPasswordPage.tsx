@@ -91,13 +91,13 @@ export default function ResetPasswordPage() {
           </div>
           
           <div className="text-center space-y-3">
-            <h1 className="text-[#101828] text-[32px] font-semibold font-outfit">Password Reset Complete!</h1>
-            <p className="text-[#667085] text-[15px] font-normal font-outfit leading-relaxed">
+            <h1 className="text-[#101828] text-[32px] font-semibold font-inter">Password Reset Complete!</h1>
+            <p className="text-[#667085] text-[15px] font-normal font-inter leading-relaxed">
               Your password has been successfully reset. You can now sign in with your new password.
             </p>
           </div>
 
-          <p className="text-sm text-[#667085] font-outfit">
+          <p className="text-sm text-[#667085] font-inter">
             Redirecting to sign in page...
           </p>
 
@@ -121,14 +121,14 @@ export default function ResetPasswordPage() {
           className="inline-flex justify-start items-center gap-1.5 transition-all duration-200 hover:opacity-70 hover:gap-2 self-start"
         >
           <ArrowLeft className="w-5 h-5 text-[#344054]" />
-          <span className="text-[#344054] text-sm font-normal font-outfit">Back</span>
+          <span className="text-[#344054] text-sm font-normal font-inter">Back</span>
         </button>
 
         <div className="flex flex-col gap-3">
-          <h1 className="text-[#101828] text-[32px] font-semibold font-outfit">
+          <h1 className="text-[#101828] text-[32px] font-semibold font-inter">
             Reset Your Password
           </h1>
-          <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed">
+          <p className="text-[#667085] text-[14px] font-normal font-inter leading-relaxed">
             Enter the 6-digit OTP sent to your email and create a new password.
           </p>
         </div>
@@ -148,7 +148,7 @@ export default function ResetPasswordPage() {
               name="email"
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-2">
-                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-inter">
                     Email address<span className="text-[#F04438]">*</span>
                   </FormLabel>
                   <FormControl>
@@ -157,10 +157,10 @@ export default function ResetPasswordPage() {
                       type="email"
                       placeholder="Enter your email"
                       autoComplete="email"
-                      className="h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                      className="h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-inter focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
                     />
                   </FormControl>
-                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                  <FormMessage className="text-xs text-[#F04438] font-inter" />
                 </FormItem>
               )}
             />
@@ -170,7 +170,7 @@ export default function ResetPasswordPage() {
               name="otp"
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-2">
-                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-inter">
                     OTP (6 digits)<span className="text-[#F04438]">*</span>
                   </FormLabel>
                   <FormControl>
@@ -187,8 +187,8 @@ export default function ResetPasswordPage() {
                       }}
                     />
                   </FormControl>
-                  <p className="text-xs text-[#667085] font-outfit">Check your email for the 6-digit code</p>
-                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                  <p className="text-xs text-[#667085] font-inter">Check your email for the 6-digit code</p>
+                  <FormMessage className="text-xs text-[#F04438] font-inter" />
                 </FormItem>
               )}
             />
@@ -198,7 +198,7 @@ export default function ResetPasswordPage() {
               name="newPassword"
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-2">
-                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-inter">
                     New Password<span className="text-[#F04438]">*</span>
                   </FormLabel>
                   <FormControl>
@@ -207,7 +207,7 @@ export default function ResetPasswordPage() {
                         {...field}
                         type={showNewPassword ? "text" : "password"}
                         placeholder="Enter new password"
-                        className="h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                        className="h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-inter focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
                       />
                       <button
                         type="button"
@@ -219,8 +219,8 @@ export default function ResetPasswordPage() {
                       </button>
                     </div>
                   </FormControl>
-                  <p className="text-xs text-[#667085] font-outfit">Minimum 8 characters</p>
-                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                  <p className="text-xs text-[#667085] font-inter">Minimum 8 characters</p>
+                  <FormMessage className="text-xs text-[#F04438] font-inter" />
                 </FormItem>
               )}
             />
@@ -230,7 +230,7 @@ export default function ResetPasswordPage() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem className="flex flex-col gap-2">
-                  <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit">
+                  <FormLabel className="text-[#344054] text-[14px] font-medium font-inter">
                     Confirm New Password<span className="text-[#F04438]">*</span>
                   </FormLabel>
                   <FormControl>
@@ -239,7 +239,7 @@ export default function ResetPasswordPage() {
                         {...field}
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Confirm new password"
-                        className="h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                        className="h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-inter focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
                       />
                       <button
                         type="button"
@@ -251,14 +251,14 @@ export default function ResetPasswordPage() {
                       </button>
                     </div>
                   </FormControl>
-                  <FormMessage className="text-xs text-[#F04438] font-outfit" />
+                  <FormMessage className="text-xs text-[#F04438] font-inter" />
                 </FormItem>
               )}
             />
 
             <Button
               type="submit"
-              className="w-full h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-outfit hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-inter hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Resetting Password...' : 'Reset Password'}

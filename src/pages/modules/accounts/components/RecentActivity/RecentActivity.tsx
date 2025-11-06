@@ -1,11 +1,13 @@
 import React from 'react';
+import { Loader2, ActivitySquare } from 'lucide-react';
 import { RecentActivityItem } from '../../AccountDetailsPage.types';
 
 type RecentActivityProps = {
   activities: RecentActivityItem[];
+  isLoading?: boolean;
 }
 
-export function RecentActivity({ activities }: RecentActivityProps) {
+export function RecentActivity({ activities, isLoading = false }: RecentActivityProps) {
   // Define colors for each activity
   const activityColors = ['#16A34A', '#2563EB', '#9333EA']; // green, blue, purple
 
@@ -22,8 +24,24 @@ export function RecentActivity({ activities }: RecentActivityProps) {
       <div className="self-stretch h-0 outline outline-1 outline-offset-[-0.50px] outline-black/10"></div>
 
       
-      <div className="self-stretch flex-1 flex flex-col justify-between items-start">
-        {activities.slice(0, 3).map((activity, index) => {
+      {isLoading ? (
+        <div className="self-stretch flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+            <p className="text-sm text-gray-500 font-['Outfit']">Loading activities...</p>
+          </div>
+        </div>
+      ) : activities.length === 0 ? (
+        <div className="self-stretch flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <ActivitySquare className="w-12 h-12 text-gray-300" />
+            <p className="text-sm text-gray-500 font-['Outfit']">No activities yet</p>
+            <p className="text-xs text-gray-400 font-['Outfit']">Activities will appear here as you work with this account</p>
+          </div>
+        </div>
+      ) : (
+        <div className="self-stretch flex-1 flex flex-col justify-between items-start">
+          {activities.slice(0, 3).map((activity, index) => {
           const isLast = index === activities.length - 1 || index === 2;
           const color = activityColors[index] || '#16A34A';
 
@@ -54,8 +72,9 @@ export function RecentActivity({ activities }: RecentActivityProps) {
               </div>
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
     </div>
   );
 }

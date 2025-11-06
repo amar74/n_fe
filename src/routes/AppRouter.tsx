@@ -29,7 +29,9 @@ import ResourcesDashboardPage from '@/pages/modules/resources/ResourcesDashboard
 import OnboardingPage from '@/pages/modules/resources/OnboardingPage';
 import EmployeeSearchPage from '@/pages/modules/resources/EmployeeSearchPage';
 import EmployeeManagementPage from '@/pages/modules/resources/EmployeeManagementPage';
+import EmployeeProfilePage from '@/pages/modules/resources/EmployeeProfilePage';
 import PermissionsPage from '@/pages/modules/resources/PermissionsPage';
+import RolesManagementPage from '@/pages/modules/resources/RolesManagementPage';
 import AnalyticsPage from '@/pages/modules/resources/AnalyticsPage';
 import TestIntegration from '@/pages/modules/resources/TestIntegration';
 import { StaffingDashboard, CreateStaffPlan } from '@/pages/modules/staffing';
@@ -131,8 +133,16 @@ const router = createBrowserRouter([
         element: <EmployeeManagementPage />,
       },
       {
+        path: 'module/resources/management/profile/:id',
+        element: <EmployeeProfilePage />,
+      },
+      {
         path: 'module/resources/permissions',
         element: <PermissionsPage />,
+      },
+      {
+        path: 'module/resources/roles',
+        element: <RolesManagementPage />,
       },
       {
         path: 'module/resources/analytics',

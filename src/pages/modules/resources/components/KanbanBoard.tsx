@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Download, Eye, GripVertical, Mail, Phone, Calendar, User, Clock, CheckCircle, XCircle, AlertCircle, Star, MapPin, Briefcase, TrendingUp, Users, Award } from 'lucide-react';
+import { Download, Eye, GripVertical, Mail, Phone, Calendar, User, Clock, CheckCircle, XCircle, AlertCircle, Star, MapPin, Briefcase, TrendingUp, Users, Award, Power } from 'lucide-react';
 
 export type Employee = {
   id: string;
@@ -28,6 +28,7 @@ type KanbanBoardProps = {
   onStageChange: (employeeId: string, newStage: string, notes?: string) => void;
   onEmployeeClick: (employee: Employee) => void;
   onDownloadCV: (cvUrl: string, name: string) => void;
+  onActivateEmployee?: (employee: Employee) => void;
 };
 
 const stages = [
@@ -77,7 +78,7 @@ const stages = [
   },
 ];
 
-export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, onDownloadCV }: KanbanBoardProps) {
+export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, onDownloadCV, onActivateEmployee }: KanbanBoardProps) {
   const [draggedEmployee, setDraggedEmployee] = useState<Employee | null>(null);
   const [dragOverStage, setDragOverStage] = useState<string | null>(null);
 
@@ -281,21 +282,37 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
                       )}
 
                       {/* Enhanced Actions */}
-                      <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                        <button
-                          onClick={() => onEmployeeClick(employee)}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-sm font-semibold text-gray-900 transition-all duration-200 hover:shadow-md"
-                        >
-                          <Eye className="w-4 h-4" />
-                          Details
-                        </button>
-                        <button
-                          onClick={() => onDownloadCV(employee.cvUrl, employee.name)}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 rounded-lg text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg transform hover:scale-105"
-                        >
-                          <Download className="w-4 h-4" />
-                          CV
-                        </button>
+                      <div className="flex flex-col gap-2 pt-4 border-t border-gray-100">
+                        {/* Activate Button for Accepted Employees */}
+                        {stage.id === 'accepted' && onActivateEmployee && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onActivateEmployee(employee);
+                            }}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#151950] to-[#1e2570] hover:from-[#1e2570] hover:to-[#151950] rounded-lg text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+                          >
+                            <Power className="w-4 h-4" />
+                            Activate User Account
+                          </button>
+                        )}
+                        
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => onEmployeeClick(employee)}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-sm font-semibold text-gray-900 transition-all duration-200 hover:shadow-md"
+                          >
+                            <Eye className="w-4 h-4" />
+                            Details
+                          </button>
+                          <button
+                            onClick={() => onDownloadCV(employee.cvUrl, employee.name)}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 rounded-lg text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+                          >
+                            <Download className="w-4 h-4" />
+                            CV
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

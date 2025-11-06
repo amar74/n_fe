@@ -4,7 +4,7 @@ import { useAuth } from '@hooks/useAuth';
 import { 
   TrendingUp, Users, FileText, Package, FileSignature, 
   FolderKanban, DollarSign, ShoppingCart, BarChart3, 
-  Bell, ChevronDown, ChevronRight, LogOut, User, Settings, Building2, ClipboardList 
+  Bell, ChevronDown, ChevronRight, LogOut, User, Settings, Building2, ClipboardList, Shield 
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/useToast';
@@ -22,6 +22,7 @@ const menuItems = [
       { icon: Users, label: 'Onboarding', path: '/module/resources/onboarding' },
       { icon: Users, label: 'Search', path: '/module/resources/search' },
       { icon: Users, label: 'Management', path: '/module/resources/management' },
+      { icon: Shield, label: 'Roles', path: '/module/resources/roles' },
       { icon: FileText, label: 'Staff Planning', path: '/staffing-plan' },
     ]
   },
@@ -166,7 +167,7 @@ export default function Navigation() {
               <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-3">
                   {shouldExpand && (
-                    <div className="text-slate-500 text-[11px] font-semibold font-outfit uppercase tracking-wider px-1">Navigation</div>
+                    <div className="text-slate-500 text-[11px] font-semibold font-inter uppercase tracking-wider px-1">Navigation</div>
                   )}
                   <nav className="flex flex-col gap-1">
                     {menuItems.map((item) => {
@@ -207,7 +208,7 @@ export default function Navigation() {
                               />
                               {shouldExpand && (
                                 <>
-                                  <span className={`flex-1 text-sm font-semibold font-outfit leading-tight whitespace-nowrap transition-colors duration-200 ${
+                                  <span className={`flex-1 text-sm font-semibold font-inter leading-tight whitespace-nowrap transition-colors duration-200 ${
                                     childActive 
                                       ? 'text-white' 
                                       : 'text-slate-300 group-hover:text-white'
@@ -252,7 +253,7 @@ export default function Navigation() {
                                         }`} 
                                         strokeWidth={childIsActive ? 2.5 : 2}
                                       />
-                                      <span className={`flex-1 text-xs font-semibold font-outfit leading-tight whitespace-nowrap transition-colors duration-200 ${
+                                      <span className={`flex-1 text-xs font-semibold font-inter leading-tight whitespace-nowrap transition-colors duration-200 ${
                                         childIsActive 
                                           ? 'text-indigo-200' 
                                           : 'text-slate-300 group-hover:text-white'
@@ -298,7 +299,7 @@ export default function Navigation() {
                             strokeWidth={active ? 2.5 : 2}
                           />
                           {shouldExpand && (
-                            <span className={`flex-1 text-sm font-semibold font-outfit leading-tight whitespace-nowrap transition-colors duration-200 ${
+                            <span className={`flex-1 text-sm font-semibold font-inter leading-tight whitespace-nowrap transition-colors duration-200 ${
                               active 
                                 ? 'text-white' 
                                 : 'text-slate-300 group-hover:text-white'
@@ -325,7 +326,7 @@ export default function Navigation() {
             >
               <LogOut className={`${shouldExpand ? 'w-5 h-5' : 'w-6 h-6'} text-slate-400 group-hover:text-red-400 transition-colors`} strokeWidth={2} />
               {shouldExpand && (
-                <span className="text-slate-300 text-sm font-semibold font-outfit leading-tight whitespace-nowrap group-hover:text-red-400 transition-colors">
+                <span className="text-slate-300 text-sm font-semibold font-inter leading-tight whitespace-nowrap group-hover:text-red-400 transition-colors">
                   {isSigningOut ? 'Signing out...' : 'Log-out'}
                 </span>
               )}
@@ -375,7 +376,7 @@ export default function Navigation() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex items-center gap-1">
-                  <div className="text-[#344054] text-sm font-medium font-outfit leading-tight">
+                  <div className="text-[#344054] text-sm font-medium font-inter leading-tight">
                     {getUserDisplayName()}
                   </div>
                   <div className="pt-0.5 flex items-center">

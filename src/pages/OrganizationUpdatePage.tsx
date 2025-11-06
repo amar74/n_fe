@@ -629,7 +629,7 @@ export default function OrganizationUpdatePage() {
                             </FormControl>
                             <SelectContent className="max-h-60 bg-white">
                               {availableCities.map((city) => (
-                                <SelectItem key={city} value={city} className="font-outfit">
+                                <SelectItem key={city} value={city} className="font-inter">
                                   {city}
                                 </SelectItem>
                               ))}
@@ -665,7 +665,7 @@ export default function OrganizationUpdatePage() {
                             </FormControl>
                             <SelectContent className="max-h-60 bg-white">
                               {US_STATES.map((state) => (
-                                <SelectItem key={state.value} value={state.value} className="font-outfit">
+                                <SelectItem key={state.value} value={state.value} className="font-inter">
                                   {state.label}
                                 </SelectItem>
                               ))}
@@ -763,7 +763,7 @@ export default function OrganizationUpdatePage() {
                               </SelectTrigger>
                               <SelectContent className="bg-white">
                                 {COUNTRY_CODES.map((country) => (
-                                  <SelectItem key={country.value} value={country.value} className="font-outfit">
+                                  <SelectItem key={country.value} value={country.value} className="font-inter">
                                     <span className="flex items-center gap-2">
                                       <span>{country.flag}</span>
                                       <span>{country.value}</span>

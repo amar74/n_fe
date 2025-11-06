@@ -28,7 +28,8 @@ import {
   Star,
   MoreVertical,
   CheckCircle,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/services/api/client';
@@ -70,6 +71,7 @@ export default function SurveysPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [deletingSurveyId, setDeletingSurveyId] = useState<string | null>(null);
 
   useEffect(() => {
     loadSurveys();
@@ -129,6 +131,25 @@ export default function SurveysPage() {
     navigate(`/surveys/${surveyId}/responses`);
   };
 
+  const handleDeleteSurvey = async (surveyId: string, surveyTitle: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${surveyTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      setDeletingSurveyId(surveyId);
+      await apiClient.delete(`/surveys/${surveyId}`);
+      toast.success('Survey deleted successfully');
+      // Reload surveys after deletion
+      loadSurveys();
+    } catch (error: any) {
+      console.error('Error deleting survey:', error);
+      toast.error(error.response?.data?.detail || 'Failed to delete survey');
+    } finally {
+      setDeletingSurveyId(null);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -155,17 +176,17 @@ export default function SurveysPage() {
   };
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
+    <div className="w-full h-full bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-sm font-normal font-outfit leading-tight">Dashboard</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Surveys</span>
+              <span className="text-gray-500 text-sm font-normal font-inter leading-tight">Dashboard</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Surveys</span>
             </div>
-            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">Client Surveys</h1>
-            <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">Create and manage client satisfaction surveys</p>
+            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter leading-loose">Client Surveys</h1>
+            <p className="text-[#667085] text-sm font-normal font-inter leading-tight">Create and manage client satisfaction surveys</p>
           </div>
           
           <div className="flex items-start gap-3">
@@ -173,15 +194,15 @@ export default function SurveysPage() {
               onClick={handleCreateSurvey}
               className="h-11 px-5 py-2 bg-indigo-950 rounded-lg flex items-center gap-2.5 hover:bg-indigo-900 transition-colors"
             >
-              <Plus className="h-4 w-4" />
-              <span className="text-white text-xs font-medium font-outfit leading-normal">Client Survey</span>
+              <Plus className="h-4 w-4 text-white" />
+              <span className="text-white text-xs font-medium font-inter leading-normal">Client Survey</span>
             </button>
             <button 
               onClick={() => navigate('/surveys/employee-builder')}
               className="h-11 px-5 py-2 bg-gray-900 rounded-lg flex items-center gap-2.5 hover:bg-gray-800 transition-colors"
             >
-              <Users className="h-4 w-4" />
-              <span className="text-white text-xs font-medium font-outfit leading-normal">Employee Survey</span>
+              <Users className="h-4 w-4 text-white" />
+              <span className="text-white text-xs font-medium font-inter leading-normal">Employee Survey</span>
             </button>
           </div>
         </div>
@@ -362,6 +383,24 @@ export default function SurveysPage() {
                         <BarChart3 className="h-4 w-4" />
                       </Button>
                     )}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSurvey(survey.id, survey.title);
+                      }}
+                      disabled={deletingSurveyId === survey.id}
+                      className="border border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 disabled:opacity-50"
+                      title="Delete survey"
+                    >
+                      {deletingSurveyId === survey.id ? (
+                        <div className="h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
                   </div>
                 </div>
               </div>

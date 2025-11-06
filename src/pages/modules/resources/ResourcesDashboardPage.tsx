@@ -49,7 +49,6 @@ function ResourcesDashboardPage() {
         { label: 'Utilization', value: `${stats.avgUtilization}%`, icon: TrendingUp, color: 'text-indigo-600' },
       ],
       path: '/module/resources/management',
-      badge: 'Coming Soon',
     },
     {
       id: 'permissions',
@@ -64,7 +63,6 @@ function ResourcesDashboardPage() {
         { label: 'Permissions', value: 24, icon: Shield, color: 'text-red-600' },
       ],
       path: '/module/resources/permissions',
-      badge: 'Coming Soon',
     },
     {
       id: 'analytics',
@@ -79,14 +77,13 @@ function ResourcesDashboardPage() {
         { label: 'AI Insights', value: 15, icon: Sparkles, color: 'text-purple-600' },
       ],
       path: '/module/resources/analytics',
-      badge: 'Coming Soon',
     },
   ];
 
   // Show loading state while fetching dashboard stats
   if (isLoadingDashboard) {
     return (
-      <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit flex items-center justify-center">
+      <div className="w-full min-h-screen bg-[#F5F3F2] font-inter flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard statistics...</p>
@@ -96,22 +93,22 @@ function ResourcesDashboardPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-8">
         {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900 transition-colors">
+              <Link to="/" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900 transition-colors">
                 Dashboard
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-semibold font-outfit leading-tight">Resources</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-semibold font-inter leading-tight">Resources</span>
             </div>
             
             <div>
-              <h1 className="text-[#1A1A1A] text-4xl font-bold font-outfit leading-loose">
+              <h1 className="text-[#1A1A1A] text-4xl font-bold font-inter leading-loose">
                 Resources Hub
               </h1>
               <p className="text-gray-600 text-base font-medium mt-2">
@@ -193,16 +190,13 @@ function ResourcesDashboardPage() {
               <Link
                 key={module.id}
                 to={module.path}
-                className={`relative bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] overflow-hidden group ${
-                  module.badge ? 'opacity-75 hover:opacity-100' : ''
-                }`}
+                className="relative bg-white rounded-2xl border border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] overflow-hidden group"
               >
                 {/* Background Gradient */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${module.bgColor} opacity-50`}></div>
                 
                 {/* Content */}
                 <div className="relative p-8">
-                  {/* Header */}
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex items-start gap-4">
                       <div className={`p-4 bg-white rounded-2xl shadow-lg`}>
@@ -215,12 +209,6 @@ function ResourcesDashboardPage() {
                         </p>
                       </div>
                     </div>
-                    
-                    {module.badge && (
-                      <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
-                        {module.badge}
-                      </span>
-                    )}
                   </div>
 
                   {/* Stats */}
@@ -239,10 +227,9 @@ function ResourcesDashboardPage() {
                     })}
                   </div>
 
-                  {/* Action Button */}
                   <div className="flex items-center justify-end">
                     <div className={`flex items-center gap-2 px-6 py-3 bg-gradient-to-r ${module.color} text-white rounded-xl font-semibold shadow-lg group-hover:shadow-xl transition-all`}>
-                      <span>{module.badge ? 'View Preview' : 'Open Module'}</span>
+                      <span>Open Module</span>
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>

@@ -182,7 +182,7 @@ export default function SurveyAnalyticsPage() {
 
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
+    <div className="w-full h-full bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -201,7 +201,7 @@ export default function SurveyAnalyticsPage() {
                 <span className="text-gray-500 text-sm">/</span>
                 <span className="text-[#1A1A1A] text-sm font-medium">{analytics.survey_title}</span>
               </div>
-              <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit">{analytics.survey_title}</h1>
+              <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter">{analytics.survey_title}</h1>
               <p className="text-[#667085] text-sm">Survey Analytics & Insights</p>
             </div>
           </div>

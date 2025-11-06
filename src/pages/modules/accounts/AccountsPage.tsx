@@ -80,7 +80,7 @@ function AccountsPage() {
   };
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
+    <div className="w-full h-full bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
         
         <div className="flex justify-between items-end">
@@ -88,15 +88,15 @@ function AccountsPage() {
           <div className="flex flex-col gap-3">
             
             <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
+              <Link to="/" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900">
                 Dashboard
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Organization details</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Organization details</span>
             </div>
             
             
-            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">My Accounts</h1>
+            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter leading-loose">My Accounts</h1>
           </div>
 
           
@@ -109,7 +109,7 @@ function AccountsPage() {
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20.0306 7.71938L14.7806 2.46938C14.7109 2.39975 14.6282 2.34454 14.5371 2.3069C14.4461 2.26926 14.3485 2.24992 14.25 2.25H5.25C4.85218 2.25 4.47064 2.40804 4.18934 2.68934C3.90804 2.97064 3.75 3.35218 3.75 3.75V20.25C3.75 20.6478 3.90804 21.0294 4.18934 21.3107C4.47064 21.592 4.85218 21.75 5.25 21.75H18.75C19.1478 21.75 19.5294 21.592 19.8107 21.3107C20.092 21.0294 20.25 20.6478 20.25 20.25V8.25C20.2501 8.15148 20.2307 8.05391 20.1931 7.96286C20.1555 7.87182 20.1003 7.78908 20.0306 7.71938ZM15 4.81031L17.6897 7.5H15V4.81031ZM18.75 20.25H5.25V3.75H13.5V8.25C13.5 8.44891 13.579 8.63968 13.7197 8.78033C13.8603 8.92098 14.0511 9 14.25 9H18.75V20.25ZM15.75 12.75C15.75 12.9489 15.671 13.1397 15.5303 13.2803C15.3897 13.421 15.1989 13.5 15 13.5H9C8.80109 13.5 8.61032 13.421 8.46967 13.2803C8.32902 13.1397 8.25 12.9489 8.25 12.75C8.25 12.5511 8.32902 12.3603 8.46967 12.2197C8.61032 12.079 8.80109 12 9 12H15C15.1989 12 15.3897 12.079 15.5303 12.2197C15.671 12.3603 15.75 12.5511 15.75 12.75ZM15.75 15.75C15.75 15.9489 15.671 16.1397 15.5303 16.2803C15.3897 16.421 15.1989 16.5 15 16.5H9C8.80109 16.5 8.61032 16.421 8.46967 16.2803C8.32902 16.1397 8.25 15.9489 8.25 15.75C8.25 15.5511 8.32902 15.3603 8.46967 15.2197C8.61032 15.079 8.80109 15 9 15H15C15.1989 15 15.3897 15.079 15.5303 15.2197C15.671 15.3603 15.75 15.5511 15.75 15.75Z" fill="black"/>
               </svg>
-              <span className="text-black text-xs font-medium font-outfit leading-normal">Client Survey</span>
+              <span className="text-black text-xs font-medium font-inter leading-normal">Client Survey</span>
             </button>
 
             
@@ -120,7 +120,7 @@ function AccountsPage() {
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21.375 12C21.375 12.2984 21.2565 12.5845 21.0455 12.7955C20.8345 13.0065 20.5484 13.125 20.25 13.125H13.125V20.25C13.125 20.5484 13.0065 20.8345 12.7955 21.0455C12.5845 21.2565 12.2984 21.375 12 21.375C11.7016 21.375 11.4155 21.2565 11.2045 21.0455C10.9935 20.8345 10.875 20.5484 10.875 20.25V13.125H3.75C3.45163 13.125 3.16548 13.0065 2.9545 12.7955C2.74353 12.5845 2.625 12.2984 2.625 12C2.625 11.7016 2.74353 11.4155 2.9545 11.2045C3.16548 10.9935 3.45163 10.875 3.75 10.875H10.875V3.75C10.875 3.45163 10.9935 3.16548 11.2045 2.9545C11.4155 2.74353 11.7016 2.625 12 2.625C12.2984 2.625 12.5845 2.74353 12.7955 2.9545C13.0065 3.16548 13.125 3.45163 13.125 3.75V10.875H20.25C20.5484 10.875 20.8345 10.9935 21.0455 11.2045C21.2565 11.4155 21.375 11.7016 21.375 12Z" fill="white"/>
               </svg>
-              <span className="text-white text-xs font-medium font-outfit leading-normal">Create Account</span>
+              <span className="text-white text-xs font-medium font-inter leading-normal">Create Account</span>
             </button>
           </div>
         </div>
@@ -133,7 +133,7 @@ function AccountsPage() {
               
               <div className="flex justify-start items-start gap-6">
                 <div className="flex-1 flex flex-col gap-1">
-                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">
+                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">
                     AI-Enhanced Geospatial Intelligence
                   </h2>
                 </div>
@@ -150,19 +150,19 @@ function AccountsPage() {
                     <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="6" cy="6.5" r="6" fill="#039855"/>
                     </svg>
-                    <span className="text-[#0F0901] text-xs font-normal font-outfit">Low</span>
+                    <span className="text-[#0F0901] text-xs font-normal font-inter">Low</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="6" cy="6.5" r="6" fill="#DC6803"/>
                     </svg>
-                    <span className="text-[#0F0901] text-xs font-normal font-outfit">Medium</span>
+                    <span className="text-[#0F0901] text-xs font-normal font-inter">Medium</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <circle cx="6" cy="6.5" r="6" fill="#D92D20"/>
                     </svg>
-                    <span className="text-[#0F0901] text-xs font-normal font-outfit">High</span>
+                    <span className="text-[#0F0901] text-xs font-normal font-inter">High</span>
                   </div>
                 </div>
               </div>
@@ -179,8 +179,8 @@ function AccountsPage() {
                 </svg>
               </div>
               <div className="flex flex-col justify-between items-end">
-                <div className="text-[#667085] text-sm font-normal font-outfit leading-tight">Total Accounts</div>
-                <div className="text-[#1A1A1A] text-2xl font-bold font-outfit leading-loose">{stats.totalAccounts}</div>
+                <div className="text-[#667085] text-sm font-normal font-inter leading-tight">Total Accounts</div>
+                <div className="text-[#1A1A1A] text-2xl font-bold font-inter leading-loose">{stats.totalAccounts}</div>
               </div>
             </div>
 
@@ -192,10 +192,10 @@ function AccountsPage() {
                 </svg>
               </div>
               <div className="flex flex-col justify-start items-end gap-3">
-                <div className="text-[#667085] text-sm font-normal font-outfit leading-tight">AI Health Score</div>
+                <div className="text-[#667085] text-sm font-normal font-inter leading-tight">AI Health Score</div>
                 <div className="px-2 py-0.5 bg-[#FEF0C7] rounded-full flex justify-center items-center">
                   <span className="text-[#DC6803] text-base font-medium font-roboto leading-normal tracking-tight">{stats.aiHealthScore}%</span>
-                  <span className="text-[#DC6803] text-xs font-medium font-outfit leading-none"> Average</span>
+                  <span className="text-[#DC6803] text-xs font-medium font-inter leading-none"> Average</span>
                 </div>
               </div>
             </div>
@@ -208,9 +208,9 @@ function AccountsPage() {
                 </svg>
               </div>
               <div className="flex flex-col justify-start items-end gap-3">
-                <div className="text-[#667085] text-sm font-normal font-outfit leading-tight">High Risk</div>
+                <div className="text-[#667085] text-sm font-normal font-inter leading-tight">High Risk</div>
                 <div className="px-2.5 py-0.5 bg-[#FEE4E2] rounded-full flex justify-center items-center">
-                  <span className="text-[#D92D20] text-base font-medium font-outfit leading-tight">{stats.highRiskCount}</span>
+                  <span className="text-[#D92D20] text-base font-medium font-inter leading-tight">{stats.highRiskCount}</span>
                 </div>
               </div>
             </div>
@@ -223,10 +223,10 @@ function AccountsPage() {
                 </svg>
               </div>
               <div className="flex flex-col justify-start items-end gap-3">
-                <div className="text-[#667085] text-sm font-normal font-outfit leading-tight">Total Value</div>
+                <div className="text-[#667085] text-sm font-normal font-inter leading-tight">Total Value</div>
                 <div className="flex items-center gap-1">
-                  <span className="text-[#1A1A1A] text-xl font-bold font-outfit leading-loose">{stats.totalValue}</span>
-                  <span className="text-[#1A1A1A] text-sm font-medium font-outfit leading-tight tracking-tight">Portfolio</span>
+                  <span className="text-[#1A1A1A] text-xl font-bold font-inter leading-loose">{stats.totalValue}</span>
+                  <span className="text-[#1A1A1A] text-sm font-medium font-inter leading-tight tracking-tight">Portfolio</span>
                 </div>
               </div>
             </div>

@@ -179,7 +179,7 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
               <FileText className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
+              <h2 className="text-2xl font-bold text-[#1A1A1A] font-inter">
                 Project Configuration
               </h2>
               <p className="text-sm text-gray-600 mt-1">

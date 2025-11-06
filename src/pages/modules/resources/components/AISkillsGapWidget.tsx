@@ -8,26 +8,125 @@ type SkillGap = {
   priority: 'high' | 'medium' | 'low';
 };
 
-type AISkillsGapWidgetProps = {
-  totalEmployees: number;
+type Employee = {
+  id: string;
+  name: string;
+  skills?: string[];
+  role?: string;
+  job_title?: string;
 };
 
-export function AISkillsGapWidget({ totalEmployees }: AISkillsGapWidgetProps) {
-  // Simulated AI analysis data
-  const skillGaps: SkillGap[] = [
-    { skill: 'React Developers', required: 5, available: 3, gap: 2, priority: 'high' },
-    { skill: 'UI/UX Designers', required: 4, available: 2, gap: 2, priority: 'high' },
-    { skill: 'DevOps Engineers', required: 3, available: 3, gap: 0, priority: 'low' },
-    { skill: 'Backend Developers', required: 6, available: 5, gap: 1, priority: 'medium' },
-    { skill: 'Product Managers', required: 2, available: 1, gap: 1, priority: 'medium' },
-  ];
+type AISkillsGapWidgetProps = {
+  totalEmployees: number;
+  employees?: Employee[];
+};
 
+export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGapWidgetProps) {
+  // Calculate real skill gaps from actual employee data
+  const calculateSkillGaps = (): SkillGap[] => {
+    console.log('🔍 AI Skills Gap - Analyzing', employees.length, 'employees');
+    
+    if (!employees || employees.length === 0) {
+      console.log('❌ No employees provided for analysis');
+      return [];
+    }
+
+    // Extract all skills from employees
+    const allSkills = employees.flatMap(emp => {
+      const empSkills = emp.skills || [];
+      console.log(`👤 ${emp.name}:`, empSkills.length, 'skills -', empSkills.join(', '));
+      return empSkills;
+    });
+    
+    const skillCounts: Record<string, number> = {};
+    
+    // Count each skill
+    allSkills.forEach(skill => {
+      skillCounts[skill] = (skillCounts[skill] || 0) + 1;
+    });
+    
+    console.log('📊 Skill Counts:', skillCounts);
+
+    // Get top skills sorted by frequency
+    const topSkills = Object.entries(skillCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10);
+    
+    console.log('🏆 Top 10 Skills:', topSkills);
+
+    // Calculate gaps based on current team size and skill distribution
+    const gaps: SkillGap[] = topSkills.map(([skill, available]) => {
+      // AI logic: recommend 30% more capacity for high-demand skills
+      const required = Math.ceil(available * 1.3);
+      const gap = Math.max(0, required - available);
+      
+      // Determine priority based on gap size and current availability
+      let priority: 'high' | 'medium' | 'low' = 'low';
+      if (gap >= 2) priority = 'high';
+      else if (gap >= 1) priority = 'medium';
+      
+      console.log(`📈 ${skill}: Available=${available}, Required=${required} (30% buffer), Gap=${gap}, Priority=${priority}`);
+      
+      return {
+        skill,
+        required,
+        available,
+        gap,
+        priority
+      };
+    });
+
+    // If no skills, show empty state
+    if (gaps.length === 0) {
+      console.log('⚠️ No skills found in employee data');
+      return [{
+        skill: 'No skills data',
+        required: 0,
+        available: 0,
+        gap: 0,
+        priority: 'low'
+      }];
+    }
+
+    console.log('✅ Skills Gap Analysis Complete:', gaps.length, 'skills analyzed');
+    console.log('📊 Summary: Total Gap =', gaps.reduce((sum, g) => sum + g.gap, 0), '| Critical Gaps =', gaps.filter(g => g.priority === 'high').length);
+    
+    return gaps;
+  };
+
+  const skillGaps = calculateSkillGaps();
   const totalGap = skillGaps.reduce((sum, gap) => sum + gap.gap, 0);
   const criticalGaps = skillGaps.filter(g => g.priority === 'high');
 
+  if (skillGaps.length === 0 || skillGaps[0].skill === 'No skills data') {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-white rounded-xl shadow-sm">
+              <Sparkles className="w-6 h-6" style={{ color: '#161950' }} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">AI Skills Gap Analysis</h3>
+              <p className="text-sm text-gray-600 mt-1">Team vs. Project Demand</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-12 text-center">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Briefcase className="w-10 h-10 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">No Skills Data Available</h3>
+          <p className="text-gray-600 mb-6">
+            Add employee skills during onboarding to see AI-powered skills gap analysis
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
-      {/* Header */}
       <div className="p-6 border-b border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -36,7 +135,7 @@ export function AISkillsGapWidget({ totalEmployees }: AISkillsGapWidgetProps) {
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900">AI Skills Gap Analysis</h3>
-              <p className="text-sm text-gray-600 mt-1">Team vs. Project Demand</p>
+              <p className="text-sm text-gray-600 mt-1">Based on Your Team's Skills</p>
             </div>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm">
@@ -129,21 +228,26 @@ export function AISkillsGapWidget({ totalEmployees }: AISkillsGapWidgetProps) {
         ))}
       </div>
 
-      {/* Action Footer */}
-      <div className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 border-t border-gray-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-bold text-gray-900">Need to hire more talent?</p>
-            <p className="text-xs text-gray-600 mt-1">AI recommends filling {totalGap} positions for upcoming projects</p>
-          </div>
-          <button className="px-4 py-2 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md" style={{ backgroundColor: '#161950' }}>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Start Hiring
+      {totalGap > 0 && (
+        <div className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 border-t border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-gray-900">Need to hire more talent?</p>
+              <p className="text-xs text-gray-600 mt-1">
+                AI recommends adding {totalGap} more {totalGap === 1 ? 'person' : 'people'} to strengthen your team
+              </p>
             </div>
-          </button>
+            <a href="/module/resources/onboarding">
+              <button className="px-4 py-2 text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md" style={{ backgroundColor: '#161950' }}>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" />
+                  Start Hiring
+                </div>
+              </button>
+            </a>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

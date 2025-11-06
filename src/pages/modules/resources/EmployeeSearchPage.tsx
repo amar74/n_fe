@@ -284,22 +284,22 @@ export default function EmployeeSearchPage() {
   const displayResults = filteredCandidates;
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Header - Match Dashboard Style */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-sm font-normal font-outfit leading-tight">Dashboard</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Resources</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Search</span>
+              <span className="text-gray-500 text-sm font-normal font-inter leading-tight">Dashboard</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Resources</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Search</span>
             </div>
             
             <div>
-              <h1 className="text-[#1A1A1A] text-3xl font-bold font-outfit leading-loose">
+              <h1 className="text-[#1A1A1A] text-3xl font-bold font-inter leading-loose">
                 Candidate Search & Hiring
               </h1>
               <p className="text-gray-600 text-sm font-medium mt-1">
@@ -330,7 +330,7 @@ export default function EmployeeSearchPage() {
               <div className="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-[#1A1A1A] text-lg font-bold font-outfit">Search & Filter</h2>
+                    <h2 className="text-[#1A1A1A] text-lg font-bold font-inter">Search & Filter</h2>
                     <p className="text-gray-600 text-xs font-medium mt-1">Refine candidate list</p>
                   </div>
                   <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 rounded-full border border-purple-200">
@@ -394,7 +394,7 @@ export default function EmployeeSearchPage() {
                     /* Enhanced AI Search */
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-[#344054] text-xs font-semibold font-outfit mb-2">
+                        <label className="block text-[#344054] text-xs font-semibold font-inter mb-2">
                           AI-Powered Search
                         </label>
                         <textarea
@@ -436,7 +436,7 @@ export default function EmployeeSearchPage() {
                       <button
                         onClick={handleAISearch}
                         disabled={!aiQuery.trim()}
-                        className="w-full h-11 px-5 py-2 rounded-lg text-white text-sm font-semibold font-outfit hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full h-11 px-5 py-2 rounded-lg text-white text-sm font-semibold font-inter hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         style={{ backgroundColor: '#161950' }}
                       >
                         <Sparkles className="w-4 h-4" />
@@ -449,7 +449,7 @@ export default function EmployeeSearchPage() {
                       {/* Basic Search */}
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <label className="text-[#344054] text-xs font-semibold font-outfit">
+                          <label className="text-[#344054] text-xs font-semibold font-inter">
                             Position / Role
                           </label>
                           {searchCriteria.position && (
@@ -472,7 +472,7 @@ export default function EmployeeSearchPage() {
 
                       {/* Experience Filter */}
                       <div>
-                        <label className="block text-[#344054] text-xs font-semibold font-outfit mb-2">
+                        <label className="block text-[#344054] text-xs font-semibold font-inter mb-2">
                           Experience Level
                         </label>
                         <select
@@ -490,7 +490,7 @@ export default function EmployeeSearchPage() {
 
                       {/* Location Filter */}
                       <div>
-                        <label className="block text-[#344054] text-xs font-semibold font-outfit mb-2">
+                        <label className="block text-[#344054] text-xs font-semibold font-inter mb-2">
                           Location
                         </label>
                         <input
@@ -510,7 +510,7 @@ export default function EmployeeSearchPage() {
                               <Filter className="w-4 h-4 text-white" />
                             </div>
                             <div>
-                              <h3 className="text-[#1A1A1A] text-sm font-bold font-outfit">Advanced Filters</h3>
+                              <h3 className="text-[#1A1A1A] text-sm font-bold font-inter">Advanced Filters</h3>
                               <p className="text-xs text-gray-600">Narrow down by skills & sectors</p>
                             </div>
                           </div>
@@ -528,7 +528,7 @@ export default function EmployeeSearchPage() {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Target className="w-4 h-4" style={{ color: '#161950' }} />
-                              <label className="text-[#344054] text-xs font-semibold font-outfit">
+                              <label className="text-[#344054] text-xs font-semibold font-inter">
                                 Skills Matrix
                               </label>
                               {searchCriteria.skills.length > 0 && (
@@ -575,7 +575,7 @@ export default function EmployeeSearchPage() {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Briefcase className="w-4 h-4" style={{ color: '#161950' }} />
-                              <label className="text-[#344054] text-xs font-semibold font-outfit">
+                              <label className="text-[#344054] text-xs font-semibold font-inter">
                                 Sectors Matrix
                               </label>
                               {searchCriteria.sectors.length > 0 && (
@@ -622,7 +622,7 @@ export default function EmployeeSearchPage() {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Award className="w-4 h-4" style={{ color: '#161950' }} />
-                              <label className="text-[#344054] text-xs font-semibold font-outfit">
+                              <label className="text-[#344054] text-xs font-semibold font-inter">
                                 Services Matrix
                               </label>
                               {searchCriteria.services.length > 0 && (
@@ -669,7 +669,7 @@ export default function EmployeeSearchPage() {
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <List className="w-4 h-4" style={{ color: '#161950' }} />
-                              <label className="text-[#344054] text-xs font-semibold font-outfit">
+                              <label className="text-[#344054] text-xs font-semibold font-inter">
                                 Project Types
                               </label>
                               {searchCriteria.projectTypes.length > 0 && (
@@ -740,7 +740,7 @@ export default function EmployeeSearchPage() {
                               location: ''
                             });
                           }}
-                          className="w-full h-11 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg text-white text-sm font-bold font-outfit transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                          className="w-full h-11 px-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg text-white text-sm font-bold font-inter transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
                         >
                           <XCircle className="w-4 h-4" />
                           Reset All Filters
@@ -773,7 +773,7 @@ export default function EmployeeSearchPage() {
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-[#1A1A1A] text-lg font-bold font-outfit">Candidate List</h2>
+                    <h2 className="text-[#1A1A1A] text-lg font-bold font-inter">Candidate List</h2>
                     <p className="text-gray-600 text-xs font-medium mt-1">
                       {allCandidates.filter(c => c.currentStage === 'pending').length} Pending • {' '}
                       {allCandidates.filter(c => c.currentStage === 'review').length} In Interview • {' '}
@@ -816,10 +816,10 @@ export default function EmployeeSearchPage() {
                               <div className="flex-1">
                                 {/* Name and Stage Badge */}
                                 <div className="flex items-center gap-2 mb-3">
-                                  <h3 className="text-[#1A1A1A] text-base font-bold font-outfit">{candidate.name}</h3>
+                                  <h3 className="text-[#1A1A1A] text-base font-bold font-inter">{candidate.name}</h3>
                                   
                                   {/* Current Stage Badge */}
-                                  <span className={`px-2.5 py-1 rounded text-xs font-semibold font-outfit ${
+                                  <span className={`px-2.5 py-1 rounded text-xs font-semibold font-inter ${
                                     candidate.currentStage === 'review'
                                       ? 'bg-blue-100 text-blue-700'
                                       : 'bg-gray-100 text-gray-700'
@@ -831,11 +831,11 @@ export default function EmployeeSearchPage() {
                                 {/* Role */}
                                 <div className="flex items-center gap-2 mb-3">
                                   <Briefcase className="w-4 h-4 text-gray-400" />
-                                  <p className="text-sm font-medium text-gray-700 font-outfit">{candidate.role}</p>
+                                  <p className="text-sm font-medium text-gray-700 font-inter">{candidate.role}</p>
                                 </div>
 
                                 {/* Location & Experience */}
-                                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 font-outfit">
+                                <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 font-inter">
                                   <div className="flex items-center gap-1">
                                     <MapPin className="w-4 h-4 text-gray-400" />
                                     {candidate.location}
@@ -850,12 +850,12 @@ export default function EmployeeSearchPage() {
                                 {candidate.skills.length > 0 && (
                                   <div className="flex flex-wrap gap-2">
                                     {candidate.skills.slice(0, 4).map((skill, idx) => (
-                                      <span key={idx} className="px-2 py-1 bg-gray-50 text-gray-700 text-xs font-medium font-outfit rounded border border-gray-200">
+                                      <span key={idx} className="px-2 py-1 bg-gray-50 text-gray-700 text-xs font-medium font-inter rounded border border-gray-200">
                                         {skill}
                                       </span>
                                     ))}
                                     {candidate.skills.length > 4 && (
-                                      <span className="px-2 py-1 bg-gray-50 text-gray-500 text-xs font-medium font-outfit rounded border border-gray-200">
+                                      <span className="px-2 py-1 bg-gray-50 text-gray-500 text-xs font-medium font-inter rounded border border-gray-200">
                                         +{candidate.skills.length - 4}
                                       </span>
                                     )}
@@ -869,8 +869,8 @@ export default function EmployeeSearchPage() {
                                   candidate.matchPercentage >= 70 ? 'bg-green-600' :
                                   candidate.matchPercentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
                                 }`}>
-                                  <p className="text-white text-2xl font-bold font-outfit">{candidate.matchPercentage}%</p>
-                                  <p className="text-white text-xs font-medium font-outfit mt-1">AI Match</p>
+                                  <p className="text-white text-2xl font-bold font-inter">{candidate.matchPercentage}%</p>
+                                  <p className="text-white text-xs font-medium font-inter mt-1">AI Match</p>
                                 </div>
                               </div>
                             </div>
@@ -879,7 +879,7 @@ export default function EmployeeSearchPage() {
                             <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
                               <button
                                 onClick={() => handleViewDetails(candidate)}
-                                className="flex-1 h-10 px-4 bg-white rounded-lg border border-gray-300 text-gray-700 text-sm font-semibold font-outfit hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                                className="flex-1 h-10 px-4 bg-white rounded-lg border border-gray-300 text-gray-700 text-sm font-semibold font-inter hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                               >
                                 <Eye className="w-4 h-4" />
                                 View Details
@@ -888,7 +888,7 @@ export default function EmployeeSearchPage() {
                               {candidate.currentStage === 'pending' ? (
                                 <button
                                   onClick={() => handleScheduleInterview(candidate)}
-                                  className="flex-1 h-10 px-4 rounded-lg text-white text-sm font-semibold font-outfit hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                                  className="flex-1 h-10 px-4 rounded-lg text-white text-sm font-semibold font-inter hover:opacity-90 transition-all flex items-center justify-center gap-2"
                                   style={{ backgroundColor: '#161950' }}
                                 >
                                   <Calendar className="w-4 h-4" />
@@ -897,7 +897,7 @@ export default function EmployeeSearchPage() {
                               ) : (
                                 <button
                                   onClick={() => changeStage({ id: candidate.id, stage: 'accepted' })}
-                                  className="flex-1 h-10 px-4 bg-green-600 rounded-lg text-white text-sm font-semibold font-outfit hover:bg-green-700 transition-all flex items-center justify-center gap-2"
+                                  className="flex-1 h-10 px-4 bg-green-600 rounded-lg text-white text-sm font-semibold font-inter hover:bg-green-700 transition-all flex items-center justify-center gap-2"
                                 >
                                   <UserCheck className="w-4 h-4" />
                                   Hire Candidate

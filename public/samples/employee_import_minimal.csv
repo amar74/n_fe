@@ -1,0 +1,3 @@
+name,email,phone,job_title,role,department,location,bill_rate
+Test Employee 1,test1@company.com,555-9991,Junior Developer,employee,IT,Remote,100
+Test Employee 2,test2@company.com,555-9992,Senior Architect,manager,Architecture,New York,220

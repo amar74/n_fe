@@ -291,23 +291,23 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Enhanced Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
+              <Link to="/" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900">
                 Dashboard
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Staffing Plan</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Staffing Plan</span>
             </div>
             
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-[#1A1A1A] text-3xl font-bold font-outfit leading-loose">
+                <h1 className="text-[#1A1A1A] text-3xl font-bold font-inter leading-loose">
                   Staff Planning Dashboard
                 </h1>
                 <p className="text-gray-600 text-sm font-medium mt-1">
@@ -325,7 +325,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
               className="h-11 px-5 py-2 bg-white rounded-lg border border-gray-300 flex items-center gap-2.5 hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download className="w-5 h-5 text-gray-700" />
-              <span className="text-gray-700 text-sm font-semibold font-outfit">
+              <span className="text-gray-700 text-sm font-semibold font-inter">
                 Export Report
               </span>
             </button>
@@ -335,7 +335,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
               style={{ backgroundColor: '#161950' }}
             >
               <Plus className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-outfit leading-normal">
+              <span className="text-white text-sm font-semibold font-inter leading-normal">
                 Create Staff Plan
               </span>
             </Link>
@@ -408,7 +408,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                   <Briefcase className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-[#1A1A1A] text-xl font-bold font-outfit">Staffing Plans</h2>
+                  <h2 className="text-[#1A1A1A] text-xl font-bold font-inter">Staffing Plans</h2>
                   <p className="text-gray-600 text-sm font-medium mt-0.5">
                     {filteredPlans.length} plans • {filteredPlans.filter(p => p.status === 'active').length} active • {' '}
                     {filteredPlans.filter(p => p.status === 'draft').length} draft

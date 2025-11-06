@@ -318,8 +318,8 @@ function AccountsMap({ accounts }: AccountsMapProps) {
     return (
       <div className="h-72 relative bg-[#F5F3F2] rounded-2xl border border-gray-200 overflow-hidden flex items-center justify-center">
         <div className="text-center p-6">
-          <div className="text-red-500 text-sm font-outfit mb-2">⚠️ Map Error</div>
-          <div className="text-gray-600 text-xs font-outfit">{error}</div>
+          <div className="text-red-500 text-sm font-inter mb-2">⚠️ Map Error</div>
+          <div className="text-gray-600 text-xs font-inter">{error}</div>
         </div>
       </div>
     );
@@ -330,7 +330,7 @@ function AccountsMap({ accounts }: AccountsMapProps) {
       <div className="h-72 relative bg-[#F5F3F2] rounded-2xl border border-gray-200 overflow-hidden flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-950"></div>
-          <div className="text-gray-400 text-sm font-outfit">Loading map...</div>
+          <div className="text-gray-400 text-sm font-inter">Loading map...</div>
         </div>
       </div>
     );
@@ -340,13 +340,13 @@ function AccountsMap({ accounts }: AccountsMapProps) {
     return (
       <div className="h-72 relative bg-[#F5F3F2] rounded-2xl border border-gray-200 overflow-hidden flex items-center justify-center">
         <div className="text-center p-6">
-          <div className="text-gray-400 text-sm font-outfit mb-2">
+          <div className="text-gray-400 text-sm font-inter mb-2">
             {accounts.length === 0 
               ? '📍 No accounts to display' 
               : '⚠️ No mappable locations found'}
           </div>
           {accounts.length > 0 && (
-            <div className="text-gray-500 text-xs font-outfit">
+            <div className="text-gray-500 text-xs font-inter">
               Accounts must have valid city and state data to display on map
             </div>
           )}

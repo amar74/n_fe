@@ -11,7 +11,7 @@ export function SmartNotificationPreview({
   employeeName,
   employeeEmail,
   role,
-  companyName = 'SoftiCation Business Suite'
+  companyName = 'AEC Business Suite'
 }: SmartNotificationPreviewProps) {
   const emailTemplate = `
 Hi ${employeeName},

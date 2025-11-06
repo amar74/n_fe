@@ -10,6 +10,8 @@ type ContactsFormProps = {
   errors?: Record<string, string>;
 }
 
+const TITLES = ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Eng.', 'Arch.', 'Other'];
+
 const COUNTRY_CODES = [
   { code: '+1', country: 'US', flag: '🇺🇸' },
   { code: '+44', country: 'UK', flag: '🇬🇧' },
@@ -141,16 +143,28 @@ export function ContactsForm({
             <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
               Title<span className="text-red-600">*</span>
             </label>
-            <input
-              type="text"
-              value={formData?.title || ''}
-              onChange={(e) => handleChange('title', e.target.value)}
-              placeholder="Enter title"
-              required
-              className={`w-full h-11 px-3.5 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border ${
-                errors.title ? 'border-red-300' : 'border-gray-300'
-              } text-slate-800 text-sm font-normal font-['Outfit'] leading-tight placeholder:text-[#9CA3AF] transition-all duration-200 hover:border-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100`}
-            />
+            <div className="relative">
+              <select
+                value={formData?.title || ''}
+                onChange={(e) => handleChange('title', e.target.value)}
+                required
+                className={`w-full h-11 px-3.5 py-2.5 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(16,24,40,0.05)] border ${
+                  errors.title ? 'border-red-300' : 'border-gray-300'
+                } text-slate-800 text-sm font-normal font-['Outfit'] leading-tight appearance-none transition-all duration-200 hover:border-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100`}
+              >
+                <option value="">Select title</option>
+                {TITLES.map((title) => (
+                  <option key={title} value={title}>
+                    {title}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-3.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4.79199 7.39581L10.0003 12.6041L15.2087 7.39581" stroke="#667085" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </div>
             {errors.title && (
               <span className="text-red-500 text-xs mt-0.5">{errors.title}</span>
             )}

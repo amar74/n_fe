@@ -243,7 +243,7 @@ export default function ProfileSettingsPage() {
       }
       
       toast({
-        title: 'Profile Updated',
+        title: '✅ Profile Updated',
         description: 'Your profile has been updated successfully.',
       });
     } catch (error: any) {

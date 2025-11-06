@@ -2,9 +2,29 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAccountDetail, useAccounts } from '@/hooks/useAccounts';
-import { TabType, AccountFormData, AccountStatsCard } from './AccountDetailsPage.types';
+import { TabType, AccountFormData, AccountStatsCard, RecentActivityItem } from './AccountDetailsPage.types';
 import { MOCK_RECENT_ACTIVITY } from './AccountDetailsPage.constants';
 import { STATE_ABBREVIATION_TO_NAME } from './components/CreateAccountModal/CreateAccountModal.constants';
+import { apiClient } from '@/services/api/client';
+
+// Utility function to format time ago
+const formatTimeAgo = (date: Date): string => {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  const diffWeeks = Math.floor(diffMs / 604800000);
+  const diffMonths = Math.floor(diffMs / 2628000000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  if (diffWeeks < 4) return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
+  if (diffMonths < 12) return `${diffMonths} month${diffMonths > 1 ? 's' : ''} ago`;
+  return date.toLocaleDateString();
+};
 
 export function useAccountDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +35,8 @@ export function useAccountDetailsPage() {
   const [isEditing, setIsEditing] = useState(false);
   // FIXME: this not working properly - guddy.tech
   const [formData, setFormData] = useState<AccountFormData | null>(null);
+  const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>(MOCK_RECENT_ACTIVITY);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(false);
 
   const { accountDetail: account, isAccountDetailLoading: isLoading, accountDetailError: error } = useAccountDetail(id || '');
   const { updateAccount, isUpdating, updateErrors, isUpdateAccountSuccess } = useAccounts();
@@ -25,6 +47,50 @@ export function useAccountDetailsPage() {
     }
   }, [account, id, navigate]);
 
+
+  // Fetch account activities
+  useEffect(() => {
+    const fetchActivities = async () => {
+      if (!account?.account_id) {
+        console.log('⏸️ No account ID, skipping activity fetch');
+        return;
+      }
+      
+      try {
+        setIsLoadingActivities(true);
+        console.log('📊 Fetching activities for account:', account.account_id);
+        
+        const response = await apiClient.get(`/accounts/${account.account_id}/activities`, {
+          params: { limit: 10 }
+        });
+        
+        console.log('✅ Activities response:', response.data);
+        
+        if (response.data.activities && response.data.activities.length > 0) {
+          // Transform backend activities to frontend format with time ago
+          const transformedActivities = response.data.activities.map((activity: any) => ({
+            id: activity.id,
+            title: activity.title,
+            timestamp: formatTimeAgo(new Date(activity.timestamp)),
+            color: activity.color
+          }));
+          console.log('📋 Transformed activities:', transformedActivities);
+          setRecentActivity(transformedActivities);
+        } else {
+          console.log('📭 No activities found for this account');
+          setRecentActivity([]);
+        }
+      } catch (error: any) {
+        console.error('❌ Error fetching account activities:', error);
+        console.error('Error response:', error.response?.data);
+        setRecentActivity([]);
+      } finally {
+        setIsLoadingActivities(false);
+      }
+    };
+    
+    fetchActivities();
+  }, [account?.account_id]);
 
   useEffect(() => {
     if (account) {
@@ -177,7 +243,8 @@ export function useAccountDetailsPage() {
     isEditing,
     formData,
     statsCards,
-    recentActivity: MOCK_RECENT_ACTIVITY,
+    recentActivity,
+    isLoadingActivities,
 
     handleTabChange,
     handleEditToggle,

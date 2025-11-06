@@ -54,12 +54,12 @@ export default function EmployeeDashboardPage() {
   const completedSurveys = assignedSurveys.filter(s => s.is_completed);
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
+    <div className="w-full h-full bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Header */}
         <div className="flex flex-col gap-3">
-          <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">My Surveys</h1>
-          <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">
+          <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter leading-loose">My Surveys</h1>
+          <p className="text-[#667085] text-sm font-normal font-inter leading-tight">
             Complete surveys assigned to you
           </p>
         </div>
@@ -100,7 +100,7 @@ export default function EmployeeDashboardPage() {
         {/* Pending Surveys */}
         {pendingSurveys.length > 0 && (
           <div className="p-6 bg-white rounded-2xl border border-gray-200">
-            <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit mb-4">
+            <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter mb-4">
               Pending Surveys ({pendingSurveys.length})
             </h2>
             <div className="space-y-3">
@@ -131,7 +131,7 @@ export default function EmployeeDashboardPage() {
         {/* Completed Surveys */}
         {completedSurveys.length > 0 && (
           <div className="p-6 bg-white rounded-2xl border border-gray-200">
-            <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit mb-4">
+            <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter mb-4">
               Completed Surveys ({completedSurveys.length})
             </h2>
             <div className="space-y-3">

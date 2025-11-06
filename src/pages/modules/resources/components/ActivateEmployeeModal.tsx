@@ -1,0 +1,362 @@
+import { useState } from 'react';
+import { X, Mail, Lock, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+
+interface ActivateEmployeeModalProps {
+  employee: {
+    id: string;
+    name: string;
+    email: string;
+    role?: string;
+  } | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onActivate: (data: ActivationData) => Promise<void>;
+}
+
+export interface ActivationData {
+  employeeId: string;
+  sendWelcomeEmail: boolean;
+  temporaryPassword: string;
+  userRole: string;
+  permissions: string[];
+}
+
+const ROLES = [
+  { value: 'employee', label: 'Employee', description: 'Standard access to assigned projects' },
+  { value: 'team_lead', label: 'Team Lead', description: 'Manage team and projects' },
+  { value: 'manager', label: 'Manager', description: 'Department management access' },
+  { value: 'admin', label: 'Admin', description: 'Full system access' },
+];
+
+const PERMISSIONS = [
+  { id: 'view_projects', label: 'View Projects', category: 'Projects' },
+  { id: 'edit_projects', label: 'Edit Projects', category: 'Projects' },
+  { id: 'view_accounts', label: 'View Accounts', category: 'Accounts' },
+  { id: 'edit_accounts', label: 'Edit Accounts', category: 'Accounts' },
+  { id: 'view_reports', label: 'View Reports', category: 'Reports' },
+  { id: 'manage_team', label: 'Manage Team', category: 'Team' },
+];
+
+export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }: ActivateEmployeeModalProps) {
+  const [userRole, setUserRole] = useState('employee');
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [sendEmail, setSendEmail] = useState(true);
+  const [temporaryPassword, setTemporaryPassword] = useState('');
+  const [isActivating, setIsActivating] = useState(false);
+  const [useQuickActivate, setUseQuickActivate] = useState(false);
+
+  if (!isOpen || !employee) return null;
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setTemporaryPassword(password);
+  };
+
+  // Smart role suggestion based on job title/position
+  const suggestRole = () => {
+    const position = employee.role?.toLowerCase() || '';
+    if (position.includes('manager') || position.includes('lead')) return 'team_lead';
+    if (position.includes('admin') || position.includes('director')) return 'manager';
+    if (position.includes('head') || position.includes('vp')) return 'admin';
+    return 'employee';
+  };
+
+  // Auto-populate defaults when modal opens
+  const handleModalOpen = () => {
+    if (!temporaryPassword) generatePassword();
+    const suggestedRole = suggestRole();
+    setUserRole(suggestedRole);
+    
+    // Set default permissions based on suggested role
+    const defaultPermissions: Record<string, string[]> = {
+      employee: ['view_projects', 'view_accounts', 'view_resources'],
+      team_lead: ['view_projects', 'edit_projects', 'view_accounts', 'edit_accounts', 'manage_team', 'view_reports'],
+      manager: ['view_projects', 'edit_projects', 'view_accounts', 'edit_accounts', 'view_opportunities', 'edit_opportunities', 'manage_team', 'view_reports', 'export_data'],
+      admin: PERMISSIONS.map(p => p.id),
+    };
+    setSelectedPermissions(defaultPermissions[suggestedRole] || []);
+  };
+
+  // Call handleModalOpen when modal opens
+  if (isOpen && !temporaryPassword) {
+    handleModalOpen();
+  }
+
+  const togglePermission = (permissionId: string) => {
+    setSelectedPermissions(prev =>
+      prev.includes(permissionId)
+        ? prev.filter(p => p !== permissionId)
+        : [...prev, permissionId]
+    );
+  };
+
+  const handleActivate = async () => {
+    if (!temporaryPassword) {
+      toast.error('Please generate or enter a temporary password');
+      return;
+    }
+
+    setIsActivating(true);
+    try {
+      await onActivate({
+        employeeId: employee.id,
+        sendWelcomeEmail: sendEmail,
+        temporaryPassword,
+        userRole,
+        permissions: selectedPermissions,
+      });
+      // Success toast is handled in useEmployeeActivation hook
+      onClose();
+    } catch (error: any) {
+      // Error toast is already handled in useEmployeeActivation hook
+      // Just close the modal after a delay to show the error
+      setTimeout(() => {
+        if (!isActivating) {
+          // Modal stays open on error so user can retry
+        }
+      }, 2000);
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  // Group permissions by category
+  const permissionsByCategory = PERMISSIONS.reduce((acc, perm) => {
+    if (!acc[perm.category]) acc[perm.category] = [];
+    acc[perm.category].push(perm);
+    return acc;
+  }, {} as Record<string, typeof PERMISSIONS>);
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Header */}
+        <div className="sticky top-0 bg-gradient-to-r from-[#151950] to-[#1e2570] text-white px-8 py-6 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Activate Employee Account</h2>
+                <p className="text-white/80 text-sm">Create user account for {employee.name}</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-8 space-y-6">
+          {/* Quick Activate Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                <Shield className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">Quick Activate</p>
+                <p className="text-sm text-gray-600">Use smart defaults (recommended)</p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useQuickActivate}
+                onChange={(e) => setUseQuickActivate(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+            </label>
+          </div>
+
+          {!useQuickActivate && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Manual Configuration</p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Customize role and permissions for <strong>{employee.email}</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {useQuickActivate && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-green-900">Quick Activate Enabled</p>
+                  <p className="text-sm text-green-700 mt-1">
+                    Auto-configured role: <strong>{userRole.replace('_', ' ').toUpperCase()}</strong> • {selectedPermissions.length} permissions • Email will be sent
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Password Generation */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2 text-base font-semibold">
+              <Lock className="w-4 h-4" />
+              Temporary Password
+            </Label>
+            <div className="flex gap-3">
+              <Input
+                type="text"
+                value={temporaryPassword}
+                onChange={(e) => setTemporaryPassword(e.target.value)}
+                placeholder="Enter or generate password"
+                className="flex-1 bg-green-50 border-green-300 font-mono"
+                readOnly={useQuickActivate}
+              />
+              <Button
+                onClick={generatePassword}
+                variant="outline"
+                className="whitespace-nowrap"
+                disabled={useQuickActivate}
+              >
+                Regenerate
+              </Button>
+            </div>
+            <p className="text-xs text-gray-600">
+              ✅ Auto-generated secure password • User must change on first login
+            </p>
+          </div>
+
+          {!useQuickActivate && (
+            <>
+              {/* Role Selection */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2 text-base font-semibold">
+                  <Shield className="w-4 h-4" />
+                  User Role {userRole !== 'employee' && <span className="text-xs text-purple-600">(AI Suggested)</span>}
+                </Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {ROLES.map((role) => (
+                    <button
+                      key={role.value}
+                      onClick={() => setUserRole(role.value)}
+                      className={`p-4 border-2 rounded-xl text-left transition-all ${
+                        userRole === role.value
+                          ? 'border-[#151950] bg-[#151950]/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            userRole === role.value
+                              ? 'border-[#151950] bg-[#151950]'
+                              : 'border-gray-300'
+                          }`}
+                        >
+                          {userRole === role.value && (
+                            <div className="w-2 h-2 bg-white rounded-full" />
+                          )}
+                        </div>
+                        <span className="font-semibold text-gray-900">{role.label}</span>
+                      </div>
+                      <p className="text-xs text-gray-600 ml-6">{role.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Permissions */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2 text-base font-semibold">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Permissions ({selectedPermissions.length} selected)
+                </Label>
+                <div className="space-y-4 max-h-[300px] overflow-y-auto">
+                  {Object.entries(permissionsByCategory).map(([category, perms]) => (
+                    <div key={category} className="border border-gray-200 rounded-xl p-4">
+                      <h4 className="font-semibold text-sm text-gray-700 mb-3">{category}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {perms.map((perm) => (
+                          <label
+                            key={perm.id}
+                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedPermissions.includes(perm.id)}
+                              onChange={() => togglePermission(perm.id)}
+                              className="w-4 h-4 text-[#151950] border-gray-300 rounded focus:ring-[#151950]"
+                            />
+                            <span className="text-sm text-gray-700">{perm.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Email Option */}
+          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+            <input
+              type="checkbox"
+              id="sendEmail"
+              checked={sendEmail}
+              onChange={(e) => setSendEmail(e.target.checked)}
+              className="w-4 h-4 text-[#151950] border-gray-300 rounded focus:ring-[#151950]"
+            />
+            <label htmlFor="sendEmail" className="flex items-center gap-2 cursor-pointer">
+              <Mail className="w-4 h-4 text-gray-600" />
+              <span className="text-sm text-gray-700">
+                Send welcome email with login credentials
+              </span>
+            </label>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+            <Button
+              onClick={() => setUseQuickActivate(!useQuickActivate)}
+              variant="outline"
+              className="text-purple-600 border-purple-300 hover:bg-purple-50"
+            >
+              {useQuickActivate ? '⚙️ Customize Settings' : '⚡ Use Quick Activate'}
+            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={onClose}
+                variant="outline"
+                disabled={isActivating}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleActivate}
+                disabled={isActivating || !temporaryPassword}
+                className="bg-gradient-to-r from-[#151950] to-[#1e2570] hover:from-[#1e2570] hover:to-[#151950] text-white px-6"
+              >
+                {isActivating ? 'Activating...' : useQuickActivate ? '⚡ Quick Activate' : '✅ Activate Account'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+

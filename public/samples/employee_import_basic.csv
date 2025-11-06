@@ -1,0 +1,6 @@
+name,email,phone,job_title,role,department,location,bill_rate
+John Doe,john.doe@company.com,555-0101,Senior Developer,employee,IT,New York,150
+Jane Smith,jane.smith@company.com,555-0102,Project Manager,manager,Engineering,San Francisco,200
+Mike Johnson,mike.johnson@company.com,555-0103,UX Designer,employee,Design,Austin,120
+Sarah Williams,sarah.williams@company.com,555-0104,DevOps Engineer,employee,IT,Seattle,160
+Robert Brown,robert.brown@company.com,555-0105,Business Analyst,employee,Operations,Boston,130

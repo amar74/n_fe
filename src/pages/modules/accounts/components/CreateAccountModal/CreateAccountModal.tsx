@@ -6,6 +6,8 @@ import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
 import { useAuth } from '@/hooks/useAuth';
 import { useDataEnrichment } from '@/hooks/useDataEnrichment';
 import { PlacesAutocomplete } from '@/components/ui/places-autocomplete';
+import { apiClient } from '@/services/api/client';
+import { useToast } from '@/hooks/use-toast';
 
 const CLIENT_TYPE_DISPLAY: Record<string, string> = {
   'tier_1': 'Tier 1',
@@ -21,6 +23,7 @@ export function CreateAccountModal({
   errors: backendErrors = {}
 }: CreateAccountModalProps) {
   const { authState } = useAuth();
+  const { toast } = useToast();
   const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   
   const getUserName = () => {
@@ -218,39 +221,119 @@ export function CreateAccountModal({
     setAiSuggestions(null);
     setAppliedSuggestions([]);
 
+    let scraperData: any = null;
+    
     try {
-      const result = await enhanceAccountData(websiteUrl, {
-        client_name: formData.client_name,
-        market_sector: formData.market_sector
-      });
-
-      setAiSuggestions(result);
-      setShowAISuggestions(true);
-
-      const autoApplied: string[] = [];
-      console.log('🤖 AI Account Enhancement Results:', result);
+      console.log('🔍 Starting data enrichment for:', websiteUrl);
       
-      // Lower confidence threshold for better auto-apply (0.6 instead of 0.85)
-      Object.entries(result.suggestions).forEach(([field, suggestion]: [string, any]) => {
-        if (suggestion.confidence >= 0.6) {
-          console.log(`✅ Auto-applying ${field}: ${suggestion.value} (confidence: ${suggestion.confidence})`);
-          applySuggestion(field, suggestion.value);
-          autoApplied.push(field);
-        } else {
-          console.log(`⚠️ Skipped ${field}: low confidence (${suggestion.confidence})`);
+      // Step 1: Use scraper to get basic data (address, contacts)
+      try {
+        const scraperResponse = await apiClient.post('/scraper/scrape', {
+          urls: [websiteUrl]
+        });
+        
+        if (scraperResponse.data?.results?.[0]?.info) {
+          scraperData = scraperResponse.data.results[0].info;
+          console.log('🎯 Scraper data received:', scraperData);
+          
+          // Auto-fill from scraper
+          if (scraperData.name) {
+            setFormData(prev => ({ ...prev, client_name: scraperData.name }));
+          }
+          
+          // Fill address
+          if (scraperData.address) {
+            const addr = scraperData.address;
+            setFormData(prev => ({
+              ...prev,
+              client_address_line1: addr.line1 || prev.client_address_line1,
+              client_address_line2: addr.line2 || prev.client_address_line2,
+              client_address_city: addr.city || prev.client_address_city,
+              client_address_state: addr.state || prev.client_address_state,
+              client_address_zip_code: addr.pincode || prev.client_address_zip_code,
+            }));
+            console.log('✅ Address auto-filled from scraper');
+          }
+          
+          // Fill contacts
+          if (scraperData.email && scraperData.email.length > 0) {
+            setFormData(prev => ({ ...prev, email_address: scraperData.email[0] }));
+            console.log('✅ Email auto-filled from scraper:', scraperData.email[0]);
+          }
+          
+          if (scraperData.phone && scraperData.phone.length > 0) {
+            const phone = scraperData.phone[0];
+            setPrimaryContactPhone(phone);
+            setMainPhone(phone);
+            console.log('✅ Phone auto-filled from scraper:', phone);
+          }
+          
+          toast({
+            title: '🔍 Scraper Complete',
+            description: 'Website data extracted successfully',
+          });
         }
-      });
-
-      if (autoApplied.length > 0) {
-        setAppliedSuggestions(autoApplied);
-        console.log(`📊 Auto-applied ${autoApplied.length} account fields`);
-      } else {
-        console.log('⚠️ No fields met confidence threshold for auto-apply');
+      } catch (scraperError) {
+        console.warn('⚠️ Scraper failed, continuing with AI enhancement only:', scraperError);
       }
 
-    } catch (e) {
-      // Error handled
-    } finally {
+      // Step 2: Enhance with AI for additional fields (non-blocking)
+      // Run AI enhancement in background, don't block if it fails
+      enhanceAccountData(websiteUrl, {
+        client_name: formData.client_name || scraperData?.name,
+        market_sector: formData.market_sector
+      })
+      .then((result) => {
+        setAiSuggestions(result);
+        setShowAISuggestions(true);
+
+        const autoApplied: string[] = [];
+        console.log('🤖 AI Enhancement Results:', result);
+        
+        Object.entries(result.enhanced_data || {}).forEach(([field, suggestion]: [string, any]) => {
+          if (suggestion.confidence >= 0.6) {
+            console.log(`✅ Auto-applying ${field}: ${suggestion.value} (confidence: ${suggestion.confidence})`);
+            applySuggestion(field, suggestion.value);
+            autoApplied.push(field);
+          } else {
+            console.log(`⚠️ Skipped ${field}: low confidence (${suggestion.confidence})`);
+          }
+        });
+
+        if (autoApplied.length > 0) {
+          setAppliedSuggestions(autoApplied);
+          console.log(`📊 Auto-applied ${autoApplied.length} AI fields`);
+          toast({
+            title: '✨ AI Enhancement Complete',
+            description: `Successfully enriched ${autoApplied.length} additional fields`,
+          });
+        }
+      })
+      .catch((aiError: any) => {
+        console.warn('⚠️ AI Enhancement failed (non-blocking):', aiError);
+        // Don't show error toast for timeout - scraper already worked
+        if (!aiError.message?.includes('timeout') && !aiError.message?.includes('longer than expected')) {
+          toast({
+            title: '⚠️ AI Enhancement Unavailable',
+            description: 'Scraper data loaded successfully. AI enhancement is temporarily unavailable.',
+            variant: 'default',
+          });
+        }
+      })
+      .finally(() => {
+        setIsAnalyzing(false);
+      });
+
+    } catch (e: any) {
+      console.error('❌ Scraper error:', e);
+      // Only show error if scraper failed completely
+      if (!scraperData) {
+        toast({
+          title: '❌ Data Extraction Failed',
+          description: 'Could not extract data from the website. Please fill in the fields manually.',
+          variant: 'destructive',
+        });
+      }
       setIsAnalyzing(false);
     }
   };
@@ -379,6 +462,8 @@ export function CreateAccountModal({
       client_type: '',
       hosting_area: '',
       msa_in_place: false,
+      created_by: getUserName(),
+      created_at: currentDate,
     });
     setPrimaryContactPhone('');
     setMainPhone('');
@@ -386,17 +471,20 @@ export function CreateAccountModal({
     setZipAutoFilled(false);
     setZipError('');
     setAvailableCities([]);
+    setShowAISuggestions(false);
+    setAiSuggestions(null);
+    setAppliedSuggestions([]);
     onClose();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const submitData = {
+    const submitData: any = {
       ...formData,
       phone: mainPhone || formData.phone,
-      primary_contact_phone: primaryContactPhone // Add primary contact phone if needed
+      primary_contact_phone: primaryContactPhone
     };
-    onSubmit(submitData);
+    onSubmit(submitData as any);
   };
 
   const handleInputChange = (field: string, value: any) => {

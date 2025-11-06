@@ -1,83 +1,18 @@
 import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Download, Eye, Filter, Users, UserPlus, Shield, BarChart3 } from 'lucide-react';
+import { Plus, Search, Download, Eye, Filter, Users, UserPlus, Shield, BarChart3, Power, Upload } from 'lucide-react';
 import { KanbanBoard, type Employee } from './components/KanbanBoard';
 import { AddEmployeeWizard } from './components/AddEmployeeWizard';
 import { EmployeeDetailsModal } from './components/EmployeeDetailsModal';
+import { ActivateEmployeeModal } from './components/ActivateEmployeeModal';
+import { BulkUploadModal } from './components/BulkUploadModal';
 import { RolePermissionConfig } from './components/RolePermissionConfig';
 import { AISkillsGapWidget } from './components/AISkillsGapWidget';
 import { SmartNotificationPreview } from './components/SmartNotificationPreview';
 import { useEmployees } from '@/hooks/useEmployees';
+import { useEmployeeActivation } from '@/hooks/useEmployeeActivation';
 
 type TabType = 'onboarding' | 'permissions' | 'analytics';
-
-// Mock data - will be replaced with API calls
-const mockEmployees = [
-  {
-    id: '1',
-    number: 'EMP-001',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 234 567 8900',
-    cvUrl: '/documents/john-doe-cv.pdf',
-    stage: 'pending',
-    appliedDate: '2025-10-15',
-    reviewNotes: '',
-    position: 'Senior Developer',
-    experience: '5 years',
-    skills: ['React', 'TypeScript', 'Node.js'],
-    rating: 4,
-    location: 'San Francisco, CA',
-  },
-  {
-    id: '2',
-    number: 'EMP-002',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    phone: '+1 234 567 8901',
-    cvUrl: '/documents/jane-smith-cv.pdf',
-    stage: 'review',
-    appliedDate: '2025-10-12',
-    reviewNotes: 'Scheduled for interview on Oct 20',
-    position: 'Product Manager',
-    experience: '3 years',
-    skills: ['Agile', 'Scrum', 'Figma'],
-    rating: 5,
-    location: 'New York, NY',
-  },
-  {
-    id: '3',
-    number: 'EMP-003',
-    name: 'Mike Johnson',
-    email: 'mike.j@example.com',
-    phone: '+1 234 567 8902',
-    cvUrl: '/documents/mike-johnson-cv.pdf',
-    stage: 'accepted',
-    appliedDate: '2025-10-01',
-    reviewNotes: 'Great technical skills, hired as Senior Developer',
-    position: 'DevOps Engineer',
-    experience: '7 years',
-    skills: ['AWS', 'Docker', 'Kubernetes'],
-    rating: 5,
-    location: 'Austin, TX',
-  },
-  {
-    id: '4',
-    number: 'EMP-004',
-    name: 'Sarah Williams',
-    email: 'sarah.w@example.com',
-    phone: '+1 234 567 8903',
-    cvUrl: '/documents/sarah-cv.pdf',
-    stage: 'rejected',
-    appliedDate: '2025-10-08',
-    reviewNotes: 'Insufficient experience for the role',
-    position: 'Junior Designer',
-    experience: '1 year',
-    skills: ['Photoshop', 'Illustrator'],
-    rating: 2,
-    location: 'Chicago, IL',
-  },
-];
 
 function OnboardingPage() {
   // API Integration - Real data from database
@@ -92,10 +27,14 @@ function OnboardingPage() {
   } = useEmployees();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [employeeToActivate, setEmployeeToActivate] = useState<Employee | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [activeTab, setActiveTab] = useState<TabType>('onboarding');
+  
+  const { activateEmployee } = useEmployeeActivation();
 
   // Convert API employees to frontend format
   const employees = apiEmployees.map((emp: any) => ({
@@ -108,11 +47,15 @@ function OnboardingPage() {
     stage: emp.status,
     appliedDate: emp.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
     reviewNotes: emp.review_notes || '',
-    position: emp.job_title || emp.role || '',
+    position: emp.job_title || '',  // Designation (job title like "Senior Developer")
+    department: emp.department || '',  // Department (like "IT", "Engineering")
+    role: emp.role || 'employee',  // System role (Employee, Admin, Manager, Team Lead)
     experience: emp.experience || '',
     skills: emp.skills || [],
     rating: emp.ai_match_percentage ? Math.round(emp.ai_match_percentage / 20) : undefined,
     location: emp.location || '',
+    user_id: emp.user_id || null,
+    status: emp.status || 'pending',
   }));
 
   // Filter employees by search
@@ -216,6 +159,15 @@ function OnboardingPage() {
     console.log(`CV download initiated for ${name}`);
   };
 
+  const handleActivateEmployee = async (activationData: any) => {
+    try {
+      await activateEmployee(activationData);
+      setEmployeeToActivate(null);
+    } catch (error) {
+      console.error('Activation failed:', error);
+    }
+  };
+
   const handleUpdatePermissions = (employeeId: string, permissions: string[]) => {
     console.log(`Updating permissions for ${employeeId}:`, permissions);
     // In real implementation, this would call API
@@ -233,7 +185,7 @@ function OnboardingPage() {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit flex items-center justify-center">
+      <div className="w-full min-h-screen bg-[#F5F3F2] font-inter flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Loading employees from database...</p>
@@ -243,23 +195,23 @@ function OnboardingPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
+              <Link to="/" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900">
                 Dashboard
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Resources</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Resources</span>
             </div>
             
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-[#1A1A1A] text-3xl font-bold font-outfit leading-loose">
+                <h1 className="text-[#1A1A1A] text-3xl font-bold font-inter leading-loose">
                   Employee Onboarding
                 </h1>
                 <p className="text-gray-600 text-sm font-medium mt-1">
@@ -277,7 +229,7 @@ function OnboardingPage() {
               style={{ backgroundColor: '#161950' }}
             >
               <Users className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-outfit leading-normal">
+              <span className="text-white text-sm font-semibold font-inter leading-normal">
                 Staffing Plan
               </span>
             </button>
@@ -287,8 +239,18 @@ function OnboardingPage() {
               className="h-11 px-5 py-2 bg-white rounded-lg border border-gray-300 flex items-center gap-2.5 hover:bg-gray-50 transition-all"
             >
               <Filter className="w-5 h-5 text-gray-700" />
-              <span className="text-gray-700 text-sm font-medium font-outfit leading-normal">
+              <span className="text-gray-700 text-sm font-medium font-inter leading-normal">
                 {viewMode === 'kanban' ? 'List View' : 'Kanban View'}
+              </span>
+            </button>
+
+            <button 
+              onClick={() => setIsBulkUploadOpen(true)}
+              className="h-11 px-5 py-2 bg-purple-600 rounded-lg flex items-center gap-2.5 hover:bg-purple-700 transition-all shadow-lg"
+            >
+              <Upload className="w-5 h-5 text-white" />
+              <span className="text-white text-sm font-semibold font-inter leading-normal">
+                Bulk Upload CSV
               </span>
             </button>
 
@@ -298,7 +260,7 @@ function OnboardingPage() {
               style={{ backgroundColor: '#161950' }}
             >
               <Plus className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-outfit leading-normal">
+              <span className="text-white text-sm font-semibold font-inter leading-normal">
                 Add Employee CV
               </span>
             </button>
@@ -424,6 +386,7 @@ function OnboardingPage() {
             onStageChange={handleStageChange}
             onEmployeeClick={setSelectedEmployee}
             onDownloadCV={handleDownloadCV}
+            onActivateEmployee={setEmployeeToActivate}
           />
         ) : (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -460,6 +423,16 @@ function OnboardingPage() {
                       <td className="px-6 py-4 text-sm text-gray-600">{employee.appliedDate}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
+                          {employee.stage === 'accepted' && (
+                            <button
+                              onClick={() => setEmployeeToActivate(employee)}
+                              className="px-3 py-1.5 bg-gradient-to-r from-[#151950] to-[#1e2570] text-white rounded-lg hover:shadow-lg transition-all text-xs font-semibold flex items-center gap-1"
+                              title="Activate User Account"
+                            >
+                              <Power className="w-3.5 h-3.5" />
+                              Activate
+                            </button>
+                          )}
                           <button
                             onClick={() => setSelectedEmployee(employee)}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -488,19 +461,41 @@ function OnboardingPage() {
 
         {/* Role & Permission Configuration Section */}
         {activeTab === 'permissions' && (
-          <RolePermissionConfig
-            employees={employees}
-            onUpdatePermissions={handleUpdatePermissions}
-          />
+          <div className="space-y-4">
+            {/* Activated Employees Count Badge */}
+            {(() => {
+              const activatedEmployees = employees.filter((emp: any) => emp.status === 'active' && emp.user_id != null);
+              return activatedEmployees.length > 0 ? (
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
+                  <p className="text-sm font-semibold text-green-700 flex items-center gap-2 font-inter">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    Showing {activatedEmployees.length} activated employee{activatedEmployees.length !== 1 ? 's' : ''} with user accounts
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-2 rounded-lg border border-amber-200">
+                  <p className="text-sm font-semibold text-amber-700 flex items-center gap-2 font-inter">
+                    <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+                    No activated employees found. Activate employees from the Onboarding tab first.
+                  </p>
+                </div>
+              );
+            })()}
+            
+            <RolePermissionConfig
+              employees={employees.filter((emp: any) => emp.status === 'active' && emp.user_id != null)}
+              onUpdatePermissions={handleUpdatePermissions}
+            />
+          </div>
         )}
 
-        {/* AI Analytics Section */}
         {activeTab === 'analytics' && (
           <div className="space-y-6">
-            {/* AI Skills Gap Widget */}
-            <AISkillsGapWidget totalEmployees={employees.filter(e => e.stage === 'accepted').length} />
+            <AISkillsGapWidget 
+              totalEmployees={employees.filter(e => e.stage === 'accepted').length} 
+              employees={employees.filter(e => e.stage === 'accepted')} 
+            />
             
-            {/* Smart Notification Preview */}
             {employees.filter(e => e.stage === 'accepted').length > 0 && (
               <SmartNotificationPreview
                 employeeName={employees.filter(e => e.stage === 'accepted')[0]?.name || 'New Employee'}
@@ -519,6 +514,15 @@ function OnboardingPage() {
         onSubmit={handleAddEmployee}
       />
 
+      {/* Bulk Upload Modal */}
+      <BulkUploadModal
+        isOpen={isBulkUploadOpen}
+        onClose={() => setIsBulkUploadOpen(false)}
+        onSuccess={() => {
+          window.location.reload(); // Refresh to show newly imported employees
+        }}
+      />
+
       {/* Employee Details Modal */}
       <EmployeeDetailsModal
         employee={selectedEmployee}
@@ -526,6 +530,14 @@ function OnboardingPage() {
         onClose={() => setSelectedEmployee(null)}
         onStageChange={handleStageChange}
         onDownloadCV={handleDownloadCV}
+      />
+
+      {/* Activate Employee Modal */}
+      <ActivateEmployeeModal
+        employee={employeeToActivate}
+        isOpen={!!employeeToActivate}
+        onClose={() => setEmployeeToActivate(null)}
+        onActivate={handleActivateEmployee}
       />
     </div>
   );

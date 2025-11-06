@@ -4,6 +4,8 @@ import { AccountInformationForm } from './components/AccountInformationForm';
 import { RecentActivity } from './components/RecentActivity';
 import { useAccountDetailsPage } from '../useAccountDetailsPage';
 import { TabNavigation } from '../components/TabNavigation';
+import { AIHealthScoreWidget } from '../components/AIHealthScoreWidget';
+import { AIInsightsPanel } from '../components/AIInsightsPanel';
 
 function AccountDetailsPage() {
   const {
@@ -102,20 +104,36 @@ function AccountDetailsPage() {
         <AccountStatsCards stats={statsCards} />
 
         
-        <div className="flex gap-7 items-start justify-start w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-7 w-full">
           
-          <AccountInformationForm
-            formData={formData}
-            accountId={account.custom_id || account.account_id}
-            isEditing={isEditing}
-            isUpdating={isUpdating}
-            onFormChange={handleFormChange}
-            onSave={handleSaveChanges}
-            onCancel={handleEditToggle}
-          />
+          <div className="lg:col-span-2 space-y-7">
+            <AccountInformationForm
+              formData={formData}
+              accountId={account.custom_id || account.account_id}
+              isEditing={isEditing}
+              isUpdating={isUpdating}
+              onFormChange={handleFormChange}
+              onSave={handleSaveChanges}
+              onCancel={handleEditToggle}
+            />
+
+            
+            <AIInsightsPanel 
+              accountId={account.account_id} 
+              accountName={account.client_name}
+            />
+          </div>
 
           
-          <RecentActivity activities={recentActivity} />
+          <div className="space-y-7">
+            <AIHealthScoreWidget 
+              accountId={account.account_id}
+              initialScore={account.ai_health_score}
+              initialRiskLevel={account.risk_level}
+            />
+            
+            <RecentActivity activities={recentActivity} />
+          </div>
         </div>
       </div>
     </div>
