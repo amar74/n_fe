@@ -41,8 +41,8 @@ export function RecentActivity({ activities = [], isLoading = false }: RecentAct
         </div>
       ) : (
         <div className="self-stretch flex-1 flex flex-col justify-between items-start">
-          {activities.slice(0, 3).map((activity, index) => {
-          const isLast = index === activities.length - 1 || index === 2;
+          {activities?.slice(0, 3).map((activity, index) => {
+          const isLast = index === (activities?.length ?? 0) - 1 || index === 2;
           const color = activityColors[index] || '#16A34A';
 
           return (
