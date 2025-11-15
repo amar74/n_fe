@@ -3,8 +3,16 @@ import { z } from "zod";
 
 import { HTTPValidationError } from "./common";
 import { ValidationError } from "./common";
-import { AuthUserResponse } from "./common";
 
+const AuthUserResponse = z
+  .object({
+    id: z.string().uuid(),
+    short_id: z.string(),
+    org_id: z.union([z.string(), z.null()]).optional(),
+    role: z.union([z.string(), z.null()]),
+    email: z.string(),
+  })
+  .passthrough();
 const AdminCreateUserResponse = z
   .object({ message: z.string(), user: AuthUserResponse })
   .passthrough();
@@ -20,16 +28,18 @@ const AdminUser = z
 const AdminUserListResponse = z
   .object({ total_users: z.number().int(), users: z.array(AdminUser) })
   .passthrough();
-// temp solution by jhalak32
 const AdminCreateUserRequest = z
   .object({
     email: z.string(),
     password: z.string(),
+    name: z.union([z.string(), z.null()]).optional(),
     role: z.union([z.string(), z.null()]).optional().default("vendor"),
+    contact_number: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
 
 export const schemas = {
+  AuthUserResponse,
   AdminCreateUserResponse,
   AdminUser,
   AdminUserListResponse,
@@ -39,9 +49,8 @@ export const schemas = {
 const endpoints = makeApi([
   {
     method: "get",
-    path: "/admin/user_list",
+    path: "/api/admin/user_list",
     alias: "userList",
-    description: `Return total number of users and a paginated list of users.`,
     requestFormat: "json",
     parameters: [
       {
@@ -66,13 +75,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/admin/create_new_user",
+    path: "/api/admin/create_new_user",
     alias: "createNewUser",
-    description: `Create a new user (vendor) using Supabase SDK and mirror in local DB.
-
-- Creates user in Supabase Auth
-- Creates user in local database with specified role
-- Vendor will create organization themselves on first login`,
     requestFormat: "json",
     parameters: [
       {
@@ -91,6 +95,7 @@ const endpoints = makeApi([
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

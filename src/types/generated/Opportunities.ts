@@ -3,8 +3,50 @@ import { z } from "zod";
 
 import { HTTPValidationError } from "./common";
 import { ValidationError } from "./common";
-import { search } from "./common";
+import { stage } from "./common";
 
+const AgentFrequency = z.enum(["12h", "24h", "72h", "168h"]);
+const AgentStatus = z.enum(["active", "paused", "disabled"]);
+const OpportunityAgentCreate = z
+  .object({
+    name: z.string().max(255),
+    prompt: z.string(),
+    base_url: z.string().min(1).max(2083).url(),
+    frequency: AgentFrequency.optional(),
+    status: AgentStatus.optional(),
+    source_id: z.union([z.string(), z.null()]).optional(),
+    next_run_at: z.union([z.string(), z.null()]).optional(),
+  })
+  .passthrough();
+const OpportunityAgentResponse = z
+  .object({
+    name: z.string().max(255),
+    prompt: z.string(),
+    base_url: z.string().min(1).max(2083).url(),
+    frequency: AgentFrequency.optional(),
+    status: AgentStatus.optional(),
+    source_id: z.union([z.string(), z.null()]).optional(),
+    next_run_at: z.union([z.string(), z.null()]).optional(),
+    id: z.string().uuid(),
+    org_id: z.string().uuid(),
+    created_by: z.string().uuid(),
+    last_run_at: z.union([z.string(), z.null()]).optional(),
+    created_at: z.string().datetime({ offset: true }),
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+const OpportunityAgentUpdate = z
+  .object({
+    name: z.union([z.string(), z.null()]),
+    prompt: z.union([z.string(), z.null()]),
+    base_url: z.union([z.string(), z.null()]),
+    frequency: z.union([AgentFrequency, z.null()]),
+    status: z.union([AgentStatus, z.null()]),
+    source_id: z.union([z.string(), z.null()]),
+    next_run_at: z.union([z.string(), z.null()]),
+  })
+  .partial()
+  .passthrough();
 const OpportunityStage = z.enum([
   "lead",
   "qualification",
@@ -123,11 +165,110 @@ const OpportunityPipelineResponse = z
     average_time_in_stage: z.object({}).partial().passthrough(),
   })
   .passthrough();
+const SourceFrequency = z.enum(["daily", "weekly", "monthly", "manual"]);
+const SourceStatus = z.enum(["active", "paused", "archived"]);
+const OpportunitySourceCreate = z
+  .object({
+    name: z.string().max(255),
+    url: z.string().min(1).max(2083).url(),
+    category: z.union([z.string(), z.null()]).optional(),
+    frequency: SourceFrequency.optional(),
+    status: SourceStatus.optional(),
+    tags: z.union([z.array(z.string()), z.null()]).optional(),
+    notes: z.union([z.string(), z.null()]).optional(),
+    is_auto_discovery_enabled: z.boolean().optional().default(true),
+  })
+  .passthrough();
+const OpportunitySourceResponse = z
+  .object({
+    name: z.string().max(255),
+    url: z.string().min(1).max(2083).url(),
+    category: z.union([z.string(), z.null()]).optional(),
+    frequency: SourceFrequency.optional(),
+    status: SourceStatus.optional(),
+    tags: z.union([z.array(z.string()), z.null()]).optional(),
+    notes: z.union([z.string(), z.null()]).optional(),
+    is_auto_discovery_enabled: z.boolean().optional().default(true),
+    id: z.string().uuid(),
+    org_id: z.string().uuid(),
+    created_by: z.string().uuid(),
+    last_run_at: z.union([z.string(), z.null()]).optional(),
+    next_run_at: z.union([z.string(), z.null()]).optional(),
+    last_success_at: z.union([z.string(), z.null()]).optional(),
+    created_at: z.string().datetime({ offset: true }),
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+const OpportunitySourceUpdate = z
+  .object({
+    name: z.union([z.string(), z.null()]),
+    url: z.union([z.string(), z.null()]),
+    category: z.union([z.string(), z.null()]),
+    frequency: z.union([SourceFrequency, z.null()]),
+    status: z.union([SourceStatus, z.null()]),
+    tags: z.union([z.array(z.string()), z.null()]),
+    notes: z.union([z.string(), z.null()]),
+    is_auto_discovery_enabled: z.union([z.boolean(), z.null()]),
+  })
+  .partial()
+  .passthrough();
 const OpportunityStageUpdate = z
   .object({
     stage: OpportunityStage,
     notes: z.union([z.string(), z.null()]).optional(),
   })
+  .passthrough();
+const TempStatus = z.enum([
+  "pending_review",
+  "approved",
+  "rejected",
+  "promoted",
+]);
+const OpportunityTempResponse = z
+  .object({
+    project_title: z.string(),
+    client_name: z.union([z.string(), z.null()]).optional(),
+    location: z.union([z.string(), z.null()]).optional(),
+    budget_text: z.union([z.string(), z.null()]).optional(),
+    deadline: z.union([z.string(), z.null()]).optional(),
+    documents: z.union([z.array(z.string()), z.null()]).optional(),
+    tags: z.union([z.array(z.string()), z.null()]).optional(),
+    ai_summary: z.union([z.string(), z.null()]).optional(),
+    ai_metadata: z
+      .union([z.object({}).partial().passthrough(), z.null()])
+      .optional(),
+    raw_payload: z.object({}).partial().passthrough(),
+    match_score: z.union([z.number(), z.null()]).optional(),
+    risk_score: z.union([z.number(), z.null()]).optional(),
+    strategic_fit_score: z.union([z.number(), z.null()]).optional(),
+    reviewer_notes: z.union([z.string(), z.null()]).optional(),
+    id: z.string().uuid(),
+    org_id: z.string().uuid(),
+    source_id: z.union([z.string(), z.null()]).optional(),
+    history_id: z.union([z.string(), z.null()]).optional(),
+    reviewer_id: z.union([z.string(), z.null()]).optional(),
+    temp_identifier: z.string(),
+    status: TempStatus,
+    created_at: z.string().datetime({ offset: true }),
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+const OpportunityTempUpdate = z
+  .object({
+    status: z.union([TempStatus, z.null()]),
+    reviewer_notes: z.union([z.string(), z.null()]),
+    match_score: z.union([z.number(), z.null()]),
+    risk_score: z.union([z.number(), z.null()]),
+    strategic_fit_score: z.union([z.number(), z.null()]),
+    location: z.union([z.string(), z.null()]),
+    project_title: z.union([z.string(), z.null()]),
+    client_name: z.union([z.string(), z.null()]),
+    budget_text: z.union([z.string(), z.null()]),
+    deadline: z.union([z.string(), z.null()]),
+    tags: z.union([z.array(z.string()), z.null()]),
+    ai_summary: z.union([z.string(), z.null()]),
+  })
+  .partial()
   .passthrough();
 const OpportunityUpdate = z
   .object({
@@ -170,8 +311,38 @@ const OpportunitySearchRequest = z
     limit: z.number().int().gte(1).lte(100).optional().default(10),
   })
   .passthrough();
+const status = z.union([TempStatus, z.null()]).optional();
+const OpportunityTempCreate = z
+  .object({
+    project_title: z.string(),
+    client_name: z.union([z.string(), z.null()]).optional(),
+    location: z.union([z.string(), z.null()]).optional(),
+    budget_text: z.union([z.string(), z.null()]).optional(),
+    deadline: z.union([z.string(), z.null()]).optional(),
+    documents: z.union([z.array(z.string()), z.null()]).optional(),
+    tags: z.union([z.array(z.string()), z.null()]).optional(),
+    ai_summary: z.union([z.string(), z.null()]).optional(),
+    ai_metadata: z
+      .union([z.object({}).partial().passthrough(), z.null()])
+      .optional(),
+    raw_payload: z.object({}).partial().passthrough(),
+    match_score: z.union([z.number(), z.null()]).optional(),
+    risk_score: z.union([z.number(), z.null()]).optional(),
+    strategic_fit_score: z.union([z.number(), z.null()]).optional(),
+    reviewer_notes: z.union([z.string(), z.null()]).optional(),
+    source_id: z.union([z.string(), z.null()]).optional(),
+    history_id: z.union([z.string(), z.null()]).optional(),
+  })
+  .passthrough();
+const promote_temp_opportunity_api_opportunities_ingestion_temp__temp_id__promote_post_Body =
+  z.union([TempOpportunityPromoteRequest, z.null()]);
 
 export const schemas = {
+  AgentFrequency,
+  AgentStatus,
+  OpportunityAgentCreate,
+  OpportunityAgentResponse,
+  OpportunityAgentUpdate,
   OpportunityStage,
   RiskLevel,
   OpportunityCreate,
@@ -183,20 +354,28 @@ export const schemas = {
   OpportunityListResponse,
   OpportunityPipelineStage,
   OpportunityPipelineResponse,
+  SourceFrequency,
+  SourceStatus,
+  OpportunitySourceCreate,
+  OpportunitySourceResponse,
+  OpportunitySourceUpdate,
   OpportunityStageUpdate,
+  TempStatus,
+  OpportunityTempResponse,
+  OpportunityTempUpdate,
   OpportunityUpdate,
   OpportunityAnalytics,
   OpportunitySearchRequest,
+  status,
+  OpportunityTempCreate,
+  promote_temp_opportunity_api_opportunities_ingestion_temp__temp_id__promote_post_Body,
 };
 
 const endpoints = makeApi([
   {
     method: "post",
-    path: "/opportunities/",
-    alias: "create_opportunity_opportunities__post",
-    description: `Create a new opportunity.
-
-Requires &#x27;create&#x27; permission for opportunities.`,
+    path: "/api/opportunities/",
+    alias: "create_opportunity_api_opportunities__post",
     requestFormat: "json",
     parameters: [
       {
@@ -216,11 +395,8 @@ Requires &#x27;create&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/",
-    alias: "list_opportunities_opportunities__get",
-    description: `List opportunities with pagination and filtering.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+    path: "/api/opportunities/",
+    alias: "list_opportunities_api_opportunities__get",
     requestFormat: "json",
     parameters: [
       {
@@ -236,12 +412,12 @@ Requires &#x27;view&#x27; permission for opportunities.`,
       {
         name: "stage",
         type: "Query",
-        schema: search,
+        schema: stage,
       },
       {
         name: "search",
         type: "Query",
-        schema: search,
+        schema: stage,
       },
       {
         name: "sort_by",
@@ -269,17 +445,14 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/:opportunity_id",
-    alias: "get_opportunity_opportunities__opportunity_id__get",
-    description: `Get opportunity by ID.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+    path: "/api/opportunities/:opportunity_id",
+    alias: "get_opportunity_api_opportunities__opportunity_id__get",
     requestFormat: "json",
     parameters: [
       {
         name: "opportunity_id",
         type: "Path",
-        schema: z.string().uuid(),
+        schema: z.string(),
       },
     ],
     response: OpportunityResponse,
@@ -293,11 +466,8 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
   {
     method: "put",
-    path: "/opportunities/:opportunity_id",
-    alias: "update_opportunity_opportunities__opportunity_id__put",
-    description: `Update an existing opportunity.
-
-Requires &#x27;edit&#x27; permission for opportunities.`,
+    path: "/api/opportunities/:opportunity_id",
+    alias: "update_opportunity_api_opportunities__opportunity_id__put",
     requestFormat: "json",
     parameters: [
       {
@@ -322,11 +492,8 @@ Requires &#x27;edit&#x27; permission for opportunities.`,
   },
   {
     method: "delete",
-    path: "/opportunities/:opportunity_id",
-    alias: "delete_opportunity_opportunities__opportunity_id__delete",
-    description: `Delete an opportunity.
-
-Requires &#x27;delete&#x27; permission for opportunities.`,
+    path: "/api/opportunities/:opportunity_id",
+    alias: "delete_opportunity_api_opportunities__opportunity_id__delete",
     requestFormat: "json",
     parameters: [
       {
@@ -346,11 +513,9 @@ Requires &#x27;delete&#x27; permission for opportunities.`,
   },
   {
     method: "put",
-    path: "/opportunities/:opportunity_id/stage",
-    alias: "update_opportunity_stage_opportunities__opportunity_id__stage_put",
-    description: `Update opportunity stage.
-
-Requires &#x27;edit&#x27; permission for opportunities.`,
+    path: "/api/opportunities/:opportunity_id/stage",
+    alias:
+      "update_opportunity_stage_api_opportunities__opportunity_id__stage_put",
     requestFormat: "json",
     parameters: [
       {
@@ -375,11 +540,9 @@ Requires &#x27;edit&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/analytics/dashboard",
-    alias: "get_opportunity_analytics_opportunities_analytics_dashboard_get",
-    description: `Get opportunity analytics dashboard.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+    path: "/api/opportunities/analytics/dashboard",
+    alias:
+      "get_opportunity_analytics_api_opportunities_analytics_dashboard_get",
     requestFormat: "json",
     parameters: [
       {
@@ -399,21 +562,15 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/pipeline/view",
-    alias: "get_opportunity_pipeline_opportunities_pipeline_view_get",
-    description: `Get opportunity pipeline view.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+    path: "/api/opportunities/pipeline/view",
+    alias: "get_opportunity_pipeline_api_opportunities_pipeline_view_get",
     requestFormat: "json",
     response: OpportunityPipelineResponse,
   },
   {
     method: "post",
-    path: "/opportunities/search/ai",
-    alias: "search_opportunities_ai_opportunities_search_ai_post",
-    description: `AI-powered opportunity search.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+    path: "/api/opportunities/search/ai",
+    alias: "search_opportunities_ai_api_opportunities_search_ai_post",
     requestFormat: "json",
     parameters: [
       {
@@ -422,7 +579,7 @@ Requires &#x27;view&#x27; permission for opportunities.`,
         schema: OpportunitySearchRequest,
       },
     ],
-    response: z.array(OpportunityResponse),
+    response: z.array(OpportunitySearchResult),
     errors: [
       {
         status: 422,
@@ -433,12 +590,9 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/:opportunity_id/insights",
+    path: "/api/opportunities/:opportunity_id/insights",
     alias:
-      "get_opportunity_insights_opportunities__opportunity_id__insights_get",
-    description: `Generate AI insights for an opportunity.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+      "get_opportunity_insights_api_opportunities__opportunity_id__insights_get",
     requestFormat: "json",
     parameters: [
       {
@@ -458,12 +612,9 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/:opportunity_id/forecast",
+    path: "/api/opportunities/:opportunity_id/forecast",
     alias:
-      "get_opportunity_forecast_opportunities__opportunity_id__forecast_get",
-    description: `Get opportunity forecast.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+      "get_opportunity_forecast_api_opportunities__opportunity_id__forecast_get",
     requestFormat: "json",
     parameters: [
       {
@@ -492,17 +643,14 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/export/csv",
-    alias: "export_opportunities_csv_opportunities_export_csv_get",
-    description: `Export opportunities to CSV.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+    path: "/api/opportunities/export/csv",
+    alias: "export_opportunities_csv_api_opportunities_export_csv_get",
     requestFormat: "json",
     parameters: [
       {
         name: "stage",
         type: "Query",
-        schema: search,
+        schema: stage,
       },
     ],
     response: z.unknown(),
@@ -516,12 +664,9 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/by-account/:account_id",
+    path: "/api/opportunities/by-account/:account_id",
     alias:
-      "list_opportunities_by_account_opportunities_by_account__account_id__get",
-    description: `List opportunities for a specific account.
-
-Requires &#x27;view&#x27; permission for opportunities.`,
+      "list_opportunities_by_account_api_opportunities_by_account__account_id__get",
     requestFormat: "json",
     parameters: [
       {
@@ -542,7 +687,7 @@ Requires &#x27;view&#x27; permission for opportunities.`,
       {
         name: "stage",
         type: "Query",
-        schema: search,
+        schema: stage,
       },
     ],
     response: OpportunityListResponse,
@@ -556,13 +701,363 @@ Requires &#x27;view&#x27; permission for opportunities.`,
   },
   {
     method: "get",
-    path: "/opportunities/health/check",
-    alias: "health_check_opportunities_health_check_get",
-    description: `Health check endpoint for opportunities module.`,
+    path: "/api/opportunities/health/check",
+    alias: "health_check_api_opportunities_health_check_get",
     requestFormat: "json",
     response: z.unknown(),
   },
+  {
+    method: "get",
+    path: "/api/opportunities/ingestion/sources",
+    alias: "list_sources_api_opportunities_ingestion_sources_get",
+    requestFormat: "json",
+    response: z.array(OpportunitySourceResponse),
+  },
+  {
+    method: "post",
+    path: "/api/opportunities/ingestion/sources",
+    alias: "create_source_api_opportunities_ingestion_sources_post",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: OpportunitySourceCreate,
+      },
+    ],
+    response: OpportunitySourceResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "put",
+    path: "/api/opportunities/ingestion/sources/:source_id",
+    alias: "update_source_api_opportunities_ingestion_sources__source_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: OpportunitySourceUpdate,
+      },
+      {
+        name: "source_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: OpportunitySourceResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/ingestion/sources/:source_id",
+    alias:
+      "delete_source_api_opportunities_ingestion_sources__source_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "source_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/opportunities/ingestion/sources/:source_id/history",
+    alias:
+      "list_source_history_api_opportunities_ingestion_sources__source_id__history_get",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "source_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "limit",
+        type: "Query",
+        schema: z.number().int().gte(1).lte(200).optional().default(50),
+      },
+    ],
+    response: z.array(ScrapeHistoryResponse),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/opportunities/ingestion/history",
+    alias: "list_history_api_opportunities_ingestion_history_get",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "limit",
+        type: "Query",
+        schema: z.number().int().gte(1).lte(200).optional().default(50),
+      },
+    ],
+    response: z.array(ScrapeHistoryResponse),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/opportunities/ingestion/temp",
+    alias: "list_temp_opportunities_api_opportunities_ingestion_temp_get",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "status",
+        type: "Query",
+        schema: status,
+      },
+      {
+        name: "limit",
+        type: "Query",
+        schema: z.number().int().gte(1).lte(200).optional().default(100),
+      },
+    ],
+    response: z.array(OpportunityTempResponse),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/opportunities/ingestion/temp",
+    alias: "create_temp_opportunity_api_opportunities_ingestion_temp_post",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: OpportunityTempCreate,
+      },
+    ],
+    response: OpportunityTempResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "patch",
+    path: "/api/opportunities/ingestion/temp/:temp_id",
+    alias:
+      "update_temp_opportunity_api_opportunities_ingestion_temp__temp_id__patch",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: OpportunityTempUpdate,
+      },
+      {
+        name: "temp_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: OpportunityTempResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/opportunities/ingestion/temp/:temp_id/refresh",
+    alias:
+      "refresh_temp_opportunity_api_opportunities_ingestion_temp__temp_id__refresh_post",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "temp_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: OpportunityTempResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/opportunities/ingestion/temp/:temp_id/promote",
+    alias:
+      "promote_temp_opportunity_api_opportunities_ingestion_temp__temp_id__promote_post",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema:
+          promote_temp_opportunity_api_opportunities_ingestion_temp__temp_id__promote_post_Body,
+      },
+      {
+        name: "temp_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: OpportunityResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/opportunities/ingestion/agents",
+    alias: "list_agents_api_opportunities_ingestion_agents_get",
+    requestFormat: "json",
+    response: z.array(OpportunityAgentResponse),
+  },
+  {
+    method: "post",
+    path: "/api/opportunities/ingestion/agents",
+    alias: "create_agent_api_opportunities_ingestion_agents_post",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: OpportunityAgentCreate,
+      },
+    ],
+    response: OpportunityAgentResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "put",
+    path: "/api/opportunities/ingestion/agents/:agent_id",
+    alias: "update_agent_api_opportunities_ingestion_agents__agent_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: OpportunityAgentUpdate,
+      },
+      {
+        name: "agent_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: OpportunityAgentResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/ingestion/agents/:agent_id",
+    alias: "delete_agent_api_opportunities_ingestion_agents__agent_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "agent_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/opportunities/ingestion/agents/:agent_id/runs",
+    alias:
+      "list_agent_runs_api_opportunities_ingestion_agents__agent_id__runs_get",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "agent_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "limit",
+        type: "Query",
+        schema: z.number().int().gte(1).lte(200).optional().default(50),
+      },
+    ],
+    response: z.array(OpportunityAgentRunResponse),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

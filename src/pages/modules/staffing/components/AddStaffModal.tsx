@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Users, Calendar, Clock, DollarSign, Calculator, Save } from 'lucide-react';
+import { X, Users, Calendar, Clock, DollarSign, Calculator, Save, TrendingUp } from 'lucide-react';
 
 interface Employee {
   id: string;
@@ -14,6 +14,7 @@ interface Employee {
 interface ProjectInfo {
   projectName: string;
   durationMonths: number;
+  annualEscalationRate: number;
 }
 
 interface StaffMember {
@@ -28,6 +29,9 @@ interface StaffMember {
   hourlyRate: number;
   monthlyCost: number;
   totalCost: number;
+  initialEscalationRate?: number;
+  escalationRate?: number | null;
+  escalationEffectiveMonth?: number;
 }
 
 interface Props {
@@ -43,6 +47,22 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
   const [endMonth, setEndMonth] = useState(editingStaff?.endMonth || projectInfo.durationMonths);
   const [hoursPerWeek, setHoursPerWeek] = useState(editingStaff?.hoursPerWeek || 40);
   const [hourlyRate, setHourlyRate] = useState(editingStaff?.hourlyRate || employee?.hourlyRate || 100);
+  const [initialEscalationRate, setInitialEscalationRate] = useState<number>(
+    editingStaff?.initialEscalationRate ??
+      projectInfo.annualEscalationRate ??
+      0
+  );
+  const [enableUpdatedEscalation, setEnableUpdatedEscalation] = useState(
+    editingStaff?.escalationRate !== undefined &&
+      editingStaff?.escalationRate !== null &&
+      editingStaff?.escalationRate !== editingStaff?.initialEscalationRate
+  );
+  const [escalationRate, setEscalationRate] = useState<number | null>(
+    editingStaff?.escalationRate ?? null
+  );
+  const [escalationEffectiveMonth, setEscalationEffectiveMonth] = useState(
+    editingStaff?.escalationEffectiveMonth ?? startMonth
+  );
 
   // Calculate costs
   const weeks_per_month = 4.33;
@@ -54,6 +74,10 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
     e.preventDefault();
 
     if (!employee && !editingStaff) return;
+
+    const effectiveMonth = enableUpdatedEscalation
+      ? escalationEffectiveMonth
+      : startMonth;
 
     const staffData: StaffMember = {
       id: editingStaff?.id || Date.now(),
@@ -67,6 +91,9 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
       hourlyRate,
       monthlyCost: Math.round(monthly_cost * 100) / 100,
       totalCost: Math.round(total_cost * 100) / 100,
+      initialEscalationRate,
+      escalationRate: enableUpdatedEscalation ? escalationRate ?? initialEscalationRate : null,
+      escalationEffectiveMonth: enableUpdatedEscalation ? effectiveMonth : startMonth,
     };
 
     onSave(staffData);
@@ -220,6 +247,90 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
               />
               <p className="text-xs text-gray-500 mt-1">Billable rate per hour</p>
             </div>
+
+        {/* Escalation Settings */}
+        <div className="col-span-2 p-5 rounded-xl border-2 border-blue-100 bg-blue-50/60">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-600">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-gray-900">Escalation Settings</h3>
+              <p className="text-xs text-gray-600">
+                Base escalation defaults to the project rate ({projectInfo.annualEscalationRate}%)
+                but can be overridden per employee.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-2">
+                Base Escalation %
+              </label>
+              <input
+                type="number"
+                value={initialEscalationRate}
+                min={0}
+                step={0.1}
+                onChange={(e) => setInitialEscalationRate(Number(e.target.value))}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm font-medium"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Applied from month {startMonth}. Leave empty to inherit project rate.
+              </p>
+            </div>
+
+            <div className="md:col-span-2 flex flex-col gap-3">
+              <label className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  checked={enableUpdatedEscalation}
+                  onChange={(e) => setEnableUpdatedEscalation(e.target.checked)}
+                />
+                Apply a different escalation rate mid-project
+              </label>
+
+              {enableUpdatedEscalation && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 mb-2">
+                      Updated Escalation %
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      step={0.1}
+                      value={escalationRate ?? initialEscalationRate}
+                      onChange={(e) => setEscalationRate(Number(e.target.value))}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 mb-2">
+                      Effective From Month
+                    </label>
+                    <select
+                      value={escalationEffectiveMonth}
+                      onChange={(e) => setEscalationEffectiveMonth(Number(e.target.value))}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm font-medium"
+                    >
+                      {Array.from({ length: projectInfo.durationMonths }, (_, i) => i + 1).map((month) => (
+                        <option key={month} value={month}>
+                          Month {month}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      New rate applies from this month onward.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
           </div>
 
           {/* Cost Summary */}

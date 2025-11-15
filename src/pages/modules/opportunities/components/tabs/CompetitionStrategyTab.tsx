@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { FormEvent, memo, useMemo, useState } from 'react';
 import { AddButton } from './shared';
 import { TabProps } from './types';
 import { 
@@ -8,15 +8,130 @@ import {
   useCreateOpportunityStrategy 
 } from '@/hooks/useOpportunityTabs';
 import { Competitor, Strategy } from '@/types/opportunityTabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const CompetitionStrategyTab = memo(({ opportunity }: TabProps) => {
   const { data: competitors = [], isLoading: competitorsLoading } = useOpportunityCompetitors(opportunity?.id || '');
   const { data: strategies = [], isLoading: strategiesLoading } = useOpportunityStrategies(opportunity?.id || '');
   const createCompetitorMutation = useCreateOpportunityCompetitor(opportunity?.id || '');
   const createStrategyMutation = useCreateOpportunityStrategy(opportunity?.id || '');
+  const { toast } = useToast();
+
+  const competitorInitialState = useMemo(
+    () => ({
+      companyName: '',
+      threatLevel: 'Medium' as 'High' | 'Medium' | 'Low',
+      strengths: '',
+      weaknesses: '',
+    }),
+    []
+  );
+
+  const strategyInitialState = useMemo(
+    () => ({
+      strategyText: '',
+      priority: 3,
+    }),
+    []
+  );
+
+  const [isCompetitorModalOpen, setIsCompetitorModalOpen] = useState(false);
+  const [competitorForm, setCompetitorForm] = useState(competitorInitialState);
+
+  const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false);
+  const [strategyForm, setStrategyForm] = useState(strategyInitialState);
 
   const handleAddCompetitor = () => {
-    console.log('Add competitor clicked');
+    setCompetitorForm(competitorInitialState);
+    setIsCompetitorModalOpen(true);
+  };
+
+  const handleAddStrategy = () => {
+    setStrategyForm(strategyInitialState);
+    setIsStrategyModalOpen(true);
+  };
+
+  const handleSubmitCompetitor = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!opportunity?.id) return;
+
+    const normalizedStrengths = competitorForm.strengths
+      .split('\n')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const normalizedWeaknesses = competitorForm.weaknesses
+      .split('\n')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    if (!competitorForm.companyName.trim()) {
+      toast({
+        title: 'Missing company name',
+        description: 'Please provide the competitor company name before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await createCompetitorMutation.mutateAsync({
+        company_name: competitorForm.companyName.trim(),
+        threat_level: competitorForm.threatLevel,
+        strengths: normalizedStrengths,
+        weaknesses: normalizedWeaknesses,
+      });
+      setIsCompetitorModalOpen(false);
+      setCompetitorForm(competitorInitialState);
+    } catch (error: any) {
+      toast({
+        title: 'Failed to add competitor',
+        description: error?.response?.data?.detail || 'Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSubmitStrategy = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!opportunity?.id) return;
+
+    if (!strategyForm.strategyText.trim()) {
+      toast({
+        title: 'Missing strategy detail',
+        description: 'Please describe the win strategy before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      await createStrategyMutation.mutateAsync({
+        strategy_text: strategyForm.strategyText.trim(),
+        priority: strategyForm.priority,
+      });
+      setIsStrategyModalOpen(false);
+      setStrategyForm(strategyInitialState);
+    } catch (error: any) {
+      toast({
+        title: 'Failed to add strategy',
+        description: error?.response?.data?.detail || 'Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (competitorsLoading || strategiesLoading) {
@@ -50,6 +165,11 @@ const CompetitionStrategyTab = memo(({ opportunity }: TabProps) => {
         </div>
         
         <div className="px-6 pb-3 flex flex-col justify-start items-start">
+          {competitors.length === 0 && (
+            <div className="w-full p-6 bg-stone-50 rounded-[20px] text-sm text-gray-500">
+              No competitors captured yet. Use “Add New” to document competitive insights.
+            </div>
+          )}
           {competitors.map((competitor: Competitor, index: number) => (
             <div key={competitor.id || index} className="w-full p-6 bg-stone-50 rounded-[20px] flex flex-col justify-start items-start gap-5">
               <div className="w-full flex flex-col justify-start items-start gap-6">
@@ -107,9 +227,17 @@ const CompetitionStrategyTab = memo(({ opportunity }: TabProps) => {
       </div>
 
       <div className="mt-6 mb-6 p-6 bg-white rounded-2xl border border-indigo-600 flex flex-col justify-center items-start gap-5">
-        <div className="text-lg font-semibold text-gray-900">Win Strategy</div>
+        <div className="w-full flex items-center justify-between gap-3">
+          <div className="text-lg font-semibold text-gray-900">Win Strategy</div>
+          <AddButton onClick={handleAddStrategy}>Add Strategy</AddButton>
+        </div>
         <div className="h-px bg-black/10"></div>
         
+        {strategies.length === 0 && (
+          <div className="text-sm text-gray-500">
+            Capture the strategic moves that position us ahead of competitors.
+          </div>
+        )}
         {strategies.map((strategy: Strategy, index: number) => (
           <div key={strategy.id || index} className="inline-flex justify-start items-center gap-3.5">
             <div className="relative">
@@ -121,6 +249,162 @@ const CompetitionStrategyTab = memo(({ opportunity }: TabProps) => {
           </div>
         ))}
       </div>
+
+      <Dialog open={isCompetitorModalOpen} onOpenChange={setIsCompetitorModalOpen}>
+        <DialogContent className="max-w-2xl border border-indigo-100 bg-white/95 shadow-2xl backdrop-blur-md">
+          <DialogHeader>
+            <DialogDescription asChild>
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.3em] text-indigo-500">Competitive Intelligence</p>
+                <DialogTitle className="text-2xl font-semibold text-gray-900">
+                  Add Competitor Insight
+                </DialogTitle>
+                <p className="text-sm text-gray-500">
+                  Capture market positioning, strengths, and risks for this opportunity.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmitCompetitor} className="space-y-6 font-inter">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase text-gray-500 tracking-wider">Company Name</Label>
+                <Input
+                  placeholder="MysticHeaven Consulting"
+                  value={competitorForm.companyName}
+                  onChange={(event) =>
+                    setCompetitorForm((prev) => ({ ...prev, companyName: event.target.value }))
+                  }
+                  className="h-11 rounded-lg border-gray-200 bg-white text-sm"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs uppercase text-gray-500 tracking-wider">Threat Level</Label>
+                <Select
+                  value={competitorForm.threatLevel}
+                  onValueChange={(value: 'High' | 'Medium' | 'Low') =>
+                    setCompetitorForm((prev) => ({ ...prev, threatLevel: value }))
+                  }
+                >
+                  <SelectTrigger className="h-11 rounded-lg border-gray-200 bg-white text-sm">
+                    <SelectValue placeholder="Select threat level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="High">High Threat</SelectItem>
+                    <SelectItem value="Medium">Medium Threat</SelectItem>
+                    <SelectItem value="Low">Low Threat</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-gray-500 tracking-wider">Strengths</Label>
+              <Textarea
+                placeholder="List each strength on a new line"
+                value={competitorForm.strengths}
+                onChange={(event) =>
+                  setCompetitorForm((prev) => ({ ...prev, strengths: event.target.value }))
+                }
+                rows={4}
+                className="rounded-lg border-gray-200 bg-white text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-gray-500 tracking-wider">Weaknesses</Label>
+              <Textarea
+                placeholder="List each weakness on a new line"
+                value={competitorForm.weaknesses}
+                onChange={(event) =>
+                  setCompetitorForm((prev) => ({ ...prev, weaknesses: event.target.value }))
+                }
+                rows={4}
+                className="rounded-lg border-gray-200 bg-white text-sm leading-relaxed"
+              />
+            </div>
+
+            <DialogFooter className="mt-6 flex items-center justify-between">
+              <Button type="button" variant="outline" onClick={() => setIsCompetitorModalOpen(false)} className="h-11 px-5">
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createCompetitorMutation.isPending}
+                className="h-11 rounded-lg bg-indigo-950 px-6 text-sm font-semibold text-white shadow-lg hover:bg-indigo-900"
+              >
+                {createCompetitorMutation.isPending ? 'Saving...' : 'Save Competitor'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isStrategyModalOpen} onOpenChange={setIsStrategyModalOpen}>
+        <DialogContent className="max-w-xl border border-emerald-100 bg-white/95 shadow-2xl backdrop-blur-md">
+          <DialogHeader>
+            <DialogDescription asChild>
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.3em] text-emerald-500">Win Strategy</p>
+                <DialogTitle className="text-2xl font-semibold text-gray-900">
+                  Add Strategic Play
+                </DialogTitle>
+                <p className="text-sm text-gray-500">
+                  Document the strategic actions and prioritise them for the pursuit team.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmitStrategy} className="space-y-6 font-inter">
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-gray-500 tracking-wider">Strategy Detail</Label>
+              <Textarea
+                placeholder="Leverage Mystic-Heaven style executive briefings to secure sponsorship..."
+                value={strategyForm.strategyText}
+                onChange={(event) =>
+                  setStrategyForm((prev) => ({ ...prev, strategyText: event.target.value }))
+                }
+                rows={4}
+                className="rounded-lg border-gray-200 bg-white text-sm leading-relaxed"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-gray-500 tracking-wider">Priority (1-10)</Label>
+              <Input
+                type="number"
+                min={1}
+                max={10}
+                value={strategyForm.priority}
+                onChange={(event) =>
+                  setStrategyForm((prev) => ({
+                    ...prev,
+                    priority: Number(event.target.value) || 1,
+                  }))
+                }
+                className="h-11 rounded-lg border-gray-200 bg-white text-sm"
+              />
+            </div>
+
+            <DialogFooter className="mt-6 flex items-center justify-between">
+              <Button type="button" variant="outline" onClick={() => setIsStrategyModalOpen(false)} className="h-11 px-5">
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createStrategyMutation.isPending}
+                className="h-11 rounded-lg bg-emerald-600 px-6 text-sm font-semibold text-white shadow-lg hover:bg-emerald-500"
+              >
+                {createStrategyMutation.isPending ? 'Saving...' : 'Save Strategy'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 });

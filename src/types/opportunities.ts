@@ -170,4 +170,6 @@ export interface OpportunityListParams {
   stage?: string;
   risk_level?: string;
   search?: string;
+  sort_by?: string;
+  sort_order?: 'asc' | 'desc';
 }

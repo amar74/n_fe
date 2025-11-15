@@ -27,7 +27,7 @@ function OpportunitiesPage() {
           <div className="flex items-start gap-3">
             
             <button 
-              className="h-11 px-5 py-2 bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg flex items-center gap-2.5 hover:from-slate-900 hover:to-black transition-all shadow-lg"
+              className="group h-10 bg-[#161950] outline outline-1 outline-offset-[-1px] outline-indigo-950 inline-flex items-center gap-2.5 rounded-xl border border-[#161950] px-4 py-2 text-xs font-semibold uppercase tracking-wide shadow-sm transition text-white hover:text-white"
             >
               <Plus className="w-5 h-5 text-white" />
               <span className="text-white text-sm font-semibold font-inter leading-normal">Create Opportunity</span>
@@ -84,7 +84,7 @@ function OpportunitiesPage() {
                 Get started by creating your first opportunity. Track and manage your sales pipeline effectively.
               </p>
             </div>
-            <button className="mt-4 h-11 px-6 py-2 bg-gradient-to-r from-slate-800 to-slate-900 rounded-lg flex items-center gap-2 hover:from-slate-900 hover:to-black transition-all shadow-lg">
+            <button className="mt-4 h-11 px-6 py-2 bg-[#161950] rounded-lg flex items-center gap-2 hover:bg-[#0f1440] transition-all shadow-lg">
               <Plus className="w-5 h-5 text-white" />
               <span className="text-white text-sm font-semibold font-inter">Create Your First Opportunity</span>
             </button>

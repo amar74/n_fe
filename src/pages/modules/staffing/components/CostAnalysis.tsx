@@ -17,6 +17,12 @@ interface StaffMember {
   totalCost: number;
   hourlyRate: number;
   hoursPerWeek: number;
+  monthlyCost?: number;
+  startMonth: number;
+  endMonth: number;
+  initialEscalationRate?: number;
+  escalationRate?: number | null;
+  escalationEffectiveMonth?: number;
 }
 
 interface Props {
@@ -40,18 +46,49 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
   const [aiInsights, setAiInsights] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
 
-  // Calculate yearly breakdown with escalation
   const calculateYearlyBreakdown = (): YearlyBreakdown[] => {
-    const years = Math.ceil(projectInfo.durationMonths / 12);
+    const durationMonths = projectInfo.durationMonths;
+    if (durationMonths <= 0) {
+      return [];
+    }
+
+    const monthlyLabor = Array(durationMonths).fill(0);
+
+    staffMembers.forEach((staff) => {
+      const baseMonthlyCost = staff.monthlyCost ?? 0;
+      if (baseMonthlyCost <= 0) return;
+
+      const startMonth = Math.max(1, staff.startMonth);
+      const endMonth = Math.min(durationMonths, staff.endMonth);
+      if (endMonth < startMonth) return;
+
+      const baseEscalation =
+        staff.initialEscalationRate ?? projectInfo.annualEscalationRate ?? 0;
+      const updatedEscalation =
+        staff.escalationRate ?? baseEscalation;
+      let effectiveMonth =
+        staff.escalationEffectiveMonth ?? staff.startMonth ?? startMonth;
+      if (effectiveMonth < startMonth) effectiveMonth = startMonth;
+
+      for (let month = startMonth; month <= endMonth; month++) {
+        const yearsCompleted = Math.floor((month - 1) / 12);
+        const rateForMonth = month < effectiveMonth ? baseEscalation : updatedEscalation;
+        const multiplier = Math.pow(1 + rateForMonth / 100, yearsCompleted);
+        monthlyLabor[month - 1] += baseMonthlyCost * multiplier;
+      }
+    });
+
+    const years = Math.max(1, Math.ceil(durationMonths / 12));
     const breakdown: YearlyBreakdown[] = [];
-    const baseLaborCost = staffMembers.reduce((sum, staff) => sum + staff.totalCost, 0);
-    const monthlyLaborCost = baseLaborCost / projectInfo.durationMonths;
 
     for (let year = 1; year <= years; year++) {
-      const monthsInYear = Math.min(12, projectInfo.durationMonths - ((year - 1) * 12));
-      const escalationMultiplier = Math.pow(1 + (projectInfo.annualEscalationRate / 100), year - 1);
-      
-      const laborCost = monthlyLaborCost * monthsInYear * escalationMultiplier;
+      const startIndex = (year - 1) * 12;
+      const endIndex = Math.min(year * 12, durationMonths);
+      if (startIndex >= endIndex) break;
+
+      const laborCost = monthlyLabor
+        .slice(startIndex, endIndex)
+        .reduce((sum, value) => sum + value, 0);
       const overhead = laborCost * (projectInfo.overheadRate / 100);
       const totalCost = laborCost + overhead;
       const profit = totalCost * (projectInfo.profitMargin / 100);
@@ -63,7 +100,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         overhead,
         totalCost,
         profit,
-        totalPrice
+        totalPrice,
       });
     }
 

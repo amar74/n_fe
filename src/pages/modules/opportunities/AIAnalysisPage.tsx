@@ -184,7 +184,7 @@ function AIAnalysisPage() {
           <div className="flex items-center gap-3">
             
             <button 
-              className="h-10 px-4 py-2.5 bg-[#4338CA] rounded-lg flex items-center gap-2 hover:bg-[#3730A3] transition-all shadow-sm"
+              className="h-10 px-4 py-2.5 bg-[#161950] rounded-lg flex items-center gap-2 hover:bg-[#0f1440] transition-all shadow-sm"
             >
               <Plus className="w-5 h-5 text-white stroke-[2]" />
               <span className="text-white text-sm font-semibold font-['Inter']">Create Opportunity</span>
@@ -206,7 +206,7 @@ function AIAnalysisPage() {
           {isLoading && (
             <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg p-12 flex items-center justify-center">
               <div className="flex items-center gap-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4338CA]"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#161950]"></div>
                 <span className="text-[#374151] text-lg font-medium">Loading AI analysis data...</span>
               </div>
             </div>
@@ -244,7 +244,7 @@ function AIAnalysisPage() {
                   </p>
                   <Link
                     to="/module/opportunities?tab=source"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#4338CA] text-white rounded-xl font-semibold hover:bg-[#3730A3] transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#161950] text-white rounded-xl font-semibold hover:bg-[#0f1440] transition-colors"
                   >
                     <Plus className="w-5 h-5" />
                     Create Opportunity
@@ -264,7 +264,7 @@ function AIAnalysisPage() {
                   </p>
                   <Link
                     to="/module/opportunities?tab=source"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#4338CA] text-white rounded-xl font-semibold hover:bg-[#3730A3] transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#161950] text-white rounded-xl font-semibold hover:bg-[#0f1440] transition-colors"
                   >
                     <Plus className="w-5 h-5" />
                     Back to Opportunities

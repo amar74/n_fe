@@ -1,9 +1,9 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.0.3",
   "info": {
-    "title": "Megapolis API",
-    "version": "1.0.0",
-    "description": "API for Megapolis application"
+    "title": "Megapolis Finance API",
+    "version": "0.1.0",
+    "description": "Finance module endpoints covering dashboard and planning experiences."
   },
   "servers": [
     {
@@ -12,46 +12,30 @@
     }
   ],
   "paths": {
-    "/users": {
+    "/api/v1/finance/dashboard/summary": {
       "get": {
-        "summary": "Get all users",
-        "operationId": "getUsers",
+        "summary": "Finance dashboard summary",
+        "tags": ["Finance Dashboard"],
+        "operationId": "finance_getDashboardSummary",
+        "parameters": [
+          {
+            "name": "business_unit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["firmwide", "business_unit_a", "business_unit_b"]
+            },
+            "description": "Business unit filter. Defaults to firmwide view."
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "Dashboard summary payload",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a new user",
-        "operationId": "createUser",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "User created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/FinanceDashboardSummaryResponse"
                 }
               }
             }
@@ -59,85 +43,130 @@
         }
       }
     },
-    "/users/{id}": {
+    "/api/v1/finance/dashboard/overhead": {
       "get": {
-        "summary": "Get user by ID",
-        "operationId": "getUserById",
+        "summary": "Overhead spend by account group",
+        "tags": ["Finance Dashboard"],
+        "operationId": "finance_getOverheadByAccountGroup",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
+            "name": "business_unit",
+            "in": "query",
+            "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": ["firmwide", "business_unit_a", "business_unit_b"]
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Successful response",
+            "description": "Overhead spend results",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/FinanceOverheadResponse"
                 }
               }
             }
           }
         }
-      },
-      "patch": {
-        "summary": "Update user",
-        "operationId": "updateUser",
+      }
+    },
+    "/api/v1/finance/dashboard/bookings": {
+      "get": {
+        "summary": "Bookings vs plan by client",
+        "tags": ["Finance Dashboard"],
+        "operationId": "finance_getBookingsProgress",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
+            "name": "business_unit",
+            "in": "query",
+            "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": ["firmwide", "business_unit_a", "business_unit_b"]
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUserRequest"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "User updated successfully",
+            "description": "Bookings attainment data",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/FinanceBookingsResponse"
                 }
               }
             }
           }
         }
-      },
-      "delete": {
-        "summary": "Delete user",
-        "operationId": "deleteUser",
+      }
+    },
+    "/api/v1/finance/dashboard/trends": {
+      "get": {
+        "summary": "Year-over-year trends",
+        "tags": ["Finance Dashboard"],
+        "operationId": "finance_getTrends",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "required": true,
+            "name": "business_unit",
+            "in": "query",
+            "required": false,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": ["firmwide", "business_unit_a", "business_unit_b"]
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "User deleted successfully"
+          "200": {
+            "description": "Historical trend metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinanceTrendResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/finance/planning/annual": {
+      "get": {
+        "summary": "Annual planning snapshot",
+        "tags": ["Finance Planning"],
+        "operationId": "finance_getAnnualPlanningData",
+        "responses": {
+          "200": {
+            "description": "Annual planning payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancePlanningAnnualResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/finance/planning/scenarios": {
+      "get": {
+        "summary": "Scenario planning snapshot",
+        "tags": ["Finance Planning"],
+        "operationId": "finance_getScenarioPlanningData",
+        "responses": {
+          "200": {
+            "description": "Scenario planning payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancePlanningScenarioResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -145,56 +174,606 @@
   },
   "components": {
     "schemas": {
-      "User": {
+      "FinanceDashboardMetric": {
         "type": "object",
+        "required": ["label", "value"],
         "properties": {
-          "id": {
+          "label": {
             "type": "string"
           },
-          "email": {
-            "type": "string",
-            "format": "email"
+          "value": {
+            "type": "number",
+            "format": "double"
           },
-          "name": {
+          "formatted": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
+          "trendPercent": {
+            "type": "number",
+            "format": "double"
           },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
+          "trendLabel": {
+            "type": "string"
           }
-        },
-        "required": ["id", "email", "name", "createdAt", "updatedAt"]
+        }
       },
-      "CreateUserRequest": {
+      "FinanceDashboardSummaryResponse": {
         "type": "object",
+        "required": ["period", "primaryMetrics", "kpiProgress", "aiHighlights", "businessUnits", "receivables"],
         "properties": {
-          "email": {
+          "period": {
             "type": "string",
-            "format": "email"
+            "description": "ISO date or year-month boundary for the snapshot."
           },
-          "name": {
-            "type": "string"
+          "primaryMetrics": {
+            "type": "object",
+            "required": ["netRevenueYtd", "operatingIncomeCurrent", "cashPosition", "droDays"],
+            "properties": {
+              "netRevenueYtd": {
+                "$ref": "#/components/schemas/FinanceDashboardMetric"
+              },
+              "operatingIncomeCurrent": {
+                "$ref": "#/components/schemas/FinanceDashboardMetric"
+              },
+              "cashPosition": {
+                "$ref": "#/components/schemas/FinanceDashboardMetric"
+              },
+              "droDays": {
+                "$ref": "#/components/schemas/FinanceDashboardMetric"
+              }
+            }
           },
-          "password": {
-            "type": "string",
-            "minLength": 6
+          "kpiProgress": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "value", "percentComplete"],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                },
+                "percentComplete": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "target": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          },
+          "aiHighlights": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["title", "tone", "detail"],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "tone": {
+                  "type": "string",
+                  "enum": ["positive", "warning", "critical"]
+                },
+                "detail": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "businessUnits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "netRevenueSharePercent", "netRevenue", "operatingIncome"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "netRevenueSharePercent": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "netRevenue": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "operatingIncome": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          },
+          "receivables": {
+            "type": "object",
+            "required": ["dro", "dbo", "duo", "insight"],
+            "properties": {
+              "dro": {
+                "type": "number",
+                "format": "double"
+              },
+              "dbo": {
+                "type": "number",
+                "format": "double"
+              },
+              "duo": {
+                "type": "number",
+                "format": "double"
+              },
+              "insight": {
+                "type": "string"
+              }
+            }
           }
-        },
-        "required": ["email", "name", "password"]
+        }
       },
-      "UpdateUserRequest": {
+      "FinanceOverheadItem": {
         "type": "object",
+        "required": ["category", "ytdSpend", "monthlyAverage"],
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "name": {
+          "category": {
             "type": "string"
+          },
+          "ytdSpend": {
+            "type": "number",
+            "format": "double"
+          },
+          "monthlyAverage": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "FinanceOverheadResponse": {
+        "type": "object",
+        "required": ["totalYtd", "topCategory", "bottomCategory", "categories"],
+        "properties": {
+          "totalYtd": {
+            "type": "number",
+            "format": "double"
+          },
+          "topCategory": {
+            "$ref": "#/components/schemas/FinanceOverheadItem"
+          },
+          "bottomCategory": {
+            "$ref": "#/components/schemas/FinanceOverheadItem"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinanceOverheadItem"
+            }
+          }
+        }
+      },
+      "FinanceBookingRecord": {
+        "type": "object",
+        "required": ["clientName", "ytdActual", "planTotal", "progressPercent", "remaining"],
+        "properties": {
+          "clientName": {
+            "type": "string"
+          },
+          "ytdActual": {
+            "type": "number",
+            "format": "double"
+          },
+          "planTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "progressPercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "remaining": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "FinanceBookingsResponse": {
+        "type": "object",
+        "required": ["averageAttainmentPercent", "leader", "laggard", "records"],
+        "properties": {
+          "averageAttainmentPercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "leader": {
+            "$ref": "#/components/schemas/FinanceBookingRecord"
+          },
+          "laggard": {
+            "$ref": "#/components/schemas/FinanceBookingRecord"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinanceBookingRecord"
+            }
+          }
+        }
+      },
+      "FinanceTrendPoint": {
+        "type": "object",
+        "required": ["year", "value"],
+        "properties": {
+          "year": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "FinanceTrendMetric": {
+        "type": "object",
+        "required": ["metric", "points", "cagrPercent"],
+        "properties": {
+          "metric": {
+            "type": "string",
+            "description": "Metric identifier, e.g., net_revenue, gross_profit."
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinanceTrendPoint"
+            }
+          },
+          "cagrPercent": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "FinanceTrendResponse": {
+        "type": "object",
+        "required": ["metrics"],
+        "properties": {
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinanceTrendMetric"
+            }
+          }
+        }
+      },
+      "FinancePlanningMetric": {
+        "type": "object",
+        "required": ["label"],
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          },
+          "valueLabel": {
+            "type": "string"
+          },
+          "tone": {
+            "type": "string",
+            "enum": ["default", "positive", "negative", "accent"],
+            "default": "default"
+          }
+        }
+      },
+      "FinancePlanningAnnualResponse": {
+        "type": "object",
+        "required": ["budgetSummary", "revenueLines", "expenseLines", "businessUnits", "varianceThresholds", "reportingSchedule", "aiHighlights"],
+        "properties": {
+          "budgetSummary": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FinancePlanningMetric"
+            }
+          },
+          "revenueLines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "target", "variance"],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "variance": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          },
+          "expenseLines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "target", "variance"],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "variance": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          },
+          "businessUnits": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "revenue", "expense", "profit", "headcount", "marginPercent"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "revenue": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "expense": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "profit": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "headcount": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "marginPercent": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          },
+          "varianceThresholds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "valuePercent"],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "valuePercent": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          },
+          "reportingSchedule": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "value"],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "aiHighlights": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["title", "tone", "detail"],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "tone": {
+                  "type": "string",
+                  "enum": ["positive", "warning", "critical"]
+                },
+                "detail": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "FinancePlanningScenarioResponse": {
+        "type": "object",
+        "required": ["scenarios", "planningConfiguration", "projections", "kpiTargets", "timeline", "tasks", "aiPlaybook"],
+        "properties": {
+          "scenarios": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["key", "name", "description", "growthRates", "investmentLevel", "bonusThreshold", "riskLevel"],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "growthRates": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "format": "double"
+                  }
+                },
+                "investmentLevel": {
+                  "type": "string",
+                  "enum": ["Low", "Medium", "High"]
+                },
+                "bonusThreshold": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "riskLevel": {
+                  "type": "string",
+                  "enum": ["Low", "Medium", "High"]
+                },
+                "active": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          },
+          "planningConfiguration": {
+            "type": "object",
+            "required": ["planningPeriodYears", "baseYearRevenue", "baseYearExpenses"],
+            "properties": {
+              "planningPeriodYears": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "baseYearRevenue": {
+                "type": "number",
+                "format": "double"
+              },
+              "baseYearExpenses": {
+                "type": "number",
+                "format": "double"
+              }
+            }
+          },
+          "projections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["year", "revenue", "expenses", "profit", "marginPercent"],
+              "properties": {
+                "year": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "revenue": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "expenses": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "profit": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "marginPercent": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          },
+          "kpiTargets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["year", "kpis"],
+              "properties": {
+                "year": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "kpis": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["label", "value"],
+                    "properties": {
+                      "label": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["title", "date", "status"],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "date": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "status": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["title", "owner", "due", "status"],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "owner": {
+                  "type": "string"
+                },
+                "due": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["Planned", "In Progress", "Behind", "Completed"]
+                }
+              }
+            }
+          },
+          "aiPlaybook": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["title", "insight"],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "insight": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

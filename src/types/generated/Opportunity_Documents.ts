@@ -10,25 +10,22 @@ const OpportunityDocumentResponse = z
     original_name: z.string().min(1).max(255),
     file_type: z.string().min(1).max(100),
     file_size: z.number().int().gt(0),
-    category: z
-      .string()
-      .regex(
-        /^(Documents & Reports|Technical Drawings|Images & Photos|Presentations|Spreadsheets|Other)$/
-      ),
-    purpose: z
-      .string()
-      .regex(
-        /^(Project Reference|Proposal Content|Technical Specification|Client Communication|Internal Documentation|Other)$/
-      ),
+    category: z.string().min(1).max(100),
+    purpose: z.string().min(1).max(100),
     description: z.union([z.string(), z.null()]).optional(),
     tags: z.union([z.string(), z.null()]).optional(),
+    status: z.union([z.string(), z.null()]).optional().default("uploaded"),
+    is_available_for_proposal: z
+      .union([z.boolean(), z.null()])
+      .optional()
+      .default(true),
     id: z.string().uuid(),
     opportunity_id: z.string().uuid(),
     file_path: z.union([z.string(), z.null()]).optional(),
-    status: z.string(),
-    is_available_for_proposal: z.boolean(),
-    uploaded_at: z.string().datetime({ offset: true }),
-    updated_at: z.string().datetime({ offset: true }),
+    file_url: z.union([z.string(), z.null()]).optional(),
+    upload_date: z.union([z.string(), z.null()]).optional(),
+    uploaded_at: z.union([z.string(), z.null()]).optional(),
+    updated_at: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
 const OpportunityDocumentListResponse = z
@@ -54,28 +51,31 @@ const OpportunityDocumentCreate = z
     original_name: z.string().min(1).max(255),
     file_type: z.string().min(1).max(100),
     file_size: z.number().int().gt(0),
-    category: z
-      .string()
-      .regex(
-        /^(Documents & Reports|Technical Drawings|Images & Photos|Presentations|Spreadsheets|Other)$/
-      ),
-    purpose: z
-      .string()
-      .regex(
-        /^(Project Reference|Proposal Content|Technical Specification|Client Communication|Internal Documentation|Other)$/
-      ),
+    category: z.string().min(1).max(100),
+    purpose: z.string().min(1).max(100),
     description: z.union([z.string(), z.null()]).optional(),
     tags: z.union([z.string(), z.null()]).optional(),
+    status: z.union([z.string(), z.null()]).optional().default("uploaded"),
+    is_available_for_proposal: z
+      .union([z.boolean(), z.null()])
+      .optional()
+      .default(true),
   })
   .passthrough();
 const OpportunityDocumentUpdate = z
   .object({
     file_name: z.union([z.string(), z.null()]),
+    original_name: z.union([z.string(), z.null()]),
+    file_type: z.union([z.string(), z.null()]),
+    file_size: z.union([z.number(), z.null()]),
     category: z.union([z.string(), z.null()]),
     purpose: z.union([z.string(), z.null()]),
     description: z.union([z.string(), z.null()]),
     tags: z.union([z.string(), z.null()]),
+    status: z.union([z.string(), z.null()]),
     is_available_for_proposal: z.union([z.boolean(), z.null()]),
+    file_url: z.union([z.string(), z.null()]),
+    file_path: z.union([z.string(), z.null()]),
   })
   .partial()
   .passthrough();
@@ -266,7 +266,35 @@ const endpoints = makeApi([
       },
     ],
   },
+  {
+    method: "get",
+    path: "/api/opportunities/:opportunity_id/documents/:document_id/download",
+    alias:
+      "download_opportunity_document_api_opportunities__opportunity_id__documents__document_id__download_get",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "document_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.unknown(),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

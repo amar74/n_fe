@@ -34,10 +34,13 @@ export function useEmployeeActivation() {
       // Refetch the employee lists immediately
       await queryClient.refetchQueries({ queryKey: employeeKeys.list() });
 
-      toast.success(`User account created for ${data.email}`, {
-        description: data.email_sent 
-          ? 'Welcome email sent with login credentials' 
-          : 'Account created (email not sent)',
+      // Display Employee ID (username) prominently in the success message
+      const username = data.username || 'N/A';
+      const password = data.message?.match(/Password = (.+?)(?:\s|$)/)?.[1] || 'Check email';
+      
+      toast.success(`✅ Employee Activated: ${data.email}`, {
+        description: `Employee ID: ${username} | Password: ${password}${data.email_sent ? ' | Welcome email sent' : ''}`,
+        duration: 10000, // Show for 10 seconds so user can copy credentials
       });
     },
     onError: (err: any) => {

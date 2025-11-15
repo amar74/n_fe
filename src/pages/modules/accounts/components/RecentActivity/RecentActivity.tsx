@@ -12,7 +12,7 @@ export function RecentActivity({ activities = [], isLoading = false }: RecentAct
   const activityColors = ['#16A34A', '#2563EB', '#9333EA']; // green, blue, purple
 
   return (
-    <div className="w-full h-96 p-6 bg-white rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E5E7EB] flex flex-col justify-start items-start gap-3.5">
+    <div className="w-full h-full p-6 bg-white rounded-2xl outline outline-1 outline-offset-[-1px] outline-[#E5E7EB] flex flex-col justify-start items-start gap-3.5">
       
       <div className="inline-flex justify-start items-start gap-5">
         <div className="justify-start text-slate-800 text-lg font-semibold font-['Outfit'] leading-7">

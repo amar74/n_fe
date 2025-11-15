@@ -17,7 +17,7 @@ type OpportunitiesAnalyticsChartProps = {
 }
 
 const PROFESSIONAL_COLORS = {
-  primary: '#4338CA',
+  primary: '#161950',
   secondary: '#6366F1', 
   success: '#10B981',
   warning: '#F59E0B',
@@ -176,7 +176,7 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
       <div className="px-8 py-8 bg-gradient-to-r from-[#F8FAFC] via-[#F1F5F9] to-[#EEF2F7] border-b border-[#E5E7EB]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#4338CA] via-[#3730A3] to-[#312E81] rounded-2xl flex items-center justify-center shadow-xl">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#161950] via-[#0f1440] to-[#312E81] rounded-2xl flex items-center justify-center shadow-xl">
               <BarChart3 className="w-8 h-8 text-white" />
             </div>
             <div>
@@ -202,18 +202,18 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="group p-3 rounded-xl border border-[#D1D5DB] bg-white hover:bg-[#F8FAFC] hover:border-[#4338CA]/20 transition-all duration-200 disabled:opacity-50 shadow-sm hover:shadow-md"
+              className="group p-3 rounded-xl border border-[#D1D5DB] bg-white hover:bg-[#F8FAFC] hover:border-[#161950]/20 transition-all duration-200 disabled:opacity-50 shadow-sm hover:shadow-md"
             >
-              <RefreshCw className={`w-5 h-5 text-[#64748B] group-hover:text-[#4338CA] transition-colors ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-5 h-5 text-[#64748B] group-hover:text-[#161950] transition-colors ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={handleExport}
-              className="group p-3 rounded-xl border border-[#D1D5DB] bg-white hover:bg-[#F8FAFC] hover:border-[#4338CA]/20 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="group p-3 rounded-xl border border-[#D1D5DB] bg-white hover:bg-[#F8FAFC] hover:border-[#161950]/20 transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              <Download className="w-5 h-5 text-[#64748B] group-hover:text-[#4338CA] transition-colors" />
+              <Download className="w-5 h-5 text-[#64748B] group-hover:text-[#161950] transition-colors" />
             </button>
-            <button className="group p-3 rounded-xl border border-[#D1D5DB] bg-white hover:bg-[#F8FAFC] hover:border-[#4338CA]/20 transition-all duration-200 shadow-sm hover:shadow-md">
-              <Filter className="w-5 h-5 text-[#64748B] group-hover:text-[#4338CA] transition-colors" />
+            <button className="group p-3 rounded-xl border border-[#D1D5DB] bg-white hover:bg-[#F8FAFC] hover:border-[#161950]/20 transition-all duration-200 shadow-sm hover:shadow-md">
+              <Filter className="w-5 h-5 text-[#64748B] group-hover:text-[#161950] transition-colors" />
             </button>
           </div>
         </div>
@@ -231,7 +231,7 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {performanceData.map((metric, index) => (
-            <div key={index} className="group bg-white rounded-2xl p-6 border border-[#E2E8F0] hover:border-[#4338CA]/20 hover:shadow-xl transition-all duration-300 cursor-pointer">
+            <div key={index} className="group bg-white rounded-2xl p-6 border border-[#E2E8F0] hover:border-[#161950]/20 hover:shadow-xl transition-all duration-300 cursor-pointer">
               <div className="flex items-start justify-between mb-5">
                 <div className="w-14 h-14 bg-gradient-to-br from-white to-[#F8FAFC] rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 border border-[#E2E8F0]">
                   <metric.icon className="w-7 h-7" style={{ color: metric.color }} />
@@ -298,11 +298,11 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
               onClick={() => setActiveTab(tab.id)}
               className={`group flex items-center gap-3 px-6 py-4 rounded-xl font-semibold transition-all duration-200 border ${
                 activeTab === tab.id
-                  ? 'bg-[#4338CA] text-white border-[#4338CA] shadow-lg shadow-[#4338CA]/20'
-                  : 'text-[#64748B] hover:text-[#0F172A] hover:bg-white hover:border-[#4338CA]/20 border-[#E2E8F0] hover:shadow-md'
+                  ? 'bg-[#161950] text-white border-[#161950] shadow-lg shadow-[#161950]/20'
+                  : 'text-[#64748B] hover:text-[#0F172A] hover:bg-white hover:border-[#161950]/20 border-[#E2E8F0] hover:shadow-md'
               }`}
             >
-              <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-white' : 'text-[#64748B] group-hover:text-[#4338CA]'} transition-colors`} />
+              <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? 'text-white' : 'text-[#64748B] group-hover:text-[#161950]'} transition-colors`} />
               <div className="text-left">
                 <div className="font-bold text-sm">{tab.label}</div>
                 <div className={`text-xs ${activeTab === tab.id ? 'text-white/80' : 'text-[#94A3B8] group-hover:text-[#64748B]'} transition-colors`}>
@@ -324,7 +324,7 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
               <div className="bg-white rounded-2xl p-8 border border-[#E2E8F0] hover:shadow-xl transition-all duration-300 shadow-sm">
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#4338CA] to-[#3730A3] rounded-2xl flex items-center justify-center shadow-lg">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#161950] to-[#0f1440] rounded-2xl flex items-center justify-center shadow-lg">
                       <PieChartIcon className="w-7 h-7 text-white" />
                     </div>
                     <div>
@@ -538,7 +538,7 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
               
               <div className="bg-[#F9FAFB] rounded-xl p-6 border border-[#E5E7EB]">
                 <h4 className="text-[#111827] text-lg font-bold mb-6 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-[#4338CA]" />
+                  <Award className="w-5 h-5 text-[#161950]" />
                   Win Rate Trend
                 </h4>
                 <div className="h-64">
@@ -569,7 +569,7 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
               
               <div className="bg-[#F9FAFB] rounded-xl p-6 border border-[#E5E7EB]">
                 <h4 className="text-[#111827] text-lg font-bold mb-6 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-[#4338CA]" />
+                  <Target className="w-5 h-5 text-[#161950]" />
                   Conversion Funnel
                 </h4>
                 <div className="h-64">
@@ -599,7 +599,7 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
             
             <div className="bg-[#F9FAFB] rounded-xl p-6 border border-[#E5E7EB]">
               <h4 className="text-[#111827] text-lg font-bold mb-6 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-[#4338CA]" />
+                <DollarSign className="w-5 h-5 text-[#161950]" />
                 Revenue Trend Analysis
               </h4>
               <div className="h-80">
@@ -653,7 +653,7 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
             <p className="text-[#64748B] text-base font-medium mb-8 max-w-lg leading-relaxed">
               Create opportunities and track their progress to see comprehensive analytics and insights about your pipeline performance.
             </p>
-            <button className="px-8 py-4 bg-gradient-to-r from-[#4338CA] to-[#3730A3] text-white rounded-2xl font-bold font-['Inter'] tracking-tight hover:shadow-lg hover:shadow-[#4338CA]/20 transition-all duration-200">
+            <button className="px-8 py-4 bg-gradient-to-r from-[#161950] to-[#0f1440] text-white rounded-2xl font-bold font-['Inter'] tracking-tight hover:shadow-lg hover:shadow-[#161950]/20 transition-all duration-200">
               Create First Opportunity
             </button>
           </div>

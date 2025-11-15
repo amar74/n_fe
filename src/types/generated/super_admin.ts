@@ -20,7 +20,6 @@ const SuperAdminLoginRequest = z
   .object({ email: z.string().email(), password: z.string() })
   .passthrough();
 
-// working but need cleanup - rose11
 export const schemas = {
   SuperAdminDashboardResponse,
   SuperAdminLoginResponse,
@@ -30,11 +29,8 @@ export const schemas = {
 const endpoints = makeApi([
   {
     method: "post",
-    path: "/super-admin/login",
-    alias: "super_admin_login_super_admin_login_post",
-    description: `Super Admin login endpoint
-Note: For demo purposes, this uses a simple email check against SUPER_ADMIN_EMAILS
-In production, you should implement proper password hashing and verification`,
+    path: "/api/super-admin/login",
+    alias: "super_admin_login_api_super_admin_login_post",
     requestFormat: "json",
     parameters: [
       {
@@ -54,24 +50,20 @@ In production, you should implement proper password hashing and verification`,
   },
   {
     method: "get",
-    path: "/super-admin/dashboard",
-    alias: "get_super_admin_dashboard_super_admin_dashboard_get",
-    description: `Get Super Admin dashboard data
-Requires Super Admin authentication
-
-Returns statistics for vendors (users with role&#x3D;&#x27;vendor&#x27;)`,
+    path: "/api/super-admin/dashboard",
+    alias: "get_super_admin_dashboard_api_super_admin_dashboard_get",
     requestFormat: "json",
     response: SuperAdminDashboardResponse,
   },
   {
     method: "get",
-    path: "/super-admin/me",
-    alias: "get_super_admin_profile_super_admin_me_get",
-    description: `Get current Super Admin profile`,
+    path: "/api/super-admin/me",
+    alias: "get_super_admin_profile_api_super_admin_me_get",
     requestFormat: "json",
     response: z.unknown(),
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

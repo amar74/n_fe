@@ -32,6 +32,9 @@ export interface StaffMember {
   hourlyRate: number;
   monthlyCost?: number;
   totalCost?: number;
+  initialEscalationRate?: number;
+  escalationRate?: number | null;
+  escalationEffectiveMonth?: number;
 }
 
 export interface StaffPlan {
@@ -73,6 +76,9 @@ export interface StaffAllocation {
   hourly_rate: number;
   monthly_cost: number;
   total_cost: number;
+  initial_escalation_rate: number | null;
+  escalation_rate: number | null;
+  escalation_effective_month: number | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -223,6 +229,9 @@ export function useStaffPlanning() {
         end_month: number;
         hours_per_week: number;
         hourly_rate: number;
+        initial_escalation_rate?: number;
+        escalation_rate?: number | null;
+        escalation_effective_month?: number;
       };
     }) => {
       const response = await apiClient.post<StaffAllocation>(

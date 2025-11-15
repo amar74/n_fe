@@ -121,6 +121,37 @@ export const useCreateOpportunityDriver = (opportunityId: string) => {
   });
 };
 
+export const useUpdateOpportunityDriver = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ driverId, data }: { driverId: string; data: any }) =>
+      opportunitiesApi.updateOpportunityDriver(opportunityId, driverId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.drivers(opportunityId) });
+      toast.success('Driver updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update driver');
+    },
+  });
+};
+
+export const useDeleteOpportunityDriver = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (driverId: string) => opportunitiesApi.deleteOpportunityDriver(opportunityId, driverId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.drivers(opportunityId) });
+      toast.success('Driver deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete driver');
+    },
+  });
+};
+
 export const useOpportunityCompetitors = (opportunityId: string) => {
   return useQuery({
     queryKey: OPPORTUNITY_TAB_QUERY_KEYS.competitors(opportunityId),
@@ -145,6 +176,37 @@ export const useCreateOpportunityCompetitor = (opportunityId: string) => {
   });
 };
 
+export const useUpdateOpportunityCompetitor = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ competitorId, data }: { competitorId: string; data: any }) =>
+      opportunitiesApi.updateOpportunityCompetitor(opportunityId, competitorId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.competitors(opportunityId) });
+      toast.success('Competitor updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update competitor');
+    },
+  });
+};
+
+export const useDeleteOpportunityCompetitor = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (competitorId: string) => opportunitiesApi.deleteOpportunityCompetitor(opportunityId, competitorId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.competitors(opportunityId) });
+      toast.success('Competitor deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete competitor');
+    },
+  });
+};
+
 export const useOpportunityStrategies = (opportunityId: string) => {
   return useQuery({
     queryKey: OPPORTUNITY_TAB_QUERY_KEYS.strategies(opportunityId),
@@ -165,6 +227,37 @@ export const useCreateOpportunityStrategy = (opportunityId: string) => {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to add strategy');
+    },
+  });
+};
+
+export const useUpdateOpportunityStrategy = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ strategyId, data }: { strategyId: string; data: any }) =>
+      opportunitiesApi.updateOpportunityStrategy(opportunityId, strategyId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.strategies(opportunityId) });
+      toast.success('Strategy updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update strategy');
+    },
+  });
+};
+
+export const useDeleteOpportunityStrategy = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (strategyId: string) => opportunitiesApi.deleteOpportunityStrategy(opportunityId, strategyId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.strategies(opportunityId) });
+      toast.success('Strategy deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete strategy');
     },
   });
 };
@@ -217,6 +310,37 @@ export const useCreateOpportunityTeamMember = (opportunityId: string) => {
   });
 };
 
+export const useUpdateOpportunityTeamMember = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ memberId, data }: { memberId: string; data: any }) =>
+      opportunitiesApi.updateOpportunityTeamMember(opportunityId, memberId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.teamMembers(opportunityId) });
+      toast.success('Team member updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update team member');
+    },
+  });
+};
+
+export const useDeleteOpportunityTeamMember = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (memberId: string) => opportunitiesApi.deleteOpportunityTeamMember(opportunityId, memberId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.teamMembers(opportunityId) });
+      toast.success('Team member deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete team member');
+    },
+  });
+};
+
 export const useOpportunityReferences = (opportunityId: string) => {
   return useQuery({
     queryKey: OPPORTUNITY_TAB_QUERY_KEYS.references(opportunityId),
@@ -237,6 +361,37 @@ export const useCreateOpportunityReference = (opportunityId: string) => {
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to add reference');
+    },
+  });
+};
+
+export const useUpdateOpportunityReference = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ referenceId, data }: { referenceId: string; data: any }) =>
+      opportunitiesApi.updateOpportunityReference(opportunityId, referenceId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.references(opportunityId) });
+      toast.success('Reference updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update reference');
+    },
+  });
+};
+
+export const useDeleteOpportunityReference = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (referenceId: string) => opportunitiesApi.deleteOpportunityReference(opportunityId, referenceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.references(opportunityId) });
+      toast.success('Reference deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete reference');
     },
   });
 };
@@ -289,6 +444,37 @@ export const useCreateOpportunityRisk = (opportunityId: string) => {
   });
 };
 
+export const useUpdateOpportunityRisk = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ riskId, data }: { riskId: string; data: any }) =>
+      opportunitiesApi.updateOpportunityRisk(opportunityId, riskId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.risks(opportunityId) });
+      toast.success('Risk updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update risk');
+    },
+  });
+};
+
+export const useDeleteOpportunityRisk = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (riskId: string) => opportunitiesApi.deleteOpportunityRisk(opportunityId, riskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.risks(opportunityId) });
+      toast.success('Risk deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete risk');
+    },
+  });
+};
+
 export const useOpportunityLegalChecklist = (opportunityId: string) => {
   return useQuery({
     queryKey: OPPORTUNITY_TAB_QUERY_KEYS.legalChecklist(opportunityId),
@@ -309,6 +495,37 @@ export const useCreateOpportunityLegalChecklistItem = (opportunityId: string) =>
     },
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Failed to add legal checklist item');
+    },
+  });
+};
+
+export const useUpdateOpportunityLegalChecklistItem = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ itemId, data }: { itemId: string; data: any }) =>
+      opportunitiesApi.updateOpportunityLegalChecklistItem(opportunityId, itemId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.legalChecklist(opportunityId) });
+      toast.success('Legal checklist item updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to update legal checklist item');
+    },
+  });
+};
+
+export const useDeleteOpportunityLegalChecklistItem = (opportunityId: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (itemId: string) => opportunitiesApi.deleteOpportunityLegalChecklistItem(opportunityId, itemId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.legalChecklist(opportunityId) });
+      toast.success('Legal checklist item deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.message || 'Failed to delete legal checklist item');
     },
   });
 };

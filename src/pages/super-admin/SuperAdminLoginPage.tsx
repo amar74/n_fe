@@ -209,7 +209,7 @@ export default function SuperAdminLoginPage() {
                 
                 <Button
                   type="submit"
-                  className="self-stretch h-[48px] px-5 py-3 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] rounded-lg text-white text-[15px] font-semibold font-inter leading-tight hover:from-[#6D28D9] hover:to-[#4338CA] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
+                  className="self-stretch h-[48px] px-5 py-3 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] rounded-lg text-white text-[15px] font-semibold font-inter leading-tight hover:from-[#6D28D9] hover:to-[#161950] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Authenticating...' : 'Access Admin Portal'}

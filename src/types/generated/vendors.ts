@@ -5,7 +5,6 @@ import { HTTPValidationError } from "./common";
 import { ValidationError } from "./common";
 import { VendorStatsResponse } from "./common";
 
-// @author jhalak32
 const VendorResponse = z
   .object({
     id: z.string(),
@@ -63,10 +62,8 @@ export const schemas = {
 const endpoints = makeApi([
   {
     method: "post",
-    path: "/vendors/login",
-    alias: "vendor_login_vendors_login_post",
-    description: `Vendor login endpoint
-Returns JWT token and vendor data`,
+    path: "/api/vendors/login",
+    alias: "vendor_login_api_vendors_login_post",
     requestFormat: "json",
     parameters: [
       {
@@ -86,10 +83,8 @@ Returns JWT token and vendor data`,
   },
   {
     method: "post",
-    path: "/vendors/",
-    alias: "create_vendor_vendors__post",
-    description: `Create a new vendor (Super Admin only)
-Sends invitation email with credentials`,
+    path: "/api/vendors/",
+    alias: "create_vendor_api_vendors__post",
     requestFormat: "json",
     parameters: [
       {
@@ -109,9 +104,8 @@ Sends invitation email with credentials`,
   },
   {
     method: "get",
-    path: "/vendors/",
-    alias: "get_all_vendors_vendors__get",
-    description: `Get all vendors with pagination (Super Admin only)`,
+    path: "/api/vendors/",
+    alias: "get_all_vendors_api_vendors__get",
     requestFormat: "json",
     parameters: [
       {
@@ -136,17 +130,15 @@ Sends invitation email with credentials`,
   },
   {
     method: "get",
-    path: "/vendors/stats",
-    alias: "get_vendor_statistics_vendors_stats_get",
-    description: `Get vendor statistics for Super Admin dashboard`,
+    path: "/api/vendors/stats",
+    alias: "get_vendor_statistics_api_vendors_stats_get",
     requestFormat: "json",
     response: VendorStatsResponse,
   },
   {
     method: "get",
-    path: "/vendors/:vendor_id",
-    alias: "get_vendor_vendors__vendor_id__get",
-    description: `Get vendor by ID`,
+    path: "/api/vendors/:vendor_id",
+    alias: "get_vendor_api_vendors__vendor_id__get",
     requestFormat: "json",
     parameters: [
       {
@@ -166,9 +158,8 @@ Sends invitation email with credentials`,
   },
   {
     method: "put",
-    path: "/vendors/:vendor_id",
-    alias: "update_vendor_vendors__vendor_id__put",
-    description: `Update vendor details (Super Admin only)`,
+    path: "/api/vendors/:vendor_id",
+    alias: "update_vendor_api_vendors__vendor_id__put",
     requestFormat: "json",
     parameters: [
       {
@@ -193,9 +184,8 @@ Sends invitation email with credentials`,
   },
   {
     method: "delete",
-    path: "/vendors/:vendor_id",
-    alias: "delete_vendor_vendors__vendor_id__delete",
-    description: `Delete vendor (Super Admin only)`,
+    path: "/api/vendors/:vendor_id",
+    alias: "delete_vendor_api_vendors__vendor_id__delete",
     requestFormat: "json",
     parameters: [
       {
@@ -215,9 +205,8 @@ Sends invitation email with credentials`,
   },
   {
     method: "patch",
-    path: "/vendors/:vendor_id/status",
-    alias: "update_vendor_status_vendors__vendor_id__status_patch",
-    description: `Update vendor approval status (Super Admin only)`,
+    path: "/api/vendors/:vendor_id/status",
+    alias: "update_vendor_status_api_vendors__vendor_id__status_patch",
     requestFormat: "json",
     parameters: [
       {
@@ -243,6 +232,7 @@ Sends invitation email with credentials`,
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

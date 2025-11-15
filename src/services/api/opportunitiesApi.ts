@@ -12,9 +12,9 @@ import {
   OpportunitySearchResult,
   OpportunityInsightsResponse,
   OpportunityForecastResponse,
-  OpportunityListParams,
-  OpportunityApiError
+  OpportunityListParams
 } from '../../types/opportunities';
+import type { DeliveryModelData } from '@/types/opportunityTabs';
 
 class OpportunitiesApiService {
   private readonly baseUrl = '/opportunities';
@@ -47,7 +47,8 @@ class OpportunitiesApiService {
   async listOpportunities(params: OpportunityListParams = {}): Promise<OpportunityListResponse> {
     try {
       const response: AxiosResponse<OpportunityListResponse> = await apiClient.get(
-        `/opportunities`
+        `${this.baseUrl}`,
+        { params }
       );
       return response.data;
     } catch (error) {
@@ -335,6 +336,25 @@ class OpportunitiesApiService {
     }
   }
 
+  async updateOpportunityDriver(id: string, driverId: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/drivers/${driverId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update driver failed ${id}`);
+      throw err;
+    }
+  }
+
+  async deleteOpportunityDriver(id: string, driverId: string) {
+    try {
+      await apiClient.delete(`${this.baseUrl}/${id}/drivers/${driverId}`);
+    } catch (err) {
+      this.handleError(err, `delete driver failed ${id}`);
+      throw err;
+    }
+  }
+
   async getOpportunityCompetitors(id: string) {
     try {
       const response = await apiClient.get(`${this.baseUrl}/${id}/competitors`);
@@ -351,6 +371,25 @@ class OpportunitiesApiService {
       return response.data;
     } catch (err) {
       this.handleError(err, `create competitor failed ${id}`);
+      throw err;
+    }
+  }
+
+  async updateOpportunityCompetitor(id: string, competitorId: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/competitors/${competitorId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update competitor failed ${id}`);
+      throw err;
+    }
+  }
+
+  async deleteOpportunityCompetitor(id: string, competitorId: string) {
+    try {
+      await apiClient.delete(`${this.baseUrl}/${id}/competitors/${competitorId}`);
+    } catch (err) {
+      this.handleError(err, `delete competitor failed ${id}`);
       throw err;
     }
   }
@@ -375,11 +414,39 @@ class OpportunitiesApiService {
     }
   }
 
-  async getOpportunityDeliveryModel(id: string) {
+  async updateOpportunityStrategy(id: string, strategyId: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/strategies/${strategyId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update strategy failed ${id}`);
+      throw err;
+    }
+  }
+
+  async deleteOpportunityStrategy(id: string, strategyId: string) {
+    try {
+      await apiClient.delete(`${this.baseUrl}/${id}/strategies/${strategyId}`);
+    } catch (err) {
+      this.handleError(err, `delete strategy failed ${id}`);
+      throw err;
+    }
+  }
+
+  async getOpportunityDeliveryModel(id: string): Promise<DeliveryModelData> {
     try {
       const response = await apiClient.get(`${this.baseUrl}/${id}/delivery-model`);
       return response.data;
     } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 404) {
+        return {
+          approach: '',
+          key_phases: [],
+          identified_gaps: [],
+          models: [],
+          active_model_id: null,
+        };
+      }
       this.handleError(err, `get delivery model failed ${id}`);
       throw err;
     }
@@ -415,6 +482,25 @@ class OpportunitiesApiService {
     }
   }
 
+  async updateOpportunityTeamMember(id: string, memberId: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/team/${memberId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update team member failed ${id}`);
+      throw err;
+    }
+  }
+
+  async deleteOpportunityTeamMember(id: string, memberId: string) {
+    try {
+      await apiClient.delete(`${this.baseUrl}/${id}/team/${memberId}`);
+    } catch (err) {
+      this.handleError(err, `delete team member failed ${id}`);
+      throw err;
+    }
+  }
+
   async getOpportunityReferences(id: string) {
     try {
       const response = await apiClient.get(`${this.baseUrl}/${id}/references`);
@@ -435,10 +521,42 @@ class OpportunitiesApiService {
     }
   }
 
+  async updateOpportunityReference(id: string, referenceId: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/references/${referenceId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update reference failed ${id}`);
+      throw err;
+    }
+  }
+
+  async deleteOpportunityReference(id: string, referenceId: string) {
+    try {
+      await apiClient.delete(`${this.baseUrl}/${id}/references/${referenceId}`);
+    } catch (err) {
+      this.handleError(err, `delete reference failed ${id}`);
+      throw err;
+    }
+  }
+
   async getOpportunityFinancialSummary(id: string) {
     try {
-      const response = await apiClient.get(`${this.baseUrl}/${id}/financial`);
-      return response.data;
+      const response = await apiClient.get(`${this.baseUrl}/${id}/financial`, {
+        validateStatus: (status) => status === 200 || status === 404,
+      });
+
+      if (response.status === 200) {
+        return response.data;
+      }
+
+      // Fallback when backend endpoint is unavailable.
+      return {
+        total_project_value: 0,
+        budget_categories: [],
+        contingency_percentage: 0,
+        profit_margin_percentage: 0,
+      };
     } catch (err) {
       this.handleError(err, `get financial summary failed ${id}`);
       throw err;
@@ -475,6 +593,25 @@ class OpportunitiesApiService {
     }
   }
 
+  async updateOpportunityRisk(id: string, riskId: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/risks/${riskId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update risk failed ${id}`);
+      throw err;
+    }
+  }
+
+  async deleteOpportunityRisk(id: string, riskId: string) {
+    try {
+      await apiClient.delete(`${this.baseUrl}/${id}/risks/${riskId}`);
+    } catch (err) {
+      this.handleError(err, `delete risk failed ${id}`);
+      throw err;
+    }
+  }
+
   async getOpportunityLegalChecklist(id: string) {
     try {
       const response = await apiClient.get(`${this.baseUrl}/${id}/legal-checklist`);
@@ -491,6 +628,25 @@ class OpportunitiesApiService {
       return response.data;
     } catch (err) {
       this.handleError(err, `create legal checklist item failed ${id}`);
+      throw err;
+    }
+  }
+
+  async updateOpportunityLegalChecklistItem(id: string, itemId: string, data: any) {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/${id}/legal-checklist/${itemId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update legal checklist item failed ${id}`);
+      throw err;
+    }
+  }
+
+  async deleteOpportunityLegalChecklistItem(id: string, itemId: string) {
+    try {
+      await apiClient.delete(`${this.baseUrl}/${id}/legal-checklist/${itemId}`);
+    } catch (err) {
+      this.handleError(err, `delete legal checklist item failed ${id}`);
       throw err;
     }
   }

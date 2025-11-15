@@ -7,9 +7,8 @@ import { ValidationError } from "./common";
 const endpoints = makeApi([
   {
     method: "post",
-    path: "/ai/enrich/:account_id",
+    path: "/api/ai/enrich/:account_id",
     alias: "enrichAccountData",
-    description: `Enrich account data using AI and external sources`,
     requestFormat: "json",
     parameters: [
       {
@@ -29,9 +28,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/ai/enrich/batch",
+    path: "/api/ai/enrich/batch",
     alias: "batchEnrichAccounts",
-    description: `Batch enrich multiple accounts`,
     requestFormat: "json",
     parameters: [
       {
@@ -51,9 +49,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/ai/tier/:account_id",
+    path: "/api/ai/tier/:account_id",
     alias: "suggestAccountTier",
-    description: `Suggest optimal tier for an account based on AI analysis`,
     requestFormat: "json",
     parameters: [
       {
@@ -73,9 +70,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/ai/tier/batch",
+    path: "/api/ai/tier/batch",
     alias: "batchSuggestTiers",
-    description: `Batch suggest tiers for multiple accounts`,
     requestFormat: "json",
     parameters: [
       {
@@ -95,9 +91,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/ai/insights/:account_id",
+    path: "/api/ai/insights/:account_id",
     alias: "generateAccountInsights",
-    description: `Generate comprehensive AI insights for an account`,
     requestFormat: "json",
     parameters: [
       {
@@ -117,17 +112,15 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/ai/insights/organization/summary",
+    path: "/api/ai/insights/organization/summary",
     alias: "getOrganizationInsightsSummary",
-    description: `Get AI insights summary for entire organization`,
     requestFormat: "json",
     response: z.object({}).partial().passthrough(),
   },
   {
     method: "post",
-    path: "/ai/health-score/:account_id",
+    path: "/api/ai/health-score/:account_id",
     alias: "calculateAccountHealthScore",
-    description: `Calculate AI-powered health score for an account`,
     requestFormat: "json",
     parameters: [
       {
@@ -147,9 +140,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/ai/health-score/:account_id/update",
+    path: "/api/ai/health-score/:account_id/update",
     alias: "updateAccountHealthScore",
-    description: `Calculate and update health score for an account`,
     requestFormat: "json",
     parameters: [
       {
@@ -169,9 +161,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/ai/analyze/:account_id",
+    path: "/api/ai/analyze/:account_id",
     alias: "comprehensiveAccountAnalysis",
-    description: `Generate comprehensive AI analysis including health score, tiering, insights, and enrichment suggestions`,
     requestFormat: "json",
     parameters: [
       {
@@ -190,6 +181,7 @@ const endpoints = makeApi([
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

@@ -65,9 +65,8 @@ export const schemas = {
 const endpoints = makeApi([
   {
     method: "post",
-    path: "/user-permissions/",
+    path: "/api/user-permissions/",
     alias: "createUserPermission",
-    description: `Create a new user permission`,
     requestFormat: "json",
     parameters: [
       {
@@ -87,9 +86,8 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/user-permissions/",
+    path: "/api/user-permissions/",
     alias: "listUserPermissions",
-    description: `Get all users from current user&#x27;s organization with their permissions`,
     requestFormat: "json",
     parameters: [
       {
@@ -114,9 +112,8 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/user-permissions/:userid",
+    path: "/api/user-permissions/:userid",
     alias: "getUserPermission",
-    description: `Get user permission by user ID`,
     requestFormat: "json",
     parameters: [
       {
@@ -136,9 +133,8 @@ const endpoints = makeApi([
   },
   {
     method: "put",
-    path: "/user-permissions/:userid",
+    path: "/api/user-permissions/:userid",
     alias: "updateUserPermission",
-    description: `Update user permission by user ID (creates if doesn&#x27;t exist)`,
     requestFormat: "json",
     parameters: [
       {
@@ -163,9 +159,8 @@ const endpoints = makeApi([
   },
   {
     method: "delete",
-    path: "/user-permissions/:userid",
+    path: "/api/user-permissions/:userid",
     alias: "deleteUserPermission",
-    description: `Delete user permission by user ID`,
     requestFormat: "json",
     parameters: [
       {
@@ -185,7 +180,7 @@ const endpoints = makeApi([
   },
 ]);
 
-// TODO: need to fix this - harsh.pawar
+
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);

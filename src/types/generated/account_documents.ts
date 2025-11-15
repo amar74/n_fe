@@ -60,7 +60,7 @@ export const schemas = {
 const endpoints = makeApi([
   {
     method: "post",
-    path: "/accounts/:account_id/documents/",
+    path: "/api/accounts/:account_id/documents/",
     alias: "createAccountDocument",
     requestFormat: "json",
     parameters: [
@@ -86,7 +86,7 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/accounts/:account_id/documents/",
+    path: "/api/accounts/:account_id/documents/",
     alias: "listAccountDocuments",
     requestFormat: "json",
     parameters: [
@@ -117,7 +117,7 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/accounts/:account_id/documents/:document_id",
+    path: "/api/accounts/:account_id/documents/:document_id",
     alias: "getAccountDocument",
     requestFormat: "json",
     parameters: [
@@ -143,7 +143,7 @@ const endpoints = makeApi([
   },
   {
     method: "put",
-    path: "/accounts/:account_id/documents/:document_id",
+    path: "/api/accounts/:account_id/documents/:document_id",
     alias: "updateAccountDocument",
     requestFormat: "json",
     parameters: [
@@ -174,7 +174,7 @@ const endpoints = makeApi([
   },
   {
     method: "delete",
-    path: "/accounts/:account_id/documents/:document_id",
+    path: "/api/accounts/:account_id/documents/:document_id",
     alias: "deleteAccountDocument",
     requestFormat: "json",
     parameters: [
@@ -199,6 +199,7 @@ const endpoints = makeApi([
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

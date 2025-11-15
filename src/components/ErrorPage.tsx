@@ -81,7 +81,7 @@ export const ErrorPage = memo(({
             {showRetry && (
               <button
                 onClick={handleRetry}
-                className="px-6 py-3 bg-[#4338CA] text-white rounded-xl font-semibold hover:bg-[#3730A3] hover:scale-105 transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
+                className="px-6 py-3 bg-[#161950] text-white rounded-xl font-semibold hover:bg-[#0f1440] hover:scale-105 transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
               >
                 <RefreshCw className="w-5 h-5" />
                 Try Again
@@ -103,7 +103,7 @@ export const ErrorPage = memo(({
               If this problem persists, please contact our support team or check our{' '}
               <a 
                 href="#" 
-                className="text-[#4338CA] hover:text-[#3730A3] font-semibold transition-colors"
+                className="text-[#161950] hover:text-[#0f1440] font-semibold transition-colors"
               >
                 status page
               </a>

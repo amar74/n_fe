@@ -5,6 +5,7 @@ import { schemas } from './generated/scraper'; // Adjust path if needed
 
 export type ScrapedAddress = z.infer<typeof schemas.ScrapedAddress>;
 export type ScrapedInfo = z.infer<typeof schemas.ScrapedInfo>;
+export type ScrapedOpportunity = z.infer<typeof schemas.ScrapedOpportunity>;
 export type ScrapeResult = z.infer<typeof schemas.ScrapeResult>;
 export type ScrapeResponse = z.infer<typeof schemas.ScrapeResponse>;
 export type ScrapeRequest = z.infer<typeof schemas.ScrapeRequest>;

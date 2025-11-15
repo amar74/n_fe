@@ -403,7 +403,7 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                         e.stopPropagation();
                         navigate(`/module/opportunities/analysis?opportunityId=${opportunity.id}`);
                       }}
-                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#4338CA] to-[#3730A3] text-white rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-[#4338CA]/20 transition-all duration-200 hover:scale-105"
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#161950] to-[#0f1440] text-white rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-[#161950]/20 transition-all duration-200 hover:scale-105"
                     >
                       <Brain className="w-4 h-4" />
                       AI Insights
@@ -413,7 +413,7 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                         e.stopPropagation();
                         navigate(`/module/opportunities?tab=pipeline`);
                       }}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-[#D1D5DB] text-[#374151] rounded-lg text-sm font-semibold hover:bg-[#F9FAFB] hover:border-[#4338CA]/20 transition-all duration-200"
+                      className="flex items-center gap-2 px-4 py-2 bg-white border border-[#D1D5DB] text-[#374151] rounded-lg text-sm font-semibold hover:bg-[#F9FAFB] hover:border-[#161950]/20 transition-all duration-200"
                     >
                       <BarChart3 className="w-4 h-4" />
                       View Details

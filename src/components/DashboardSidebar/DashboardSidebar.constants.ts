@@ -1,14 +1,16 @@
-import { 
-  Target, 
-  Building2, 
-  FileText, 
-  Users, 
-  FileCheck, 
-  Calendar, 
-  Calculator, 
-  ShoppingCart, 
+import {
+  Target,
+  Building2,
+  FileText,
+  Users,
+  FileCheck,
+  Calendar,
+  Calculator,
+  ShoppingCart,
   BarChart3,
   ClipboardList,
+  Layers,
+  Database,
 } from 'lucide-react';
 import { NavigationItem } from './DashboardSidebar.types';
 
@@ -18,6 +20,20 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     name: 'Opportunities',
     path: '/module/opportunities',
     icon: Target,
+    children: [
+      {
+        id: 'opportunities-dashboard',
+        name: 'Dashboard',
+        path: '/module/opportunities',
+        icon: Target,
+      },
+      {
+        id: 'opportunities-ingestion',
+        name: 'Ingestion Queue',
+        path: '/module/opportunities/ingestion',
+        icon: Database,
+      },
+    ],
   },
   {
     id: 'accounts',
@@ -118,5 +134,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         icon: Users,
       },
     ],
+  },
+  {
+    id: 'delivery-models',
+    name: 'Delivery Models',
+    path: '/module/delivery-models',
+    icon: Layers,
   },
 ];

@@ -28,6 +28,7 @@ export default function ResetPasswordPage() {
   const { toast } = useToast();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordReset, setPasswordReset] = useState(false);
@@ -80,6 +81,36 @@ export default function ResetPasswordPage() {
       setIsSubmitting(false);
     }
   });
+
+  const handleResendOtp = async () => {
+    const emailValue = form.getValues('email');
+
+    if (!emailValue) {
+      form.setError('email', {
+        type: 'manual',
+        message: 'Enter your email to resend the OTP',
+      });
+      return;
+    }
+
+    setIsResending(true);
+    form.clearErrors('otp');
+
+    try {
+      await apiClient.post('/auth/forgot-password', { email: emailValue });
+      toast.success('OTP Sent', {
+        description: 'A new 6-digit OTP has been emailed to you.',
+      });
+    } catch (error: any) {
+      console.error('Resend OTP error:', error);
+      const errorMessage =
+        error.response?.data?.detail ||
+        'Unable to resend OTP. Please try again.';
+      toast.error('Error', { description: errorMessage });
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   // Success state
   if (passwordReset) {
@@ -188,6 +219,14 @@ export default function ResetPasswordPage() {
                     />
                   </FormControl>
                   <p className="text-xs text-[#667085] font-inter">Check your email for the 6-digit code</p>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={isResending}
+                    className="self-start text-sm font-semibold text-[#161950] hover:text-[#1E2B5B] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isResending ? 'Resending OTP...' : "Didn't receive the code? Resend"}
+                  </button>
                   <FormMessage className="text-xs text-[#F04438] font-inter" />
                 </FormItem>
               )}

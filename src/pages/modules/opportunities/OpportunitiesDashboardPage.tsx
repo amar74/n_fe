@@ -6,10 +6,10 @@ import { MyOpportunityContent } from './components/MyOpportunityContent';
 import { SourceOpportunitiesContent } from './components/SourceOpportunitiesContent';
 import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import { CreateOpportunityModal } from '../../../components/CreateOpportunityModal';
-import { useOpportunities, useCreateOpportunity } from '../../../hooks/useOpportunities';
+import { useOpportunities, useCreateOpportunity, useOpportunityPipeline } from '../../../hooks/useOpportunities';
 import { useAccounts } from '../../../hooks/useAccounts';
 import { Opportunity, OpportunityStage, RiskLevel } from '../../../types/opportunities';
-import { parseProjectValue } from '../../../utils/opportunityUtils';
+import { parseProjectValue } from '@/utils/opportunityUtils';
 
 type TabType = 'source' | 'pipeline' | 'myOpportunity';
 
@@ -42,6 +42,12 @@ function OpportunitiesDashboardPage() {
     sort_by: 'created_at',
     sort_order: 'desc'
   });
+
+  const {
+    data: pipelineData,
+    isLoading: isPipelineLoading,
+    error: pipelineError
+  } = useOpportunityPipeline();
 
   const { accountsList } = useAccounts({ eager: true });
   const accounts = accountsList?.accounts || [];
@@ -104,7 +110,7 @@ function OpportunitiesDashboardPage() {
     { id: 'myOpportunity' as TabType, label: 'My Opportunity' },
   ];
 
-  if (isLoading) {
+  if (isLoading || isPipelineLoading) {
     return (
       <div className="w-full h-full bg-[#F9FAFB] font-['Inter'] flex items-center justify-center">
         <div className="text-center">
@@ -114,13 +120,13 @@ function OpportunitiesDashboardPage() {
       </div>
     );
   }
-  if (error) {
+  if (error || pipelineError) {
     return (
       <div className="w-full h-full bg-[#F9FAFB] font-['Inter'] flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-600 mb-4">
             <p className="text-lg font-semibold">Error loading opportunities</p>
-            <p className="text-sm">{error.message}</p>
+            <p className="text-sm">{error?.message || pipelineError?.message}</p>
           </div>
           <button 
             onClick={() => window.location.reload()} 
@@ -165,7 +171,7 @@ function OpportunitiesDashboardPage() {
                 
                 <button 
                   onClick={handleOpenCreateModal}
-                  className="h-10 px-4 py-2.5 bg-[#4338CA] rounded-lg flex items-center gap-2 hover:bg-[#3730A3] transition-all shadow-sm"
+                  className="h-10 px-4 py-2.5 bg-[#161950] rounded-lg flex items-center gap-2 hover:bg-[#0f1440] transition-all shadow-sm"
                 >
                   <Plus className="w-5 h-5 text-white stroke-[2]" />
                   <span className="text-white text-sm font-semibold font-['Inter']">Create Opportunity</span>
@@ -195,7 +201,7 @@ function OpportunitiesDashboardPage() {
                       onClick={() => handleTabChange(tab.id)}
                       className={`relative px-8 py-4 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center gap-3 mx-1 ${
                         activeTab === tab.id
-                          ? 'bg-white text-[#4338CA] shadow-lg border border-[#E5E7EB] transform scale-[1.02]'
+                          ? 'bg-white text-[#161950] shadow-lg border border-[#E5E7EB] transform scale-[1.02]'
                           : 'text-[#6B7280] hover:text-[#374151] hover:bg-white/60 hover:transform hover:scale-[1.01]'
                       }`}
                     >
@@ -205,8 +211,8 @@ function OpportunitiesDashboardPage() {
                       
                       {activeTab === tab.id && (
                         <>
-                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-10 h-1 bg-gradient-to-r from-[#4338CA] to-[#3730A3] rounded-full shadow-sm" />
-                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#4338CA] rounded-full flex items-center justify-center shadow-lg">
+                          <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-10 h-1 bg-gradient-to-r from-[#161950] to-[#0f1440] rounded-full shadow-sm" />
+                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#161950] rounded-full flex items-center justify-center shadow-lg">
                             <div className="w-2 h-2 bg-white rounded-full" />
                           </div>
                         </>
@@ -258,7 +264,7 @@ function OpportunitiesDashboardPage() {
                   <button className="px-4 py-2 text-sm font-semibold text-[#6B7280] hover:text-[#374151] hover:bg-white rounded-xl transition-all duration-200 border border-transparent hover:border-[#E5E7EB] shadow-sm hover:shadow-md">
                     Filter
                   </button>
-                  <button className="px-4 py-2 text-sm font-semibold text-[#4338CA] hover:text-[#3730A3] hover:bg-[#4338CA]/5 rounded-xl transition-all duration-200 border border-[#4338CA]/20 hover:border-[#4338CA]/40 shadow-sm hover:shadow-md">
+                  <button className="px-4 py-2 text-sm font-semibold text-[#161950] hover:text-[#0f1440] hover:bg-[#161950]/5 rounded-xl transition-all duration-200 border border-[#161950]/20 hover:border-[#161950]/40 shadow-sm hover:shadow-md">
                     Refresh
                   </button>
                 </div>
@@ -482,13 +488,21 @@ function OpportunitiesDashboardPage() {
 
         
         {activeTab === 'pipeline' && (
-          <PipelineManagementContent opportunities={opportunities} isLoading={isLoading} />
+          <PipelineManagementContent
+            opportunities={opportunities}
+            pipelineData={pipelineData}
+            isLoading={isLoading || isPipelineLoading}
+          />
         )}
 
         
         {activeTab === 'myOpportunity' && (
           <ErrorBoundary>
-            <MyOpportunityContent opportunities={opportunities} isLoading={isLoading} />
+            <MyOpportunityContent
+              opportunities={opportunities}
+              pipelineData={pipelineData}
+              isLoading={isLoading || isPipelineLoading}
+            />
           </ErrorBoundary>
         )}
       </div>

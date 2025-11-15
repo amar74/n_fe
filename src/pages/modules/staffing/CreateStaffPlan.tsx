@@ -43,6 +43,9 @@ interface StaffMember {
   hourlyRate: number;
   monthlyCost: number;
   totalCost: number;
+  initialEscalationRate?: number;
+  escalationRate?: number | null;
+  escalationEffectiveMonth?: number;
 }
 
 export default function CreateStaffPlan() {
@@ -189,6 +192,9 @@ export default function CreateStaffPlan() {
               end_month: member.endMonth,
               hours_per_week: member.hoursPerWeek,
               hourly_rate: member.hourlyRate,
+              initial_escalation_rate: member.initialEscalationRate ?? projectData.annualEscalationRate,
+              escalation_rate: member.escalationRate ?? null,
+              escalation_effective_month: member.escalationEffectiveMonth ?? member.startMonth,
             },
           });
         }

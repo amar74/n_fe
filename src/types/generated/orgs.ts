@@ -30,7 +30,6 @@ const OrgCreateRequest = z
     contact: z.union([ContactCreateRequest, z.null()]).optional(),
   })
   .passthrough();
-// @rishabh - refactor needed
 const OrgCreateResponse = z
   .object({ name: z.string(), id: z.string().uuid() })
   .passthrough();
@@ -102,7 +101,6 @@ const AcceptInviteResponse = z
   })
   .passthrough();
 
-// temp solution by guddy.tech
 export const schemas = {
   AddressCreateResquest,
   ContactCreateRequest,
@@ -122,9 +120,8 @@ export const schemas = {
 const endpoints = makeApi([
   {
     method: "post",
-    path: "/orgs/create",
+    path: "/api/orgs/create",
     alias: "createOrg",
-    description: `Create a new organization`,
     requestFormat: "json",
     parameters: [
       {
@@ -144,17 +141,15 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/orgs/me",
+    path: "/api/orgs/me",
     alias: "me",
-    description: `Get the organization of the current user with profile completion percentage`,
     requestFormat: "json",
     response: OrgResponse,
   },
   {
     method: "get",
-    path: "/orgs/:org_id",
+    path: "/api/orgs/:org_id",
     alias: "getOrgById",
-    description: `Get organization by ID (Super Admin or organization member only)`,
     requestFormat: "json",
     parameters: [
       {
@@ -174,9 +169,8 @@ const endpoints = makeApi([
   },
   {
     method: "patch",
-    path: "/orgs/:org_id",
+    path: "/api/orgs/:org_id",
     alias: "patchOrganization",
-    description: `Fast organization update endpoint - accepts raw JSON for maximum flexibility`,
     requestFormat: "json",
     parameters: [
       {
@@ -201,17 +195,15 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/orgs/members",
+    path: "/api/orgs/members",
     alias: "getOrgMembers",
-    description: `Get all members of the current user&#x27;s organization with their email and role`,
     requestFormat: "json",
     response: OrgMembersListResponse,
   },
   {
     method: "post",
-    path: "/orgs/invite",
+    path: "/api/orgs/invite",
     alias: "createInvite",
-    description: `Create an invite for a user to join the organization (Admin only)`,
     requestFormat: "json",
     parameters: [
       {
@@ -231,9 +223,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/orgs/invite/accept",
+    path: "/api/orgs/invite/accept",
     alias: "acceptInvite",
-    description: `Accept an invitation to join an organization`,
     requestFormat: "json",
     parameters: [
       {
@@ -252,6 +243,7 @@ const endpoints = makeApi([
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

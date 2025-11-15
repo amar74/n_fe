@@ -11,6 +11,7 @@ const SurveyDistributionResponse = z
     survey_id: z.string().uuid(),
     account_id: z.union([z.string(), z.null()]),
     contact_id: z.union([z.string(), z.null()]),
+    employee_id: z.union([z.string(), z.null()]),
     survey_link: z.union([z.string(), z.null()]),
     sent_at: z.union([z.string(), z.null()]),
     is_sent: z.boolean(),
@@ -52,6 +53,8 @@ const SurveyTypeEnum = z.enum([
   "customer_satisfaction",
   "nps",
   "opportunity_feedback",
+  "employee_feedback",
+  "employee_satisfaction",
   "general",
 ]);
 const SurveyCreateRequest = z
@@ -73,10 +76,18 @@ const SurveyResponse = z
     description: z.union([z.string(), z.null()]),
     survey_type: z.string(),
     status: z.string(),
+    questions: z
+      .union([z.array(z.object({}).partial().passthrough()), z.null()])
+      .optional(),
+    settings: z
+      .union([z.object({}).partial().passthrough(), z.null()])
+      .optional(),
     org_id: z.string().uuid(),
     created_by: z.union([z.string(), z.null()]),
     created_at: z.string().datetime({ offset: true }),
     updated_at: z.union([z.string(), z.null()]),
+    total_responses: z.union([z.number(), z.null()]).optional(),
+    avg_rating: z.union([z.number(), z.null()]).optional(),
   })
   .passthrough();
 const SurveyListResponse = z
@@ -100,6 +111,7 @@ const SurveyDistributionCreate = z
     survey_id: z.string().uuid(),
     account_ids: z.union([z.array(z.string().uuid()), z.null()]).optional(),
     contact_ids: z.union([z.array(z.string().uuid()), z.null()]).optional(),
+    employee_ids: z.union([z.array(z.string().uuid()), z.null()]).optional(),
     filters: z
       .union([z.object({}).partial().passthrough(), z.null()])
       .optional(),
@@ -199,6 +211,14 @@ const endpoints = makeApi([
   },
   {
     method: "get",
+    path: "/api/surveys/employees",
+    alias: "get_survey_employees_api_surveys_employees_get",
+    description: `Get employees for survey distribution`,
+    requestFormat: "json",
+    response: z.array(SurveyEmployeeResponse),
+  },
+  {
+    method: "get",
     path: "/api/surveys/:survey_id",
     alias: "get_survey_api_surveys__survey_id__get",
     requestFormat: "json",
@@ -236,6 +256,28 @@ const endpoints = makeApi([
       },
     ],
     response: SurveyResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/surveys/:survey_id",
+    alias: "delete_survey_api_surveys__survey_id__delete",
+    description: `Delete a survey and all its associated data (distributions, responses, etc.)`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "survey_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
     errors: [
       {
         status: 422,
@@ -413,6 +455,7 @@ const endpoints = makeApi([
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

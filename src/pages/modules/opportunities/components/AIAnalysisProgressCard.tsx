@@ -67,7 +67,7 @@ export const AIAnalysisProgressCard = memo(({
 
   const getStatusIcon = (progress: number) => {
     if (progress === 100) return <CheckCircle className="w-5 h-5 text-green-500" />;
-    return <Sparkles className="w-5 h-5 text-[#4338CA] animate-pulse" />;
+    return <Sparkles className="w-5 h-5 text-[#161950] animate-pulse" />;
   };
 
   const getStepIcon = (step: string) => {
@@ -94,7 +94,7 @@ export const AIAnalysisProgressCard = memo(({
       <div className="flex items-start justify-between mb-6">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#4338CA] to-[#3730A3] rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#161950] to-[#0f1440] rounded-xl flex items-center justify-center shadow-lg">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -140,7 +140,7 @@ export const AIAnalysisProgressCard = memo(({
               const stepThreshold = ((index + 1) / analysisSteps.length) * 100;
               const isCompleted = progress >= stepThreshold;
               const isCurrent = progress >= (index / analysisSteps.length) * 100 && progress < stepThreshold;
-              const stepColor = isCompleted ? 'bg-green-500' : isCurrent ? 'bg-[#4338CA]' : 'bg-gray-300';
+              const stepColor = isCompleted ? 'bg-green-500' : isCurrent ? 'bg-[#161950]' : 'bg-gray-300';
               
               return (
                 <div key={index} className="flex flex-col items-center relative group">
@@ -188,7 +188,7 @@ export const AIAnalysisProgressCard = memo(({
               <div className="text-xs text-[#6B7280] uppercase tracking-wide">Steps</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-[#4338CA]">{Math.round(progress * 0.8 + 1200)}ms</div>
+              <div className="text-2xl font-bold text-[#161950]">{Math.round(progress * 0.8 + 1200)}ms</div>
               <div className="text-xs text-[#6B7280] uppercase tracking-wide">Processing</div>
             </div>
             <div className="text-center">

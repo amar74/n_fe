@@ -7,9 +7,8 @@ import { ValidationError } from "./common";
 const endpoints = makeApi([
   {
     method: "post",
-    path: "/health-score/calculate/:account_id",
+    path: "/api/health-score/calculate/:account_id",
     alias: "calculateAccountHealthScore",
-    description: `Calculate health score for a specific account`,
     requestFormat: "json",
     parameters: [
       {
@@ -29,9 +28,8 @@ const endpoints = makeApi([
   },
   {
     method: "post",
-    path: "/health-score/update/:account_id",
+    path: "/api/health-score/update/:account_id",
     alias: "updateAccountHealthScore",
-    description: `Calculate and update health score for a specific account`,
     requestFormat: "json",
     parameters: [
       {
@@ -50,6 +48,7 @@ const endpoints = makeApi([
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

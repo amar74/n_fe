@@ -55,6 +55,8 @@ const DeliveryModelResponse = z
     approach: z.string(),
     key_phases: z.array(z.object({}).partial().passthrough()),
     identified_gaps: z.array(z.string()),
+    models: z.array(z.object({}).partial().passthrough()).optional(),
+    active_model_id: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
 const TeamMemberResponse = z
@@ -137,7 +139,11 @@ const StakeholderCreate = z
     designation: z.string().min(1).max(255),
     email: z.union([z.string(), z.null()]).optional(),
     contact_number: z.union([z.string(), z.null()]).optional(),
-    influence_level: z.string().regex(/^(High|Medium|Low)$/),
+    influence_level: z
+      .string()
+      .regex(
+        /^(High|Medium|Low|Executive Sponsor|Economic Buyer|Technical Evaluator|Project Champion|Finance Approver|Operational Lead)$/
+      ),
   })
   .passthrough();
 const StakeholderUpdate = z
@@ -156,6 +162,13 @@ const DriverCreate = z
     description: z.string().min(1),
   })
   .passthrough();
+const DriverUpdate = z
+  .object({
+    category: z.union([z.string(), z.null()]),
+    description: z.union([z.string(), z.null()]),
+  })
+  .partial()
+  .passthrough();
 const CompetitorCreate = z
   .object({
     company_name: z.string().min(1).max(255),
@@ -164,11 +177,27 @@ const CompetitorCreate = z
     weaknesses: z.array(z.string()).optional().default([]),
   })
   .passthrough();
+const CompetitorUpdate = z
+  .object({
+    company_name: z.union([z.string(), z.null()]),
+    threat_level: z.union([z.string(), z.null()]),
+    strengths: z.union([z.array(z.string()), z.null()]),
+    weaknesses: z.union([z.array(z.string()), z.null()]),
+  })
+  .partial()
+  .passthrough();
 const StrategyCreate = z
   .object({
     strategy_text: z.string().min(1),
     priority: z.number().int().gte(1).lte(10).optional().default(1),
   })
+  .passthrough();
+const StrategyUpdate = z
+  .object({
+    strategy_text: z.union([z.string(), z.null()]),
+    priority: z.union([z.number(), z.null()]),
+  })
+  .partial()
   .passthrough();
 const DeliveryModelUpdate = z
   .object({
@@ -178,6 +207,7 @@ const DeliveryModelUpdate = z
       z.null(),
     ]),
     identified_gaps: z.union([z.array(z.string()), z.null()]),
+    models: z.union([z.array(z.object({}).partial().passthrough()), z.null()]),
   })
   .partial()
   .passthrough();
@@ -189,6 +219,15 @@ const TeamMemberCreate = z
     availability: z.string().min(1).max(100),
   })
   .passthrough();
+const TeamMemberUpdate = z
+  .object({
+    name: z.union([z.string(), z.null()]),
+    designation: z.union([z.string(), z.null()]),
+    experience: z.union([z.string(), z.null()]),
+    availability: z.union([z.string(), z.null()]),
+  })
+  .partial()
+  .passthrough();
 const ReferenceCreate = z
   .object({
     project_name: z.string().min(1).max(255),
@@ -197,6 +236,16 @@ const ReferenceCreate = z
     status: z.string().min(1).max(255),
     total_amount: z.string().min(1).max(50),
   })
+  .passthrough();
+const ReferenceUpdate = z
+  .object({
+    project_name: z.union([z.string(), z.null()]),
+    client: z.union([z.string(), z.null()]),
+    year: z.union([z.string(), z.null()]),
+    status: z.union([z.string(), z.null()]),
+    total_amount: z.union([z.string(), z.null()]),
+  })
+  .partial()
   .passthrough();
 const FinancialSummaryUpdate = z
   .object({
@@ -219,11 +268,28 @@ const RiskCreate = z
     mitigation_strategy: z.string().min(1),
   })
   .passthrough();
+const RiskUpdate = z
+  .object({
+    category: z.union([z.string(), z.null()]),
+    risk_description: z.union([z.string(), z.null()]),
+    impact_level: z.union([z.string(), z.null()]),
+    probability: z.union([z.string(), z.null()]),
+    mitigation_strategy: z.union([z.string(), z.null()]),
+  })
+  .partial()
+  .passthrough();
 const LegalChecklistItemCreate = z
   .object({
     item_name: z.string().min(1).max(255),
     status: z.string().regex(/^(Complete|In progress|Pending)$/),
   })
+  .passthrough();
+const LegalChecklistItemUpdate = z
+  .object({
+    item_name: z.union([z.string(), z.null()]),
+    status: z.union([z.string(), z.null()]),
+  })
+  .partial()
   .passthrough();
 
 export const schemas = {
@@ -243,14 +309,21 @@ export const schemas = {
   StakeholderCreate,
   StakeholderUpdate,
   DriverCreate,
+  DriverUpdate,
   CompetitorCreate,
+  CompetitorUpdate,
   StrategyCreate,
+  StrategyUpdate,
   DeliveryModelUpdate,
   TeamMemberCreate,
+  TeamMemberUpdate,
   ReferenceCreate,
+  ReferenceUpdate,
   FinancialSummaryUpdate,
   RiskCreate,
+  RiskUpdate,
   LegalChecklistItemCreate,
+  LegalChecklistItemUpdate,
 };
 
 const endpoints = makeApi([
@@ -461,6 +534,65 @@ const endpoints = makeApi([
     ],
   },
   {
+    method: "put",
+    path: "/api/opportunities/:opportunity_id/drivers/:driver_id",
+    alias:
+      "update_opportunity_driver_api_opportunities__opportunity_id__drivers__driver_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: DriverUpdate,
+      },
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "driver_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: DriverResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/:opportunity_id/drivers/:driver_id",
+    alias:
+      "delete_opportunity_driver_api_opportunities__opportunity_id__drivers__driver_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "driver_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
     method: "get",
     path: "/api/opportunities/:opportunity_id/competitors",
     alias:
@@ -510,6 +642,65 @@ const endpoints = makeApi([
     ],
   },
   {
+    method: "put",
+    path: "/api/opportunities/:opportunity_id/competitors/:competitor_id",
+    alias:
+      "update_opportunity_competitor_api_opportunities__opportunity_id__competitors__competitor_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: CompetitorUpdate,
+      },
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "competitor_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: CompetitorResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/:opportunity_id/competitors/:competitor_id",
+    alias:
+      "delete_opportunity_competitor_api_opportunities__opportunity_id__competitors__competitor_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "competitor_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
     method: "get",
     path: "/api/opportunities/:opportunity_id/strategies",
     alias:
@@ -550,6 +741,65 @@ const endpoints = makeApi([
       },
     ],
     response: StrategyResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "put",
+    path: "/api/opportunities/:opportunity_id/strategies/:strategy_id",
+    alias:
+      "update_opportunity_strategy_api_opportunities__opportunity_id__strategies__strategy_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: StrategyUpdate,
+      },
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "strategy_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: StrategyResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/:opportunity_id/strategies/:strategy_id",
+    alias:
+      "delete_opportunity_strategy_api_opportunities__opportunity_id__strategies__strategy_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "strategy_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
     errors: [
       {
         status: 422,
@@ -657,6 +907,65 @@ const endpoints = makeApi([
     ],
   },
   {
+    method: "put",
+    path: "/api/opportunities/:opportunity_id/team/:member_id",
+    alias:
+      "update_opportunity_team_member_api_opportunities__opportunity_id__team__member_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: TeamMemberUpdate,
+      },
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "member_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: TeamMemberResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/:opportunity_id/team/:member_id",
+    alias:
+      "delete_opportunity_team_member_api_opportunities__opportunity_id__team__member_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "member_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
     method: "get",
     path: "/api/opportunities/:opportunity_id/references",
     alias:
@@ -697,6 +1006,65 @@ const endpoints = makeApi([
       },
     ],
     response: ReferenceResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "put",
+    path: "/api/opportunities/:opportunity_id/references/:reference_id",
+    alias:
+      "update_opportunity_reference_api_opportunities__opportunity_id__references__reference_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: ReferenceUpdate,
+      },
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "reference_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: ReferenceResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/:opportunity_id/references/:reference_id",
+    alias:
+      "delete_opportunity_reference_api_opportunities__opportunity_id__references__reference_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "reference_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
     errors: [
       {
         status: 422,
@@ -803,6 +1171,65 @@ const endpoints = makeApi([
     ],
   },
   {
+    method: "put",
+    path: "/api/opportunities/:opportunity_id/risks/:risk_id",
+    alias:
+      "update_opportunity_risk_api_opportunities__opportunity_id__risks__risk_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: RiskUpdate,
+      },
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "risk_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: RiskResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/:opportunity_id/risks/:risk_id",
+    alias:
+      "delete_opportunity_risk_api_opportunities__opportunity_id__risks__risk_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "risk_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
     method: "get",
     path: "/api/opportunities/:opportunity_id/legal-checklist",
     alias:
@@ -852,6 +1279,65 @@ const endpoints = makeApi([
     ],
   },
   {
+    method: "put",
+    path: "/api/opportunities/:opportunity_id/legal-checklist/:item_id",
+    alias:
+      "update_opportunity_legal_checklist_item_api_opportunities__opportunity_id__legal_checklist__item_id__put",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: LegalChecklistItemUpdate,
+      },
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "item_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: LegalChecklistItemResponse,
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/opportunities/:opportunity_id/legal-checklist/:item_id",
+    alias:
+      "delete_opportunity_legal_checklist_item_api_opportunities__opportunity_id__legal_checklist__item_id__delete",
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "opportunity_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+      {
+        name: "item_id",
+        type: "Path",
+        schema: z.string().uuid(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 422,
+        description: `Validation Error`,
+        schema: HTTPValidationError,
+      },
+    ],
+  },
+  {
     method: "get",
     path: "/api/opportunities/:opportunity_id/all-tabs",
     alias:
@@ -874,6 +1360,7 @@ const endpoints = makeApi([
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

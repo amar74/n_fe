@@ -6,6 +6,7 @@ import {
   CalendarDays, BarChart3, Wallet, AlertCircle, Target, Eye, EyeOff, Key, Copy
 } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
+import { copyToClipboard } from '@/utils/clipboard';
 import { toast } from 'sonner';
 import { useState } from 'react';
 
@@ -44,16 +45,39 @@ export default function EmployeeProfilePage() {
     toast.info('CV download feature - coming soon');
   };
 
-  const handleCopyPassword = () => {
-    if (temporaryPassword) {
-      navigator.clipboard.writeText(temporaryPassword);
-      toast.success('Password copied to clipboard');
+  const handleCopyEmployeeId = async () => {
+    if (!employee?.employee_number) {
+      toast.error('Employee ID not available');
+      return;
     }
+
+    await copyToClipboard(employee.employee_number);
+    toast.success('Employee ID copied to clipboard');
   };
 
-  const handleCopyCredentials = () => {
-    const credentials = `Email: ${employee.email}\nPassword: ${temporaryPassword || 'Not available'}`;
-    navigator.clipboard.writeText(credentials);
+  const handleCopyUserId = async () => {
+    if (!employee?.user_id) {
+      toast.error('User ID not available');
+      return;
+    }
+
+    await copyToClipboard(employee.user_id);
+    toast.success('User ID copied to clipboard');
+  };
+
+  const handleCopyPassword = async () => {
+    if (!temporaryPassword) {
+      toast.error('Temporary password not available');
+      return;
+    }
+
+    await copyToClipboard(temporaryPassword);
+    toast.success('Password copied to clipboard');
+  };
+
+  const handleCopyCredentials = async () => {
+    const credentials = `Employee ID: ${employee.employee_number}\nUser ID: ${employee.user_id || 'Not assigned'}\nEmail: ${employee.email}\nPassword: ${temporaryPassword || 'Not available'}`;
+    await copyToClipboard(credentials);
     toast.success('Login credentials copied to clipboard');
   };
 
@@ -189,7 +213,37 @@ export default function EmployeeProfilePage() {
                   {employee.name.charAt(0).toUpperCase()}
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">{employee.name}</h2>
-                <p className="text-sm text-gray-500 mt-1">{employee.employee_number}</p>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                    <span className="uppercase text-xs tracking-wide text-gray-500">Employee ID</span>
+                    <span className="font-mono text-sm text-gray-900 bg-blue-50 border border-blue-200 px-2 py-1 rounded-md">
+                      {employee.employee_number}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyEmployeeId}
+                      className="p-2 rounded-md border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {employee.user_id && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+                      <span className="uppercase text-xs tracking-wide text-gray-500">User ID</span>
+                      <span className="font-mono text-xs sm:text-sm text-gray-900 bg-purple-50 border border-purple-200 px-2 py-1 rounded-md break-all">
+                        {employee.user_id}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCopyUserId}
+                        className="p-2 rounded-md border border-purple-200 text-purple-600 hover:bg-purple-50 transition-colors"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
                 <div className="mt-3">
                   <span className={`inline-flex px-3 py-1 rounded-full text-sm font-semibold ${
                     employee.status === 'active' 

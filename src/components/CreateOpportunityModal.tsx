@@ -5,14 +5,9 @@ import { AccountListItem } from '../types/accounts';
 import { useDataEnrichment } from '../hooks/useDataEnrichment';
 import { useAuth } from '../hooks/useAuth';
 import { loadGoogleMaps } from '@/lib/google-maps-loader';
+import { toast } from 'react-hot-toast';
 
-type CreateOpportunityModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: OpportunityFormData) => void;
-}
-
-interface OpportunityFormData {
+export interface OpportunityFormData {
   companyWebsite: string;
   opportunityName: string;
   selectedAccount: string;
@@ -29,7 +24,27 @@ interface OpportunityFormData {
   projectDescription: string;
 }
 
-export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: CreateOpportunityModalProps) => {
+type CreateOpportunityModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: OpportunityFormData) => void;
+  initialValues?: Partial<OpportunityFormData>;
+  title?: string;
+  description?: string;
+  enableAutoEnhancement?: boolean;
+  requireAccount?: boolean;
+}
+
+export const CreateOpportunityModal = memo(({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialValues,
+  title,
+  description,
+  enableAutoEnhancement = true,
+  requireAccount = true,
+}: CreateOpportunityModalProps) => {
   const { user } = useAuth();
   const addressInputRef = useRef<HTMLInputElement>(null);
   
@@ -51,6 +66,33 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
   });
 
   const [errors, setErrors] = useState<Partial<OpportunityFormData>>({});
+  const initialValuesRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!isOpen || !initialValues) return;
+    const serialized = JSON.stringify(initialValues);
+    if (initialValuesRef.current === serialized) return;
+    initialValuesRef.current = serialized;
+    const incoming = { ...initialValues };
+    if (!incoming.date || Number.isNaN(new Date(incoming.date).getTime())) {
+      incoming.date = new Date().toISOString().split('T')[0];
+    }
+    setFormData(prev => ({
+      ...prev,
+      ...incoming,
+    }));
+    setHasAIRun(false);
+  }, [initialValues, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      initialValuesRef.current = '';
+    }
+
+    if (!formData.date.trim()) {
+      newErrors.date = 'Date is required';
+    }
+  }, [isOpen]);
 
   // Update opportunityApprover when user data loads or changes
   useEffect(() => {
@@ -84,11 +126,13 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
   const [hasAIRun, setHasAIRun] = useState(false); // Track if AI has already run
 
   const { enhanceAccountData, enhanceOpportunityData, isLoading: isAILoading, error: aiError } = useDataEnrichment({
-    autoApply: true,
+    autoApply: enableAutoEnhancement,
     confidenceThreshold: 0.6,  // Lowered from 0.7 for better auto-apply
     onSuggestionReceived: (suggestion) => {
-      // Only apply suggestions if AI hasn't run yet (prevents overwriting user selections)
-      if (hasAIRun) return;
+      // Only auto-apply when enabled (ingestion flow keeps fields untouched)
+      if (!enableAutoEnhancement || hasAIRun) {
+        return;
+      }
       
       console.log('🤖 AI Suggestions received:', suggestion);
       console.log('Full suggestion object:', JSON.stringify(suggestion, null, 2));
@@ -331,10 +375,10 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
   }, [formData.companyWebsite, formData.opportunityName, formData.location, formData.marketSector, formData.projectDescription, enhanceOpportunityData]);
 
   useEffect(() => {
-    // Only run AI enhancement once - don't run if it already ran
+    // Only run AI enhancement once per modal open
     if (hasAIRun) return;
     
-    if (formData.companyWebsite && formData.companyWebsite.trim() && 
+    if (enableAutoEnhancement && formData.companyWebsite && formData.companyWebsite.trim() && 
         !formData.companyWebsite.includes('xyz.com') && 
         !isAIEnhancing && !isAILoading) {
       
@@ -347,7 +391,7 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [formData.companyWebsite, isAIEnhancing, isAILoading, hasAIRun, handleAIEnhancement]);
+  }, [enableAutoEnhancement, formData.companyWebsite, isAIEnhancing, isAILoading, hasAIRun, handleAIEnhancement]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<OpportunityFormData> = {};
@@ -362,12 +406,14 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
       newErrors.opportunityName = 'Opportunity Name is required';
     }
     
-    if (!formData.selectedAccount.trim()) {
-      newErrors.selectedAccount = 'Account selection is required';
-    } else if (formData.selectedAccount === '') {
-      newErrors.selectedAccount = 'Please select a valid account from the dropdown';
-    } else if (accounts.length === 0 && !isAccountsLoading) {
-      newErrors.selectedAccount = 'No accounts available. Please create an account first.';
+    if (requireAccount) {
+      if (!formData.selectedAccount.trim()) {
+        newErrors.selectedAccount = 'Account selection is required';
+      } else if (formData.selectedAccount === '') {
+        newErrors.selectedAccount = 'Please select a valid account from the dropdown';
+      } else if (accounts.length === 0 && !isAccountsLoading) {
+        newErrors.selectedAccount = 'No accounts available. Please create an account first.';
+      }
     }
     
     if (!formData.date.trim()) {
@@ -379,7 +425,11 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    if (!isValid) {
+      toast.error('Please fix the highlighted fields before continuing.');
+    }
+    return isValid;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -450,8 +500,12 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
                 <Sparkles className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Create New Opportunity</h2>
-                <p className="text-gray-600 text-sm font-medium mt-1">AI-powered opportunity creation and management</p>
+                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+                  {title ?? 'Create New Opportunity'}
+                </h2>
+                <p className="text-gray-600 text-sm font-medium mt-1">
+                  {description ?? 'AI-powered opportunity creation and management'}
+                </p>
               </div>
             </div>
             <button
@@ -622,32 +676,6 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <label className="block text-sm font-semibold text-gray-700">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
-                    placeholder="City"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.state}
-                    onChange={(e) => handleInputChange('state', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
-                    placeholder="State"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-gray-700">
                     ZIP Code
                     {isZipLookupLoading && (
                       <span className="ml-2 text-xs text-blue-600 italic">(Looking up...)</span>
@@ -672,6 +700,32 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
                     )}
                   </div>
                   <p className="text-xs text-gray-500 italic">Auto-fills city and state</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
+                    placeholder="State"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400"
+                    placeholder="City"
+                  />
                 </div>
               </div>
             </div>
@@ -767,10 +821,18 @@ export const CreateOpportunityModal = memo(({ isOpen, onClose, onSubmit }: Creat
                   <input
                     type="date"
                     value={formData.date}
-                    readOnly
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium bg-gray-50 text-gray-600 cursor-not-allowed"
+                    onChange={(e) => handleInputChange('date', e.target.value)}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white ${
+                      errors.date ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 hover:border-gray-400'
+                    }`}
                   />
                 </div>
+                {errors.date && (
+                  <p className="text-red-600 text-sm flex items-center gap-1">
+                    <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                    {errors.date}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

@@ -4,7 +4,16 @@ export interface Stakeholder {
   designation: string;
   email: string;
   contact_number: string;
-  influence_level: 'High' | 'Medium' | 'Low';
+  influence_level:
+    | 'High'
+    | 'Medium'
+    | 'Low'
+    | 'Executive Sponsor'
+    | 'Economic Buyer'
+    | 'Technical Evaluator'
+    | 'Project Champion'
+    | 'Finance Approver'
+    | 'Operational Lead';
   created_at: string;
 }
 
@@ -46,8 +55,7 @@ export interface Reference {
   client: string;
   year: string;
   status: string;
-  value: string;
-  outcome: string;
+  total_amount: string;
   created_at: string;
 }
 
@@ -64,7 +72,7 @@ export interface Risk {
 export interface LegalChecklistItem {
   id: string;
   item_name: string;
-  status: 'Completed' | 'Pending' | 'Not Applicable';
+  status: 'Complete' | 'In progress' | 'Pending';
   created_at: string;
 }
 
@@ -75,25 +83,44 @@ export interface OverviewData {
   documents_summary?: Record<string, any>;
 }
 
-export interface DeliveryModelData {
+export interface DeliveryModelPhase {
+  phase_id: string;
+  name: string;
+  status?: string;
+  duration?: string;
+  budget?: number | null;
+  updated_by?: string | null;
+  description?: string | null;
+  last_updated?: string | null;
+}
+
+export interface DeliveryModelEntry {
+  model_id: string;
   approach: string;
-  key_phases: Array<{
-    phase: string;
-    duration: string;
-    resources: string;
-    status?: string;
-    completed_by?: string;
-  }>;
+  phases: DeliveryModelPhase[];
+  is_active?: boolean;
+  total_budget?: number | null;
+  notes?: string | null;
+  updated_by?: string | null;
+  last_updated?: string | null;
+  templateId?: string | null;
+}
+
+export interface DeliveryModelData {
+  approach?: string;
+  key_phases: DeliveryModelPhase[];
   identified_gaps?: string[];
+  models?: DeliveryModelEntry[];
+  active_model_id?: string | null;
 }
 
 export interface FinancialSummaryData {
   total_project_value: number;
-  phases: Array<{
+  budget_categories: Array<{
     name: string;
-    budget: number;
+    amount: number;
     percentage: number;
   }>;
-  contingency: number;
-  profit_margin_percentage?: number;
+  contingency_percentage: number;
+  profit_margin_percentage: number;
 }

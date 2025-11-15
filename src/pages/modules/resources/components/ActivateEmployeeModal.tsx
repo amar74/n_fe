@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { X, Mail, Lock, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, Mail, Lock, Shield, CheckCircle2, AlertCircle, Copy, IdCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/utils/clipboard';
 
 interface ActivateEmployeeModalProps {
   employee: {
     id: string;
     name: string;
     email: string;
+    employee_number?: string;
     role?: string;
   } | null;
   isOpen: boolean;
@@ -41,6 +43,31 @@ const PERMISSIONS = [
   { id: 'manage_team', label: 'Manage Team', category: 'Team' },
 ];
 
+const getEmployeeLoginId = (employee: ActivateEmployeeModalProps['employee']) => {
+  return employee?.employee_number?.trim() ?? '';
+};
+
+const getEmployeeRecordId = (employee: ActivateEmployeeModalProps['employee']) => {
+  if (!employee) return '';
+
+  const numberDigits = employee.employee_number?.replace(/\D/g, '') ?? '';
+  if (numberDigits.length >= 5) {
+    return numberDigits.slice(-6);
+  }
+
+  if (employee.id) {
+    const hexTail = employee.id.replace(/-/g, '').slice(-6);
+    if (hexTail) {
+      const decimal = parseInt(hexTail, 16);
+      if (!Number.isNaN(decimal)) {
+        return decimal.toString().padStart(6, '0').slice(-6);
+      }
+    }
+  }
+
+  return '';
+};
+
 export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }: ActivateEmployeeModalProps) {
   const [userRole, setUserRole] = useState('employee');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
@@ -48,6 +75,29 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
   const [temporaryPassword, setTemporaryPassword] = useState('');
   const [isActivating, setIsActivating] = useState(false);
   const [useQuickActivate, setUseQuickActivate] = useState(false);
+
+  const employeeLoginId = getEmployeeLoginId(employee);
+  const employeeRecordId = getEmployeeRecordId(employee);
+
+  const handleCopyEmployeeId = async () => {
+    if (!employeeLoginId) {
+      toast.error('Employee ID is not available yet.');
+      return;
+    }
+
+    await copyToClipboard(employeeLoginId);
+    toast.success(`Employee ID ${employeeLoginId} copied to clipboard`);
+  };
+
+  const handleCopyRecordId = async () => {
+    if (!employeeRecordId) {
+      toast.error('Employee record ID is not available yet.');
+      return;
+    }
+
+    await copyToClipboard(employeeRecordId);
+    toast.success(`Employee record ID ${employeeRecordId} copied to clipboard`);
+  };
 
   if (!isOpen || !employee) return null;
 
@@ -209,6 +259,66 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
               </div>
             </div>
           )}
+
+          {/* Employee Login ID */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2 text-base font-semibold">
+              <Mail className="w-4 h-4" />
+              Employee ID (Username)
+            </Label>
+            <div className="flex gap-3">
+              <Input
+                type="text"
+                value={employeeLoginId}
+                placeholder="Will be generated during activation"
+                readOnly
+                className="flex-1 bg-blue-50 border-blue-300 font-mono"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCopyEmployeeId}
+                disabled={!employeeLoginId}
+                className="flex items-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Copy ID
+              </Button>
+            </div>
+            <p className="text-xs text-gray-600">
+              Employees use this ID to log in. Share it along with the temporary password below.
+            </p>
+          </div>
+
+          {/* Employee Record ID */}
+          <div className="space-y-3">
+            <Label className="flex items-center gap-2 text-base font-semibold">
+              <IdCard className="w-4 h-4" />
+              Employee Record ID
+            </Label>
+            <div className="flex gap-3">
+              <Input
+                type="text"
+                value={employeeRecordId}
+                placeholder="Will be generated during activation"
+                readOnly
+                className="flex-1 bg-purple-50 border-purple-300 font-mono"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCopyRecordId}
+                disabled={!employeeRecordId}
+                className="flex items-center gap-2"
+              >
+                <Copy className="w-4 h-4" />
+                Copy ID
+              </Button>
+            </div>
+            <p className="text-xs text-gray-600">
+              Internal reference for this employee record. Short 5-6 digit code once the profile is created.
+            </p>
+          </div>
 
           {/* Password Generation */}
           <div className="space-y-3">

@@ -24,6 +24,7 @@ import { apiClient } from '@/services/api/client';
 interface ProjectInfo {
   projectName: string;
   durationMonths: number;
+  annualEscalationRate: number;
 }
 
 interface StaffMember {
@@ -38,6 +39,9 @@ interface StaffMember {
   hourlyRate: number;
   monthlyCost: number;
   totalCost: number;
+  initialEscalationRate?: number;
+  escalationRate?: number | null;
+  escalationEffectiveMonth?: number;
 }
 
 interface Employee {
@@ -307,11 +311,18 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
           
           <div className="p-6">
             <div className="space-y-3">
-              {staff.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-5 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-300 hover:shadow-lg transition-all group"
-                >
+              {staff.map((member) => {
+                const baseEscalation =
+                  member.initialEscalationRate ?? projectInfo.annualEscalationRate;
+                const updatedEscalation = member.escalationRate;
+                const effectiveMonth =
+                  member.escalationEffectiveMonth ?? member.startMonth;
+
+                return (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between p-5 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-300 hover:shadow-lg transition-all group"
+                  >
                   <div className="flex items-center gap-4 flex-1">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                       <Users className="w-6 h-6 text-white" />
@@ -363,8 +374,21 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                       </button>
                     </div>
                   </div>
-                </div>
-              ))}
+
+                  <div className="mt-3 text-xs text-gray-600 flex items-center gap-4">
+                    <span>
+                      Base escalation: <strong>{baseEscalation.toFixed(1)}%</strong>
+                    </span>
+                    {updatedEscalation != null && updatedEscalation !== baseEscalation && (
+                      <span>
+                        Updated to <strong>{updatedEscalation.toFixed(1)}%</strong> from month{' '}
+                        <strong>{effectiveMonth}</strong>
+                      </span>
+                    )}
+                  </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Cost Summary */}

@@ -8,12 +8,14 @@ export interface OpportunityDocument {
   file_type: string;
   file_size: number;
   file_path?: string;
+  file_url?: string;
   category: string;
   purpose: string;
   description?: string;
   tags?: string;
   status: string;
   is_available_for_proposal: boolean;
+  upload_date?: string;
   uploaded_at: string;
   updated_at: string;
 }
@@ -36,6 +38,9 @@ export interface UpdateOpportunityDocumentRequest {
   description?: string;
   tags?: string;
   is_available_for_proposal?: boolean;
+  file_url?: string;
+  file_path?: string;
+  status?: string;
 }
 
 export interface OpportunityDocumentListResponse {
@@ -138,6 +143,19 @@ class OpportunityDocumentsApi {
       return response.data;
     } catch (err) {
       this.handleError(err, `upload file failed for opportunity ${opportunityId}`);
+      throw err;
+    }
+  }
+
+  async downloadDocument(opportunityId: string, documentId: string) {
+    try {
+      const response = await apiClient.get(
+        `${this.baseUrl}/${opportunityId}/documents/${documentId}/download`,
+        { responseType: 'blob' }
+      );
+      return response;
+    } catch (err) {
+      this.handleError(err, `download document failed for opportunity ${opportunityId}, document ${documentId}`);
       throw err;
     }
   }

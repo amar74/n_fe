@@ -1,22 +1,36 @@
 import { makeApi, Zodios, type ZodiosOptions } from "@zodios/core";
 import { z } from "zod";
 
-import { UserResponse } from "./common";
 import { HTTPValidationError } from "./common";
 import { ValidationError } from "./common";
 
+const app__schemas__user__UserResponse = z
+  .object({
+    id: z.string(),
+    email: z.string(),
+    username: z.union([z.string(), z.null()]).optional(),
+    name: z.union([z.string(), z.null()]).optional(),
+    role: z.string(),
+    org_id: z.union([z.string(), z.null()]).optional(),
+    created_at: z.union([z.string(), z.null()]).optional(),
+    updated_at: z.union([z.string(), z.null()]).optional(),
+    last_login: z.union([z.string(), z.null()]).optional(),
+  })
+  .passthrough();
 const UserCreateRequest = z
   .object({ email: z.string(), role: z.string().optional().default("admin") })
   .passthrough();
 const UserUpdateRequest = z
   .object({
     email: z.union([z.string(), z.null()]),
+    name: z.union([z.string(), z.null()]),
     role: z.union([z.string(), z.null()]),
   })
   .partial()
   .passthrough();
 
 export const schemas = {
+  app__schemas__user__UserResponse,
   UserCreateRequest,
   UserUpdateRequest,
 };
@@ -34,7 +48,7 @@ const endpoints = makeApi([
         schema: UserCreateRequest,
       },
     ],
-    response: UserResponse,
+    response: app__schemas__user__UserResponse,
     errors: [
       {
         status: 422,
@@ -60,7 +74,7 @@ const endpoints = makeApi([
         schema: z.number().int().gte(1).lte(1000).optional().default(100),
       },
     ],
-    response: z.array(UserResponse),
+    response: z.array(app__schemas__user__UserResponse),
     errors: [
       {
         status: 422,
@@ -81,7 +95,7 @@ const endpoints = makeApi([
         schema: z.number().int(),
       },
     ],
-    response: UserResponse,
+    response: app__schemas__user__UserResponse,
     errors: [
       {
         status: 422,
@@ -107,7 +121,7 @@ const endpoints = makeApi([
         schema: z.number().int(),
       },
     ],
-    response: UserResponse,
+    response: app__schemas__user__UserResponse,
     errors: [
       {
         status: 422,
@@ -166,6 +180,7 @@ const endpoints = makeApi([
     ],
   },
 ]);
+
 
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {

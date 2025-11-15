@@ -41,3 +41,36 @@ export const formatProjectValue = (value: number): string => {
     return `$${value.toFixed(0)}`;
   }
 };
+
+type CurrencyFormatOptions = {
+  currency?: string;
+  notation?: 'standard' | 'compact';
+  maximumFractionDigits?: number;
+  minimumFractionDigits?: number;
+};
+
+export const formatCurrency = (
+  value?: number | null,
+  {
+    currency = 'USD',
+    notation = 'standard',
+    maximumFractionDigits = notation === 'compact' ? 1 : 0,
+    minimumFractionDigits = 0,
+  }: CurrencyFormatOptions = {}
+): string => {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return '—';
+  }
+
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      notation,
+      maximumFractionDigits,
+      minimumFractionDigits,
+    }).format(value);
+  } catch (error) {
+    return `$${value.toFixed(Math.max(maximumFractionDigits, minimumFractionDigits))}`;
+  }
+};

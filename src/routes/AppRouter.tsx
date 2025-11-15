@@ -24,6 +24,7 @@ import AccountsUserPermissions from '@/pages/modules/AccountsUserPermissions';
 import OpportunitiesDashboardPage from '@/pages/modules/opportunities/OpportunitiesDashboardPage';
 import AIAnalysisPage from '@/pages/modules/opportunities/AIAnalysisPage';
 import PipelineOverviewPage from '@/pages/modules/opportunities/PipelineOverviewPage';
+import IngestionQueuePage from '@/pages/modules/opportunities/IngestionQueuePage';
 import ProposalsPage from '@/pages/modules/proposals/ProposalsPage';
 import ResourcesPage from '@/pages/modules/resources/ResourcesPage';
 import ResourcesDashboardPage from '@/pages/modules/resources/ResourcesDashboardPage';
@@ -40,12 +41,14 @@ import ViewStaffPlan from '@/pages/modules/staffing/ViewStaffPlan';
 import ContractsPage from '@/pages/modules/contracts/ContractsPage';
 import ProjectsPage from '@/pages/modules/projects/ProjectsPage';
 import FinancePage from '@/pages/modules/finance/FinancePage';
+import FinancePlanningPage from '@/pages/modules/finance/FinancePlanningPage';
 import ProcurementPage from '@/pages/modules/procurement/ProcurementPage';
 import KpisPage from '@/pages/modules/kpis/KpisPage';
 import OrganizationUpdatePage from '@/pages/OrganizationUpdatePage';
 import ProfilePage from '@/pages/ProfilePage';
 import ProfileSettingsPage from '@/pages/ProfileSettingsPage';
 import OrganizationSettingsPage from '@/pages/OrganizationSettingsPage';
+import DeliveryModelsPage from '@/pages/modules/delivery-models/DeliveryModelsPage';
 // Custom Survey System Pages
 import SurveysPage from '@/pages/SurveysPage/SurveysPage';
 import AccountSurveyDashboard from '@/pages/AccountSurveyDashboard/AccountSurveyDashboard';
@@ -100,6 +103,10 @@ const router = createBrowserRouter([
       {
         path: 'module/opportunities/pipeline/:opportunityId',
         element: <PipelineOverviewPage />,
+      },
+      {
+        path: 'module/opportunities/ingestion',
+        element: <IngestionQueuePage />,
       },
       {
         path: 'module/accounts',
@@ -182,8 +189,16 @@ const router = createBrowserRouter([
         element: <FinancePage />,
       },
       {
+        path: 'module/finance/planning',
+        element: <FinancePlanningPage />,
+      },
+      {
         path: 'module/procurement',
         element: <ProcurementPage />,
+      },
+      {
+        path: 'module/delivery-models',
+        element: <DeliveryModelsPage />,
       },
       {
         path: 'module/kpis',
