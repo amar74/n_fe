@@ -33,10 +33,10 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
               
               
               <div className="absolute left-[91.21px] top-5">
-                <div className="font-inter font-medium text-[#a7a7a7] text-[14px] tracking-[-0.28px] leading-[24px]">
+                <div className="font-outfit font-medium text-[#a7a7a7] text-[14px] tracking-[-0.28px] leading-[24px]">
                   {stat.title}
                 </div>
-                <div className="font-inter font-semibold text-black text-[24px] leading-[32px] mt-[1px]">
+                <div className="font-outfit font-semibold text-black text-[24px] leading-[32px] mt-[1px]">
                   {stat.value}
                 </div>
               </div>

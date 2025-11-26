@@ -44,6 +44,7 @@ import FinancePage from '@/pages/modules/finance/FinancePage';
 import FinancePlanningPage from '@/pages/modules/finance/FinancePlanningPage';
 import ProcurementPage from '@/pages/modules/procurement/ProcurementPage';
 import KpisPage from '@/pages/modules/kpis/KpisPage';
+import AIAgenticPage from '@/pages/modules/ai-agentic/AIAgenticPage';
 import OrganizationUpdatePage from '@/pages/OrganizationUpdatePage';
 import ProfilePage from '@/pages/ProfilePage';
 import ProfileSettingsPage from '@/pages/ProfileSettingsPage';
@@ -203,6 +204,10 @@ const router = createBrowserRouter([
       {
         path: 'module/kpis',
         element: <KpisPage />,
+      },
+      {
+        path: 'module/ai-agentic',
+        element: <AIAgenticPage />,
       },
       {
         path: 'module/survey/account',

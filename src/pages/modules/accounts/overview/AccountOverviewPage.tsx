@@ -28,7 +28,7 @@ function AccountDetailsPage() {
   // Loading state
   if (isLoading || (!account && !error)) {
     return (
-      <div className="w-full h-full bg-[#f5f3f2] font-inter flex items-center justify-center">
+      <div className="w-full h-full bg-[#f5f3f2] font-outfit flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ed8a09]"></div>
           <p className="text-[#6e6e6e] text-sm">Loading account details...</p>
@@ -40,7 +40,7 @@ function AccountDetailsPage() {
   // Error state
   if (error && !isLoading) {
     return (
-      <div className="w-full h-full bg-[#f5f3f2] font-inter flex items-center justify-center">
+      <div className="w-full h-full bg-[#f5f3f2] font-outfit flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4 text-center">
           <div className="text-red-500 text-6xl">⚠️</div>
           <h3 className="text-lg font-medium text-[#0f0901]">Account Not Found</h3>
@@ -60,14 +60,14 @@ function AccountDetailsPage() {
 
   if (!account || !formData) {
     return (
-      <div className="w-full h-full bg-[#f5f3f2] font-inter flex items-center justify-center">
+      <div className="w-full h-full bg-[#f5f3f2] font-outfit flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ed8a09]"></div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full bg-[#f5f3f2] font-inter">
+    <div className="w-full h-full bg-[#f5f3f2] font-outfit">
       <div className="flex flex-col gap-7 w-full px-7 pt-2 pb-4">
         
         <div className="flex flex-col gap-2 items-center justify-start w-full">
@@ -76,12 +76,12 @@ function AccountDetailsPage() {
             <div className="flex items-end justify-between w-full">
               <div className="flex flex-col gap-2 items-start justify-start w-[1120px]">
                 <h1 
-                  className="font-inter font-medium text-[#ed8a09] text-[40px] text-center leading-normal overflow-hidden text-ellipsis whitespace-nowrap"
+                  className="font-outfit font-medium text-[#ed8a09] text-[40px] text-center leading-normal overflow-hidden text-ellipsis whitespace-nowrap"
                   style={{ width: 'min-content', maxWidth: '100%' }}
                 >
                   {account.client_name}
                 </h1>
-                <p className="font-inter font-medium text-[#a7a7a7] text-[16px] leading-normal">
+                <p className="font-outfit font-medium text-[#a7a7a7] text-[16px] leading-normal">
                   {account.account_id}
                 </p>
               </div>
@@ -89,7 +89,7 @@ function AccountDetailsPage() {
                 onClick={handleEditToggle}
                 className="bg-[#0f0901] border border-[#0f0901] rounded-[16px] h-14 flex items-center justify-center px-6 py-2 w-[148px]"
               >
-                <span className="font-inter font-medium text-white text-[14px] leading-[24px]">
+                <span className="font-outfit font-medium text-white text-[14px] leading-[24px]">
                   {isEditing ? 'Cancel Edit' : 'Edit Account'}
                 </span>
               </button>

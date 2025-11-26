@@ -24,7 +24,6 @@ import { apiClient } from '@/services/api/client';
 interface ProjectInfo {
   projectName: string;
   durationMonths: number;
-  annualEscalationRate: number;
 }
 
 interface StaffMember {
@@ -39,9 +38,8 @@ interface StaffMember {
   hourlyRate: number;
   monthlyCost: number;
   totalCost: number;
-  initialEscalationRate?: number;
   escalationRate?: number | null;
-  escalationEffectiveMonth?: number;
+  escalationStartMonth?: number;
 }
 
 interface Employee {
@@ -195,7 +193,7 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                 <Users className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#1A1A1A] font-inter">
+                <h2 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
                   Staff Planning
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
@@ -312,11 +310,8 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
           <div className="p-6">
             <div className="space-y-3">
               {staff.map((member) => {
-                const baseEscalation =
-                  member.initialEscalationRate ?? projectInfo.annualEscalationRate;
-                const updatedEscalation = member.escalationRate;
-                const effectiveMonth =
-                  member.escalationEffectiveMonth ?? member.startMonth;
+                const escalationRate = member.escalationRate ?? 0;
+                const escalationStartMonth = member.escalationStartMonth ?? member.startMonth;
 
                 return (
                   <div
@@ -376,14 +371,13 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                   </div>
 
                   <div className="mt-3 text-xs text-gray-600 flex items-center gap-4">
-                    <span>
-                      Base escalation: <strong>{baseEscalation.toFixed(1)}%</strong>
-                    </span>
-                    {updatedEscalation != null && updatedEscalation !== baseEscalation && (
+                    {escalationRate != null && escalationRate > 0 ? (
                       <span>
-                        Updated to <strong>{updatedEscalation.toFixed(1)}%</strong> from month{' '}
-                        <strong>{effectiveMonth}</strong>
+                        Escalation: <strong>{escalationRate.toFixed(1)}%</strong> starting from month{' '}
+                        <strong>{escalationStartMonth}</strong>
                       </span>
+                    ) : (
+                      <span className="text-gray-500">No escalation set (0%)</span>
                     )}
                   </div>
                   </div>

@@ -409,7 +409,7 @@ const ClientStakeholderTab = memo(({ opportunity }: TabProps) => {
           <form onSubmit={handleSubmitStakeholder} className="space-y-6">
             <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5">
               <p className="mb-4 text-sm font-medium text-indigo-900">Identity</p>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 font-inter">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 font-outfit">
                 <div className="space-y-2">
                   <Label htmlFor="stakeholder-name" className="text-xs uppercase text-gray-500 tracking-wider">
                     Full Name
@@ -441,7 +441,7 @@ const ClientStakeholderTab = memo(({ opportunity }: TabProps) => {
 
             <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-inner">
               <p className="mb-4 text-sm font-medium text-gray-900">Contact Preferences</p>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 font-inter">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 font-outfit">
                 <div className="space-y-2">
                   <Label htmlFor="stakeholder-email" className="text-xs uppercase text-gray-500 tracking-wider">
                     Email
@@ -533,7 +533,7 @@ const ClientStakeholderTab = memo(({ opportunity }: TabProps) => {
               Document the client’s evaluation criteria to align our win strategy.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmitDriver} className="space-y-6 font-inter">
+          <form onSubmit={handleSubmitDriver} className="space-y-6 font-outfit">
             <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5">
               <div className="space-y-2">
                 <Label className="text-xs uppercase text-gray-500 tracking-wider">Driver Category</Label>

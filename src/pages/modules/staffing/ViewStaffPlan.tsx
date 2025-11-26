@@ -12,14 +12,17 @@ import {
   CheckCircle2,
   Edit,
   Download,
-  Loader2
+  Loader2,
+  PlayCircle,
+  CheckCircle
 } from 'lucide-react';
 import { useStaffPlanning } from '../../../hooks/useStaffPlanning';
+import { extractErrorMessage } from '@/utils/errorUtils';
 
 const ViewStaffPlan: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { useStaffPlanWithAllocations } = useStaffPlanning();
+  const { useStaffPlanWithAllocations, updateStaffPlan } = useStaffPlanning();
   
   const planId = Number(id);
   const isValidId = !isNaN(planId) && planId > 0;
@@ -102,6 +105,25 @@ const ViewStaffPlan: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleActivate = async () => {
+    if (!plan) return;
+    
+    if (confirm(`Are you sure you want to activate "${plan.project_name}"? Once activated, the plan will be moved from draft to active status.`)) {
+      try {
+        await updateStaffPlan.mutateAsync({
+          id: plan.id,
+          data: {
+            status: 'active'
+          }
+        });
+        refetch(); // Refresh the plan data
+      } catch (error: any) {
+        console.error('Failed to activate plan:', error);
+        alert('Failed to activate plan: ' + extractErrorMessage(error));
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -136,6 +158,21 @@ const ViewStaffPlan: React.FC = () => {
                 }`}>
                   {plan.status.charAt(0).toUpperCase() + plan.status.slice(1)}
                 </span>
+                
+                {plan.status === 'draft' && (
+                  <button
+                    onClick={handleActivate}
+                    disabled={updateStaffPlan.isPending}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {updateStaffPlan.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <PlayCircle className="w-4 h-4" />
+                    )}
+                    {updateStaffPlan.isPending ? 'Activating...' : 'Activate Plan'}
+                  </button>
+                )}
                 
                 <button 
                   onClick={handleExport}
@@ -189,8 +226,8 @@ const ViewStaffPlan: React.FC = () => {
                 <DollarSign className="w-5 h-5" style={{ color: '#161950' }} />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Cost</p>
-                <p className="text-2xl font-bold text-gray-900">${(plan.total_cost || 0).toLocaleString()}</p>
+                <p className="text-sm text-gray-500">Total Labor Cost</p>
+                <p className="text-2xl font-bold text-gray-900">${(plan.total_labor_cost || 0).toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -220,7 +257,7 @@ const ViewStaffPlan: React.FC = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <span className="text-gray-600">Total Labor Cost</span>
-                <span className="font-bold text-gray-900">${(plan.total_cost || 0).toLocaleString()}</span>
+                <span className="font-bold text-gray-900">${(plan.total_labor_cost || 0).toLocaleString()}</span>
               </div>
               
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
@@ -230,7 +267,12 @@ const ViewStaffPlan: React.FC = () => {
               
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <span className="text-gray-600">Overhead Amount</span>
-                <span className="font-bold text-gray-900">${((plan.total_cost || 0) * (plan.overhead_rate / 100)).toLocaleString()}</span>
+                <span className="font-bold text-gray-900">${(plan.total_overhead || 0).toLocaleString()}</span>
+              </div>
+              
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <span className="text-gray-600">Total Cost (Labor + Overhead)</span>
+                <span className="font-bold text-gray-900">${(plan.total_cost || 0).toLocaleString()}</span>
               </div>
               
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
@@ -239,8 +281,13 @@ const ViewStaffPlan: React.FC = () => {
               </div>
               
               <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                <span className="text-gray-600">Profit Amount</span>
+                <span className="font-bold text-gray-900">${(plan.total_profit || 0).toLocaleString()}</span>
+              </div>
+              
+              <div className="flex justify-between items-center py-3 border-b border-gray-100">
                 <span className="text-gray-600">Escalation Rate</span>
-                <span className="font-bold text-gray-900">{plan.annual_escalation_rate}% annually</span>
+                <span className="font-bold text-gray-900">Employee-level rates</span>
               </div>
               
               <div className="flex justify-between items-center py-4 px-6 mt-4 rounded-lg" style={{ backgroundColor: '#f0f0ff' }}>
@@ -282,7 +329,7 @@ const ViewStaffPlan: React.FC = () => {
                     <TrendingUp className="w-4 h-4 text-gray-500" />
                     <span className="text-sm font-medium text-gray-600">Annual Escalation</span>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{plan.annual_escalation_rate}% per year</p>
+                  <p className="text-lg font-bold text-gray-900">Employee-level rates applied</p>
                 </div>
 
               <div className="p-4 bg-gray-50 rounded-lg">
@@ -315,44 +362,69 @@ const ViewStaffPlan: React.FC = () => {
                     <th className="text-center py-3 px-4 text-sm font-bold text-gray-700" style={{ backgroundColor: '#f0f0ff' }}>End Month</th>
                     <th className="text-center py-3 px-4 text-sm font-bold text-gray-700" style={{ backgroundColor: '#f0f0ff' }}>Hours/Week</th>
                     <th className="text-right py-3 px-4 text-sm font-bold text-gray-700" style={{ backgroundColor: '#f0f0ff' }}>Hourly Rate</th>
+                    <th className="text-left py-3 px-4 text-sm font-bold text-gray-700" style={{ backgroundColor: '#f0f0ff' }}>Escalation</th>
                     <th className="text-right py-3 px-4 text-sm font-bold text-gray-700" style={{ backgroundColor: '#f0f0ff' }}>Total Cost</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {plan.allocations.map((allocation: any, index: number) => (
-                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <div>
-                          <span className="font-medium text-gray-900">{allocation.resource_name || 'N/A'}</span>
-                          {allocation.level && (
-                            <span className="ml-2 text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
-                              {allocation.level}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="text-gray-600">{allocation.role || 'N/A'}</span>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className="text-gray-900">Month {allocation.start_month}</span>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className="text-gray-900">Month {allocation.end_month}</span>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className="text-gray-900">{allocation.hours_per_week}h</span>
-                      </td>
-                      <td className="py-4 px-4 text-right">
-                        <span className="font-medium text-gray-900">${allocation.hourly_rate}/hr</span>
-                      </td>
-                      <td className="py-4 px-4 text-right">
-                        <span className="font-bold text-gray-900">${(allocation.total_cost || 0).toLocaleString()}</span>
-                      </td>
-                    </tr>
-                  ))}
+                  {plan.allocations.map((allocation: any, index: number) => {
+                    // Format escalation periods for display
+                    const formatEscalation = () => {
+                      if (allocation.escalation_periods && Array.isArray(allocation.escalation_periods) && allocation.escalation_periods.length > 0) {
+                        return allocation.escalation_periods
+                          .map((period: any) => 
+                            `M${period.start_month}-${period.end_month}: ${period.rate}%`
+                          )
+                          .join(', ');
+                      }
+                      // Backward compatibility: check for single escalation rate
+                      if (allocation.escalation_rate !== null && allocation.escalation_rate !== undefined) {
+                        const startMonth = allocation.escalation_start_month || allocation.start_month;
+                        return `M${startMonth}-${allocation.end_month}: ${allocation.escalation_rate}%`;
+                      }
+                      return 'None';
+                    };
+
+                    return (
+                      <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-4 px-4">
+                          <div>
+                            <span className="font-medium text-gray-900">{allocation.resource_name || 'N/A'}</span>
+                            {allocation.level && (
+                              <span className="ml-2 text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                                {allocation.level}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-gray-600">{allocation.role || 'N/A'}</span>
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          <span className="text-gray-900">Month {allocation.start_month}</span>
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          <span className="text-gray-900">Month {allocation.end_month}</span>
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          <span className="text-gray-900">{allocation.hours_per_week}h</span>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <span className="font-medium text-gray-900">${allocation.hourly_rate}/hr</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-xs text-gray-600" title={formatEscalation()}>
+                            {formatEscalation()}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <span className="font-bold text-gray-900">${(allocation.total_cost || 0).toLocaleString()}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                   <tr className="border-t-2 border-gray-300" style={{ backgroundColor: '#f0f0ff' }}>
-                    <td colSpan={6} className="py-4 px-4 text-right">
+                    <td colSpan={7} className="py-4 px-4 text-right">
                       <span className="text-lg font-bold text-gray-900">Total Cost:</span>
                     </td>
                     <td className="py-4 px-4 text-right">

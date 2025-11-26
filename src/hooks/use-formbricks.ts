@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createApiClient as createFormbricksApi, schemas } from "@/types/generated/formbricks";
-import { apiClient } from "@/services/api/client";
+import { apiClient, API_BASE_URL } from "@/services/api/client";
 import type { z } from "zod";
 
-const formbricksApi = createFormbricksApi(import.meta.env.VITE_API_BASE_URL, {
+const formbricksApi = createFormbricksApi(API_BASE_URL, {
     axiosInstance: apiClient,
 });
 

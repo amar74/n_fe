@@ -28,7 +28,12 @@ interface ProjectInfo {
   durationMonths: number;
   overheadRate: number;
   profitMargin: number;
-  annualEscalationRate: number;
+}
+
+interface EscalationPeriod {
+  start_month: number;
+  end_month: number;
+  rate: number;
 }
 
 interface StaffMember {
@@ -43,10 +48,13 @@ interface StaffMember {
   hourlyRate: number;
   monthlyCost: number;
   totalCost: number;
-  initialEscalationRate?: number;
-  escalationRate?: number | null;
-  escalationEffectiveMonth?: number;
+  escalationRate?: number | null;  // Deprecated - use escalationPeriods
+  escalationStartMonth?: number;  // Deprecated - use escalationPeriods
+  escalationPeriods?: EscalationPeriod[];  // New format: multiple escalation periods
 }
+
+import { extractErrorMessage } from '@/utils/errorUtils';
+import { toValidUUIDOrNull } from '@/utils/uuidUtils';
 
 export default function CreateStaffPlan() {
   const { id } = useParams<{ id: string }>();
@@ -63,8 +71,7 @@ export default function CreateStaffPlan() {
     projectStartDate: '',
     durationMonths: 12,
     overheadRate: 25,
-    profitMargin: 15,
-    annualEscalationRate: 3
+    profitMargin: 15
   });
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -90,8 +97,7 @@ export default function CreateStaffPlan() {
         projectStartDate: existingPlan.project_start_date || '',
         durationMonths: existingPlan.duration_months || 12,
         overheadRate: existingPlan.overhead_rate || 25,
-        profitMargin: existingPlan.profit_margin || 15,
-        annualEscalationRate: existingPlan.annual_escalation_rate || 3
+        profitMargin: existingPlan.profit_margin || 15
       };
       
       console.log('Populated project info:', loadedProjectInfo);
@@ -158,20 +164,45 @@ export default function CreateStaffPlan() {
         console.log('Creating new staff plan...');
         
         const planData = {
-          project_id: null,  // Will be linked to real opportunity later
+          project_id: toValidUUIDOrNull(projectData.projectId),  // Validate UUID or set to null
           project_name: projectData.projectName,
           project_description: projectData.projectDescription,
           project_start_date: projectData.projectStartDate,
           duration_months: projectData.durationMonths,
           overhead_rate: projectData.overheadRate,
           profit_margin: projectData.profitMargin,
-          annual_escalation_rate: projectData.annualEscalationRate,
+          annual_escalation_rate: null,
         };
 
-        const newPlan = await createStaffPlan.mutateAsync(planData);
-        console.log('Staff plan created:', newPlan);
-        planId = newPlan.id;
-        setCurrentPlanId(planId);
+        try {
+          const newPlan = await createStaffPlan.mutateAsync(planData);
+          console.log('Staff plan created:', newPlan);
+          planId = newPlan.id;
+          setCurrentPlanId(planId);
+        } catch (createError: any) {
+          // Handle duplicate plan error
+          const errorMessage = extractErrorMessage(createError);
+          if (createError.response?.status === 400 && errorMessage.includes('already exists')) {
+            const existingPlanIdMatch = errorMessage.match(/ID: (\d+)/);
+            const existingPlanId = existingPlanIdMatch ? existingPlanIdMatch[1] : null;
+            
+            toast({
+              title: 'Staff Plan Already Exists',
+              description: `${errorMessage}. You can view or delete it first.`,
+              variant: 'destructive',
+              duration: 8000,
+            });
+            
+            // Navigate to the existing plan if ID is found
+            if (existingPlanId) {
+              setTimeout(() => {
+                navigate(`/staffing-plan/${existingPlanId}`);
+              }, 2000);
+            }
+            throw createError; // Re-throw to prevent further processing
+          }
+          throw createError; // Re-throw other errors
+        }
       } else {
         console.log('Using existing plan ID:', planId);
       }
@@ -192,9 +223,9 @@ export default function CreateStaffPlan() {
               end_month: member.endMonth,
               hours_per_week: member.hoursPerWeek,
               hourly_rate: member.hourlyRate,
-              initial_escalation_rate: member.initialEscalationRate ?? projectData.annualEscalationRate,
-              escalation_rate: member.escalationRate ?? null,
-              escalation_effective_month: member.escalationEffectiveMonth ?? member.startMonth,
+              escalation_rate: member.escalationRate ?? null,  // Backward compatibility
+              escalation_start_month: member.escalationStartMonth ?? member.startMonth,  // Backward compatibility
+              escalation_periods: member.escalationPeriods || undefined,
             },
           });
         }
@@ -220,7 +251,7 @@ export default function CreateStaffPlan() {
       console.error('Auto-save failed:', error);
       toast({
         title: 'Save Failed',
-        description: error.response?.data?.detail || error.message || 'Failed to save team members',
+        description: extractErrorMessage(error),
         variant: 'destructive'
       });
     }
@@ -248,7 +279,6 @@ export default function CreateStaffPlan() {
           duration_months: projectInfo.durationMonths,
           overhead_rate: projectInfo.overheadRate,
           profit_margin: projectInfo.profitMargin,
-          escalation_rate: projectInfo.annualEscalationRate,
         };
 
         await updateStaffPlan.mutateAsync({
@@ -278,11 +308,34 @@ export default function CreateStaffPlan() {
       navigate('/staffing-plan');
     } catch (error: any) {
       console.error('Failed to save staff plan:', error);
-      toast({
-        title: 'Save Failed',
-        description: error.response?.data?.detail || error.message || 'Failed to save staff plan',
-        variant: 'destructive'
-      });
+      
+      // Handle duplicate plan error with more user-friendly message
+      const errorMessage = extractErrorMessage(error);
+      if (error.response?.status === 400 && errorMessage.includes('already exists')) {
+        const existingPlanIdMatch = errorMessage.match(/ID: (\d+)/);
+        const existingPlanId = existingPlanIdMatch ? existingPlanIdMatch[1] : null;
+        
+        toast({
+          title: 'Staff Plan Already Exists',
+          description: `A staff plan already exists for this project. ${existingPlanId ? `View it (ID: ${existingPlanId}) or delete it first.` : 'Please delete the existing plan before creating a new one.'}`,
+          variant: 'destructive',
+          duration: 8000,
+        });
+        
+        // Optionally navigate to existing plan
+        if (existingPlanId) {
+          const shouldNavigate = confirm(`A staff plan already exists for this project (ID: ${existingPlanId}). Would you like to view it?`);
+          if (shouldNavigate) {
+            navigate(`/staffing-plan/${existingPlanId}`);
+          }
+        }
+      } else {
+        toast({
+          title: 'Save Failed',
+          description: errorMessage,
+          variant: 'destructive'
+        });
+      }
     } finally {
       setIsSaving(false);
     }
@@ -312,7 +365,6 @@ export default function CreateStaffPlan() {
           duration: `${projectInfo.durationMonths} months`,
           overheadRate: `${projectInfo.overheadRate}%`,
           profitMargin: `${projectInfo.profitMargin}%`,
-          escalationRate: `${projectInfo.annualEscalationRate}%`,
         },
         staffing: staffMembers.map(m => ({
           name: m.resourceName,
@@ -360,7 +412,7 @@ export default function CreateStaffPlan() {
   // Show loading state when fetching plan data in edit mode
   if (isLoadingExistingPlan && isValidEditId) {
     return (
-      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-inter flex items-center justify-center">
+      <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-outfit flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: '#161950' }} />
           <p className="text-gray-600">Loading staff plan...</p>
@@ -370,7 +422,7 @@ export default function CreateStaffPlan() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-inter">
+    <div className="w-full min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-outfit">
       <div className="flex flex-col w-full">
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -382,7 +434,7 @@ export default function CreateStaffPlan() {
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold text-[#1A1A1A] font-inter">
+                <h1 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
                   {isEditMode ? 'Edit Staffing Plan' : 'Create Staffing Plan'}
                 </h1>
                 <p className="text-sm text-gray-600 mt-0.5">

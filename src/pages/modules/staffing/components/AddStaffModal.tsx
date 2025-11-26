@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Users, Calendar, Clock, DollarSign, Calculator, Save, TrendingUp } from 'lucide-react';
+import { X, Users, Calendar, Clock, DollarSign, Calculator, Save, TrendingUp, Plus, Trash2 } from 'lucide-react';
 
 interface Employee {
   id: string;
@@ -14,7 +14,12 @@ interface Employee {
 interface ProjectInfo {
   projectName: string;
   durationMonths: number;
-  annualEscalationRate: number;
+}
+
+export interface EscalationPeriod {
+  start_month: number;
+  end_month: number;
+  rate: number;
 }
 
 interface StaffMember {
@@ -29,9 +34,9 @@ interface StaffMember {
   hourlyRate: number;
   monthlyCost: number;
   totalCost: number;
-  initialEscalationRate?: number;
-  escalationRate?: number | null;
-  escalationEffectiveMonth?: number;
+  escalationRate?: number | null;  // Deprecated - use escalationPeriods
+  escalationStartMonth?: number;  // Deprecated - use escalationPeriods
+  escalationPeriods?: EscalationPeriod[];  // New format
 }
 
 interface Props {
@@ -47,37 +52,84 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
   const [endMonth, setEndMonth] = useState(editingStaff?.endMonth || projectInfo.durationMonths);
   const [hoursPerWeek, setHoursPerWeek] = useState(editingStaff?.hoursPerWeek || 40);
   const [hourlyRate, setHourlyRate] = useState(editingStaff?.hourlyRate || employee?.hourlyRate || 100);
-  const [initialEscalationRate, setInitialEscalationRate] = useState<number>(
-    editingStaff?.initialEscalationRate ??
-      projectInfo.annualEscalationRate ??
-      0
+  // Escalation periods (new format)
+  const [escalationPeriods, setEscalationPeriods] = useState<EscalationPeriod[]>(
+    editingStaff?.escalationPeriods || []
   );
-  const [enableUpdatedEscalation, setEnableUpdatedEscalation] = useState(
-    editingStaff?.escalationRate !== undefined &&
-      editingStaff?.escalationRate !== null &&
-      editingStaff?.escalationRate !== editingStaff?.initialEscalationRate
-  );
-  const [escalationRate, setEscalationRate] = useState<number | null>(
-    editingStaff?.escalationRate ?? null
-  );
-  const [escalationEffectiveMonth, setEscalationEffectiveMonth] = useState(
-    editingStaff?.escalationEffectiveMonth ?? startMonth
-  );
+  
+  // Backward compatibility: convert single rate to periods if needed
+  useEffect(() => {
+    if (!editingStaff?.escalationPeriods && editingStaff?.escalationRate !== null && editingStaff?.escalationRate !== undefined) {
+      setEscalationPeriods([{
+        start_month: editingStaff.escalationStartMonth || editingStaff.startMonth,
+        end_month: editingStaff.endMonth,
+        rate: editingStaff.escalationRate
+      }]);
+    }
+  }, [editingStaff]);
 
   // Calculate costs
   const weeks_per_month = 4.33;
   const months_allocated = Math.max(1, endMonth - startMonth + 1);
-  const monthly_cost = hoursPerWeek * weeks_per_month * hourlyRate;
-  const total_cost = monthly_cost * months_allocated;
+  const base_monthly_cost = hoursPerWeek * weeks_per_month * hourlyRate;
+  
+  // Calculate total cost with escalation periods
+  const calculateTotalCostWithEscalation = () => {
+    let totalCost = 0;
+    
+    // Sort escalation periods by start_month
+    const sortedPeriods = [...escalationPeriods].sort((a, b) => a.start_month - b.start_month);
+    
+    for (let month = startMonth; month <= endMonth; month++) {
+      let multiplier = 1.0;
+      
+      if (sortedPeriods.length > 0) {
+        // Process periods chronologically up to the current month
+        for (const period of sortedPeriods) {
+          const periodStart = period.start_month;
+          const periodEnd = period.end_month;
+          const periodRate = period.rate;
+          
+          // Skip periods that haven't started yet
+          if (month < periodStart) {
+            continue;
+          }
+          
+          if (periodEnd < month) {
+            // This period is completely in the past, apply full period escalation
+            if (periodRate > 0) {
+              const periodMonths = periodEnd - periodStart + 1;
+              const monthlyRate = Math.pow(1 + periodRate / 100, 1 / 12);
+              // Apply compounding for all months in this period
+              multiplier *= Math.pow(monthlyRate, periodMonths);
+            }
+          } else {
+            // Current month is within this period
+            if (periodRate > 0) {
+              const monthsInPeriodUpToMonth = month - periodStart + 1;
+              const monthlyRate = Math.pow(1 + periodRate / 100, 1 / 12);
+              // Apply compounding for months in this period up to current month
+              multiplier *= Math.pow(monthlyRate, monthsInPeriodUpToMonth - 1);
+            }
+            // We've reached the current month, no need to process further periods
+            break;
+          }
+        }
+      }
+      
+      totalCost += base_monthly_cost * multiplier;
+    }
+    
+    return totalCost;
+  };
+  
+  const monthly_cost = base_monthly_cost;
+  const total_cost = calculateTotalCostWithEscalation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!employee && !editingStaff) return;
-
-    const effectiveMonth = enableUpdatedEscalation
-      ? escalationEffectiveMonth
-      : startMonth;
 
     const staffData: StaffMember = {
       id: editingStaff?.id || Date.now(),
@@ -91,9 +143,10 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
       hourlyRate,
       monthlyCost: Math.round(monthly_cost * 100) / 100,
       totalCost: Math.round(total_cost * 100) / 100,
-      initialEscalationRate,
-      escalationRate: enableUpdatedEscalation ? escalationRate ?? initialEscalationRate : null,
-      escalationEffectiveMonth: enableUpdatedEscalation ? effectiveMonth : startMonth,
+      escalationPeriods: escalationPeriods.length > 0 ? escalationPeriods : undefined,
+      // Keep backward compatibility fields (convert periods to single rate if only one period)
+      escalationRate: escalationPeriods.length === 1 ? escalationPeriods[0].rate : null,
+      escalationStartMonth: escalationPeriods.length === 1 ? escalationPeriods[0].start_month : undefined,
     };
 
     onSave(staffData);
@@ -250,86 +303,125 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
 
         {/* Escalation Settings */}
         <div className="col-span-2 p-5 rounded-xl border-2 border-blue-100 bg-blue-50/60">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-600">
-              <TrendingUp className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Escalation Periods</h3>
+                <p className="text-xs text-gray-600">
+                  Define multiple escalation periods with different rates (e.g., 3% for months 6-12, 8% for months 13-24).
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-gray-900">Escalation Settings</h3>
-              <p className="text-xs text-gray-600">
-                Base escalation defaults to the project rate ({projectInfo.annualEscalationRate}%)
-                but can be overridden per employee.
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const lastEnd = escalationPeriods.length > 0 
+                  ? escalationPeriods[escalationPeriods.length - 1].end_month 
+                  : startMonth;
+                setEscalationPeriods([...escalationPeriods, {
+                  start_month: Math.min(lastEnd + 1, endMonth),
+                  end_month: endMonth,
+                  rate: 0
+                }]);
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90 transition-colors text-sm font-medium"
+              style={{ backgroundColor: '#161950' }}
+            >
+              <Plus className="w-4 h-4" />
+              Add Period
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                Base Escalation %
-              </label>
-              <input
-                type="number"
-                value={initialEscalationRate}
-                min={0}
-                step={0.1}
-                onChange={(e) => setInitialEscalationRate(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm font-medium"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Applied from month {startMonth}. Leave empty to inherit project rate.
-              </p>
+          {escalationPeriods.length === 0 ? (
+            <div className="text-center py-6 text-gray-500 text-sm">
+              No escalation periods defined. Click "Add Period" to create one.
             </div>
-
-            <div className="md:col-span-2 flex flex-col gap-3">
-              <label className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  checked={enableUpdatedEscalation}
-                  onChange={(e) => setEnableUpdatedEscalation(e.target.checked)}
-                />
-                Apply a different escalation rate mid-project
-              </label>
-
-              {enableUpdatedEscalation && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          ) : (
+            <div className="space-y-3">
+              {escalationPeriods.map((period, index) => (
+                <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 p-4 bg-white rounded-lg border border-gray-200">
                   <div>
-                    <label className="block text-xs font-bold text-gray-800 mb-2">
-                      Updated Escalation %
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      step={0.1}
-                      value={escalationRate ?? initialEscalationRate}
-                      onChange={(e) => setEscalationRate(Number(e.target.value))}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm font-medium"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-800 mb-2">
-                      Effective From Month
-                    </label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Start Month</label>
                     <select
-                      value={escalationEffectiveMonth}
-                      onChange={(e) => setEscalationEffectiveMonth(Number(e.target.value))}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 text-sm font-medium"
+                      value={period.start_month}
+                      onChange={(e) => {
+                        const updated = [...escalationPeriods];
+                        updated[index].start_month = Number(e.target.value);
+                        // Ensure start <= end
+                        if (updated[index].start_month > updated[index].end_month) {
+                          updated[index].end_month = updated[index].start_month;
+                        }
+                        setEscalationPeriods(updated);
+                      }}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
                     >
                       {Array.from({ length: projectInfo.durationMonths }, (_, i) => i + 1).map((month) => (
                         <option key={month} value={month}>
-                          Month {month}
+                          {month}
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      New rate applies from this month onward.
-                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">End Month</label>
+                    <select
+                      value={period.end_month}
+                      onChange={(e) => {
+                        const updated = [...escalationPeriods];
+                        updated[index].end_month = Number(e.target.value);
+                        // Ensure start <= end
+                        if (updated[index].start_month > updated[index].end_month) {
+                          updated[index].start_month = updated[index].end_month;
+                        }
+                        setEscalationPeriods(updated);
+                      }}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
+                    >
+                      {Array.from({ length: projectInfo.durationMonths }, (_, i) => i + 1)
+                        .filter(month => month >= period.start_month)
+                        .map((month) => (
+                          <option key={month} value={month}>
+                            {month}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Rate (%)</label>
+                    <input
+                      type="number"
+                      value={period.rate}
+                      onChange={(e) => {
+                        const updated = [...escalationPeriods];
+                        updated[index].rate = Number(e.target.value);
+                        setEscalationPeriods(updated);
+                      }}
+                      min={0}
+                      max={100}
+                      step={0.1}
+                      placeholder="0"
+                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEscalationPeriods(escalationPeriods.filter((_, i) => i !== index));
+                      }}
+                      className="w-full px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Remove
+                    </button>
                   </div>
                 </div>
-              )}
+              ))}
             </div>
-          </div>
+          )}
         </div>
           </div>
 
@@ -365,21 +457,63 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
               <div className="p-4 rounded-lg" style={{ backgroundColor: '#161950' }}>
                 <p className="text-xs text-white/80 mb-1 font-semibold">Total Cost</p>
                 <p className="text-xl font-bold text-white">
-                  ${(total_cost / 1000).toFixed(1)}K
+                  {total_cost >= 1000000 
+                    ? `$${(total_cost / 1000000).toFixed(1)}M`
+                    : total_cost >= 1000
+                    ? `$${(total_cost / 1000).toFixed(1)}K`
+                    : `$${total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  }
                 </p>
-                <p className="text-xs text-white/70 mt-1">{months_allocated} months</p>
+                <p className="text-xs text-white/80 mt-1">{months_allocated} months{escalationPeriods.length > 0 ? ' (with escalation)' : ''}</p>
               </div>
             </div>
+            
+            {/* Calculation Details */}
+            <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
+              <details className="cursor-pointer">
+                <summary className="text-sm font-bold text-gray-700 mb-2">
+                  Calculation
+                </summary>
+                <div className="mt-3 space-y-2 text-xs text-gray-600">
+                  <p>Hours/Month: {hoursPerWeek} hrs/week × {weeks_per_month} weeks = {(hoursPerWeek * weeks_per_month).toFixed(0)} hrs</p>
+                  <p>Monthly Cost: {(hoursPerWeek * weeks_per_month).toFixed(0)} hrs × ${hourlyRate}/hr = ${monthly_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  {escalationPeriods.length > 0 ? (
+                    <>
+                      <p className="font-semibold mt-2">Escalation Applied:</p>
+                      {escalationPeriods.map((period, idx) => (
+                        <p key={idx} className="ml-4">
+                          • Months {period.start_month}-{period.end_month}: {period.rate}% annual rate (monthly compounding)
+                        </p>
+                      ))}
+                      <p className="mt-2 font-semibold">
+                        Total Cost: ${total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (with escalation)
+                      </p>
+                    </>
+                  ) : (
+                    <p>Total Cost: ${monthly_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {months_allocated} months = ${total_cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  )}
+                </div>
+              </details>
+            </div>
+          </div>
 
-            {/* Detailed Calculation */}
-            <div className="mt-4 pt-4 border-t border-gray-300">
-              <p className="text-xs text-gray-600 font-medium mb-2">Calculation:</p>
-              <div className="space-y-1 text-xs text-gray-700">
-                <p>• Hours/Month: {hoursPerWeek} hrs/week × {weeks_per_month.toFixed(2)} weeks = {(hoursPerWeek * weeks_per_month).toFixed(0)} hrs</p>
-                <p>• Monthly Cost: {(hoursPerWeek * weeks_per_month).toFixed(0)} hrs × ${hourlyRate}/hr = ${monthly_cost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
-                <p className="font-semibold pt-1 border-t border-gray-300">• Total Cost: ${monthly_cost.toLocaleString(undefined, { maximumFractionDigits: 2 })} × {months_allocated} months = ${total_cost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
-              </div>
-            </div>
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-3 text-white rounded-lg font-medium hover:opacity-90 transition-all flex items-center gap-2"
+              style={{ backgroundColor: '#161950' }}
+            >
+              <Save className="w-4 h-4" />
+              {editingStaff ? 'Update' : 'Add to Plan'}
+            </button>
           </div>
 
           {/* Validation Messages */}
@@ -391,26 +525,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
               </p>
             </div>
           )}
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 h-12 px-6 bg-white rounded-lg border-2 border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-all"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={startMonth > endMonth}
-              className="flex-1 h-12 px-6 rounded-lg text-white font-bold hover:opacity-90 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              style={{ backgroundColor: '#161950' }}
-            >
-              <Save className="w-5 h-5" />
-              {editingStaff ? 'Update' : 'Add'} to Plan
-            </button>
-          </div>
         </form>
       </div>
     </div>

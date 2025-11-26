@@ -185,7 +185,7 @@ function OnboardingPage() {
   // Show loading state
   if (isLoading) {
     return (
-      <div className="w-full min-h-screen bg-[#F5F3F2] font-inter flex items-center justify-center">
+      <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Loading employees from database...</p>
@@ -195,23 +195,23 @@ function OnboardingPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900">
+              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
                 Dashboard
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Resources</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Resources</span>
             </div>
             
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-[#1A1A1A] text-3xl font-bold font-inter leading-loose">
+                <h1 className="text-[#1A1A1A] text-3xl font-bold font-outfit leading-loose">
                   Employee Onboarding
                 </h1>
                 <p className="text-gray-600 text-sm font-medium mt-1">
@@ -229,7 +229,7 @@ function OnboardingPage() {
               style={{ backgroundColor: '#161950' }}
             >
               <Users className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-inter leading-normal">
+              <span className="text-white text-sm font-semibold font-outfit leading-normal">
                 Staffing Plan
               </span>
             </button>
@@ -239,7 +239,7 @@ function OnboardingPage() {
               className="h-11 px-5 py-2 bg-white rounded-lg border border-gray-300 flex items-center gap-2.5 hover:bg-gray-50 transition-all"
             >
               <Filter className="w-5 h-5 text-gray-700" />
-              <span className="text-gray-700 text-sm font-medium font-inter leading-normal">
+              <span className="text-gray-700 text-sm font-medium font-outfit leading-normal">
                 {viewMode === 'kanban' ? 'List View' : 'Kanban View'}
               </span>
             </button>
@@ -249,7 +249,7 @@ function OnboardingPage() {
               className="h-11 px-5 py-2 bg-purple-600 rounded-lg flex items-center gap-2.5 hover:bg-purple-700 transition-all shadow-lg"
             >
               <Upload className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-inter leading-normal">
+              <span className="text-white text-sm font-semibold font-outfit leading-normal">
                 Bulk Upload CSV
               </span>
             </button>
@@ -260,7 +260,7 @@ function OnboardingPage() {
               style={{ backgroundColor: '#161950' }}
             >
               <Plus className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-inter leading-normal">
+              <span className="text-white text-sm font-semibold font-outfit leading-normal">
                 Add Employee CV
               </span>
             </button>
@@ -467,14 +467,14 @@ function OnboardingPage() {
               const activatedEmployees = employees.filter((emp: any) => emp.status === 'active' && emp.user_id != null);
               return activatedEmployees.length > 0 ? (
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-lg border border-green-200">
-                  <p className="text-sm font-semibold text-green-700 flex items-center gap-2 font-inter">
+                  <p className="text-sm font-semibold text-green-700 flex items-center gap-2 font-outfit">
                     <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                     Showing {activatedEmployees.length} activated employee{activatedEmployees.length !== 1 ? 's' : ''} with user accounts
                   </p>
                 </div>
               ) : (
                 <div className="bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-2 rounded-lg border border-amber-200">
-                  <p className="text-sm font-semibold text-amber-700 flex items-center gap-2 font-inter">
+                  <p className="text-sm font-semibold text-amber-700 flex items-center gap-2 font-outfit">
                     <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
                     No activated employees found. Activate employees from the Onboarding tab first.
                   </p>

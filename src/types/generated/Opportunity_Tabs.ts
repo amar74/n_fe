@@ -130,6 +130,10 @@ const OpportunityOverviewUpdate = z
     project_description: z.union([z.string(), z.null()]),
     project_scope: z.union([z.array(z.string()), z.null()]),
     key_metrics: z.union([z.object({}).partial().passthrough(), z.null()]),
+    documents_summary: z.union([
+      z.object({}).partial().passthrough(),
+      z.null(),
+    ]),
   })
   .partial()
   .passthrough();

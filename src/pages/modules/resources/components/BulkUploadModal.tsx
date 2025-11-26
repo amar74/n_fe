@@ -172,7 +172,7 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
         <div className="sticky top-0 bg-gradient-to-r from-[#151950] to-[#1e2570] px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div className="flex items-center gap-3">
             <Upload className="w-6 h-6 text-white" />
-            <h2 className="text-2xl font-bold text-white font-inter">Bulk Upload Employees</h2>
+            <h2 className="text-2xl font-bold text-white font-outfit">Bulk Upload Employees</h2>
           </div>
           <button
             onClick={handleClose}

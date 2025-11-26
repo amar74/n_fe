@@ -463,19 +463,19 @@ export default function SurveyBuilderPage() {
   };
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-inter">
+    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-sm font-normal font-inter leading-tight">Dashboard</span>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Survey Builder</span>
+              <span className="text-gray-500 text-sm font-normal font-outfit leading-tight">Dashboard</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Survey Builder</span>
             </div>
-            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter leading-loose">
+            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">
               {isEditMode ? 'Edit Survey' : 'Survey Builder'}
             </h1>
-            <p className="text-[#667085] text-sm font-normal font-inter leading-tight">Create engaging surveys to gather valuable client feedback</p>
+            <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">Create engaging surveys to gather valuable client feedback</p>
           </div>
           
           <Button
@@ -493,12 +493,12 @@ export default function SurveyBuilderPage() {
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <div className="flex justify-start items-start gap-6">
                 <div className="flex-1 flex flex-col gap-1">
-                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Survey Details</h2>
+                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Survey Details</h2>
                 </div>
               </div>
               <div className="flex flex-col gap-4">
                 <div>
-                  <label className="block text-[#344054] text-sm font-medium font-inter mb-2">Survey Title</label>
+                  <label className="block text-[#344054] text-sm font-medium font-outfit mb-2">Survey Title</label>
                   <Input
                     value={formData.title}
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -507,7 +507,7 @@ export default function SurveyBuilderPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[#344054] text-sm font-medium font-inter mb-2">Description</label>
+                  <label className="block text-[#344054] text-sm font-medium font-outfit mb-2">Description</label>
                   <Textarea
                     value={formData.description}
                     onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -521,7 +521,7 @@ export default function SurveyBuilderPage() {
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <div className="flex justify-start items-start gap-6">
                 <div className="flex-1 flex flex-col gap-1">
-                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Add Question</h2>
+                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Add Question</h2>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -543,7 +543,7 @@ export default function SurveyBuilderPage() {
               <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
                 <div className="flex justify-start items-start gap-6">
                   <div className="flex-1 flex flex-col gap-1">
-                    <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Questions ({formData.questions.length})</h2>
+                    <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Questions ({formData.questions.length})</h2>
                   </div>
                 </div>
                 <div className="flex flex-col gap-4">
@@ -627,8 +627,8 @@ export default function SurveyBuilderPage() {
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <div className="flex justify-between items-start gap-6">
                 <div className="flex-1 flex flex-col gap-1">
-                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Survey Distribution Setup</h2>
-                  <p className="text-[#667085] text-sm font-normal font-inter leading-tight">
+                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Survey Distribution Setup</h2>
+                  <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">
                     Select specific contacts from your target accounts who will receive this survey
                   </p>
                 </div>
@@ -739,7 +739,7 @@ export default function SurveyBuilderPage() {
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <div className="flex justify-start items-start gap-6">
                 <div className="flex-1 flex flex-col gap-1">
-                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter leading-7">Ready to Publish</h2>
+                  <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Ready to Publish</h2>
                 </div>
               </div>
               <div className="flex flex-col gap-4">

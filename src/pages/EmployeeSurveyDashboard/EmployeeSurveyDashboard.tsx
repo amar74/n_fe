@@ -79,18 +79,18 @@ export default function EmployeeSurveyDashboard() {
   const recentSurveys = surveys.slice(0, 5);
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-inter">
+    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-sm font-normal font-inter leading-tight">Dashboard</span>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Employee Surveys</span>
+              <span className="text-gray-500 text-sm font-normal font-outfit leading-tight">Dashboard</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Employee Surveys</span>
             </div>
-            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter leading-loose">Employee Survey Dashboard</h1>
-            <p className="text-[#667085] text-sm font-normal font-inter leading-tight">Manage and track employee feedback surveys</p>
+            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">Employee Survey Dashboard</h1>
+            <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">Manage and track employee feedback surveys</p>
           </div>
           
           <div className="flex gap-3">
@@ -150,7 +150,7 @@ export default function EmployeeSurveyDashboard() {
         {/* Analytics Chart */}
         <div className="p-6 bg-white rounded-2xl border border-gray-200">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter">Survey Status Distribution</h2>
+            <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit">Survey Status Distribution</h2>
             <BarChart3 className="h-5 w-5 text-gray-400" />
           </div>
           
@@ -208,7 +208,7 @@ export default function EmployeeSurveyDashboard() {
         {/* Recent Employee Surveys */}
         <div className="p-6 bg-white rounded-2xl border border-gray-200">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[#1A1A1A] text-lg font-semibold font-inter">Recent Employee Surveys</h2>
+            <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit">Recent Employee Surveys</h2>
             <Button
               variant="ghost"
               size="sm"

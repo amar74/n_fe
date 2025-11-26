@@ -774,7 +774,7 @@ export function AccountInformationForm({
               disabled={isUpdating}
               className="bg-transparent border border-[#0f0901] rounded-[16px] h-14 flex items-center justify-center px-6 py-2 min-w-[148px]"
             >
-              <span className="font-inter font-medium text-[#0f0901] text-[14px] leading-[24px]">
+              <span className="font-outfit font-medium text-[#0f0901] text-[14px] leading-[24px]">
                 Cancel
               </span>
             </button>
@@ -783,7 +783,7 @@ export function AccountInformationForm({
               disabled={isUpdating}
               className="bg-[#0f0901] rounded-[16px] h-14 flex items-center justify-center px-8 py-2 min-w-[200px] ml-4"
             >
-              <span className="font-inter font-medium text-white text-[14px] leading-[24px]">
+              <span className="font-outfit font-medium text-white text-[14px] leading-[24px]">
                 {isUpdating ? 'Saving...' : 'Save Changes'}
               </span>
             </button>

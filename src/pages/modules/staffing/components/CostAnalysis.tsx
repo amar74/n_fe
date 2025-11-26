@@ -7,7 +7,12 @@ interface ProjectInfo {
   durationMonths: number;
   overheadRate: number;
   profitMargin: number;
-  annualEscalationRate: number;
+}
+
+interface EscalationPeriod {
+  start_month: number;
+  end_month: number;
+  rate: number;
 }
 
 interface StaffMember {
@@ -20,9 +25,9 @@ interface StaffMember {
   monthlyCost?: number;
   startMonth: number;
   endMonth: number;
-  initialEscalationRate?: number;
-  escalationRate?: number | null;
-  escalationEffectiveMonth?: number;
+  escalationRate?: number | null;  // Deprecated - use escalationPeriods
+  escalationStartMonth?: number;  // Deprecated - use escalationPeriods
+  escalationPeriods?: EscalationPeriod[];  // New format: multiple escalation periods
 }
 
 interface Props {
@@ -62,18 +67,63 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
       const endMonth = Math.min(durationMonths, staff.endMonth);
       if (endMonth < startMonth) return;
 
-      const baseEscalation =
-        staff.initialEscalationRate ?? projectInfo.annualEscalationRate ?? 0;
-      const updatedEscalation =
-        staff.escalationRate ?? baseEscalation;
-      let effectiveMonth =
-        staff.escalationEffectiveMonth ?? staff.startMonth ?? startMonth;
-      if (effectiveMonth < startMonth) effectiveMonth = startMonth;
+      // Handle escalation: prefer escalationPeriods (new format), fallback to single rate (backward compatibility)
+      let escalationPeriods = staff.escalationPeriods || [];
+      
+      // Backward compatibility: convert single rate to periods format
+      if (escalationPeriods.length === 0 && (staff.escalationRate !== null && staff.escalationRate !== undefined && staff.escalationRate > 0)) {
+        const escalationStartMonth = staff.escalationStartMonth ?? staff.startMonth ?? startMonth;
+        const effectiveEscalationStart = escalationStartMonth < startMonth ? startMonth : escalationStartMonth;
+        escalationPeriods = [{
+          start_month: effectiveEscalationStart,
+          end_month: endMonth,
+          rate: staff.escalationRate
+        }];
+      }
 
+      // Calculate cost for each month with multiple escalation periods
       for (let month = startMonth; month <= endMonth; month++) {
-        const yearsCompleted = Math.floor((month - 1) / 12);
-        const rateForMonth = month < effectiveMonth ? baseEscalation : updatedEscalation;
-        const multiplier = Math.pow(1 + rateForMonth / 100, yearsCompleted);
+        let multiplier = 1.0;
+
+        if (escalationPeriods && escalationPeriods.length > 0) {
+          // Multiple periods: calculate cumulative escalation sequentially
+          // Process periods chronologically up to the current month
+          for (const period of escalationPeriods) {
+            const periodStart = period.start_month;
+            const periodEnd = period.end_month;
+            const periodRate = period.rate;
+
+            // Skip periods that haven't started yet
+            if (month < periodStart) {
+              continue;
+            }
+
+            // Calculate months in this period
+            if (periodEnd < month) {
+              // This period is completely in the past, apply full period escalation
+              if (periodRate > 0) {
+                const periodMonths = periodEnd - periodStart + 1;
+                const monthlyRate = Math.pow(1 + periodRate / 100, 1 / 12);
+                // Apply compounding for all months in this period
+                multiplier *= Math.pow(monthlyRate, periodMonths);
+              }
+            } else {
+              // Current month is within this period
+              if (periodRate > 0) {
+                const monthsInPeriodUpToMonth = month - periodStart + 1;
+                const monthlyRate = Math.pow(1 + periodRate / 100, 1 / 12);
+                // Apply compounding for months in this period up to current month
+                multiplier *= Math.pow(monthlyRate, monthsInPeriodUpToMonth - 1);
+              }
+              // We've reached the current month, no need to process further periods
+              break;
+            }
+          }
+        } else {
+          // No escalation periods, multiplier stays at 1.0
+          multiplier = 1.0;
+        }
+
         monthlyLabor[month - 1] += baseMonthlyCost * multiplier;
       }
     });
@@ -134,7 +184,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                 <BarChart3 className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-[#1A1A1A] font-inter">
+                <h2 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
                   Multi-Year Cost Analysis
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
@@ -169,7 +219,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                   Multi-Year Cost Projection
                 </h3>
                 <p className="text-sm text-white/80">
-                  {yearlyBreakdown.length} years • {projectInfo.annualEscalationRate}% annual escalation
+                  {yearlyBreakdown.length} years • Employee-level escalation rates
                 </p>
               </div>
             </div>
@@ -312,12 +362,15 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                         setIsLoadingAI(true);
                         try {
                           // In real scenario, this would use actual plan_id from API
-                          const mockAnalysis = `The ${projectInfo.annualEscalationRate}% annual escalation rate reflects standard market adjustments for construction and engineering labor costs. This accounts for inflation (typically 2-3%), salary merit increases, and competitive market pressures in the construction industry. Over ${yearlyBreakdown.length} years, this compounds to a ${(((yearlyBreakdown[yearlyBreakdown.length - 1].totalPrice - yearlyBreakdown[0].totalPrice) / yearlyBreakdown[0].totalPrice) * 100).toFixed(1)}% total increase, which is industry-standard for multi-year infrastructure projects to maintain competitive compensation and retain skilled talent.`;
+                          const avgEscalation = staffMembers.length > 0
+                            ? (staffMembers.reduce((sum, m) => sum + (m.escalationRate ?? 0), 0) / staffMembers.length).toFixed(1)
+                            : '0';
+                          const mockAnalysis = `Employee-level escalation rates (average ${avgEscalation}%) reflect standard market adjustments for construction and engineering labor costs. This accounts for inflation (typically 2-3%), salary merit increases, and competitive market pressures in the construction industry. Over ${yearlyBreakdown.length} years, this compounds to a ${(((yearlyBreakdown[yearlyBreakdown.length - 1].totalPrice - yearlyBreakdown[0].totalPrice) / yearlyBreakdown[0].totalPrice) * 100).toFixed(1)}% total increase, which is industry-standard for multi-year infrastructure projects to maintain competitive compensation and retain skilled talent.`;
                           setAiAnalysis(mockAnalysis);
                           setAiInsights({
                             cost_increase_percentage: (((yearlyBreakdown[yearlyBreakdown.length - 1].totalPrice - yearlyBreakdown[0].totalPrice) / yearlyBreakdown[0].totalPrice) * 100).toFixed(1),
                             key_factors: [
-                              `Annual salary escalation: ${projectInfo.annualEscalationRate}%`,
+                              `Employee-level escalation rates applied (average: ${avgEscalation}%)`,
                               `Market inflation adjustment`,
                               `Total cost increase: ${(((yearlyBreakdown[yearlyBreakdown.length - 1].totalPrice - yearlyBreakdown[0].totalPrice) / yearlyBreakdown[0].totalPrice) * 100).toFixed(1)}% over ${yearlyBreakdown.length} years`
                             ]
@@ -544,7 +597,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
           </p>
           <div className="mt-3 pt-3 border-t border-white/20">
             <p className="text-xs text-white/80">
-              Escalation: {projectInfo.annualEscalationRate}% annually
+              Escalation: Employee-level rates applied
             </p>
           </div>
         </div>

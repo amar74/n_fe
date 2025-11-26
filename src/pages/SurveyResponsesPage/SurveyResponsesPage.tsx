@@ -311,7 +311,7 @@ export default function SurveyResponsesPage() {
   const uniqueContacts = new Set(responses.map(r => r.contact_id).filter(Boolean)).size;
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-inter">
+    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -330,7 +330,7 @@ export default function SurveyResponsesPage() {
                 <span className="text-gray-500 text-sm">/</span>
                 <span className="text-[#1A1A1A] text-sm font-medium">{survey.title}</span>
               </div>
-              <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter">{survey.title}</h1>
+              <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit">{survey.title}</h1>
               <p className="text-[#667085] text-sm">{survey.description}</p>
             </div>
           </div>

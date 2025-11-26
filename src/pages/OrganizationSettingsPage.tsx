@@ -23,8 +23,14 @@ import {
   CheckCircle,
   AlertCircle,
   Camera,
-  Target
+  Target,
+  FolderTree,
+  Plus,
+  X,
+  Save,
+  Loader2
 } from 'lucide-react';
+import { ExpenseCategoryManagement } from '@/pages/OrganizationSettingsPage/components/ExpenseCategoryManagement';
 
 export default function OrganizationSettingsPage() {
   const { data: organization, isLoading, error } = useMyOrganization();
@@ -101,19 +107,16 @@ export default function OrganizationSettingsPage() {
   };
 
   const getCompletionBgColor = (percentage: number) => {
-    if (percentage === 100) return 'bg-green-600';
-    if (percentage >= 70) return 'bg-blue-600';
-    if (percentage >= 40) return 'bg-orange-600';
-    return 'bg-red-600';
+    if (percentage === 100) return 'bg-green-500';
+    if (percentage >= 70) return 'bg-blue-500';
+    if (percentage >= 40) return 'bg-orange-500';
+    return 'bg-red-500';
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#161950]"></div>
-          <p className="text-gray-600">Loading organization settings...</p>
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-[#161950]" />
       </div>
     );
   }
@@ -122,81 +125,31 @@ export default function OrganizationSettingsPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="h-8 w-8 text-red-600" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Organization Not Found</h2>
-          <p className="text-gray-600 mb-6">Unable to load organization settings.</p>
-          <Link to="/">
-            <Button className="bg-[#161950] hover:bg-[#161950]/90">
-              Return to Dashboard
-            </Button>
-          </Link>
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Organization</h2>
+          <p className="text-gray-600">Unable to load organization data. Please try again later.</p>
         </div>
       </div>
     );
   }
 
   const stats = [
-    {
-      label: 'Profile Complete',
-      value: `${organization.profile_completion || 0}%`,
-      icon: TrendingUp,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-    },
-    {
-      label: 'Team Members',
-      value: String(organization.team_members_count || 0),
-      icon: Users,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-    },
-    {
-      label: 'Active Since',
-      value: organization.created_at ? new Date(organization.created_at).getFullYear().toString() : 'N/A',
-      icon: Award,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-    },
-    {
-      label: 'Status',
-      value: organization.status || 'Active',
-      icon: CheckCircle,
-      color: 'text-[#161950]',
-      bgColor: 'bg-[#161950]/5',
-    },
+    { label: 'Total Accounts', value: organization.total_accounts || 0, icon: Building2, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+    { label: 'Active Opportunities', value: organization.active_opportunities || 0, icon: Target, color: 'text-green-600', bgColor: 'bg-green-50' },
+    { label: 'Team Members', value: organization.total_members || 0, icon: Users, color: 'text-purple-600', bgColor: 'bg-purple-50' },
   ];
 
   const quickActions = [
     {
-      title: 'Edit Organization',
-      description: 'Update organization details and information',
-      icon: Edit,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      link: '/organization/update',
+      label: 'View Accounts',
+      icon: Building2,
+      color: 'text-[#161950]',
+      bgColor: 'bg-[#161950]/5',
+      link: '/module/accounts',
+      disabled: false,
     },
     {
-      title: 'Manage Team',
-      description: 'Add or remove team members and set permissions',
-      icon: Users,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      link: '/module/resources/management',
-    },
-    {
-      title: 'Security Settings',
-      description: 'Configure security and access controls',
-      icon: Shield,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      link: '/organization/settings',
-      disabled: true,
-    },
-    {
-      title: 'General Settings',
-      description: 'Organization-wide settings and preferences',
+      label: 'Manage Settings',
       icon: Settings,
       color: 'text-[#161950]',
       bgColor: 'bg-[#161950]/5',
@@ -350,6 +303,39 @@ export default function OrganizationSettingsPage() {
                 </CardContent>
               </Card>
 
+              
+              <Card className="border border-gray-100 shadow-md">
+                <CardHeader className="border-b border-gray-100">
+                  <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight">
+                    <Clock className="h-5 w-5 text-[#161950]" />
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-2">
+                    {quickActions.map((action) => {
+                      const Icon = action.icon;
+                      const content = (
+                        <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${action.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}`}>
+                          <div className={`w-8 h-8 ${action.bgColor} rounded-lg flex items-center justify-center`}>
+                            <Icon className={`h-4 w-4 ${action.color}`} />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">{action.label}</span>
+                          {!action.disabled && <ChevronRight className="h-4 w-4 text-gray-400 ml-auto" />}
+                        </div>
+                      );
+                      
+                      return action.disabled ? (
+                        <div key={action.label}>{content}</div>
+                      ) : (
+                        <Link key={action.label} to={action.link}>
+                          {content}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
@@ -358,188 +344,97 @@ export default function OrganizationSettingsPage() {
             
             <Card className="border border-gray-100 shadow-md">
               <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight">
-                  <Building2 className="h-5 w-5 text-[#161950]" />
-                  Organization Information
-                </CardTitle>
+                <CardTitle className="text-2xl font-bold tracking-tight leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>Organization Information</CardTitle>
               </CardHeader>
-              <CardContent className="p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Organization Name</label>
-                    <p className="text-base font-semibold text-gray-900 tracking-tight">{organization.name}</p>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block" style={{ fontFamily: "'Outfit', sans-serif" }}>Organization Name</label>
+                    <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>{organization.name}</p>
                   </div>
-
-                  
                   {organization.website && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Globe className="h-3.5 w-3.5" />
+                    <div>
+                      <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        <Globe className="h-4 w-4" />
                         Website
                       </label>
                       <a 
                         href={organization.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-base font-semibold text-blue-600 hover:text-blue-700 hover:underline tracking-tight transition-colors block"
+                        className="text-base font-semibold text-blue-600 hover:underline"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                       >
                         {organization.website}
                       </a>
                     </div>
                   )}
-
-                  
-                  {organization.contact?.email && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Mail className="h-3.5 w-3.5" />
-                        Email
-                      </label>
-                      <p className="text-base font-semibold text-gray-900 tracking-tight">{organization.contact.email}</p>
-                    </div>
-                  )}
-
-                  
-                  {organization.contact?.phone && (
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Phone className="h-3.5 w-3.5" />
-                        Phone
-                      </label>
-                      <p className="text-base font-semibold text-gray-900 tracking-tight">{organization.contact.phone}</p>
-                    </div>
-                  )}
-
-                  
                   {organization.address && (
-                    <div className="space-y-2 md:col-span-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <MapPin className="h-3.5 w-3.5" />
+                    <div>
+                      <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        <MapPin className="h-4 w-4" />
                         Address
                       </label>
-                      <p className="text-base font-semibold text-gray-900 leading-relaxed tracking-tight">
+                      <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
                         {organization.address.line1}
                         {organization.address.line2 && `, ${organization.address.line2}`}
-                        <br />
-                        {organization.address.city && `${organization.address.city}, `}
-                        {organization.address.state && `${organization.address.state} `}
-                        {organization.address.pincode}
+                        {organization.address.city && `, ${organization.address.city}`}
+                        {organization.address.state && `, ${organization.address.state}`}
+                        {organization.address.pincode && ` ${organization.address.pincode}`}
                       </p>
                     </div>
                   )}
+                  {organization.contact?.email && (
+                    <div>
+                      <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        <Mail className="h-4 w-4" />
+                        Email
+                      </label>
+                      <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>{organization.contact.email}</p>
+                    </div>
+                  )}
+                  {organization.contact?.phone && (
+                    <div>
+                      <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        <Phone className="h-4 w-4" />
+                        Phone
+                      </label>
+                      <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>{organization.contact.phone}</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             
-            <div>
-              <h3 className="text-2xl font-extrabold text-gray-900 mb-5 tracking-tight leading-tight">Quick Actions</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {quickActions.map((action) => {
-                  const Icon = action.icon;
-                  const cardContent = (
-                    <Card className={`border border-gray-100 shadow-md transition-all duration-200 ${
-                      action.disabled 
-                        ? 'opacity-60 cursor-not-allowed' 
-                        : 'hover:shadow-xl hover:-translate-y-1 cursor-pointer'
-                    } group`}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-4">
-                            <div className={`w-12 h-12 ${action.bgColor} rounded-xl flex items-center justify-center ${
-                              action.disabled ? '' : 'group-hover:scale-110'
-                            } transition-transform`}>
-                              <Icon className={`h-6 w-6 ${action.color}`} />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className={`font-semibold text-gray-900 mb-1 ${
-                                action.disabled ? '' : 'group-hover:text-[#161950]'
-                              } transition-colors`}>
-                                {action.title}
-                                {action.disabled && (
-                                  <Badge className="ml-2 bg-gray-100 text-gray-600 text-xs">
-                                    Coming Soon
-                                  </Badge>
-                                )}
-                              </h4>
-                              <p className="text-sm text-gray-600">{action.description}</p>
-                            </div>
-                          </div>
-                          {!action.disabled && (
-                            <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-[#161950] group-hover:translate-x-1 transition-all" />
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                  
-                  return action.disabled ? (
-                    <div key={action.title}>
-                      {cardContent}
-                    </div>
-                  ) : (
-                    <Link key={action.title} to={action.link}>
-                      {cardContent}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
+            <ExpenseCategoryManagement />
 
-            <div>
-              <h3 className="text-2xl font-extrabold text-gray-900 mb-5 tracking-tight leading-tight">Recent Activity</h3>
+            
+            {recentActivity && recentActivity.length > 0 && (
               <Card className="border border-gray-100 shadow-md">
+                <CardHeader className="border-b border-gray-100">
+                  <CardTitle className="text-2xl font-bold tracking-tight leading-tight">Recent Activity</CardTitle>
+                </CardHeader>
                 <CardContent className="p-6">
-                  {!recentActivity || recentActivity.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Clock className="h-8 w-8 text-gray-400" />
-                      </div>
-                      <p className="text-sm text-gray-500">No recent activity</p>
-                      <p className="text-xs text-gray-400 mt-1">Start by creating accounts or opportunities</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {recentActivity.map((activity: any) => (
-                        <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                          <div className={`w-2 h-2 ${activity.color} rounded-full mt-2 flex-shrink-0`}></div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900">
-                              {activity.title}
-                            </p>
+                  <div className="space-y-4">
+                    {recentActivity.map((activity: any) => {
+                      const Icon = activity.icon;
+                      return (
+                        <div key={activity.id} className="flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                          <div className={`w-10 h-10 ${activity.color} rounded-lg flex items-center justify-center`}>
+                            <Icon className="h-5 w-5 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-900">{activity.title}</p>
                             <p className="text-xs text-gray-500">{formatTimeAgo(activity.time)}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
                 </CardContent>
               </Card>
-            </div>
-
-            
-            <Card className="border-2 border-white/20 shadow-2xl bg-gradient-to-br from-[#161950] via-[#1e2563] to-[#2a3175] text-white overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-2xl"></div>
-              
-              <CardContent className="p-7 relative z-10">
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-white/20 to-white/10 rounded-2xl flex items-center justify-center shadow-lg backdrop-blur-sm">
-                    <Settings className="h-7 w-7 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-xl mb-2 text-white">Need Help?</h4>
-                    <p className="text-white text-sm mb-4 leading-relaxed">
-                      Our support team is here to help you manage your organization settings.
-                    </p>
-                    <Button variant="secondary" size="sm" className="bg-white text-[#161950] hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all hover:scale-105 font-semibold">
-                      Contact Support
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            )}
           </div>
         </div>
       </div>

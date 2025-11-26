@@ -17,7 +17,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
     <div className="bg-white border border-[#f0f0f0] rounded-[28px] py-6 px-0 w-full h-full shadow-sm">
       <div className="flex flex-col gap-2 w-full h-full">
         <div className="px-6">
-          <h2 className="font-inter font-bold text-[#0f0901] text-[24px] leading-normal">
+          <h2 className="font-outfit font-bold text-[#0f0901] text-[24px] leading-normal">
             Recent Activity
           </h2>
         </div>
@@ -44,10 +44,10 @@ export function RecentActivity({ activities }: RecentActivityProps) {
 
                 
                 <div className="flex flex-col gap-1 flex-1 min-w-0 h-full">
-                  <h3 className="font-inter font-semibold text-[#0f0901] text-[16px] leading-snug break-words">
+                  <h3 className="font-outfit font-semibold text-[#0f0901] text-[16px] leading-snug break-words">
                     {activity.title}
                   </h3>
-                  <span className="font-inter font-medium text-[#a7a7a7] text-[14px] leading-normal block break-words">
+                  <span className="font-outfit font-medium text-[#a7a7a7] text-[14px] leading-normal block break-words">
                     {activity.timestamp}
                   </span>
                 </div>

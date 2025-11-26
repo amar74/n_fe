@@ -99,7 +99,7 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
           aria-multiline="true"
           spellCheck
           tabIndex={0}
-          className="rich-text-editor__content min-h-[160px] w-full resize-y overflow-auto px-4 py-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-text"
+          className="rich-text-editor__content min-h-[300px] max-h-[600px] w-full resize-y overflow-auto px-4 py-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-text"
           data-placeholder={placeholder || ''}
           onMouseDown={handleMouseDown}
           onInput={handleInput}

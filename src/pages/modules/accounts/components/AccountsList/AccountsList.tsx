@@ -186,7 +186,7 @@ export function AccountsList({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search accounts..."
-            className="flex-1 bg-transparent border-none outline-none text-gray-700 text-sm font-normal font-inter leading-tight placeholder:text-gray-400"
+            className="flex-1 bg-transparent border-none outline-none text-gray-700 text-sm font-normal font-outfit leading-tight placeholder:text-gray-400"
           />
         </div>
 
@@ -203,7 +203,7 @@ export function AccountsList({
             <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M7.91699 10.7754C9.49286 10.7754 10.812 11.8731 11.1523 13.3457H17.708C18.1219 13.346 18.4578 13.6818 18.458 14.0957C18.458 14.5098 18.122 14.8454 17.708 14.8457H11.1523C10.8122 16.3185 9.49308 17.417 7.91699 17.417C6.3411 17.4168 5.0226 16.3183 4.68262 14.8457H2.29102C1.87695 14.8455 1.54102 14.5098 1.54102 14.0957C1.54121 13.6818 1.87707 13.3459 2.29102 13.3457H4.68262C5.02284 11.8733 6.34133 10.7756 7.91699 10.7754ZM7.91699 12.2754C6.91159 12.2756 6.09668 13.0912 6.09668 14.0967C6.09714 15.1018 6.91187 15.9167 7.91699 15.917C8.92232 15.917 9.73782 15.1019 9.73828 14.0967C9.73828 13.0911 8.92261 12.2754 7.91699 12.2754ZM12.083 2.58301C13.6588 2.58322 14.9772 3.68177 15.3174 5.1543H17.707C18.1211 5.15447 18.457 5.49019 18.457 5.9043C18.4568 6.31823 18.121 6.65412 17.707 6.6543H15.3174C14.9773 8.1268 13.6588 9.2244 12.083 9.22461C10.507 9.22461 9.18787 8.12694 8.84766 6.6543H2.29004C1.87595 6.6543 1.54024 6.31834 1.54004 5.9043C1.54004 5.49008 1.87583 5.1543 2.29004 5.1543H8.84766C9.18793 3.68162 10.5071 2.58301 12.083 2.58301ZM12.083 4.08301C11.0775 4.08301 10.2619 4.89883 10.2617 5.9043C10.262 6.90971 11.0775 7.72461 12.083 7.72461C13.0883 7.72436 13.9031 6.90955 13.9033 5.9043C13.9031 4.89898 13.0883 4.08325 12.083 4.08301Z" fill="currentColor"/>
             </svg>
-            <span className="text-sm font-medium font-inter leading-tight whitespace-nowrap">
+            <span className="text-sm font-medium font-outfit leading-tight whitespace-nowrap">
               {showOnlyApproved ? 'Approved Only' : 'All Accounts'}
             </span>
           </button>
@@ -214,7 +214,7 @@ export function AccountsList({
             className="px-4 py-2.5 rounded-lg shadow-sm border flex items-center gap-2 transition-all bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4" />
-            <span className="text-sm font-medium font-inter leading-tight whitespace-nowrap">
+            <span className="text-sm font-medium font-outfit leading-tight whitespace-nowrap">
               {isExporting ? 'Exporting...' : 'Export CSV'}
             </span>
           </button>
@@ -317,39 +317,39 @@ export function AccountsList({
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="text-sm font-semibold text-gray-900 font-inter">
+                      <div className="text-sm font-semibold text-gray-900 font-outfit">
                         {account.client_name}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700 font-inter">
+                    <span className="text-sm text-gray-700 font-outfit">
                       {account.client_address?.city || 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700 font-inter">
+                    <span className="text-sm text-gray-700 font-outfit">
                       {account.client_address?.line1 ? 'West Coast Office' : 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700 font-inter">
+                    <span className="text-sm text-gray-700 font-outfit">
                       {account.market_sector || 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700 font-inter">
+                    <span className="text-sm text-gray-700 font-outfit">
                       {account.primary_contact_name || 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 font-inter">
+                    <span className="inline-flex px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 font-outfit">
                       {account.client_type ? account.client_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <span className={`${healthScoreColor} text-sm font-semibold font-inter`}>
+                      <span className={`${healthScoreColor} text-sm font-semibold font-outfit`}>
                         {account.ai_health_score || 0}%
                       </span>
                       <div className="w-16 bg-gray-200 rounded-full h-1.5">
@@ -364,17 +364,17 @@ export function AccountsList({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${riskBadge.bgColor} ${riskBadge.textColor} font-inter`}>
+                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${riskBadge.bgColor} ${riskBadge.textColor} font-outfit`}>
                       {riskBadge.label}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`${healthScoreColor} text-sm font-semibold font-inter`}>
+                    <span className={`${healthScoreColor} text-sm font-semibold font-outfit`}>
                       ${account.total_value ? (account.total_value / 1000000).toFixed(1) : '0.0'}M
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1.5 rounded-lg text-xs font-bold ${statusBadge.bgColor} ${statusBadge.textColor} border ${statusBadge.borderColor} font-inter`}>
+                    <span className={`inline-flex px-3 py-1.5 rounded-lg text-xs font-bold ${statusBadge.bgColor} ${statusBadge.textColor} border ${statusBadge.borderColor} font-outfit`}>
                       {statusBadge.label}
                     </span>
                   </td>
@@ -390,7 +390,7 @@ export function AccountsList({
                           }}
                         >
                           <CheckCircle className="w-4 h-4 text-white" />
-                          <span className="text-white text-xs font-bold font-inter">Approve</span>
+                          <span className="text-white text-xs font-bold font-outfit">Approve</span>
                         </button>
                         <button 
                           className="px-3 py-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 rounded-lg flex items-center gap-1.5 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
@@ -401,18 +401,18 @@ export function AccountsList({
                           }}
                         >
                           <XCircle className="w-4 h-4 text-white" />
-                          <span className="text-white text-xs font-bold font-inter">Decline</span>
+                          <span className="text-white text-xs font-bold font-outfit">Decline</span>
                         </button>
                       </div>
                     ) : accountStatus === 'approved' ? (
                       <div className="flex items-center justify-center">
-                        <span className="px-4 py-2 bg-gradient-to-r from-green-50 to-green-100 text-green-800 text-xs font-bold font-inter rounded-lg border border-green-300 shadow-sm">
+                        <span className="px-4 py-2 bg-gradient-to-r from-green-50 to-green-100 text-green-800 text-xs font-bold font-outfit rounded-lg border border-green-300 shadow-sm">
                           ✓ Active
                         </span>
                       </div>
                     ) : (
                       <div className="flex items-center justify-center">
-                        <span className="px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 text-red-800 text-xs font-bold font-inter rounded-lg border border-red-300 shadow-sm">
+                        <span className="px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 text-red-800 text-xs font-bold font-outfit rounded-lg border border-red-300 shadow-sm">
                           ✗ Inactive
                         </span>
                       </div>

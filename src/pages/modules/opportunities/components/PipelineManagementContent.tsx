@@ -1,8 +1,18 @@
 import { memo, useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Sliders, Eye, MapPin, Users, TrendingUp, AlertCircle, Loader2, DollarSign, Clock } from 'lucide-react';
+import { ChevronRight, Sliders, Eye, MapPin, Users, TrendingUp, AlertCircle, Loader2, DollarSign, Clock, Trash2 } from 'lucide-react';
 import { Opportunity, OpportunityPipelineResponse, OpportunityStage as OpportunityStageMap } from '@/types/opportunities';
 import { formatProjectValue } from '@/utils/opportunityUtils';
+import { useDeleteOpportunity } from '@/hooks/useOpportunities';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 type PipelineManagementContentProps = {
   opportunities: Opportunity[];
@@ -144,10 +154,13 @@ const formatPipelineValue = (value: number) => {
 
 export const PipelineManagementContent = memo(({ opportunities, pipelineData, isLoading }: PipelineManagementContentProps) => {
   const navigate = useNavigate();
+  const deleteOpportunityMutation = useDeleteOpportunity();
   const [selectedLayer, setSelectedLayer] = useState('all');
   const [hoveredOpportunity, setHoveredOpportunity] = useState<string | null>(null);
   const [mapLoading, setMapLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [opportunityToDelete, setOpportunityToDelete] = useState<{ id: string; name: string } | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -714,17 +727,30 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
                       <span className="text-sm font-medium text-[#374151]">{formatDeadline(opp.deadline)}</span>
                     </td>
                     <td className="px-8 py-6 whitespace-nowrap">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const opportunityId = opp.customId || opp.id;
-                          navigate(`/module/opportunities/analysis?opportunityId=${opportunityId}`);
-                        }}
-                        className="text-[#161950] hover:text-[#0f1440] transition-all duration-200 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#EFF6FF] group/btn"
-                      >
-                        <span className="text-sm font-semibold">AI Insight</span>
-                        <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-200" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const opportunityId = opp.customId || opp.id;
+                            navigate(`/module/opportunities/analysis?opportunityId=${opportunityId}`);
+                          }}
+                          className="text-[#161950] hover:text-[#0f1440] transition-all duration-200 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-[#EFF6FF] group/btn"
+                        >
+                          <span className="text-sm font-semibold">AI Insight</span>
+                          <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-200" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpportunityToDelete({ id: opp.id, name: opp.name });
+                            setDeleteConfirmOpen(true);
+                          }}
+                          className="text-red-600 hover:text-red-700 transition-all duration-200 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 group/delete"
+                          title="Delete opportunity"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -733,6 +759,46 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
           </table>
         </div>
       </div>
+
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Opportunity</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{opportunityToDelete?.name}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteConfirmOpen(false);
+                setOpportunityToDelete(null);
+              }}
+              disabled={deleteOpportunityMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (opportunityToDelete) {
+                  try {
+                    await deleteOpportunityMutation.mutateAsync(opportunityToDelete.id);
+                    setDeleteConfirmOpen(false);
+                    setOpportunityToDelete(null);
+                  } catch (error) {
+                    // Error is handled by the mutation hook
+                  }
+                }
+              }}
+              disabled={deleteOpportunityMutation.isPending}
+            >
+              {deleteOpportunityMutation.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 });

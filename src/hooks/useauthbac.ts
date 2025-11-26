@@ -8,6 +8,7 @@ import {
   clearAuthData, 
   restoreStoredToken 
 } from '@services/auth';
+import { API_BASE_URL_WITH_PREFIX } from '@/services/api/client';
 
 /**
  * Custom hook for managing authentication state and operations.
@@ -173,7 +174,7 @@ export function useAuth() {
       setError(null);
       
       // Use local authentication instead of Supabase
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

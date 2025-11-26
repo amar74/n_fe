@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -53,10 +54,22 @@ const statusStyles: Record<string, string> = {
   'At Risk': 'bg-red-100 text-red-600',
 };
 
-const createId = () =>
-  typeof crypto !== 'undefined' && crypto.randomUUID
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2, 12);
+const createUuid = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // RFC4122 v4 fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, char => {
+    const rand = (Math.random() * 16) | 0;
+    const value = char === 'x' ? rand : (rand & 0x3) | 0x8;
+    return value.toString(16);
+  });
+};
+
+const uuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const normalizeUuid = (value?: string | null) =>
+  value && uuidRegex.test(value) ? value : createUuid();
 
 const formatCurrency = (value?: number | null) => {
   if (value == null || Number.isNaN(value)) return '—';
@@ -77,6 +90,71 @@ const formatDate = (value?: string | null) => {
     year: 'numeric',
   }).format(date);
 };
+
+const normalizeTimestamp = (value?: string | null) => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+};
+
+const sanitizeString = (value: unknown, fallback = ''): string => {
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return fallback;
+};
+
+const sanitizeNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+};
+
+const sanitizePhase = (phase: DeliveryModelTemplatePhase): DeliveryModelTemplatePhase => ({
+  ...phase,
+  phase_id: normalizeUuid(phase.phase_id as unknown as string),
+  name: sanitizeString(phase.name, 'Untitled phase'),
+  status: sanitizeString(phase.status, '') || null,
+  duration: sanitizeString(phase.duration, ''),
+  budget: sanitizeNumber(phase.budget),
+  updated_by: sanitizeString(phase.updated_by, ''),
+  description: sanitizeString(phase.description, ''),
+  last_updated: normalizeTimestamp(phase.last_updated) ?? new Date().toISOString(),
+});
+
+const sanitizeTemplate = (template: DeliveryModelTemplate): DeliveryModelTemplate => ({
+  ...template,
+  approach: sanitizeString(template.approach, 'Untitled delivery model'),
+  notes: sanitizeString(template.notes, ''),
+  phases: (template.phases ?? []).map(sanitizePhase),
+});
+
+const extractErrorMessage = (error: any): string => {
+  const detail = error?.response?.data?.detail ?? error?.message ?? error;
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) {
+    const msgs = detail
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (item?.msg) return item.msg;
+        return JSON.stringify(item);
+      })
+      .filter(Boolean);
+    return msgs.join('; ') || 'An unexpected error occurred.';
+  }
+  if (typeof detail === 'object' && detail !== null) {
+    if (detail.msg) return detail.msg;
+    if (detail.error?.message) return detail.error.message;
+    return JSON.stringify(detail);
+  }
+  return 'An unexpected error occurred.';
+};
+
+const preparePhasesForPayload = (
+  phases: DeliveryModelTemplatePhase[],
+): DeliveryModelTemplatePhase[] => phases.map(sanitizePhase);
 
 type PhaseFormState = {
   name: string;
@@ -99,6 +177,10 @@ const defaultPhaseForm: PhaseFormState = {
 const DeliveryModelsPage = () => {
   const location = useLocation();
   const { data: templates = [], isLoading } = useDeliveryModelTemplates();
+  const normalizedTemplates = useMemo(
+    () => templates.map((template) => sanitizeTemplate(template)),
+    [templates],
+  );
   const createTemplateMutation = useCreateDeliveryModelTemplate();
   const updateTemplateMutation = useUpdateDeliveryModelTemplate();
   const deleteTemplateMutation = useDeleteDeliveryModelTemplate();
@@ -119,14 +201,17 @@ const DeliveryModelsPage = () => {
 
   useEffect(() => {
     if (isLoading) return;
-    if (!templates.length) {
+    if (!normalizedTemplates.length) {
       setSelectedTemplateId(null);
       return;
     }
-    if (!selectedTemplateId || !templates.some((item) => item.id === selectedTemplateId)) {
-      setSelectedTemplateId(templates[0].id);
+    if (
+      !selectedTemplateId ||
+      !normalizedTemplates.some((item) => item.id === selectedTemplateId)
+    ) {
+      setSelectedTemplateId(normalizedTemplates[0].id);
     }
-  }, [templates, isLoading, selectedTemplateId]);
+  }, [normalizedTemplates, isLoading, selectedTemplateId]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -134,16 +219,16 @@ const DeliveryModelsPage = () => {
     const templateIdFromQuery = params.get('templateId');
     if (
       templateIdFromQuery &&
-      templates.some((item) => item.id === templateIdFromQuery)
+      normalizedTemplates.some((item) => item.id === templateIdFromQuery)
     ) {
       setSelectedTemplateId(templateIdFromQuery);
     }
-  }, [isLoading, location.search, templates]);
+  }, [isLoading, location.search, normalizedTemplates]);
 
   const selectedTemplate: DeliveryModelTemplate | null = useMemo(() => {
-    if (!templates.length || !selectedTemplateId) return null;
-    return templates.find((item) => item.id === selectedTemplateId) ?? null;
-  }, [templates, selectedTemplateId]);
+    if (!normalizedTemplates.length || !selectedTemplateId) return null;
+    return normalizedTemplates.find((item) => item.id === selectedTemplateId) ?? null;
+  }, [normalizedTemplates, selectedTemplateId]);
 
   useEffect(() => {
     if (!selectedTemplate) {
@@ -151,8 +236,8 @@ const DeliveryModelsPage = () => {
       return;
     }
     setInfoForm({
-      approach: selectedTemplate.approach,
-      notes: selectedTemplate.notes ?? '',
+      approach: sanitizeString(selectedTemplate.approach, ''),
+      notes: sanitizeString(selectedTemplate.notes, ''),
     });
   }, [selectedTemplate]);
 
@@ -196,7 +281,7 @@ const DeliveryModelsPage = () => {
     } catch (error: any) {
       toast({
         title: 'Failed to create template',
-        description: error?.response?.data?.detail || 'Please try again.',
+        description: extractErrorMessage(error),
         variant: 'destructive',
       });
     }
@@ -218,7 +303,7 @@ const DeliveryModelsPage = () => {
     } catch (error: any) {
       toast({
         title: 'Failed to delete template',
-        description: error?.response?.data?.detail || 'Please try again.',
+        description: extractErrorMessage(error),
         variant: 'destructive',
       });
     }
@@ -253,7 +338,7 @@ const DeliveryModelsPage = () => {
         payload: {
           approach: trimmedApproach,
           notes: infoForm.notes.trim() || null,
-          phases: selectedTemplate.phases,
+          phases: preparePhasesForPayload(selectedTemplate.phases),
         },
       });
       toast({
@@ -264,7 +349,7 @@ const DeliveryModelsPage = () => {
     } catch (error: any) {
       toast({
         title: 'Failed to update template',
-        description: error?.response?.data?.detail || 'Please try again.',
+        description: extractErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -321,7 +406,10 @@ const DeliveryModelsPage = () => {
     try {
       const basePhases = selectedTemplate.phases ?? [];
       const newPhase: DeliveryModelTemplatePhase = {
-        phase_id: phaseModal.mode === 'edit' && phaseModal.phaseId ? phaseModal.phaseId : createId(),
+        phase_id:
+          phaseModal.mode === 'edit' && phaseModal.phaseId
+            ? normalizeUuid(phaseModal.phaseId)
+            : createUuid(),
         name: trimmedName,
         status: phaseForm.status || null,
         duration: phaseForm.duration.trim() || null,
@@ -343,7 +431,7 @@ const DeliveryModelsPage = () => {
         payload: {
           approach: selectedTemplate.approach,
           notes: selectedTemplate.notes ?? null,
-          phases: nextPhases,
+          phases: preparePhasesForPayload(nextPhases),
         },
       });
 
@@ -358,7 +446,7 @@ const DeliveryModelsPage = () => {
     } catch (error: any) {
       toast({
         title: 'Failed to save phase',
-        description: error?.response?.data?.detail || 'Please try again.',
+        description: extractErrorMessage(error),
         variant: 'destructive',
       });
       setIsPhaseSubmitting(false);
@@ -377,7 +465,7 @@ const DeliveryModelsPage = () => {
         payload: {
           approach: selectedTemplate.approach,
           notes: selectedTemplate.notes ?? null,
-          phases: nextPhases,
+          phases: preparePhasesForPayload(nextPhases),
         },
       });
       toast({
@@ -387,7 +475,7 @@ const DeliveryModelsPage = () => {
     } catch (error: any) {
       toast({
         title: 'Failed to remove phase',
-        description: error?.response?.data?.detail || 'Please try again.',
+        description: extractErrorMessage(error),
         variant: 'destructive',
       });
     }
@@ -441,15 +529,15 @@ const DeliveryModelsPage = () => {
                 </div>
               )}
 
-              {!isLoading && !templates.length && (
+              {!isLoading && !normalizedTemplates.length && (
                 <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-sm text-gray-500">
                   No delivery models yet. Create your first template to get started.
                 </div>
               )}
 
-              {!isLoading && templates.length > 0 && (
+              {!isLoading && normalizedTemplates.length > 0 && (
                 <div className="space-y-3">
-                  {templates.map((template) => {
+                  {normalizedTemplates.map((template) => {
                     const budget = template.phases.reduce((sum, phase) => sum + (phase.budget ?? 0), 0);
                     return (
                       <button
@@ -521,11 +609,14 @@ const DeliveryModelsPage = () => {
               <div className="space-y-6 px-6 py-6">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="space-y-3">
-                    <p className="text-lg font-semibold text-gray-900">{selectedTemplate.approach}</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {sanitizeString(selectedTemplate.approach, 'Untitled delivery model')}
+                    </p>
                     <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
                       <p className="font-medium text-gray-900">Internal notes</p>
                       <p className="mt-1 text-gray-600">
-                        {selectedTemplate.notes?.trim() || 'No notes have been added yet.'}
+                        {sanitizeString(selectedTemplate.notes, '').trim() ||
+                          'No notes have been added yet.'}
                       </p>
                     </div>
                   </div>
@@ -617,7 +708,7 @@ const DeliveryModelsPage = () => {
                       <div className="mt-4 grid gap-4 md:grid-cols-3">
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                           <CalendarClock className="h-4 w-4 text-indigo-500" />
-                          <span>{phase.duration || 'No duration specified'}</span>
+                          <span>{sanitizeString(phase.duration, '') || 'No duration specified'}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                           <DollarSign className="h-4 w-4 text-indigo-500" />
@@ -625,13 +716,13 @@ const DeliveryModelsPage = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                           <Layers className="h-4 w-4 text-indigo-500" />
-                          <span>{phase.updated_by || 'No owner recorded'}</span>
+                          <span>{sanitizeString(phase.updated_by, '') || 'No owner recorded'}</span>
                         </div>
                       </div>
 
-                      {phase.description && (
+                      {sanitizeString(phase.description, '') && (
                         <div className="mt-3 rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
-                          {phase.description}
+                          {sanitizeString(phase.description, '')}
                         </div>
                       )}
                     </div>
@@ -649,6 +740,12 @@ const DeliveryModelsPage = () => {
 
       <Dialog open={showCreateModal} onOpenChange={(open) => setShowCreateModal(open)}>
         <DialogContent className="max-w-2xl overflow-hidden rounded-3xl border border-gray-100 p-0 shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Create delivery model template</DialogTitle>
+            <DialogDescription>
+              Provide an approach name and optional notes for the new template.
+            </DialogDescription>
+          </DialogHeader>
           <form onSubmit={handleCreateTemplate} className="space-y-0">
             <div className="bg-gradient-to-r from-[#161950] via-[#1b1f7a] to-[#202188] px-8 py-6 text-white">
               <div className="flex items-center gap-4">
@@ -703,6 +800,10 @@ const DeliveryModelsPage = () => {
 
       <Dialog open={infoModalOpen} onOpenChange={(open) => setInfoModalOpen(open)}>
         <DialogContent className="max-w-2xl overflow-hidden rounded-3xl border border-gray-100 p-0 shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Edit delivery model</DialogTitle>
+            <DialogDescription>Update the delivery model approach and notes.</DialogDescription>
+          </DialogHeader>
           <form onSubmit={handleSaveTemplateInfo} className="space-y-0">
             <div className="bg-gradient-to-r from-[#161950] via-[#1b1f7a] to-[#202188] px-8 py-6 text-white">
               <div className="flex items-center gap-4">
@@ -764,6 +865,10 @@ const DeliveryModelsPage = () => {
 
       <Dialog open={phaseModal.open} onOpenChange={(open) => (open ? null : closePhaseModal())}>
         <DialogContent className="max-w-2xl overflow-hidden rounded-3xl border border-gray-100 p-0 shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{phaseModal.mode === 'edit' ? 'Edit phase' : 'Add phase'}</DialogTitle>
+            <DialogDescription>Capture the delivery model phase details.</DialogDescription>
+          </DialogHeader>
           <form onSubmit={handleSavePhase} className="space-y-0">
             <div className="bg-gradient-to-r from-[#161950] via-[#1b1f7a] to-[#202188] px-8 py-6 text-white">
               <div className="flex items-center gap-4">

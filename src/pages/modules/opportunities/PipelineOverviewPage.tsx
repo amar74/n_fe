@@ -1,6 +1,7 @@
 import { memo, useState, Suspense, lazy } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useOpportunity } from '@/hooks/useOpportunity';
+import { useOpportunityOverview } from '@/hooks/useOpportunityTabs';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Bot } from 'lucide-react';
 
@@ -35,6 +36,7 @@ function PipelineOverviewPage() {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   
   const { data: opportunity, isLoading, error } = useOpportunity(opportunityId);
+  const { data: overviewData } = useOpportunityOverview(opportunityId || '');
 
   const renderTabContent = () => {
     const tabProps = { opportunity };
@@ -81,12 +83,40 @@ function PipelineOverviewPage() {
     );
   }
 
+  // Get project value and win probability from key_metrics first, then fallback to opportunity fields
+  const keyMetrics = overviewData?.key_metrics ?? {};
+  
+  // Parse numeric values
+  const parseNumericValue = (value: unknown): number | null => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const cleaned = value.replace(/[^0-9.-]/g, '');
+      const parsed = Number(cleaned);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  };
+  
+  // Get project value - check key_metrics first, then opportunity, handle 0 values
+  const projectValueFromMetrics = parseNumericValue(keyMetrics.project_value);
+  const projectValueFromOpp = parseNumericValue(opportunity?.project_value);
+  const projectValue = projectValueFromMetrics !== null ? projectValueFromMetrics : (projectValueFromOpp !== null ? projectValueFromOpp : null);
+  
+  // Get win probability from key_metrics (comes from AI analysis)
+  const winProbabilityValue = parseNumericValue(
+    keyMetrics.win_probability ?? (keyMetrics.winProbability as unknown)
+  );
+  const winProbability = winProbabilityValue !== null ? winProbabilityValue : null;
+  
   const formattedOpportunity = {
     projectName: opportunity?.project_name,
     custom_id: opportunity?.custom_id,
     category: opportunity?.market_sector,
-    projectValue: opportunity?.project_value,
-    winProbability: 75, // This will need to be added to the backend API
+    projectValue: projectValue,
+    winProbability: winProbability, // From AI analysis in key_metrics
     aiMatch: opportunity?.match_score,
     expectedRfp: opportunity?.expected_rfp_date,
     currentStage: opportunity?.stage
@@ -156,11 +186,17 @@ function PipelineOverviewPage() {
               
               <div className="text-right">
                 <div className="text-4xl font-bold text-[#66BB6A] leading-tight mb-2">
-                  {formattedOpportunity.projectValue ? formatCurrency(formattedOpportunity.projectValue) : 'N/A'}
+                  {formattedOpportunity.projectValue !== null && formattedOpportunity.projectValue > 0
+                    ? formatCurrency(formattedOpportunity.projectValue)
+                    : formattedOpportunity.projectValue === 0
+                    ? '$0'
+                    : 'N/A'}
                 </div>
                 <div className="text-white/80 text-lg font-medium mb-3">Project Value</div>
                 <div className="text-white text-xl font-medium">
-                  {formattedOpportunity.winProbability}% Win Probability
+                  {formattedOpportunity.winProbability !== null && formattedOpportunity.winProbability >= 0
+                    ? `${Math.round(formattedOpportunity.winProbability)}% Win Probability`
+                    : 'Win Probability: N/A'}
                 </div>
               </div>
             </div>

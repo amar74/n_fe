@@ -176,17 +176,17 @@ export default function SurveysPage() {
   };
 
   return (
-    <div className="w-full h-full bg-[#F5F3F2] font-inter">
+    <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-sm font-normal font-inter leading-tight">Dashboard</span>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Surveys</span>
+              <span className="text-gray-500 text-sm font-normal font-outfit leading-tight">Dashboard</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Surveys</span>
             </div>
-            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-inter leading-loose">Client Surveys</h1>
-            <p className="text-[#667085] text-sm font-normal font-inter leading-tight">Create and manage client satisfaction surveys</p>
+            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">Client Surveys</h1>
+            <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">Create and manage client satisfaction surveys</p>
           </div>
           
           <div className="flex items-start gap-3">
@@ -195,14 +195,14 @@ export default function SurveysPage() {
               className="h-11 px-5 py-2 bg-indigo-950 rounded-lg flex items-center gap-2.5 hover:bg-indigo-900 transition-colors"
             >
               <Plus className="h-4 w-4 text-white" />
-              <span className="text-white text-xs font-medium font-inter leading-normal">Client Survey</span>
+              <span className="text-white text-xs font-medium font-outfit leading-normal">Client Survey</span>
             </button>
             <button 
               onClick={() => navigate('/surveys/employee-builder')}
               className="h-11 px-5 py-2 bg-gray-900 rounded-lg flex items-center gap-2.5 hover:bg-gray-800 transition-colors"
             >
               <Users className="h-4 w-4 text-white" />
-              <span className="text-white text-xs font-medium font-inter leading-normal">Employee Survey</span>
+              <span className="text-white text-xs font-medium font-outfit leading-normal">Employee Survey</span>
             </button>
           </div>
         </div>

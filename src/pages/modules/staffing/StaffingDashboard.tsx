@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useStaffPlanning } from '@/hooks/useStaffPlanning';
+import { extractErrorMessage } from '@/utils/errorUtils';
 import { 
   Plus, 
   Users, 
@@ -27,7 +28,8 @@ import {
   Sparkles,
   Activity,
   Briefcase,
-  RefreshCw
+  RefreshCw,
+  PlayCircle
 } from 'lucide-react';
 
 interface StaffPlan {
@@ -49,7 +51,7 @@ export default function StaffingDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   
   // API Integration
-  const { useStaffPlansList, deleteStaffPlan } = useStaffPlanning();
+  const { useStaffPlansList, deleteStaffPlan, updateStaffPlan } = useStaffPlanning();
   const { data: apiPlans, isLoading, error: apiError, refetch } = useStaffPlansList(filterStatus === 'all' ? undefined : filterStatus);
 
   // Log any API errors
@@ -179,6 +181,23 @@ export default function StaffingDashboard() {
     }
   };
 
+  const handleActivatePlan = async (planId: number, planName: string) => {
+    if (confirm(`Are you sure you want to activate "${planName}"? Once activated, the plan will be moved from draft to active status.`)) {
+      try {
+        await updateStaffPlan.mutateAsync({
+          id: planId,
+          data: {
+            status: 'active'
+          }
+        });
+        refetch();
+      } catch (error: any) {
+        console.error('Failed to activate plan:', error);
+        alert('Failed to activate plan: ' + extractErrorMessage(error));
+      }
+    }
+  };
+
   const handleExportReport = () => {
     if (staffPlans.length === 0) {
       alert('No plans to export');
@@ -291,23 +310,23 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Enhanced Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900">
+              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
                 Dashboard
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Staffing Plan</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Staffing Plan</span>
             </div>
             
             <div className="flex items-center gap-4">
               <div>
-                <h1 className="text-[#1A1A1A] text-3xl font-bold font-inter leading-loose">
+                <h1 className="text-[#1A1A1A] text-3xl font-bold font-outfit leading-loose">
                   Staff Planning Dashboard
                 </h1>
                 <p className="text-gray-600 text-sm font-medium mt-1">
@@ -325,7 +344,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
               className="h-11 px-5 py-2 bg-white rounded-lg border border-gray-300 flex items-center gap-2.5 hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download className="w-5 h-5 text-gray-700" />
-              <span className="text-gray-700 text-sm font-semibold font-inter">
+              <span className="text-gray-700 text-sm font-semibold font-outfit">
                 Export Report
               </span>
             </button>
@@ -335,7 +354,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
               style={{ backgroundColor: '#161950' }}
             >
               <Plus className="w-5 h-5 text-white" />
-              <span className="text-white text-sm font-semibold font-inter leading-normal">
+              <span className="text-white text-sm font-semibold font-outfit leading-normal">
                 Create Staff Plan
               </span>
             </Link>
@@ -408,7 +427,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                   <Briefcase className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-[#1A1A1A] text-xl font-bold font-inter">Staffing Plans</h2>
+                  <h2 className="text-[#1A1A1A] text-xl font-bold font-outfit">Staffing Plans</h2>
                   <p className="text-gray-600 text-sm font-medium mt-0.5">
                     {filteredPlans.length} plans • {filteredPlans.filter(p => p.status === 'active').length} active • {' '}
                     {filteredPlans.filter(p => p.status === 'draft').length} draft
@@ -486,9 +505,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                 <div className="text-red-600 mb-4">
                   <p className="text-lg font-bold">Error Loading Plans</p>
                   <p className="text-sm mt-2">
-                    {typeof apiError === 'object' && apiError !== null 
-                      ? (apiError.message || JSON.stringify(apiError))
-                      : String(apiError) || 'Failed to fetch staff plans'}
+                    {extractErrorMessage(apiError)}
                   </p>
                 </div>
                 <button 
@@ -535,7 +552,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                       <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
-                            <h3 className="text-base font-bold text-[#1A1A1A] mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
+                            <h3 className="text-base font-bold text-[#1A1A1A] mb-2 line-clamp-2 group-hover:text-[#161950] transition-colors">
                               {plan.projectName}
                             </h3>
                           </div>
@@ -623,6 +640,16 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                             <Eye className="w-3.5 h-3.5" />
                             View Details
                           </Link>
+                          {plan.status === 'draft' && (
+                            <button
+                              onClick={() => handleActivatePlan(plan.id, plan.projectName)}
+                              disabled={updateStaffPlan.isPending}
+                              className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Activate Plan"
+                            >
+                              <PlayCircle className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <Link 
                             to={`/staffing-plan/edit/${plan.id}`}
                             className="px-3 py-2 bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg text-xs font-bold transition-all flex items-center justify-center"

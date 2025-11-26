@@ -134,8 +134,9 @@ export const useDeleteOpportunity = () => {
       // Invalidate all opportunity queries
       await queryClient.invalidateQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.all });
       
-      // Force refetch of lists to immediately update UI
+      // Force refetch of lists and pipeline to immediately update UI
       await queryClient.refetchQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.lists() });
+      await queryClient.refetchQueries({ queryKey: OPPORTUNITY_QUERY_KEYS.pipeline() });
 
       toast.success('Opportunity deleted successfully');
     },

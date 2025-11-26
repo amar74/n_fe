@@ -35,7 +35,7 @@ function HomePage() {
   }
 
     return (
-      <div className="h-full bg-[#F5F3F2] font-inter">
+      <div className="h-full bg-[#F5F3F2] font-outfit">
         <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-full">
           <DashboardWelcome />
         </div>

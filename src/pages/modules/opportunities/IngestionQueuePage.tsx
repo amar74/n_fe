@@ -312,13 +312,23 @@ export default function IngestionQueuePage() {
   const handleCreateOpportunityFromModal = async (data: OpportunityFormData) => {
     if (!createModalDraft) return;
     const normalizedLocation = formatLocationValue(data.city, data.state) || data.location;
+    
+    // Parse project value to numeric if provided
+    let budgetNumeric: number | undefined;
+    if (data.projectValue) {
+      const { parseProjectValue } = await import('@/utils/opportunityUtils');
+      budgetNumeric = parseProjectValue(data.projectValue);
+    }
+    
     const updatePayload: OpportunityTempUpdate = {
       project_title: data.opportunityName || undefined,
       location: normalizedLocation || undefined,
       budget_text: data.projectValue || undefined,
+      ...(budgetNumeric !== undefined && { project_value: budgetNumeric }),
       deadline: data.date ? new Date(`${data.date}T00:00:00Z`).toISOString() : undefined,
       tags: data.marketSector ? [data.marketSector] : undefined,
-      ai_summary: data.projectDescription || undefined,
+      // Ensure full description is saved - no truncation
+      ai_summary: data.projectDescription ? data.projectDescription.trim() : undefined,
       source_url: data.companyWebsite || undefined,
     };
 

@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '@components/Navigation';
 import { Toaster } from '@/components/ui/toaster';
 import { useMyOrganization } from '@/hooks/useOrganizations';
+import ChatbotSelector from '@/components/ChatbotSelector';
 
 // @author abhishek.softication
 export default function MainLayout() {
@@ -119,6 +120,7 @@ export default function MainLayout() {
   return (
     <>
       <Navigation />
+      <ChatbotSelector />
       <Toaster />
     </>
   );

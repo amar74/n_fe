@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Calendar, DollarSign, TrendingUp, Building2, Clock, Target, Sparkles, Info, CheckCircle, ArrowUpRight, Brain, Lightbulb, X } from 'lucide-react';
 import { apiClient } from '@/services/api/client';
+import { useStaffPlanning } from '@/hooks/useStaffPlanning';
 
 interface ProjectInfo {
   projectId?: string;  // UUID
@@ -10,7 +11,6 @@ interface ProjectInfo {
   durationMonths: number;
   overheadRate: number;
   profitMargin: number;
-  annualEscalationRate: number;
 }
 
 interface Props {
@@ -26,6 +26,33 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  
+  // Fetch existing staff plans to check which projects already have plans
+  const { useStaffPlansList } = useStaffPlanning();
+  const { data: existingStaffPlans = [] } = useStaffPlansList();
+  
+  // Create sets of project names and project IDs that already have staff plans
+  const projectNamesWithPlans = new Set(
+    existingStaffPlans
+      .map(plan => plan.project_name?.toLowerCase().trim())
+      .filter(Boolean)
+  );
+  
+  const projectIdsWithPlans = new Set(
+    existingStaffPlans
+      .map(plan => plan.project_id)
+      .filter(Boolean)
+  );
+  
+  // Helper function to check if an opportunity already has a staff plan
+  const hasExistingPlan = (opp: any): boolean => {
+    // Check by project_id if it's a valid UUID
+    if (opp.id && typeof opp.id === 'string' && opp.id.length > 10) {
+      return projectIdsWithPlans.has(opp.id);
+    }
+    // Check by project name (for mock opportunities with numeric IDs)
+    return projectNamesWithPlans.has(opp.name?.toLowerCase().trim());
+  };
 
   // Update form data when initialData changes (important for edit mode)
   useEffect(() => {
@@ -76,13 +103,15 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
   }, []);
 
   const handleOpportunitySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const opportunityId = parseInt(e.target.value);
-    const opportunity = opportunities.find(o => o.id === opportunityId);
+    const opportunityId = e.target.value;
+    const opportunity = opportunities.find(o => String(o.id) === opportunityId);
     
     if (opportunity) {
+      // Only set projectId if it's a valid UUID, otherwise leave it undefined
+      // Mock opportunities have numeric IDs, so we don't set projectId for them
       setFormData({
         ...formData,
-        projectId: String(opportunity.id),  // Convert to string (UUID)
+        projectId: undefined,  // Don't set projectId for mock opportunities (they have numeric IDs, not UUIDs)
         projectName: opportunity.name,
         projectDescription: opportunity.description || '',
         projectStartDate: opportunity.startDate || '',
@@ -106,7 +135,7 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
     onSubmit(formData);
   };
 
-  const selectedOpportunity = opportunities.find(o => o.id === formData.projectId);
+  const selectedOpportunity = opportunities.find(o => String(o.id) === String(formData.projectId));
 
   const handleGetAIRecommendations = async () => {
     setIsLoadingAI(true);
@@ -128,8 +157,7 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
         recommended_parameters: {
           duration_months: 24,
           overhead_rate: 25.0,
-          profit_margin: 15.0,
-          annual_escalation_rate: 3.0
+          profit_margin: 15.0
         },
         market_insights: [
           'Construction inflation trending at 3-4% annually',
@@ -147,8 +175,7 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
         ...formData,
         durationMonths: aiRecommendations.recommended_parameters.duration_months,
         overheadRate: aiRecommendations.recommended_parameters.overhead_rate,
-        profitMargin: aiRecommendations.recommended_parameters.profit_margin,
-        annualEscalationRate: aiRecommendations.recommended_parameters.annual_escalation_rate
+        profitMargin: aiRecommendations.recommended_parameters.profit_margin
       });
       setShowAIRecommendations(false);
       alert('AI recommendations applied successfully!');
@@ -179,7 +206,7 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
               <FileText className="w-7 h-7 text-white" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-[#1A1A1A] font-inter">
+              <h2 className="text-2xl font-bold text-[#1A1A1A] font-outfit">
                 Project Configuration
               </h2>
               <p className="text-sm text-gray-600 mt-1">
@@ -229,11 +256,20 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                 defaultValue=""
               >
                 <option value="" disabled>Choose a project from opportunities...</option>
-                {opportunities.map(opp => (
-                  <option key={opp.id} value={opp.id}>
-                    {opp.name} • ${(opp.budget / 1000).toFixed(0)}K budget • {opp.location}
-                  </option>
-                ))}
+                {opportunities.map(opp => {
+                  const hasPlan = hasExistingPlan(opp);
+                  return (
+                    <option 
+                      key={opp.id} 
+                      value={opp.id}
+                      disabled={hasPlan}
+                      style={hasPlan ? { color: '#9ca3af', fontStyle: 'italic' } : {}}
+                    >
+                      {opp.name} • ${(opp.budget / 1000).toFixed(0)}K budget • {opp.location}
+                      {hasPlan ? ' (Staff Plan Exists)' : ''}
+                    </option>
+                  );
+                })}
               </select>
             )}
             
@@ -428,40 +464,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                   </p>
                 </div>
 
-                {/* Annual Escalation Rate */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gray-600" />
-                    Annual Escalation Rate (%) *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      value={formData.annualEscalationRate}
-                      onChange={(e) => setFormData({ ...formData, annualEscalationRate: parseFloat(e.target.value) })}
-                      min="0"
-                      max="50"
-                      step="0.1"
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm pr-12"
-                      required
-                    />
-                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm font-bold text-gray-600">
-                      %
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center gap-2 text-xs text-gray-600">
-                    <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-orange-500"
-                        style={{ width: `${Math.min((formData.annualEscalationRate / 10) * 100, 100)}%` }}
-                      ></div>
-                    </div>
-                    <span className="font-semibold">{formData.annualEscalationRate}%</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Annual cost increase (typically 2-5%)
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -646,19 +648,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                   )}
                 </div>
 
-                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-4 h-4 text-purple-600" />
-                    <p className="text-xs font-semibold text-gray-700">Annual Escalation</p>
-                  </div>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {aiRecommendations.recommended_parameters.annual_escalation_rate}%
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1">per year</p>
-                  {aiRecommendations.rationale?.escalation && (
-                    <p className="text-xs text-gray-600 mt-2 italic">{aiRecommendations.rationale.escalation}</p>
-                  )}
-                </div>
               </div>
             </div>
 

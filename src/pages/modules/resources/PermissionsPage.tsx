@@ -41,7 +41,7 @@ function PermissionsPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">

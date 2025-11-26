@@ -45,11 +45,27 @@ interface Message {
   module?: string;
 }
 
-type ChatbotProps = {
-  currentModule?: string;
+interface AIAgenticTemplate {
+  id: number;
+  name: string;
+  description?: string;
+  category: string;
+  tags?: string[];
+  assigned_modules?: string[];
+  system_prompt: string;
+  welcome_message?: string;
+  quick_actions?: Record<string, any>;
+  is_active: boolean;
+  is_default: boolean;
+  display_order: number;
 }
 
-const QUICK_ACTIONS = [
+type ChatbotProps = {
+  currentModule?: string;
+  template?: AIAgenticTemplate;
+}
+
+const DEFAULT_QUICK_ACTIONS = [
   "How do I create a new account?",
   "What's the status of my proposals?",
   "Show me project deadlines",
@@ -72,15 +88,18 @@ const MODULE_CONTEXT = {
   "Dashboard": "overview metrics, summary statistics, quick access to all modules"
 };
 
-export default function UniversalChatbot({ currentModule = "General" }: ChatbotProps) {
+export default function UniversalChatbot({ currentModule = "General", template }: ChatbotProps) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const welcomeMsg = template?.welcome_message || 
+    `Hello! I'm your intelligent assistant for Megapolis Technologies. I can help you with any questions about ${currentModule === "General" ? "all modules" : currentModule} or any other part of the system. What would you like to know?`;
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       type: "bot",
-      content: `Hello! I'm your intelligent assistant for Megapolis Technologies. I can help you with any questions about ${currentModule === "General" ? "all modules" : currentModule} or any other part of the system. What would you like to know?`,
+      content: welcomeMsg,
       timestamp: new Date(),
       module: currentModule
     }
@@ -263,7 +282,7 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
             <div className="flex items-center justify-between">
               <DialogTitle className="flex items-center gap-3">
                 <Bot className="h-6 w-6 text-emerald-600" />
-                AI Assistant
+                {template?.name || "AI Assistant"}
                 {currentModule && <Badge variant="outline" className="text-xs">{currentModule}</Badge>}
               </DialogTitle>
               <div className="flex items-center gap-2">
@@ -297,15 +316,15 @@ export default function UniversalChatbot({ currentModule = "General" }: ChatbotP
                   Quick Questions
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {QUICK_ACTIONS.map((action, index) => (
+                  {(template?.quick_actions ? Object.values(template.quick_actions) : DEFAULT_QUICK_ACTIONS).map((action, index) => (
                     <Button
                       key={index}
                       variant="outline"
                       size="sm"
-                      onClick={() => handleQuickAction(action)}
+                      onClick={() => handleQuickAction(typeof action === 'string' ? action : String(action))}
                       className="text-xs"
                     >
-                      {action}
+                      {typeof action === 'string' ? action : String(action)}
                     </Button>
                   ))}
                 </div>

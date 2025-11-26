@@ -1,4 +1,4 @@
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -9,7 +9,22 @@ import {
   Loader2,
   PiggyBank,
   TrendingUp,
+  Sparkles,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  Lightbulb,
+  TrendingDown,
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { useFinanceDashboardSummary, useFinanceOverhead, useFinanceRevenue, useFinanceBookings, useFinanceTrends, useFinanceAIAnalysis } from '@/hooks/useFinance';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 type IncomeStatementMonth = {
   month: string;
@@ -20,6 +35,7 @@ type IncomeStatementMonth = {
 type FinanceSnapshot = {
   incomeStatement: IncomeStatementMonth[];
   overhead: Record<string, number[]>;
+  revenue: Record<string, number[]>;
   bookings: { clientName: string; monthlyActuals: number[]; totalPlan: number }[];
   dro: { clientName: string; dro: number }[];
   keyStats: { bookings: number; backlog: number };
@@ -198,6 +214,7 @@ const FINANCE_DATA: Record<'Firmwide' | 'Business Unit A' | 'Business Unit B', F
   Firmwide: {
     incomeStatement: firmwideIncome,
     overhead: firmwideOverhead,
+    revenue: {},
     bookings: firmwideBookings,
     dro: firmwideDro,
     keyStats: { bookings: 4500000, backlog: 12000000 },
@@ -206,6 +223,7 @@ const FINANCE_DATA: Record<'Firmwide' | 'Business Unit A' | 'Business Unit B', F
   'Business Unit A': {
     incomeStatement: splitIncomeStatement(firmwideIncome, 0.6),
     overhead: splitOverhead(firmwideOverhead, 0.6),
+    revenue: {},
     bookings: firmwideBookings.slice(0, 3).map((b) => ({
       ...b,
       monthlyActuals: b.monthlyActuals.map((value) => value * 0.6),
@@ -218,6 +236,7 @@ const FINANCE_DATA: Record<'Firmwide' | 'Business Unit A' | 'Business Unit B', F
   'Business Unit B': {
     incomeStatement: splitIncomeStatement(firmwideIncome, 0.4),
     overhead: splitOverhead(firmwideOverhead, 0.4),
+    revenue: {},
     bookings: firmwideBookings.slice(2).map((b) => ({
       ...b,
       monthlyActuals: b.monthlyActuals.map((value) => value * 0.4),
@@ -256,10 +275,172 @@ function FinancePage() {
   const [aiQuery, setAiQuery] = useState('');
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [isThinking, setIsThinking] = useState(false);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
+  const [comprehensiveAnalysis, setComprehensiveAnalysis] = useState<any>(null);
 
-  const selectedData = FINANCE_DATA[selectedUnit];
+  // Map frontend unit names to API unit keys
+  const getApiBusinessUnit = (unit: 'Firmwide' | 'Business Unit A' | 'Business Unit B'): string | null => {
+    switch (unit) {
+      case 'Firmwide':
+        return null; // null means firmwide in API
+      case 'Business Unit A':
+        return 'business_unit_a';
+      case 'Business Unit B':
+        return 'business_unit_b';
+      default:
+        return null;
+    }
+  };
+
+  // Fetch data from API
+  const apiBusinessUnit = getApiBusinessUnit(selectedUnit);
+  const { data: dashboardSummary, isLoading: isLoadingSummary, error: summaryError } = useFinanceDashboardSummary(apiBusinessUnit);
+  const { data: overheadData, isLoading: isLoadingOverhead } = useFinanceOverhead(apiBusinessUnit);
+  const { data: revenueData, isLoading: isLoadingRevenue } = useFinanceRevenue(apiBusinessUnit);
+  const { data: bookingsData, isLoading: isLoadingBookings } = useFinanceBookings(apiBusinessUnit);
+  const { data: trendsData, isLoading: isLoadingTrends } = useFinanceTrends(apiBusinessUnit);
+  const aiAnalysisMutation = useFinanceAIAnalysis(apiBusinessUnit);
+
+  // Use API data if available, fallback to mock data
+  const selectedData = useMemo(() => {
+    // If API data is loading or not available, use mock data
+    if (isLoadingSummary || !dashboardSummary) {
+      return FINANCE_DATA[selectedUnit];
+    }
+
+    // Debug logging
+    console.log('Overhead Data:', overheadData);
+    console.log('Revenue Data:', revenueData);
+    console.log('Bookings Data:', bookingsData);
+
+    // Transform API data to match frontend structure
+    // NOTE: Overhead categories come from:
+    // - Employee Expense Management: Employee-submitted expenses (Travel, Meals, etc.)
+    // - Procurement Oversight: Purchase orders and vendor invoices (Equipment, Rent, etc.)
+    // - Budget Categories Analysis: Actual spend vs. budget allocations
+    const apiData: FinanceSnapshot = {
+      incomeStatement: FINANCE_DATA[selectedUnit].incomeStatement, // Keep mock for now - income statement endpoint needed
+      // Overhead categories aggregate data from:
+      // 1. Employee Expense Management: Employee-submitted expenses (Travel, Meals, Accommodation, Software, Hardware, Training)
+      // 2. Procurement Oversight: Purchase orders and vendor invoices (Equipment, Supplies, Rent, Utilities, Professional Services)
+      // 3. Budget Categories Analysis: Actual spend vs. budget allocations for variance tracking
+      overhead: overheadData?.categories && overheadData.categories.length > 0 
+        ? overheadData.categories.reduce((acc: Record<string, { values: number[], parent_id: number | null, category_id: number | null }>, item: any) => {
+            // Handle both snake_case and camelCase field names
+            const ytdValue = item.ytd_spend ?? item.ytdSpend ?? 0;
+            const monthlyAvg = item.monthly_average ?? item.monthlyAverage ?? (ytdValue / 12);
+            // Use YTD value divided by 12 for monthly average
+            const finalMonthlyAvg = monthlyAvg > 0 ? monthlyAvg : (ytdValue / 12);
+            const parentId = item.parent_id ?? item.parentId ?? null;
+            const categoryId = item.category_id ?? item.categoryId ?? null;
+            console.log(`Overhead category: ${item.category}, YTD: ${ytdValue}, Monthly Avg: ${finalMonthlyAvg}, Parent ID: ${parentId}, Category ID: ${categoryId}`);
+            acc[item.category] = { values: Array(12).fill(finalMonthlyAvg), parent_id: parentId, category_id: categoryId };
+            return acc;
+          }, {})
+        : Object.fromEntries(Object.entries(FINANCE_DATA[selectedUnit].overhead).map(([k, v]) => [k, { values: Array.isArray(v) ? v : [], parent_id: null, category_id: null }])),
+      revenue: revenueData?.categories && revenueData.categories.length > 0
+        ? revenueData.categories.reduce((acc: Record<string, { values: number[], parent_id: number | null, category_id: number | null }>, item: any) => {
+            // Handle both snake_case and camelCase field names
+            const ytdValue = item.ytd_spend ?? item.ytdSpend ?? 0;
+            const monthlyAvg = item.monthly_average ?? item.monthlyAverage ?? (ytdValue / 12);
+            // Use YTD value divided by 12 for monthly average
+            const finalMonthlyAvg = monthlyAvg > 0 ? monthlyAvg : (ytdValue / 12);
+            const parentId = item.parent_id ?? item.parentId ?? null;
+            const categoryId = item.category_id ?? item.categoryId ?? null;
+            console.log(`Revenue category: ${item.category}, YTD: ${ytdValue}, Monthly Avg: ${finalMonthlyAvg}, Parent ID: ${parentId}, Category ID: ${categoryId}`);
+            acc[item.category] = { values: Array(12).fill(finalMonthlyAvg), parent_id: parentId, category_id: categoryId };
+            return acc;
+          }, {})
+        : {},
+      bookings: bookingsData?.records && bookingsData.records.length > 0
+        ? bookingsData.records.map((record: any) => {
+            // Handle both snake_case and camelCase field names
+            const clientName = record.client_name ?? record.clientName ?? '';
+            const ytdActual = record.ytd_actual ?? record.ytdActual ?? 0;
+            const planTotal = record.plan_total ?? record.planTotal ?? 0;
+            console.log(`Booking: ${clientName}, YTD: ${ytdActual}, Plan: ${planTotal}`);
+            return {
+              clientName,
+              monthlyActuals: Array(12).fill(ytdActual / 12), // Distribute YTD across months
+              totalPlan: planTotal,
+            };
+          })
+        : FINANCE_DATA[selectedUnit].bookings,
+      dro: bookingsData?.records && bookingsData.records.length > 0
+        ? bookingsData.records.map((record: any) => {
+            const clientName = record.client_name ?? record.clientName ?? '';
+            return {
+              clientName,
+              dro: 45 + Math.random() * 20, // Mock DRO - would need separate endpoint
+            };
+          })
+        : FINANCE_DATA[selectedUnit].dro,
+      keyStats: {
+        bookings: bookingsData?.records && bookingsData.records.length > 0
+          ? bookingsData.records.reduce((sum: number, r: any) => {
+              const ytdActual = r.ytd_actual ?? r.ytdActual ?? 0;
+              return sum + ytdActual;
+            }, 0)
+          : FINANCE_DATA[selectedUnit].keyStats.bookings,
+        backlog: bookingsData?.records && bookingsData.records.length > 0
+          ? bookingsData.records.reduce((sum: number, r: any) => {
+              const remaining = r.remaining ?? 0;
+              return sum + remaining;
+            }, 0) * 12
+          : FINANCE_DATA[selectedUnit].keyStats.backlog,
+      },
+      receivables: dashboardSummary?.receivables ? {
+        currentMonth: {
+          dro: dashboardSummary.receivables.dro,
+          dbo: dashboardSummary.receivables.dbo,
+          duo: dashboardSummary.receivables.duo,
+        },
+        lastMonth: {
+          dro: dashboardSummary.receivables.dro - 2, // Mock last month
+          dbo: dashboardSummary.receivables.dbo - 1,
+          duo: dashboardSummary.receivables.duo - 1,
+        },
+      } : FINANCE_DATA[selectedUnit].receivables,
+    };
+
+    return apiData;
+  }, [selectedUnit, dashboardSummary, overheadData, bookingsData, isLoadingSummary]);
 
   const metricCards = useMemo(() => {
+    // Use API data if available, otherwise use mock data
+    if (dashboardSummary?.primaryMetrics) {
+      const primaryMetrics = dashboardSummary.primaryMetrics;
+      return [
+        {
+          label: primaryMetrics.netRevenueYtd.label,
+          value: primaryMetrics.netRevenueYtd.formatted || formatCurrency(primaryMetrics.netRevenueYtd.value, { compact: true }),
+          badge: primaryMetrics.netRevenueYtd.trendPercent 
+            ? formatPercent(primaryMetrics.netRevenueYtd.trendPercent, true)
+            : undefined,
+          icon: DollarSign,
+        },
+        {
+          label: primaryMetrics.operatingIncomeCurrent.label,
+          value: primaryMetrics.operatingIncomeCurrent.formatted || formatCurrency(primaryMetrics.operatingIncomeCurrent.value, { compact: true }),
+          subtext: primaryMetrics.operatingIncomeCurrent.trendLabel || 'Current Month',
+          icon: TrendingUp,
+        },
+        {
+          label: primaryMetrics.cashPosition.label,
+          value: primaryMetrics.cashPosition.formatted || formatCurrency(primaryMetrics.cashPosition.value, { compact: true }),
+          subtext: primaryMetrics.cashPosition.trendLabel || '13 Week Forecast',
+          icon: PiggyBank,
+        },
+        {
+          label: primaryMetrics.droDays.label,
+          value: primaryMetrics.droDays.formatted || Math.round(primaryMetrics.droDays.value).toString(),
+          subtext: primaryMetrics.droDays.trendLabel || 'vs Last Month',
+          icon: Clock3,
+        },
+      ];
+    }
+
+    // Fallback to mock data calculation
     const months = selectedData.incomeStatement.slice(0, CURRENT_MONTH_INDEX + 1);
     const ytdActualNet = months.reduce((sum, month) => sum + month.actual.netRevenue, 0);
     const ytdPlanNet = months.reduce((sum, month) => sum + month.plan.netRevenue, 0);
@@ -299,9 +480,19 @@ function FinancePage() {
         icon: Clock3,
       },
     ];
-  }, [selectedData]);
+  }, [selectedData, dashboardSummary]);
 
   const kpiProgress = useMemo(() => {
+    // Use API data if available
+    if (dashboardSummary?.kpiProgress && dashboardSummary.kpiProgress.length > 0) {
+      return dashboardSummary.kpiProgress.map(kpi => ({
+        label: kpi.label,
+        value: kpi.value,
+        percent: Math.min(kpi.percentComplete, 100),
+      }));
+    }
+
+    // Fallback to mock data calculation
     const months = selectedData.incomeStatement.slice(0, CURRENT_MONTH_INDEX + 1);
     const totals = months.reduce(
       (acc, month) => {
@@ -336,7 +527,7 @@ function FinancePage() {
         percent: Math.min(ebitaMargin, 100),
       },
     ];
-  }, [selectedData]);
+  }, [selectedData, dashboardSummary]);
 
   const aiNarrative = useMemo(() => {
     const months = selectedData.incomeStatement.slice(0, CURRENT_MONTH_INDEX + 1);
@@ -394,36 +585,201 @@ function FinancePage() {
 
   const overheadTableData = useMemo(() => {
     const monthsConsidered = Math.max(CURRENT_MONTH_INDEX + 1, 1);
-    const entries = Object.entries(selectedData.overhead).map(([category, values]) => {
-      const ytd = values.slice(0, monthsConsidered).reduce((sum, value) => sum + value, 0);
-      const avg = ytd / monthsConsidered;
-      return { category, ytd, avg };
+    
+    // Build hierarchical structure
+    const categoryEntries: Array<{ category: string; ytd: number; avg: number; parent_id: number | null; category_id: number | null; level: number }> = [];
+    const categoryMap = new Map<string, { values: number[], parent_id: number | null, category_id: number | null }>();
+    const idToNameMap = new Map<number, string>();
+    
+    // First pass: build maps
+    Object.entries(selectedData.overhead).forEach(([category, data]: [string, any]) => {
+      const values = (typeof data === 'object' && data.values) ? data.values : (Array.isArray(data) ? data : []);
+      const parentId = (typeof data === 'object' && data.parent_id !== undefined) ? data.parent_id : null;
+      const categoryId = (typeof data === 'object' && data.category_id !== undefined) ? data.category_id : null;
+      categoryMap.set(category, { values, parent_id: parentId, category_id: categoryId });
+      if (categoryId) {
+        idToNameMap.set(categoryId, category);
+      }
+    });
+    
+    // Second pass: build hierarchical entries
+    const processed = new Set<string>();
+    
+    // Add top-level categories first
+    categoryMap.forEach((data, category) => {
+      if (!data.parent_id && !processed.has(category)) {
+        const values = Array.isArray(data.values) ? data.values : [];
+        const ytd = values.slice(0, monthsConsidered).reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
+        const avg = ytd / monthsConsidered;
+        categoryEntries.push({ category, ytd, avg, parent_id: null, category_id: data.category_id, level: 0 });
+        processed.add(category);
+      }
+    });
+    
+    // Add subcategories under their parents
+    const addSubcategories = (parentId: number, level: number) => {
+      categoryMap.forEach((data, category) => {
+        if (data.parent_id === parentId && !processed.has(category)) {
+          const values = Array.isArray(data.values) ? data.values : [];
+          const ytd = values.slice(0, monthsConsidered).reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
+          const avg = ytd / monthsConsidered;
+          // Find parent's index to insert after
+          const parentIndex = categoryEntries.findIndex(e => e.category_id === parentId);
+          const insertIndex = parentIndex >= 0 ? parentIndex + 1 : categoryEntries.length;
+          categoryEntries.splice(insertIndex, 0, { category, ytd, avg, parent_id: parentId, category_id: data.category_id, level });
+          processed.add(category);
+          // Recursively add nested subcategories
+          if (data.category_id) {
+            addSubcategories(data.category_id, level + 1);
+          }
+        }
+      });
+    };
+    
+    // Add all subcategories
+    categoryMap.forEach((data, category) => {
+      if (data.parent_id && !processed.has(category)) {
+        addSubcategories(data.parent_id, 1);
+      }
+    });
+    
+    // Sort top-level categories by YTD (subcategories stay under their parents)
+    const topLevelEntries = categoryEntries.filter(e => e.level === 0);
+    topLevelEntries.sort((a, b) => b.ytd - a.ytd);
+    
+    // Rebuild entries maintaining hierarchy
+    const finalEntries: Array<{ category: string; ytd: number; avg: number; level: number; category_id: number | null; parent_id: number | null }> = [];
+    topLevelEntries.forEach(topLevel => {
+      finalEntries.push({ category: topLevel.category, ytd: topLevel.ytd, avg: topLevel.avg, level: 0, category_id: topLevel.category_id, parent_id: null });
+      // Add subcategories for this parent
+      const subcats = categoryEntries.filter(e => e.parent_id === topLevel.category_id && e.level > 0);
+      subcats.forEach(sub => {
+        finalEntries.push({ category: sub.category, ytd: sub.ytd, avg: sub.avg, level: sub.level, category_id: sub.category_id, parent_id: sub.parent_id });
+      });
     });
 
-    entries.sort((a, b) => b.ytd - a.ytd);
+    const total = finalEntries.reduce((sum, item) => sum + item.ytd, 0);
+    const topCategory = finalEntries.length ? finalEntries[0] : null;
+    const trailingCategory = finalEntries.length ? finalEntries[finalEntries.length - 1] : null;
 
-    const total = entries.reduce((sum, item) => sum + item.ytd, 0);
-    const topCategory = entries.length ? entries[0] : null;
-    const trailingCategory = entries.length ? entries[entries.length - 1] : null;
-
-    return { entries, total, topCategory, trailingCategory };
+    return { entries: finalEntries, total, topCategory, trailingCategory };
   }, [selectedData.overhead]);
 
+  const revenueTableData = useMemo(() => {
+    const monthsConsidered = Math.max(CURRENT_MONTH_INDEX + 1, 1);
+    
+    // Build hierarchical structure (same logic as overhead)
+    const categoryEntries: Array<{ category: string; ytd: number; avg: number; parent_id: number | null; category_id: number | null; level: number }> = [];
+    const categoryMap = new Map<string, { values: number[], parent_id: number | null, category_id: number | null }>();
+    const idToNameMap = new Map<number, string>();
+    
+    // First pass: build maps
+    Object.entries(selectedData.revenue || {}).forEach(([category, data]: [string, any]) => {
+      const values = (typeof data === 'object' && data.values) ? data.values : (Array.isArray(data) ? data : []);
+      const parentId = (typeof data === 'object' && data.parent_id !== undefined) ? data.parent_id : null;
+      const categoryId = (typeof data === 'object' && data.category_id !== undefined) ? data.category_id : null;
+      categoryMap.set(category, { values, parent_id: parentId, category_id: categoryId });
+      if (categoryId) {
+        idToNameMap.set(categoryId, category);
+      }
+    });
+    
+    // Second pass: build hierarchical entries
+    const processed = new Set<string>();
+    
+    // Add top-level categories first
+    categoryMap.forEach((data, category) => {
+      if (!data.parent_id && !processed.has(category)) {
+        const values = Array.isArray(data.values) ? data.values : [];
+        const ytd = values.slice(0, monthsConsidered).reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
+        const avg = ytd / monthsConsidered;
+        categoryEntries.push({ category, ytd, avg, parent_id: null, category_id: data.category_id, level: 0 });
+        processed.add(category);
+      }
+    });
+    
+    // Add subcategories under their parents
+    const addSubcategories = (parentId: number, level: number) => {
+      categoryMap.forEach((data, category) => {
+        if (data.parent_id === parentId && !processed.has(category)) {
+          const values = Array.isArray(data.values) ? data.values : [];
+          const ytd = values.slice(0, monthsConsidered).reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
+          const avg = ytd / monthsConsidered;
+          // Find parent's index to insert after
+          const parentIndex = categoryEntries.findIndex(e => e.category_id === parentId);
+          const insertIndex = parentIndex >= 0 ? parentIndex + 1 : categoryEntries.length;
+          categoryEntries.splice(insertIndex, 0, { category, ytd, avg, parent_id: parentId, category_id: data.category_id, level });
+          processed.add(category);
+          // Recursively add nested subcategories
+          if (data.category_id) {
+            addSubcategories(data.category_id, level + 1);
+          }
+        }
+      });
+    };
+    
+    // Add all subcategories
+    categoryMap.forEach((data, category) => {
+      if (data.parent_id && !processed.has(category)) {
+        addSubcategories(data.parent_id, 1);
+      }
+    });
+    
+    // Sort top-level categories by YTD (subcategories stay under their parents)
+    const topLevelEntries = categoryEntries.filter(e => e.level === 0);
+    topLevelEntries.sort((a, b) => b.ytd - a.ytd);
+    
+    // Rebuild entries maintaining hierarchy
+    const finalEntries: Array<{ category: string; ytd: number; avg: number; level: number; category_id: number | null; parent_id: number | null }> = [];
+    topLevelEntries.forEach(topLevel => {
+      finalEntries.push({ category: topLevel.category, ytd: topLevel.ytd, avg: topLevel.avg, level: 0, category_id: topLevel.category_id, parent_id: null });
+      // Add subcategories for this parent
+      const subcats = categoryEntries.filter(e => e.parent_id === topLevel.category_id && e.level > 0);
+      subcats.forEach(sub => {
+        finalEntries.push({ category: sub.category, ytd: sub.ytd, avg: sub.avg, level: sub.level, category_id: sub.category_id, parent_id: sub.parent_id });
+      });
+    });
+
+    const total = finalEntries.reduce((sum, item) => sum + item.ytd, 0);
+    const topCategory = finalEntries.length ? finalEntries[0] : null;
+    const trailingCategory = finalEntries.length ? finalEntries[finalEntries.length - 1] : null;
+
+    return { entries: finalEntries, total, topCategory, trailingCategory };
+  }, [selectedData.revenue]);
+
   const bookingsProgress = useMemo(() => {
+    // Guard against empty bookings array
+    if (!selectedData.bookings || selectedData.bookings.length === 0) {
+      return {
+        items: [],
+        averageProgress: 0,
+        leader: null,
+        trailing: null,
+      };
+    }
+
     const monthsConsidered = Math.max(CURRENT_MONTH_INDEX + 1, 1);
     const items = selectedData.bookings.map((booking) => {
-      const ytdActual = booking.monthlyActuals.slice(0, monthsConsidered).reduce((sum, value) => sum + value, 0);
-      const progress = Math.min((ytdActual / Math.max(booking.totalPlan, 1)) * 100, 100);
-      const remaining = Math.max(booking.totalPlan - ytdActual, 0);
-      return { booking, ytdActual, progress, remaining };
+      const ytdActual = booking.monthlyActuals?.slice(0, monthsConsidered).reduce((sum, value) => sum + (value || 0), 0) || 0;
+      const totalPlan = booking.totalPlan || 0;
+      const progress = totalPlan > 0 ? Math.min((ytdActual / totalPlan) * 100, 100) : 0;
+      const remaining = Math.max(totalPlan - ytdActual, 0);
+      return { booking, ytdActual, progress: isNaN(progress) ? 0 : progress, remaining: isNaN(remaining) ? 0 : remaining };
     });
 
     const sorted = [...items].sort((a, b) => b.progress - a.progress);
-    const averageProgress = items.length ? items.reduce((sum, item) => sum + item.progress, 0) / items.length : 0;
-    const leader = sorted.length ? sorted[0] : null;
-    const trailing = sorted.length ? sorted[sorted.length - 1] : null;
+    const averageProgress = items.length > 0
+      ? items.reduce((sum, item) => sum + (item.progress || 0), 0) / items.length
+      : 0;
+    const leader = sorted.length > 0 && sorted[0].progress > 0 ? sorted[0] : null;
+    const trailing = sorted.length > 0 && sorted[sorted.length - 1].progress >= 0 ? sorted[sorted.length - 1] : null;
 
-    return { items, averageProgress, leader, trailing };
+    return {
+      items,
+      averageProgress: isNaN(averageProgress) ? 0 : averageProgress,
+      leader,
+      trailing,
+    };
   }, [selectedData.bookings]);
 
   const handleAiQuery = (event: React.FormEvent<HTMLFormElement>) => {
@@ -442,7 +798,39 @@ function FinancePage() {
     }, 600);
   };
 
-  const topClients = useMemo(() => selectedData.dro.slice(0, 5), [selectedData.dro]);
+  const handleRunAIAnalysis = async () => {
+    setIsAnalysisModalOpen(true);
+    setComprehensiveAnalysis(null);
+    
+    try {
+      const result = await aiAnalysisMutation.mutateAsync();
+      setComprehensiveAnalysis(result);
+      toast.success('AI Analysis completed successfully');
+    } catch (error) {
+      console.error('Error generating AI analysis:', error);
+      toast.error('Failed to generate AI analysis. Please try again.');
+    }
+  };
+
+  // Get top clients by DRO - use API bookings data if available, otherwise use mock
+  const topClients = useMemo(() => {
+    if (bookingsData?.records && bookingsData.records.length > 0) {
+      // Sort by DRO (we'll use a mock DRO calculation for now since API doesn't provide it)
+      return bookingsData.records
+        .map(record => ({
+          clientName: record.clientName,
+          dro: 45 + Math.random() * 20, // Mock DRO - would need separate endpoint
+        }))
+        .sort((a, b) => b.dro - a.dro)
+        .slice(0, 5);
+    }
+    return selectedData.dro.slice(0, 5);
+  }, [selectedData.dro, bookingsData]);
+  
+  // Get AI highlights from API if available
+  const aiHighlights = useMemo(() => {
+    return dashboardSummary?.aiHighlights || [];
+  }, [dashboardSummary]);
 
   return (
     <div className="min-h-screen w-full bg-[#F5F7FB] font-[Outfit] text-[#101828]">
@@ -471,28 +859,80 @@ function FinancePage() {
               AI Budget Planning
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <button className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#161950] bg-white px-6 text-xs font-semibold uppercase tracking-wide text-[#161950] shadow transition hover:bg-[#161950] hover:text-white hover:shadow-lg hover:shadow-slate-900/25">
-              Run AI Analysis
-              <Brain className="h-4 w-4" />
+            <button 
+              onClick={handleRunAIAnalysis}
+              disabled={aiAnalysisMutation.isPending}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#161950] bg-white px-6 text-xs font-semibold uppercase tracking-wide text-[#161950] shadow transition hover:bg-[#161950] hover:text-white hover:shadow-lg hover:shadow-slate-900/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {aiAnalysisMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  Run AI Analysis
+                  <Brain className="h-4 w-4" />
+                </>
+              )}
             </button>
           </div>
         </header>
 
         <div className="flex flex-wrap items-center gap-3">
-          {(['Firmwide', 'Business Unit A', 'Business Unit B'] as const).map((unit) => (
-            <button
-              key={unit}
-              onClick={() => setSelectedUnit(unit)}
-              className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                selectedUnit === unit
-                  ? 'border-[#161950] bg-[#161950]/10 text-[#161950]'
-                  : 'border-slate-100 bg-white text-slate-600 hover:border-[#161950]/40 hover:text-[#161950]'
-              }`}
-            >
-              {unit}
-            </button>
-          ))}
+          {(['Firmwide', 'Business Unit A', 'Business Unit B'] as const).map((unit) => {
+            const isComingSoon = unit === 'Business Unit A' || unit === 'Business Unit B';
+            return (
+              <button
+                key={unit}
+                onClick={() => {
+                  if (isComingSoon) {
+                    toast('Coming Soon', {
+                      icon: '🚀',
+                      duration: 2000,
+                    });
+                    return;
+                  }
+                  setSelectedUnit(unit);
+                }}
+                disabled={isComingSoon}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition relative ${
+                  selectedUnit === unit
+                    ? 'border-[#161950] bg-[#161950]/10 text-[#161950]'
+                    : isComingSoon
+                    ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed opacity-60'
+                    : 'border-slate-100 bg-white text-slate-600 hover:border-[#161950]/40 hover:text-[#161950]'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  {unit}
+                  {isComingSoon && (
+                    <span className="flex items-center gap-1 text-xs text-orange-500">
+                      <Sparkles className="w-3 h-3" />
+                      <span>Coming Soon</span>
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
         </div>
+
+        {/* Loading State */}
+        {(isLoadingSummary || isLoadingOverhead || isLoadingBookings) && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-[#161950]" />
+            <span className="ml-3 text-base text-slate-600">Loading finance data...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {summaryError && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+            <p className="text-sm font-semibold text-rose-600">Failed to load finance dashboard data</p>
+            <p className="mt-1 text-xs text-rose-500">Using cached or mock data. Please refresh to retry.</p>
+          </div>
+        )}
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {metricCards.map((metric) => (
@@ -692,32 +1132,52 @@ function FinancePage() {
         </div>
 
           <div className="flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.3)]">
-            <h2 className="text-lg font-semibold text-slate-900">AI Variance Analysis</h2>
+            <h2 className="text-lg font-semibold text-slate-900">AI Insights</h2>
             <p className="text-sm text-slate-500">
-              Automated variance breakdown and recommended playbook for {selectedUnit}.
+              Automated insights and recommendations for {selectedUnit}.
             </p>
-            <div className="space-y-3 text-sm text-slate-600">
-              <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 shadow-sm">
-                <span>Revenue vs Plan</span>
-                <span className={aiNarrative.revenueVariance >= 0 ? 'text-emerald-600 font-semibold' : 'text-rose-600 font-semibold'}>
-                  {aiNarrative.revenueVariance.toFixed(1)}%
-                </span>
+            {aiHighlights.length > 0 ? (
+              <div className="space-y-3">
+                {aiHighlights.map((highlight, index) => (
+                  <div
+                    key={index}
+                    className={`rounded-lg border p-3 text-sm ${
+                      highlight.tone === 'positive'
+                        ? 'border-emerald-200 bg-emerald-50'
+                        : highlight.tone === 'warning'
+                        ? 'border-amber-200 bg-amber-50'
+                        : 'border-rose-200 bg-rose-50'
+                    }`}
+                  >
+                    <p className="font-semibold text-slate-900">{highlight.title}</p>
+                    <p className="mt-1 text-slate-600">{highlight.detail}</p>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 shadow-sm">
-                <span>Operating vs Plan</span>
-                <span className={aiNarrative.operatingVariance >= 0 ? 'text-emerald-600 font-semibold' : 'text-rose-600 font-semibold'}>
-                  {aiNarrative.operatingVariance.toFixed(1)}%
-                </span>
+            ) : (
+              <div className="space-y-3 text-sm text-slate-600">
+                <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 shadow-sm">
+                  <span>Revenue vs Plan</span>
+                  <span className={aiNarrative.revenueVariance >= 0 ? 'text-emerald-600 font-semibold' : 'text-rose-600 font-semibold'}>
+                    {aiNarrative.revenueVariance.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 shadow-sm">
+                  <span>Operating vs Plan</span>
+                  <span className={aiNarrative.operatingVariance >= 0 ? 'text-emerald-600 font-semibold' : 'text-rose-600 font-semibold'}>
+                    {aiNarrative.operatingVariance.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 shadow-sm">
+                  <span>DRO Change</span>
+                  <span className={aiNarrative.droChange <= 0 ? 'text-emerald-600 font-semibold' : 'text-rose-600 font-semibold'}>
+                    {aiNarrative.droChange.toFixed(1)} days
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 shadow-sm">
-                <span>DRO Change</span>
-                <span className={aiNarrative.droChange <= 0 ? 'text-emerald-600 font-semibold' : 'text-rose-600 font-semibold'}>
-                  {aiNarrative.droChange.toFixed(1)} days
-                </span>
-              </div>
-            </div>
+            )}
             <p className="text-sm text-slate-500">
-              Einstein tip: pairing pricing discipline with accelerated invoicing yields fastest impact to margin recovery.
+              {dashboardSummary?.receivables?.insight || 'Pairing pricing discipline with accelerated invoicing yields fastest impact to margin recovery.'}
             </p>
           </div>
         </section>
@@ -727,54 +1187,105 @@ function FinancePage() {
             <h2 className="text-lg font-semibold text-slate-900">Business Unit Performance</h2>
             <p className="text-sm text-slate-500">Contribution to revenue and operating income across the portfolio.</p>
             <div className="mt-4 grid gap-4 md:grid-cols-3">
-              {(['Firmwide', 'Business Unit A', 'Business Unit B'] as const).map((unit) => {
-                const data = FINANCE_DATA[unit];
-                const ytdNet = data.incomeStatement
-                  .slice(0, CURRENT_MONTH_INDEX + 1)
-                  .reduce((sum, month) => sum + month.actual.netRevenue, 0);
-                const ytdOperating = data.incomeStatement
-                  .slice(0, CURRENT_MONTH_INDEX + 1)
-                  .reduce((sum, month) => sum + month.actual.operatingIncomeBeforeAllocation, 0);
-                const firmwideNet = FINANCE_DATA.Firmwide.incomeStatement
-                  .slice(0, CURRENT_MONTH_INDEX + 1)
-                  .reduce((sum, month) => sum + month.actual.netRevenue, 0);
+              {dashboardSummary?.businessUnits && dashboardSummary.businessUnits.length > 0 ? (
+                dashboardSummary.businessUnits.map((bu) => {
+                  const firmwideNet = dashboardSummary.primaryMetrics.netRevenueYtd.value;
+                  const sharePercent = bu.netRevenueSharePercent;
+                  return (
+                    <div
+                      key={bu.name}
+                      className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm shadow-sm transition hover:border-[#161950]/40 hover:shadow-[0_18px_32px_-24px_rgba(22,25,80,0.35)]"
+                    >
+                      <div className="flex items-center justify-between text-slate-700">
+                        <span className="font-semibold">{bu.name}</span>
+                        <span>{formatCurrency(bu.netRevenue, { compact: true })}</span>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs text-slate-500">
+                          <span>Net Revenue Share</span>
+                          <span>{sharePercent.toFixed(1)}%</span>
+                        </div>
+                        <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
+                          <div
+                            className="h-full bg-[#161950]"
+                            style={{ width: `${sharePercent}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-xs text-slate-500">
+                        <span>Operating Income</span>
+                        <span className="font-medium text-slate-700">{formatCurrency(bu.operatingIncome, { compact: true })}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                (['Firmwide', 'Business Unit A', 'Business Unit B'] as const).map((unit) => {
+                  const isComingSoon = unit === 'Business Unit A' || unit === 'Business Unit B';
+                  const data = FINANCE_DATA[unit];
+                  const ytdNet = data.incomeStatement
+                    .slice(0, CURRENT_MONTH_INDEX + 1)
+                    .reduce((sum, month) => sum + month.actual.netRevenue, 0);
+                  const ytdOperating = data.incomeStatement
+                    .slice(0, CURRENT_MONTH_INDEX + 1)
+                    .reduce((sum, month) => sum + month.actual.operatingIncomeBeforeAllocation, 0);
+                  const firmwideNet = FINANCE_DATA.Firmwide.incomeStatement
+                    .slice(0, CURRENT_MONTH_INDEX + 1)
+                    .reduce((sum, month) => sum + month.actual.netRevenue, 0);
 
                 return (
                   <div
                     key={unit}
-                    className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm shadow-sm transition hover:border-[#161950]/40 hover:shadow-[0_18px_32px_-24px_rgba(22,25,80,0.35)]"
+                    className={`flex flex-col gap-3 rounded-xl border p-4 text-sm shadow-sm transition ${
+                      isComingSoon
+                        ? 'border-slate-200 bg-slate-50/50 opacity-60'
+                        : 'border-slate-100 bg-slate-50 hover:border-[#161950]/40 hover:shadow-[0_18px_32px_-24px_rgba(22,25,80,0.35)]'
+                    }`}
                   >
                     <div className="flex items-center justify-between text-slate-700">
-                      <span className="font-semibold">{unit}</span>
-                      <span>{formatCurrency(ytdNet, { compact: true })}</span>
+                      <span className="flex items-center gap-2 font-semibold">
+                        {unit}
+                        {isComingSoon && (
+                          <span className="flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-600">
+                            <Sparkles className="w-3 h-3" />
+                            <span>Coming Soon</span>
+                          </span>
+                        )}
+                      </span>
+                      {!isComingSoon && <span>{formatCurrency(ytdNet, { compact: true })}</span>}
                     </div>
-                    <div>
-                      <div className="flex justify-between text-xs text-slate-500">
-                        <span>Net Revenue Share</span>
-                        <span>{((ytdNet / Math.max(firmwideNet, 1)) * 100).toFixed(1)}%</span>
-                      </div>
-                      <div className="relative mt-1 h-2 rounded-full bg-slate-200">
-                        <div
-                          className="absolute inset-y-0 left-0 rounded-full bg-[#161950]"
-                          style={{ width: `${(ytdNet / Math.max(firmwideNet, 1)) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs text-slate-500">
-                        <span>Operating Income</span>
-                        <span>{formatCurrency(ytdOperating, { compact: true })}</span>
-                      </div>
-                      <div className="relative mt-1 h-2 rounded-full bg-slate-200">
-                        <div
-                          className="absolute inset-y-0 left-0 rounded-full bg-emerald-500"
-                          style={{ width: `${Math.min((ytdOperating / Math.max(ytdNet, 1)) * 100, 100)}%` }}
-                        />
-                      </div>
-                    </div>
+                    {!isComingSoon && (
+                      <>
+                        <div>
+                          <div className="flex justify-between text-xs text-slate-500">
+                            <span>Net Revenue Share</span>
+                            <span>{((ytdNet / Math.max(firmwideNet, 1)) * 100).toFixed(1)}%</span>
+                          </div>
+                          <div className="relative mt-1 h-2 rounded-full bg-slate-200">
+                            <div
+                              className="absolute inset-y-0 left-0 rounded-full bg-[#161950]"
+                              style={{ width: `${(ytdNet / Math.max(firmwideNet, 1)) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-xs text-slate-500">
+                            <span>Operating Income</span>
+                            <span>{formatCurrency(ytdOperating, { compact: true })}</span>
+                          </div>
+                          <div className="relative mt-1 h-2 rounded-full bg-slate-200">
+                            <div
+                              className="absolute inset-y-0 left-0 rounded-full bg-emerald-500"
+                              style={{ width: `${Math.min((ytdOperating / Math.max(ytdNet, 1)) * 100, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 );
-              })}
+                })
+              )}
             </div>
           </div>
 
@@ -966,8 +1477,11 @@ function FinancePage() {
                   </thead>
                   <tbody>
                     {overheadTableData.entries.map((item) => (
-                      <tr key={item.category} className="border-b border-slate-100 last:border-0">
-                        <td className="py-2 pl-4">{item.category}</td>
+                      <tr key={item.category_id ? `overhead-${item.category_id}` : `overhead-${item.category}-${item.parent_id || 'root'}`} className="border-b border-slate-100 last:border-0">
+                        <td className={`py-2 pl-4 ${item.level > 0 ? 'text-slate-600' : 'font-medium text-slate-800'}`} style={{ paddingLeft: `${16 + (item.level || 0) * 24}px` }}>
+                          {item.level > 0 && <span className="mr-2 text-slate-400">└─</span>}
+                          {item.category}
+                        </td>
                         <td className="py-2 text-right font-semibold text-slate-800">
                           {formatCurrency(item.ytd)}
                         </td>
@@ -980,6 +1494,90 @@ function FinancePage() {
             </div>
           </section>
 
+          <section className="flex h-full flex-col gap-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.3)]">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Revenue by Account Group</h2>
+              <p className="text-sm text-slate-500">
+                Track revenue streams and highlight categories performing above plan.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-[#161950]/15 bg-[#161950]/5 px-4 py-3 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#161950]">Total Revenue YTD</p>
+                <p className="mt-1 text-lg font-semibold text-[#161950]">
+                  {formatCurrency(revenueTableData.total)}
+                </p>
+              </div>
+              {revenueTableData.topCategory ? (
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-emerald-600">Top Category</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800">{revenueTableData.topCategory.category}</p>
+                  <p className="text-xs text-slate-500">
+                    {formatCurrency(revenueTableData.topCategory.ytd)} ·{' '}
+                    {formatPercent(
+                      revenueTableData.total
+                        ? (revenueTableData.topCategory.ytd / revenueTableData.total) * 100
+                        : 0,
+                    )}
+                  </p>
+                </div>
+              ) : null}
+              {revenueTableData.trailingCategory ? (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Least Revenue</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800">
+                    {revenueTableData.trailingCategory.category}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {formatCurrency(revenueTableData.trailingCategory.ytd)} ·{' '}
+                    {formatPercent(
+                      revenueTableData.total
+                        ? (revenueTableData.trailingCategory.ytd / revenueTableData.total) * 100
+                        : 0,
+                    )}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+            <div className="flex-1 overflow-hidden rounded-xl border border-slate-100">
+              <div className="max-h-[312px] overflow-auto">
+                <table className="min-w-full text-sm text-slate-600">
+                  <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
+                    <tr>
+                      <th className="py-3 pl-4 text-left">Category</th>
+                      <th className="py-3 text-right">YTD Revenue</th>
+                      <th className="py-3 pr-4 text-right">Monthly Avg</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {revenueTableData.entries.length > 0 ? (
+                      revenueTableData.entries.map((item) => (
+                        <tr key={item.category_id ? `revenue-${item.category_id}` : `revenue-${item.category}-${item.parent_id || 'root'}`} className="border-b border-slate-100 last:border-0">
+                          <td className={`py-2 pl-4 ${item.level > 0 ? 'text-slate-600' : 'font-medium text-slate-800'}`} style={{ paddingLeft: `${16 + (item.level || 0) * 24}px` }}>
+                            {item.level > 0 && <span className="mr-2 text-slate-400">└─</span>}
+                            {item.category}
+                          </td>
+                          <td className="py-2 text-right font-semibold text-slate-800">
+                            {formatCurrency(item.ytd)}
+                          </td>
+                          <td className="py-2 pr-4 text-right text-slate-500">{formatCurrency(item.avg)}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={3} className="py-8 text-center text-sm text-slate-400">
+                          No revenue categories available. Please add revenue categories in Organization Settings.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <section className="flex h-full flex-col gap-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.3)]">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">YTD Bookings vs. Total Plan by Client</h2>
@@ -1137,6 +1735,193 @@ function FinancePage() {
           </div>
         </section>
       </div>
+
+      {/* Comprehensive AI Analysis Modal */}
+      <Dialog open={isAnalysisModalOpen} onOpenChange={setIsAnalysisModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto border-[#E5E7EB]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-[#161950] text-2xl">
+              <Brain className="h-6 w-6 text-[#161950]" />
+              Comprehensive Finance Dashboard Analysis
+            </DialogTitle>
+            <DialogDescription>
+              AI-powered analysis of your complete finance dashboard including metrics, trends, overhead, revenue, and bookings
+            </DialogDescription>
+          </DialogHeader>
+
+          {aiAnalysisMutation.isPending ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-12 w-12 animate-spin text-[#161950] mb-4" />
+              <p className="text-lg font-medium text-slate-700">Analyzing finance dashboard...</p>
+              <p className="text-sm text-slate-500 mt-2">This may take up to 30 seconds</p>
+            </div>
+          ) : comprehensiveAnalysis ? (
+            <div className="space-y-6 mt-4">
+              {/* Financial Health Score */}
+              <div className="rounded-xl border border-[#E5E7EB] bg-gradient-to-br from-[#161950] to-[#0f1440] p-6 text-white">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Financial Health Score</h3>
+                  <div className="text-4xl font-bold">
+                    {comprehensiveAnalysis.financial_health_score?.toFixed(1) || 'N/A'}
+                    <span className="text-2xl text-white/80">/100</span>
+                  </div>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-3">
+                  <div
+                    className="bg-white rounded-full h-3 transition-all duration-500"
+                    style={{ width: `${comprehensiveAnalysis.financial_health_score || 0}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Executive Summary */}
+              <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-[#161950] mb-3 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Executive Summary
+                </h3>
+                <p className="text-slate-700 leading-relaxed whitespace-pre-line">
+                  {comprehensiveAnalysis.executive_summary}
+                </p>
+              </div>
+
+              {/* Key Insights */}
+              <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-[#161950] mb-4 flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5" />
+                  Key Insights
+                </h3>
+                <ul className="space-y-3">
+                  {comprehensiveAnalysis.key_insights?.map((insight: string, index: number) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-[#161950] mt-0.5 flex-shrink-0" />
+                      <span className="text-slate-700">{insight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Recommendations */}
+              <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+                <h3 className="text-lg font-semibold text-[#161950] mb-4 flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Recommendations
+                </h3>
+                <ul className="space-y-3">
+                  {comprehensiveAnalysis.recommendations?.map((rec: string, index: number) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="h-5 w-5 rounded-full bg-[#161950] text-white flex items-center justify-center text-xs font-semibold mt-0.5 flex-shrink-0">
+                        {index + 1}
+                      </div>
+                      <span className="text-slate-700">{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Risk Factors */}
+              {comprehensiveAnalysis.risk_factors && comprehensiveAnalysis.risk_factors.length > 0 && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold text-amber-800 mb-4 flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5" />
+                    Risk Factors
+                  </h3>
+                  <ul className="space-y-3">
+                    {comprehensiveAnalysis.risk_factors.map((risk: string, index: number) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-amber-900">{risk}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Opportunities */}
+              {comprehensiveAnalysis.opportunities && comprehensiveAnalysis.opportunities.length > 0 && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold text-emerald-800 mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Growth Opportunities
+                  </h3>
+                  <ul className="space-y-3">
+                    {comprehensiveAnalysis.opportunities.map((opp: string, index: number) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <TrendingUp className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-emerald-900">{opp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Detailed Analysis Sections */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {comprehensiveAnalysis.trends_analysis && (
+                  <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+                    <h3 className="text-base font-semibold text-[#161950] mb-3 flex items-center gap-2">
+                      <ChartLine className="h-4 w-4" />
+                      Trends Analysis
+                    </h3>
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                      {comprehensiveAnalysis.trends_analysis}
+                    </p>
+                  </div>
+                )}
+
+                {comprehensiveAnalysis.cash_flow_analysis && (
+                  <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+                    <h3 className="text-base font-semibold text-[#161950] mb-3 flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      Cash Flow Analysis
+                    </h3>
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                      {comprehensiveAnalysis.cash_flow_analysis}
+                    </p>
+                  </div>
+                )}
+
+                {comprehensiveAnalysis.profitability_analysis && (
+                  <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm md:col-span-2">
+                    <h3 className="text-base font-semibold text-[#161950] mb-3 flex items-center gap-2">
+                      <PiggyBank className="h-4 w-4" />
+                      Profitability Analysis
+                    </h3>
+                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                      {comprehensiveAnalysis.profitability_analysis}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Detailed Breakdown */}
+              {comprehensiveAnalysis.detailed_breakdown && Object.keys(comprehensiveAnalysis.detailed_breakdown).length > 0 && (
+                <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+                  <h3 className="text-lg font-semibold text-[#161950] mb-4">Detailed Breakdown</h3>
+                  <div className="space-y-4">
+                    {Object.entries(comprehensiveAnalysis.detailed_breakdown).map(([key, value]: [string, any]) => (
+                      <div key={key} className="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
+                        <h4 className="text-sm font-semibold text-slate-700 mb-2 capitalize">
+                          {key.replace(/_/g, ' ')}
+                        </h4>
+                        <p className="text-sm text-slate-600 whitespace-pre-line">
+                          {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Brain className="h-12 w-12 text-slate-400 mb-4" />
+              <p className="text-lg font-medium text-slate-700">No analysis available</p>
+              <p className="text-sm text-slate-500 mt-2">Click "Run AI Analysis" to generate insights</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

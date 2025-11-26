@@ -17,7 +17,12 @@ export interface ProjectInfo {
   durationMonths: number;
   overheadRate: number;
   profitMargin: number;
-  annualEscalationRate: number;
+}
+
+export interface EscalationPeriod {
+  start_month: number;
+  end_month: number;
+  rate: number;
 }
 
 export interface StaffMember {
@@ -32,9 +37,9 @@ export interface StaffMember {
   hourlyRate: number;
   monthlyCost?: number;
   totalCost?: number;
-  initialEscalationRate?: number;
-  escalationRate?: number | null;
-  escalationEffectiveMonth?: number;
+  escalationRate?: number | null;  // Deprecated - use escalationPeriods
+  escalationStartMonth?: number;  // Deprecated - use escalationPeriods
+  escalationPeriods?: EscalationPeriod[];  // New format: multiple escalation periods
 }
 
 export interface StaffPlan {
@@ -46,7 +51,7 @@ export interface StaffPlan {
   duration_months: number;
   overhead_rate: number;
   profit_margin: number;
-  annual_escalation_rate: number;
+  annual_escalation_rate: number | null;
   total_labor_cost: number;
   total_overhead: number;
   total_cost: number;
@@ -77,7 +82,9 @@ export interface StaffAllocation {
   monthly_cost: number;
   total_cost: number;
   initial_escalation_rate: number | null;
-  escalation_rate: number | null;
+  escalation_rate: number | null;  // Deprecated - use escalation_periods
+  escalation_start_month: number | null;  // Deprecated - use escalation_periods
+  escalation_periods: EscalationPeriod[] | null;  // New format: multiple escalation periods
   escalation_effective_month: number | null;
   status: string;
   created_at: string;
@@ -167,7 +174,7 @@ export function useStaffPlanning() {
       duration_months: number;
       overhead_rate: number;
       profit_margin: number;
-      annual_escalation_rate: number;
+      annual_escalation_rate: number | null;
     }) => {
       console.log('Creating staff plan:', data);
       const response = await apiClient.post<StaffPlan>(API_BASE, data);
@@ -230,7 +237,9 @@ export function useStaffPlanning() {
         hours_per_week: number;
         hourly_rate: number;
         initial_escalation_rate?: number;
-        escalation_rate?: number | null;
+        escalation_rate?: number | null;  // Deprecated - use escalation_periods
+        escalation_start_month?: number;  // Deprecated - use escalation_periods
+        escalation_periods?: EscalationPeriod[];  // New format: multiple escalation periods
         escalation_effective_month?: number;
       };
     }) => {

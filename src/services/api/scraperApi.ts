@@ -1,4 +1,4 @@
-import apiClient from './client';
+import { aiApiClient } from './client';
 import type { ScrapeRequest, ScrapeResponse } from '../../types/scraper';
 
 /**
@@ -19,13 +19,17 @@ export class ApiError extends Error {
 export const scraperApi = {
   /**
    * Scrape a list of URLs and return structured results.
+   * Uses aiApiClient (45s timeout) instead of apiClient (10s timeout) because
+   * scraping can take up to 30 seconds for slow websites.
    * @throws {ApiError} If the API responds with a validation or server error.
    */
   async scraper(urls: string[]): Promise<ScrapeResponse> {
     const requestData: ScrapeRequest = { urls };
 
     try {
-      const { data } = await apiClient.post<ScrapeResponse>('/scraper/scrape', requestData);
+      // Use aiApiClient (45s timeout) instead of apiClient (10s timeout)
+      // because the scraper can take up to 30 seconds for slow websites
+      const { data } = await aiApiClient.post<ScrapeResponse>('/scraper/scrape', requestData);
       return data;
     } catch (error: any) {
       // Axios-style error structure
@@ -33,6 +37,15 @@ export const scraperApi = {
         const { status, data } = error.response;
 
         throw new ApiError('Scraper API request failed', status, data?.detail || data);
+      }
+
+      // Handle timeout errors specifically
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        throw new ApiError(
+          'Scraper request timed out. The website may be slow or unresponsive. Please try again or use a different URL.',
+          408,
+          { timeout: true }
+        );
       }
 
       // Network or unknown error

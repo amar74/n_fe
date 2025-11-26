@@ -281,7 +281,7 @@ function ResourcesDashboardPage() {
   // Show loading state while fetching dashboard stats
   if (isLoadingDashboard || isLoadingEmployees || isLoadingSkillsGap) {
     return (
-      <div className="w-full min-h-screen bg-[#F5F3F2] font-inter flex items-center justify-center">
+      <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard statistics...</p>
@@ -291,22 +291,22 @@ function ResourcesDashboardPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-8">
         {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2">
-              <Link to="/" className="text-gray-500 text-sm font-normal font-inter leading-tight hover:text-gray-900 transition-colors">
+              <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900 transition-colors">
                 Dashboard
               </Link>
-              <span className="text-[#344054] text-sm font-normal font-inter leading-tight">/</span>
-              <span className="text-[#344054] text-sm font-semibold font-inter leading-tight">Resources</span>
+              <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
+              <span className="text-[#344054] text-sm font-semibold font-outfit leading-tight">Resources</span>
             </div>
             
             <div>
-              <h1 className="text-[#1A1A1A] text-4xl font-bold font-inter leading-loose">
+              <h1 className="text-[#1A1A1A] text-4xl font-bold font-outfit leading-loose">
                 Resources Hub
               </h1>
               <p className="text-gray-600 text-base font-medium mt-2">

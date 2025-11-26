@@ -267,6 +267,7 @@ const OpportunityTempUpdate = z
     deadline: z.union([z.string(), z.null()]),
     tags: z.union([z.array(z.string()), z.null()]),
     ai_summary: z.union([z.string(), z.null()]),
+    source_url: z.union([z.string(), z.null()]),
   })
   .partial()
   .passthrough();

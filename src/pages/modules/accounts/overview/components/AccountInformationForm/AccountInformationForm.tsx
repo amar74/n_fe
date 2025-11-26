@@ -47,7 +47,7 @@ export function AccountInformationForm({
 
     return (
       <div className={baseClasses}>
-        <label className="font-inter font-medium text-[#a7a7a7] text-[16px] capitalize leading-normal w-full">
+        <label className="font-outfit font-medium text-[#a7a7a7] text-[16px] capitalize leading-normal w-full">
           {label}
         </label>
         
@@ -57,7 +57,7 @@ export function AccountInformationForm({
               value={value as string}
               onChange={(e) => onFormChange(field, e.target.value)}
               disabled={!isEditing}
-              className={`${inputClasses} appearance-none cursor-pointer font-inter font-semibold text-[#0f0901] text-[16px]`}
+              className={`${inputClasses} appearance-none cursor-pointer font-outfit font-semibold text-[#0f0901] text-[16px]`}
             >
               {options?.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -69,7 +69,7 @@ export function AccountInformationForm({
           </div>
         ) : type === 'boolean' ? (
           <div className={`${inputClasses} ${formData.msa_in_place ? 'bg-[rgba(237,138,9,0.2)]' : ''}`}>
-            <span className={`font-inter font-semibold text-[16px] ${formData.msa_in_place ? 'text-[#ff8500]' : 'text-[#0f0901]'}`}>
+            <span className={`font-outfit font-semibold text-[16px] ${formData.msa_in_place ? 'text-[#ff8500]' : 'text-[#0f0901]'}`}>
               {formData.msa_in_place ? 'Yes' : 'No'}
             </span>
           </div>
@@ -79,7 +79,7 @@ export function AccountInformationForm({
             value={value as string}
             onChange={(e) => onFormChange(field, e.target.value)}
             disabled={!isEditing}
-            className={`${inputClasses} font-inter font-semibold text-[#0f0901] text-[16px] leading-normal`}
+            className={`${inputClasses} font-outfit font-semibold text-[#0f0901] text-[16px] leading-normal`}
             placeholder={isEditing ? `Enter ${label.toLowerCase()}` : ''}
           />
         )}
@@ -94,12 +94,12 @@ export function AccountInformationForm({
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-col gap-7 w-full">
             <div className="flex flex-col gap-2">
-              <h2 className="font-inter font-bold text-[#0f0901] text-[24px] leading-normal">
+              <h2 className="font-outfit font-bold text-[#0f0901] text-[24px] leading-normal">
                 Account information
               </h2>
             </div>
           </div>
-          <p className="font-inter font-medium text-[#a7a7a7] text-[16px] leading-normal">
+          <p className="font-outfit font-medium text-[#a7a7a7] text-[16px] leading-normal">
             Complete account overview and profile details
           </p>
         </div>
@@ -113,11 +113,11 @@ export function AccountInformationForm({
           <div className="flex gap-3 w-full">
             
             <div className="flex flex-col gap-3 items-start justify-start relative self-stretch shrink-0 w-[300px]">
-              <label className="font-inter font-medium text-[#a7a7a7] text-[16px] capitalize leading-normal w-full">
+              <label className="font-outfit font-medium text-[#a7a7a7] text-[16px] capitalize leading-normal w-full">
                 Account ID
               </label>
               <div className="bg-[#f3f3f3] border border-[#e6e6e6] border-solid rounded-[14px] h-14 flex items-center justify-between px-6 py-2 w-full">
-                <span className="font-inter font-medium text-[#0f0901] text-[12px] leading-normal overflow-hidden text-ellipsis whitespace-nowrap">
+                <span className="font-outfit font-medium text-[#0f0901] text-[12px] leading-normal overflow-hidden text-ellipsis whitespace-nowrap">
                   {accountId || 'N/A'}
                 </span>
               </div>
@@ -166,7 +166,7 @@ export function AccountInformationForm({
               disabled={isUpdating}
               className="bg-transparent border border-[#0f0901] rounded-[16px] h-14 flex items-center justify-center px-6 py-2 min-w-[148px]"
             >
-              <span className="font-inter font-medium text-[#0f0901] text-[14px] leading-[24px]">
+              <span className="font-outfit font-medium text-[#0f0901] text-[14px] leading-[24px]">
                 Cancel
               </span>
             </button>
@@ -175,7 +175,7 @@ export function AccountInformationForm({
               disabled={isUpdating}
               className="bg-[#0f0901] rounded-[16px] h-14 flex items-center justify-center px-8 py-2 min-w-[200px] ml-4"
             >
-              <span className="font-inter font-medium text-white text-[14px] leading-[24px]">
+              <span className="font-outfit font-medium text-white text-[14px] leading-[24px]">
                 {isUpdating ? 'Saving...' : 'Save Changes'}
               </span>
             </button>

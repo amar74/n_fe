@@ -10,6 +10,7 @@ import { useDataEnrichment } from '@/hooks/useDataEnrichment';
 import type { ScrapeResult, ScrapedOpportunity, ScrapedInfo } from '@/types/scraper';
 import { useMutateOpportunityTemp } from '@/hooks/useOpportunityIngestion';
 import { opportunityIngestionApi } from '@/services/api/opportunityIngestionApi';
+import { API_BASE_URL } from '@/services/api/client';
 import { exportToCSV } from '@/utils/exportUtils';
 
 type SourceOpportunitiesContentProps = {
@@ -53,6 +54,8 @@ const riskLevelOptions: Array<{ value: RiskLevelType; label: string }> = [
   { value: RiskLevel.HIGH_RISK, label: 'High risk' },
 ];
 
+const BASE_API_URL = API_BASE_URL;
+
 const deriveRiskFromPriority = (priority: string): RiskLevelType => {
   switch (priority) {
     case 'High':
@@ -82,6 +85,7 @@ interface ImportedOpportunityPreview {
     emails: string[];
     phones: string[];
   };
+  documents?: Array<{ title?: string; url: string; type?: string; description?: string }> | string[];
 }
 
 interface ImportModalState {
@@ -246,6 +250,15 @@ const mapScrapedOpportunity = ({
     phones: Array.isArray(info?.phone) ? info?.phone ?? [] : info?.phone ? [String(info.phone)] : [],
   };
 
+  // Extract documents from enhanced data or opportunity
+  const enhancedDocuments = extractSuggestionValue(enhancedData, ['documents', 'document_urls', 'documentation']);
+  const opportunityDocuments = opportunity?.documents || [];
+  const allDocuments = Array.isArray(enhancedDocuments) 
+    ? enhancedDocuments 
+    : Array.isArray(opportunityDocuments) 
+      ? opportunityDocuments 
+      : [];
+
   const summaryCandidate = enhancedSummary || opportunity?.status || opportunity?.description || null;
   const descriptionCandidate = enhancedDescription || opportunity?.description || opportunity?.status || undefined;
 
@@ -264,6 +277,7 @@ const mapScrapedOpportunity = ({
     expectedRfpDate,
     deadline,
     contacts,
+    documents: allDocuments.length > 0 ? allDocuments : undefined,
   };
 
   if (preview.probability === null && projectValueNumeric !== undefined) {
@@ -281,14 +295,50 @@ const mapScrapedOpportunity = ({
 const buildCreatePayload = (preview: ImportedOpportunityPreview, sourceUrl: string): OpportunityCreate => {
   const descriptionSections: string[] = [];
 
-  if (preview.summary) descriptionSections.push(preview.summary);
-  if (preview.description && preview.description !== preview.summary) descriptionSections.push(preview.description);
-  if (preview.status) descriptionSections.push(`Status: ${preview.status}`);
-  if (preview.location) descriptionSections.push(`Location: ${preview.location}`);
-  if (preview.marketSector) descriptionSections.push(`Sector: ${preview.marketSector}`);
-  if (preview.contacts.emails.length) descriptionSections.push(`Contact emails: ${preview.contacts.emails.join(', ')}`);
-  if (preview.contacts.phones.length) descriptionSections.push(`Contact phones: ${preview.contacts.phones.join(', ')}`);
-  descriptionSections.push(`Source URL: ${sourceUrl}`);
+  // Start with comprehensive description if available
+  if (preview.description) {
+    descriptionSections.push(preview.description);
+  } else if (preview.summary) {
+    descriptionSections.push(preview.summary);
+  }
+
+  // Add additional context sections
+  if (preview.status && !preview.description?.includes(preview.status)) {
+    descriptionSections.push(`\n**Status:** ${preview.status}`);
+  }
+  if (preview.location && !preview.description?.includes(preview.location)) {
+    descriptionSections.push(`\n**Location:** ${preview.location}`);
+  }
+  if (preview.marketSector && !preview.description?.includes(preview.marketSector)) {
+    descriptionSections.push(`\n**Market Sector:** ${preview.marketSector}`);
+  }
+  
+  // Add documents section if available
+  if (preview.documents && preview.documents.length > 0) {
+    const docList = preview.documents.map((doc: any) => {
+      if (typeof doc === 'string') return doc;
+      return doc.url || doc.title || 'Document';
+    }).filter(Boolean);
+    if (docList.length > 0) {
+      descriptionSections.push(`\n**Related Documents:**\n${docList.map(url => `- ${url}`).join('\n')}`);
+    }
+  }
+  
+  // Add contact information
+  if (preview.contacts.emails.length || preview.contacts.phones.length) {
+    const contactInfo: string[] = [];
+    if (preview.contacts.emails.length) {
+      contactInfo.push(`Email: ${preview.contacts.emails.join(', ')}`);
+    }
+    if (preview.contacts.phones.length) {
+      contactInfo.push(`Phone: ${preview.contacts.phones.join(', ')}`);
+    }
+    if (contactInfo.length > 0) {
+      descriptionSections.push(`\n**Contact Information:**\n${contactInfo.join('\n')}`);
+    }
+  }
+  
+  descriptionSections.push(`\n**Source:** ${sourceUrl}`);
 
   const matchScore = preview.probability !== null && preview.probability !== undefined
     ? Math.round(preview.probability)
@@ -347,8 +397,13 @@ const toErrorMessage = (value: unknown): string => {
     return value.map(item => toErrorMessage(item)).join(', ');
   }
   if (typeof value === 'object') {
-    if ('message' in (value as Record<string, unknown>) && typeof (value as any).message === 'string') {
-      return (value as any).message;
+    const obj = value as Record<string, unknown>;
+    // Handle timeout objects specifically
+    if ('timeout' in obj && obj.timeout === true) {
+      return 'The request timed out. The website may be slow or unresponsive. Please try again or use a different URL.';
+    }
+    if ('message' in obj && typeof obj.message === 'string') {
+      return obj.message;
     }
     try {
       return JSON.stringify(value);
@@ -386,7 +441,6 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
   const [editingOpportunity, setEditingOpportunity] = useState<string | null>(null);
   const [editingData, setEditingData] = useState<any>({});
   const [isAIInsightsLoading, setIsAIInsightsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
   const [importModal, setImportModal] = useState<ImportModalState>(initialImportModalState);
@@ -539,10 +593,19 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
         }));
       }
     } catch (error) {
-      const message =
-        error instanceof ScraperApiError
-          ? toErrorMessage(error.detail ?? error.message)
-          : toErrorMessage(error);
+      let message: string;
+      
+      if (error instanceof ScraperApiError) {
+        // Use the error message first (it has the user-friendly message)
+        // Then fall back to detail if message is generic
+        if (error.message && !error.message.includes('Scraper API request failed')) {
+          message = error.message;
+        } else {
+          message = toErrorMessage(error.detail ?? error.message);
+        }
+      } else {
+        message = toErrorMessage(error);
+      }
 
       setImportModal((prev) => ({
         ...prev,
@@ -656,12 +719,43 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
         }
         duplicateSignatures.add(signature);
 
-        const documentSources =
-          Array.isArray((entry as any)?.documents)
-            ? (entry as any).documents
-                .map((doc: any) => doc?.url || doc?.title)
-                .filter((value: unknown): value is string => typeof value === 'string' && value.length > 0)
-            : undefined;
+        // Collect documents from all sources: entry, preview, and enhanced data
+        const allDocumentSources: string[] = [];
+        
+        // From scraped opportunity entry
+        if (Array.isArray((entry as any)?.documents)) {
+          (entry as any).documents.forEach((doc: any) => {
+            const url = doc?.url || (typeof doc === 'string' ? doc : null);
+            if (url && typeof url === 'string' && url.length > 0) {
+              allDocumentSources.push(url);
+            }
+          });
+        }
+        
+        // From preview (enhanced data)
+        if (mapped.preview.documents && Array.isArray(mapped.preview.documents)) {
+          mapped.preview.documents.forEach((doc: any) => {
+            const url = typeof doc === 'string' ? doc : (doc?.url || null);
+            if (url && typeof url === 'string' && url.length > 0 && !allDocumentSources.includes(url)) {
+              allDocumentSources.push(url);
+            }
+          });
+        }
+        
+        // From enhanced data metadata
+        if (mapped.preview && (mapped.preview as any).enhancedDocuments) {
+          const enhancedDocs = (mapped.preview as any).enhancedDocuments;
+          if (Array.isArray(enhancedDocs)) {
+            enhancedDocs.forEach((doc: any) => {
+              const url = typeof doc === 'string' ? doc : (doc?.url || null);
+              if (url && typeof url === 'string' && url.length > 0 && !allDocumentSources.includes(url)) {
+                allDocumentSources.push(url);
+              }
+            });
+          }
+        }
+        
+        const documentSources = allDocumentSources.length > 0 ? allDocumentSources : null;
 
         await createTempMutation.mutateAsync({
           project_title: sanitizedTitle,
@@ -682,7 +776,10 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
             warnings,
             scrapedAt: new Date().toISOString(),
             sourceUrl: resolvedDetailUrl,
-            opportunity: entry,
+            opportunity: {
+              ...entry,
+              documents: documentSources || entry.documents || [],
+            },
             result: importModal.result,
           },
           raw_payload: {
@@ -915,58 +1012,45 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
     }
   }, [opportunities]);
 
-  const handleEditOpportunity = useCallback((opportunityId: string, opportunity: any) => {
+  const handleEditOpportunity = useCallback((opportunityId: string, opportunity: TransformedOpportunity) => {
     setEditingOpportunity(opportunityId);
+    // Use raw opportunity data for editing
+    const rawOpp = opportunity.raw;
     setEditingData({
-      project_name: opportunity.project_name,
-      client_name: opportunity.client_name,
-      project_value: opportunity.project_value,
-      market_sector: opportunity.market_sector,
-      state: opportunity.state,
-      description: opportunity.description,
-      account_id: opportunity.accountId
+      project_name: rawOpp.project_name || opportunity.name,
+      client_name: rawOpp.client_name || opportunity.clientName,
+      project_value: rawOpp.project_value ? formatProjectValue(rawOpp.project_value) : '',
+      market_sector: rawOpp.market_sector || opportunity.marketSector,
+      state: rawOpp.state || opportunity.state,
+      description: rawOpp.description || opportunity.description,
+      account_id: rawOpp.account_id || opportunity.accountId
     });
   }, []);
 
   const handleSaveOpportunity = useCallback(async (opportunityId: string) => {
-    setIsSaving(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/opportunities/${opportunityId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        },
-        body: JSON.stringify({
-          project_name: editingData.project_name,
-          client_name: editingData.client_name,
-          account_id: editingData.account_id,
-          description: editingData.description,
-          project_value: editingData.project_value ? parseProjectValue(editingData.project_value) : undefined,
-          market_sector: editingData.market_sector,
-          state: editingData.state
-        })
+      const updatePayload = {
+        project_name: editingData.project_name || undefined,
+        client_name: editingData.client_name || undefined,
+        account_id: editingData.account_id || undefined,
+        description: editingData.description || undefined,
+        project_value: editingData.project_value ? parseProjectValue(editingData.project_value) : undefined,
+        market_sector: editingData.market_sector || undefined,
+        state: editingData.state || undefined
+      };
+
+      await updateOpportunityMutation.mutateAsync({
+        id: opportunityId,
+        data: updatePayload
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const updatedOpportunity = await response.json();
-      
-      alert('Opportunity updated sucessfully!');
       
       setEditingOpportunity(null);
       setEditingData({});
       
-      window.location.reload();
-      
-    } catch (err) {
-      alert('save failed. please try again.');
-    } finally {
-      setIsSaving(false);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.detail || 'Failed to save opportunity. Please try again.');
     }
-  }, [editingData]);
+  }, [editingData, updateOpportunityMutation]);
 
   const handleCancelEdit = useCallback(() => {
     setEditingOpportunity(null);
@@ -1154,10 +1238,10 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-[#111827] mb-2 font-['Inter']">
+            <h1 className="text-3xl font-bold text-[#111827] mb-2 font-['Outfit']">
               Source Opportunities
             </h1>
-            <p className="text-[#6B7280] text-lg font-['Inter']">
+            <p className="text-[#6B7280] text-lg font-['Outfit']">
               Discover and analyze new business opportunities using AI-powered insights
             </p>
           </div>
@@ -1454,10 +1538,20 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                   
                   
                   <td className="px-4 lg:px-6 py-6">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
-                      <span className="text-sm font-medium text-[#374151] truncate">{opp.state}</span>
-                    </div>
+                    {editingOpportunity === opp.id ? (
+                      <input
+                        type="text"
+                        value={editingData.state || ''}
+                        onChange={(e) => setEditingData({...editingData, state: e.target.value})}
+                        className="w-full px-2 py-1 text-sm font-medium text-[#374151] border border-[#D1D5DB] rounded-md focus:outline-none focus:ring-2 focus:ring-[#161950]/20"
+                        placeholder="Location/State"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
+                        <span className="text-sm font-medium text-[#374151] truncate">{opp.state}</span>
+                      </div>
+                    )}
                   </td>
                   
                   
@@ -1548,21 +1642,22 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                         <>
                           <button 
                             onClick={() => handleSaveOpportunity(opp.id)}
-                            disabled={isSaving}
+                            disabled={updateOpportunityMutation.isPending}
                             className="px-2 lg:px-3 py-1.5 lg:py-2 bg-[#10B981] text-white rounded-lg text-xs lg:text-sm font-semibold hover:bg-[#059669] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {isSaving ? (
+                            {updateOpportunityMutation.isPending ? (
                               <Loader2 className="w-3 h-3 lg:w-4 lg:h-4 animate-spin" />
                             ) : (
                               <Save className="w-3 h-3 lg:w-4 lg:h-4" />
                             )}
                             <span className="hidden sm:inline">
-                              {isSaving ? 'Saving...' : 'Save'}
+                              {updateOpportunityMutation.isPending ? 'Saving...' : 'Save'}
                             </span>
                           </button>
                           <button 
                             onClick={handleCancelEdit}
-                            className="px-2 lg:px-3 py-1.5 lg:py-2 bg-[#DC2626] text-white rounded-lg text-xs lg:text-sm font-semibold hover:bg-[#B91C1C] transition-colors flex items-center gap-1"
+                            disabled={updateOpportunityMutation.isPending}
+                            className="px-2 lg:px-3 py-1.5 lg:py-2 bg-[#DC2626] text-white rounded-lg text-xs lg:text-sm font-semibold hover:bg-[#B91C1C] transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <X className="w-3 h-3 lg:w-4 lg:h-4" />
                             <span className="hidden sm:inline">Cancel</span>

@@ -56,7 +56,7 @@ function ComingSoon({ moduleId, moduleName }: ComingSoonProps) {
   const features = COMING_FEATURES[moduleId as keyof typeof COMING_FEATURES] || [];
 
   return (
-    <div className="w-full h-full font-inter bg-[#F5F3F2] min-h-[calc(100vh-120px)]">
+    <div className="w-full h-full font-outfit bg-[#F5F3F2] min-h-[calc(100vh-120px)]">
       <div className="flex flex-col items-center justify-center min-h-[600px] px-6 py-12">
         
         <div className="max-w-2xl mx-auto text-center space-y-8">

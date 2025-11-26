@@ -165,7 +165,7 @@ export default function EmployeeProfilePage() {
                       'July', 'August', 'September', 'October', 'November', 'December'];
   
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">

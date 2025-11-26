@@ -83,7 +83,7 @@ function RolesManagementPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F3F2] font-inter">
+    <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ function RolesManagementPage() {
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-4">
               <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-              <p className="text-gray-600 font-inter">Loading roles...</p>
+              <p className="text-gray-600 font-outfit">Loading roles...</p>
             </div>
           </div>
         )}

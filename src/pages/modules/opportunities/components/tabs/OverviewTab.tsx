@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useState, useCallback } from 'react';
-import { MapPin, Building, FileText, Download, Pencil, Plus, Trash2, Sparkles, ExternalLink } from 'lucide-react';
+import { MapPin, Building, FileText, Download, Pencil, Plus, Trash2, Sparkles, ExternalLink, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, AddButton } from './shared';
@@ -23,6 +23,7 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { sanitizeBasicHtml } from '@/lib/sanitize-html';
 import { Textarea } from '@/components/ui/textarea';
 import { scraperApi } from '@/services/api/scraperApi';
+import { formatProjectValue, parseProjectValue } from '@/utils/opportunityUtils';
 
 const OverviewTab = memo(({ opportunity }: TabProps) => {
   const { data: overviewData, isLoading: overviewLoading, refetch } = useOpportunityOverview(opportunity?.id || '');
@@ -49,8 +50,13 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
 
   const formatCurrency = (value: unknown) => {
     const parsed = parseNumericValue(value);
-    if (parsed === null) {
+    if (parsed === null || parsed === undefined) {
       return 'N/A';
+    }
+    
+    // Handle 0 as a valid value
+    if (parsed === 0) {
+      return '$0';
     }
 
     return new Intl.NumberFormat('en-US', {
@@ -64,7 +70,11 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
   const keyMetrics = overviewData?.key_metrics ?? {};
   const documentsSummary = overviewData?.documents_summary ?? {};
 
-  const projectValueDisplay = formatCurrency(keyMetrics.project_value ?? opportunity?.project_value);
+  // Get project value from key_metrics first (user-edited), then fallback to opportunity
+  const projectValueFromMetrics = keyMetrics.project_value !== undefined && keyMetrics.project_value !== null 
+    ? keyMetrics.project_value 
+    : null;
+  const projectValueDisplay = formatCurrency(projectValueFromMetrics ?? opportunity?.project_value);
   const winProbabilityValue = parseNumericValue(keyMetrics.win_probability ?? (keyMetrics.winProbability as unknown));
   const winProbabilityDisplay = winProbabilityValue !== null ? `${winProbabilityValue}%` : 'N/A';
   const aiMatchValue = parseNumericValue(keyMetrics.ai_match_score ?? opportunity?.match_score);
@@ -141,14 +151,17 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
   const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
   const [isOverviewModalOpen, setIsOverviewModalOpen] = useState(false);
   const [descriptionDraft, setDescriptionDraft] = useState(projectDescriptionRaw);
-  const [scopeDraft, setScopeDraft] = useState<string[]>(scopeItems);
-  const [newScopeItem, setNewScopeItem] = useState('');
   const [isAISuggestingOverview, setIsAISuggestingOverview] = useState(false);
+  const [isEditingProjectValue, setIsEditingProjectValue] = useState(false);
+  const [projectValueEdit, setProjectValueEdit] = useState<string>('');
+  const [isSavingProjectValue, setIsSavingProjectValue] = useState(false);
+  const [isScopeModalOpen, setIsScopeModalOpen] = useState(false);
+  const [scopeModalDraft, setScopeModalDraft] = useState<string[]>([]);
+  const [newScopeItemModal, setNewScopeItemModal] = useState('');
 
   useEffect(() => {
     setDescriptionDraft(projectDescriptionRaw);
-    setScopeDraft(scopeItems);
-  }, [projectDescriptionRaw, scopeItems]);
+  }, [projectDescriptionRaw]);
 
   const handleAddDocument = () => {
     setIsAddDocumentModalOpen(true);
@@ -268,31 +281,94 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
 
   const openOverviewModal = () => {
     setDescriptionDraft(projectDescriptionRaw);
-    setScopeDraft([...scopeItems]);
-    setNewScopeItem('');
     setIsOverviewModalOpen(true);
   };
 
-  const handleAddScopeDraft = () => {
-    if (!newScopeItem.trim()) return;
-    setScopeDraft((prev) => [...prev, newScopeItem.trim()]);
-    setNewScopeItem('');
+  const openScopeModal = () => {
+    setScopeModalDraft([...scopeItems]);
+    setNewScopeItemModal('');
+    setIsScopeModalOpen(true);
   };
 
-  const handleRemoveScopeDraft = (index: number) => {
-    setScopeDraft((prev) => prev.filter((_, idx) => idx !== index));
+  const handleAddScopeItemModal = () => {
+    if (newScopeItemModal.trim()) {
+      setScopeModalDraft((prev) => [...prev, newScopeItemModal.trim()]);
+      setNewScopeItemModal('');
+    }
+  };
+
+  const handleRemoveScopeItemModal = (index: number) => {
+    setScopeModalDraft((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleSaveScope = async () => {
+    const cleanedScope = scopeModalDraft.map((item) => item.trim()).filter(Boolean);
+    
+    await updateOverviewMutation.mutateAsync({
+      project_scope: cleanedScope,
+    });
+    await refetch();
+    setIsScopeModalOpen(false);
+    toast({
+      title: 'Project scope updated',
+      description: 'Project scope has been saved successfully.',
+    });
   };
 
   const handleSaveOverview = async () => {
-    const cleanedScope = scopeDraft.map((item) => item.trim()).filter(Boolean);
     const cleanedDescription = sanitizeBasicHtml(descriptionDraft || '');
 
     await updateOverviewMutation.mutateAsync({
       project_description: cleanedDescription,
-      project_scope: cleanedScope,
     });
     await refetch();
     setIsOverviewModalOpen(false);
+  };
+
+  const handleStartEditProjectValue = () => {
+    const currentValue = keyMetrics.project_value ?? opportunity?.project_value;
+    setProjectValueEdit(formatProjectValue(currentValue || 0));
+    setIsEditingProjectValue(true);
+  };
+
+  const handleCancelEditProjectValue = () => {
+    setIsEditingProjectValue(false);
+    setProjectValueEdit('');
+  };
+
+  const handleSaveProjectValue = async () => {
+    setIsSavingProjectValue(true);
+    try {
+      const budgetNumeric = parseProjectValue(projectValueEdit);
+      
+      // Always include project_value in key_metrics, even if 0 or null
+      const updatedKeyMetrics = {
+        ...keyMetrics,
+        project_value: budgetNumeric !== undefined && budgetNumeric !== null ? budgetNumeric : null,
+      };
+
+      await updateOverviewMutation.mutateAsync({
+        key_metrics: updatedKeyMetrics,
+      });
+      
+      // Force refetch to get the updated data
+      await refetch();
+      
+      setIsEditingProjectValue(false);
+      setProjectValueEdit('');
+      toast({
+        title: 'Project value updated',
+        description: 'Project value has been saved successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error?.response?.data?.message || 'Failed to save project value',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingProjectValue(false);
+    }
   };
 
   const handleOpenSourceLink = useCallback(() => {
@@ -360,7 +436,10 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
           .map((item) => (item ? item.trim() : ''))
           .filter(Boolean);
         if (normalizedScope.length) {
-          setScopeDraft(normalizedScope);
+          // Update scope directly via API
+          updateOverviewMutation.mutateAsync({
+            project_scope: normalizedScope,
+          });
         }
       }
 
@@ -404,9 +483,71 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
           <div>
             <div className="text-lg font-semibold text-gray-900">Key Metrics</div>
             <div className="grid grid-cols-1 gap-4 pt-6 md:grid-cols-3 lg:grid-cols-3">
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-                <div className="text-sm text-gray-600 mb-2">Project Value</div>
-                <div className="text-emerald-600 text-2xl font-semibold">{projectValueDisplay}</div>
+              <div 
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-5 hover:bg-gray-100 hover:border-indigo-300 transition-colors group relative"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm text-gray-600">Project Value</div>
+                  {!isEditingProjectValue && (
+                    <Pencil 
+                      className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" 
+                      onClick={handleStartEditProjectValue}
+                    />
+                  )}
+                </div>
+                {isEditingProjectValue ? (
+                  <div className="space-y-2">
+                    <Input
+                      type="text"
+                      value={projectValueEdit}
+                      onChange={(e) => setProjectValueEdit(e.target.value)}
+                      placeholder="$500K, $1.5M, $2,000,000"
+                      className="text-2xl font-semibold text-emerald-600"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleSaveProjectValue();
+                        } else if (e.key === 'Escape') {
+                          handleCancelEditProjectValue();
+                        }
+                      }}
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={handleSaveProjectValue}
+                        disabled={isSavingProjectValue}
+                        className="h-7 text-xs"
+                      >
+                        {isSavingProjectValue ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCancelEditProjectValue}
+                        disabled={isSavingProjectValue}
+                        className="h-7 text-xs"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Press Enter to save, Esc to cancel
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div 
+                      className="text-emerald-600 text-2xl font-semibold cursor-pointer"
+                      onClick={handleStartEditProjectValue}
+                    >
+                      {projectValueDisplay}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      Click to edit
+                    </div>
+                  </>
+                )}
               </div>
               <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
                 <div className="text-sm text-gray-600 mb-2">Win Probability</div>
@@ -556,9 +697,9 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
               )}
             </div>
             <div className="mt-6 text-right">
-              <Button variant="outline" onClick={openOverviewModal}>
+              <Button variant="outline" onClick={openScopeModal}>
                 <Pencil className="mr-2 h-4 w-4" />
-                Edit project overview
+                Edit Project Scope
               </Button>
             </div>
           </Card>
@@ -690,8 +831,6 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
           setIsOverviewModalOpen(open);
           if (!open) {
             setDescriptionDraft(projectDescriptionRaw);
-            setScopeDraft([...scopeItems]);
-            setNewScopeItem('');
           }
         }}
       >
@@ -763,49 +902,6 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Project scope</label>
-              <div className="space-y-3">
-                {scopeDraft.length > 0 ? (
-                  scopeDraft.map((item, index) => (
-                    <div key={`${item}-${index}`} className="flex items-center gap-3">
-                      <Input
-                        value={item}
-                        onChange={(event) => {
-                          const updated = [...scopeDraft];
-                          updated[index] = event.target.value;
-                          setScopeDraft(updated);
-                        }}
-                        placeholder="Project scope item"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-gray-500 hover:text-red-600"
-                        onClick={() => handleRemoveScopeDraft(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-center text-sm text-gray-500">
-                    Add scope items to outline key delivery components.
-                  </div>
-                )}
-                <div className="flex items-center gap-3">
-                  <Input
-                    value={newScopeItem}
-                    onChange={(event) => setNewScopeItem(event.target.value)}
-                    placeholder="New scope item"
-                  />
-                  <Button onClick={handleAddScopeDraft} disabled={!newScopeItem.trim()}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add
-                  </Button>
-                </div>
-              </div>
-            </div>
           </div>
 
           <DialogFooter>
@@ -814,6 +910,88 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
             </Button>
             <Button
               onClick={handleSaveOverview}
+              disabled={updateOverviewMutation.isPending}
+            >
+              {updateOverviewMutation.isPending ? 'Saving…' : 'Save changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isScopeModalOpen}
+        onOpenChange={(open) => {
+          setIsScopeModalOpen(open);
+          if (!open) {
+            setScopeModalDraft([...scopeItems]);
+            setNewScopeItemModal('');
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Project Scope</DialogTitle>
+            <DialogDescription>
+              Add or edit project scope items to outline key delivery components.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              {scopeModalDraft.length > 0 ? (
+                scopeModalDraft.map((item, index) => (
+                  <div key={`${item}-${index}`} className="flex items-center gap-3">
+                    <Input
+                      value={item}
+                      onChange={(event) => {
+                        const updated = [...scopeModalDraft];
+                        updated[index] = event.target.value;
+                        setScopeModalDraft(updated);
+                      }}
+                      placeholder="Project scope item"
+                      className="flex-1"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-gray-500 hover:text-red-600"
+                      onClick={() => handleRemoveScopeItemModal(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-4 text-center text-sm text-gray-500">
+                  Add scope items to outline key delivery components.
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <Input
+                  value={newScopeItemModal}
+                  onChange={(event) => setNewScopeItemModal(event.target.value)}
+                  placeholder="New scope item"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newScopeItemModal.trim()) {
+                      handleAddScopeItemModal();
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button onClick={handleAddScopeItemModal} disabled={!newScopeItemModal.trim()}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsScopeModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveScope}
               disabled={updateOverviewMutation.isPending}
             >
               {updateOverviewMutation.isPending ? 'Saving…' : 'Save changes'}

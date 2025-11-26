@@ -132,9 +132,9 @@ export const schemas = {
 const endpoints = makeApi([
   {
     method: "get",
-    path: "/api/api/v1/finance/dashboard/summary",
+    path: "/api/v1/finance/dashboard/summary",
     alias:
-      "read_finance_dashboard_summary_api_api_v1_finance_dashboard_summary_get",
+      "read_finance_dashboard_summary_api_v1_finance_dashboard_summary_get",
     description: `Return the finance dashboard summary (primary metrics, KPI progress, AI insights).`,
     requestFormat: "json",
     parameters: [
@@ -155,8 +155,8 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/api/api/v1/finance/dashboard/overhead",
-    alias: "read_finance_overhead_api_api_v1_finance_dashboard_overhead_get",
+    path: "/api/v1/finance/dashboard/overhead",
+    alias: "read_finance_overhead_api_v1_finance_dashboard_overhead_get",
     description: `Return overhead spend analysis grouped by account category.`,
     requestFormat: "json",
     parameters: [
@@ -177,8 +177,8 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/api/api/v1/finance/dashboard/bookings",
-    alias: "read_finance_bookings_api_api_v1_finance_dashboard_bookings_get",
+    path: "/api/v1/finance/dashboard/bookings",
+    alias: "read_finance_bookings_api_v1_finance_dashboard_bookings_get",
     description: `Return bookings vs. plan progress by client.`,
     requestFormat: "json",
     parameters: [
@@ -199,8 +199,8 @@ const endpoints = makeApi([
   },
   {
     method: "get",
-    path: "/api/api/v1/finance/dashboard/trends",
-    alias: "read_finance_trends_api_api_v1_finance_dashboard_trends_get",
+    path: "/api/v1/finance/dashboard/trends",
+    alias: "read_finance_trends_api_v1_finance_dashboard_trends_get",
     description: `Return year-over-year trend metrics for core finance KPIs.`,
     requestFormat: "json",
     parameters: [

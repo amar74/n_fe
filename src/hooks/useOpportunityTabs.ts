@@ -33,7 +33,14 @@ export const useUpdateOpportunityOverview = (opportunityId: string) => {
   return useMutation({
     mutationFn: (data: any) => opportunitiesApi.updateOpportunityOverview(opportunityId, data),
     onSuccess: () => {
+      // Invalidate overview query
       queryClient.invalidateQueries({ queryKey: OPPORTUNITY_TAB_QUERY_KEYS.overview(opportunityId) });
+      // Invalidate opportunity detail query (to refresh project_value)
+      queryClient.invalidateQueries({ queryKey: ['opportunities', 'detail', opportunityId] });
+      // Invalidate pipeline query (to refresh project_value in pipeline list)
+      queryClient.invalidateQueries({ queryKey: ['opportunities', 'pipeline'] });
+      // Invalidate opportunities list queries
+      queryClient.invalidateQueries({ queryKey: ['opportunities', 'list'] });
       toast.success('Overview updated successfully');
     },
     onError: (error: any) => {

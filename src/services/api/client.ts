@@ -3,7 +3,22 @@ import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'a
 import { STORAGE_CONSTANTS } from '@/constants/storageConstants';
 
 // Base API configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const RESOLVED_BASE_FROM_ENV = import.meta.env.VITE_API_BASE_URL;
+const isLocalHostRuntime =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+// Prefer local API when running the app on localhost to avoid accidental live calls
+const LOCAL_DEFAULT_BASE = 'http://127.0.0.1:8000';
+
+// If running locally and env points to the known live IP, override to local for safety
+const looksLikeLiveIp =
+  typeof RESOLVED_BASE_FROM_ENV === 'string' && /52\.55\.26\.148/.test(RESOLVED_BASE_FROM_ENV);
+
+export const API_BASE_URL =
+  (isLocalHostRuntime && (!RESOLVED_BASE_FROM_ENV || looksLikeLiveIp))
+    ? LOCAL_DEFAULT_BASE
+    : (RESOLVED_BASE_FROM_ENV || LOCAL_DEFAULT_BASE);
 
 // API Base URL with /api prefix for generated clients
 export const API_BASE_URL_WITH_PREFIX = `${API_BASE_URL}/api`;
@@ -55,9 +70,10 @@ apiClient.interceptors.response.use(
 );
 
 // Specialized API client for AI requests with longer timeout
+// Also used for scraper requests which can take up to 30+ seconds
 export const aiApiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL_WITH_PREFIX,
-  timeout: 45000, // 45 seconds for AI processing
+  timeout: 60000, // 60 seconds - increased for scraper (backend has 30s timeout + processing time)
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

@@ -137,15 +137,15 @@ export default function LoginPage() {
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12.7083 5L7.5 10.2083L12.7083 15.4167" stroke="#344054" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <span className="text-[#344054] text-sm font-normal font-inter leading-tight">Back to dashboard</span>
+            <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Back to dashboard</span>
           </button>
 
           
           <div className="w-full max-w-[440px] sm:max-w-[480px] lg:w-[460px] xl:w-[480px] p-8 sm:p-10 lg:p-12 rounded-2xl border border-[#E6E6E6] bg-white flex flex-col justify-start items-start gap-8 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] transition-shadow duration-300">
             
             <div className="self-stretch flex flex-col justify-start items-start gap-3">
-              <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-inter leading-[1.2]">Sign In</h1>
-              <p className="text-[#667085] text-[14px] font-normal font-inter leading-relaxed">
+              <h1 className="text-[#101828] text-[32px] sm:text-[36px] font-semibold font-outfit leading-[1.2]">Sign In</h1>
+              <p className="text-[#667085] text-[14px] font-normal font-outfit leading-relaxed">
                 Enter your email and password to sign in!
               </p>
             </div>
@@ -159,7 +159,7 @@ export default function LoginPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem className="self-stretch flex flex-col justify-start items-start gap-2">
-                      <FormLabel className="text-[#344054] text-[14px] font-medium font-inter leading-tight">
+                      <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
                         Email address<span className="text-[#F04438]">*</span>
                       </FormLabel>
                       <FormControl>
@@ -168,10 +168,10 @@ export default function LoginPage() {
                           type="email"
                           placeholder="Enter your email"
                           autoComplete="off"
-                          className="self-stretch h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-inter focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                          className="self-stretch h-12 px-4 py-3 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
                         />
                       </FormControl>
-                      <FormMessage className="text-xs text-[#F04438] font-inter" />
+                      <FormMessage className="text-xs text-[#F04438] font-outfit" />
                     </FormItem>
                   )}
                 />
@@ -182,7 +182,7 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem className="self-stretch flex flex-col justify-start items-start gap-2">
-                      <FormLabel className="text-[#344054] text-[14px] font-medium font-inter leading-tight">
+                      <FormLabel className="text-[#344054] text-[14px] font-medium font-outfit leading-tight">
                         Password<span className="text-[#F04438]">*</span>
                       </FormLabel>
                       <FormControl>
@@ -191,7 +191,7 @@ export default function LoginPage() {
                             {...field}
                             type={showPassword ? "text" : "password"}
                             placeholder="Enter your password"
-                            className="self-stretch h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-inter focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
+                            className="self-stretch h-12 px-4 py-3 pr-12 bg-white rounded-lg border border-[#D0D5DD] text-[#101828] placeholder:text-[#98A2B3] text-[15px] font-normal font-outfit focus-visible:ring-4 focus-visible:ring-[#465FFF1F] focus-visible:border-[#465FFF] focus-visible:outline-none focus-visible:shadow-sm hover:border-[#98A2B3] transition-all duration-200"
                           />
                           <button
                             type="button"
@@ -207,7 +207,7 @@ export default function LoginPage() {
                           </button>
                         </div>
                       </FormControl>
-                      <FormMessage className="text-xs text-[#F04438] font-inter" />
+                      <FormMessage className="text-xs text-[#F04438] font-outfit" />
                     </FormItem>
                   )}
                 />
@@ -226,7 +226,7 @@ export default function LoginPage() {
                             className="w-5 h-5 rounded-md border-2 border-[#D0D5DD] data-[state=checked]:bg-[#465FFF] data-[state=checked]:border-[#465FFF]"
                           />
                         </FormControl>
-                        <FormLabel className="text-[#344054] text-sm font-normal font-inter leading-tight cursor-pointer select-none">
+                        <FormLabel className="text-[#344054] text-sm font-normal font-outfit leading-tight cursor-pointer select-none">
                           Keep me logged in
                         </FormLabel>
                       </FormItem>
@@ -235,7 +235,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => navigate('/forgot-password')}
-                    className="text-[#465FFF] text-sm font-normal font-inter leading-tight hover:underline hover:text-[#3451E6] transition-all duration-200"
+                    className="text-[#465FFF] text-sm font-normal font-outfit leading-tight hover:underline hover:text-[#3451E6] transition-all duration-200"
                   >
                     Forgot password?
                   </button>
@@ -243,7 +243,7 @@ export default function LoginPage() {
 
                 
                 {form.formState.errors.root && (
-                  <div className="text-[#F04438] text-sm text-center self-stretch bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-inter">
+                  <div className="text-[#F04438] text-sm text-center self-stretch bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-outfit">
                     {form.formState.errors.root.message}
                   </div>
                 )}
@@ -251,14 +251,14 @@ export default function LoginPage() {
                 
                 <Button
                   type="submit"
-                  className="self-stretch h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-inter leading-tight hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
+                  className="self-stretch h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-outfit leading-tight hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Signing in...' : 'Sign In'}
                 </Button>
 
                 
-                <p className="self-stretch text-center text-sm font-normal font-inter leading-tight">
+                <p className="self-stretch text-center text-sm font-normal font-outfit leading-tight">
                   <span className="text-[#667085]">Don't have an account? </span>
                   <button
                     type="button"

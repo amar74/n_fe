@@ -142,23 +142,38 @@ export function useAuth() {
     try {
       setError(null);
       
+      const loginUrl = `${API_BASE_URL_WITH_PREFIX}/auth/login`;
+      console.log('[useAuth] Attempting login to:', loginUrl);
+      console.log('[useAuth] Email:', email);
+      
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       // Use local authentication instead of Supabase
-      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/login`, {
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal,
       });
+      
+      clearTimeout(timeoutId);
+      
+      console.log('[useAuth] Login response status:', response.status, response.statusText);
       
       if (!response.ok) {
         let errorMessage = 'Login failed';
         try {
           const errorData = await response.json();
           errorMessage = errorData.detail || errorData.message || 'Login failed';
+          console.log('[useAuth] Login error response:', errorData);
         } catch (jsonError) {
           // If JSON parsing fails, use status text or default message
           errorMessage = response.statusText || `Login failed with status ${response.status}`;
+          console.log('[useAuth] Failed to parse error response:', jsonError);
         }
         setError(errorMessage);
         return { data: null, error: { message: errorMessage } };
@@ -167,8 +182,10 @@ export function useAuth() {
       let result;
       try {
         result = await response.json();
+        console.log('[useAuth] Login successful, received token:', result.token ? 'Yes' : 'No');
       } catch (jsonError) {
         const errorMessage = 'Invalid response format from server';
+        console.error('[useAuth] Failed to parse login response:', jsonError);
         setError(errorMessage);
         return { data: null, error: { message: errorMessage } };
       }
@@ -179,15 +196,27 @@ export function useAuth() {
         localStorage.setItem('userRole', result.user.role);
         localStorage.setItem('userEmail', result.user.email);
         
+        console.log('[useAuth] Stored auth token and user data');
+        
         // Update auth state
         authManager.setAuthState(true, result.user);
         setBackendUser(result.user);
         setIsAuthenticated(true);
+      } else {
+        console.warn('[useAuth] Login response missing token or user:', result);
       }
       
       return { data: result, error: null };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Sign in failed';
+      let errorMessage = 'Sign in failed';
+      if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          errorMessage = 'Login request timed out. Please check your connection and try again.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      console.error('[useAuth] Login exception:', err);
       setError(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }

@@ -4,7 +4,7 @@ import { useAuth } from '@hooks/useAuth';
 import { 
   TrendingUp, Users, FileText, Package, FileSignature, 
   FolderKanban, DollarSign, ShoppingCart, BarChart3, 
-  Bell, ChevronDown, ChevronRight, LogOut, User, Settings, Building2, ClipboardList, Shield 
+  Bell, ChevronDown, ChevronRight, LogOut, User, Settings, Building2, ClipboardList, Shield, Bot
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/useToast';
@@ -41,6 +41,8 @@ const menuItems = [
       { icon: Users, label: 'Employee Survey', path: '/surveys/employee-dashboard' },
     ]
   },
+  { icon: Package, label: 'Delivery Models', path: '/module/delivery-models' },
+  { icon: Bot, label: 'AI Agentic', path: '/module/ai-agentic' },
 ];
 
 // will optimize later - guddy.tech
@@ -118,22 +120,22 @@ export default function Navigation() {
   const shouldExpand = isSidebarCollapsed ? isHovering : true;
 
   return (
-    <div className="h-screen flex bg-white">
+    <div className="h-screen min-h-0 flex bg-white">
       
       <aside 
-        className={`flex flex-col flex-shrink-0 transition-all duration-300 shadow-2xl ${
+        className={`flex flex-col flex-shrink-0 overflow-y-auto h-screen transition-all duration-300 shadow-2xl ${
           shouldExpand ? 'w-64' : 'w-20'
         }`}
         style={{ backgroundColor: 'var(--color-indigo-950)' }}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
-        <div className="flex flex-col h-full py-6 gap-12 overflow-hidden" style={{ 
+        <div className="flex flex-col h-full min-h-0 py-6 gap-6 overflow-auto" style={{ 
           paddingLeft: shouldExpand ? '20px' : '12px',
           paddingRight: shouldExpand ? '20px' : '12px'
         }}>
             
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-6">
               
               <div className="flex items-center gap-3 overflow-hidden px-1">
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg" style={{ backgroundColor: '#161950' }}>
@@ -163,11 +165,11 @@ export default function Navigation() {
                 )}
               </div>
 
-              
-              <div className="flex flex-col gap-5">
+              {/* Scrollable nav area */}
+              <div className="flex-1 min-h-0 flex flex-col gap-5 pr-1">
                 <div className="flex flex-col gap-3">
                   {shouldExpand && (
-                    <div className="text-slate-500 text-[11px] font-semibold font-inter uppercase tracking-wider px-1">Navigation</div>
+                    <div className="text-slate-500 text-[11px] font-semibold font-outfit uppercase tracking-wider px-1">Navigation</div>
                   )}
                   <nav className="flex flex-col gap-1">
                     {menuItems.map((item) => {
@@ -208,7 +210,7 @@ export default function Navigation() {
                               />
                               {shouldExpand && (
                                 <>
-                                  <span className={`flex-1 text-sm font-semibold font-inter leading-tight whitespace-nowrap transition-colors duration-200 ${
+                                  <span className={`flex-1 text-sm font-semibold font-outfit leading-tight whitespace-nowrap transition-colors duration-200 ${
                                     childActive 
                                       ? 'text-white' 
                                       : 'text-slate-300 group-hover:text-white'
@@ -253,7 +255,7 @@ export default function Navigation() {
                                         }`} 
                                         strokeWidth={childIsActive ? 2.5 : 2}
                                       />
-                                      <span className={`flex-1 text-xs font-semibold font-inter leading-tight whitespace-nowrap transition-colors duration-200 ${
+                                      <span className={`flex-1 text-xs font-semibold font-outfit leading-tight whitespace-nowrap transition-colors duration-200 ${
                                         childIsActive 
                                           ? 'text-indigo-200' 
                                           : 'text-slate-300 group-hover:text-white'
@@ -299,7 +301,7 @@ export default function Navigation() {
                             strokeWidth={active ? 2.5 : 2}
                           />
                           {shouldExpand && (
-                            <span className={`flex-1 text-sm font-semibold font-inter leading-tight whitespace-nowrap transition-colors duration-200 ${
+                            <span className={`flex-1 text-sm font-semibold font-outfit leading-tight whitespace-nowrap transition-colors duration-200 ${
                               active 
                                 ? 'text-white' 
                                 : 'text-slate-300 group-hover:text-white'
@@ -326,7 +328,7 @@ export default function Navigation() {
             >
               <LogOut className={`${shouldExpand ? 'w-5 h-5' : 'w-6 h-6'} text-slate-400 group-hover:text-red-400 transition-colors`} strokeWidth={2} />
               {shouldExpand && (
-                <span className="text-slate-300 text-sm font-semibold font-inter leading-tight whitespace-nowrap group-hover:text-red-400 transition-colors">
+                <span className="text-slate-300 text-sm font-semibold font-outfit leading-tight whitespace-nowrap group-hover:text-red-400 transition-colors">
                   {isSigningOut ? 'Signing out...' : 'Log-out'}
                 </span>
               )}
@@ -376,7 +378,7 @@ export default function Navigation() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex items-center gap-1">
-                  <div className="text-[#344054] text-sm font-medium font-inter leading-tight">
+                  <div className="text-[#344054] text-sm font-medium font-outfit leading-tight">
                     {getUserDisplayName()}
                   </div>
                   <div className="pt-0.5 flex items-center">

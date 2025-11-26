@@ -88,10 +88,6 @@ export const CreateOpportunityModal = memo(({
     if (!isOpen) {
       initialValuesRef.current = '';
     }
-
-    if (!formData.date.trim()) {
-      newErrors.date = 'Date is required';
-    }
   }, [isOpen]);
 
   // Update opportunityApprover when user data loads or changes
@@ -180,8 +176,15 @@ export const CreateOpportunityModal = memo(({
         suggestion.suggestions.forEach((s: any) => {
           const targetField = fieldMap[s.field];
           if (targetField && s.value) {
-            console.log(`✅ Applying ${s.field} → ${targetField}: ${s.value} (confidence: ${s.confidence})`);
-            setFormData(prev => ({ ...prev, [targetField]: s.value }));
+            const valueStr = String(s.value);
+            const valueLength = valueStr.length;
+            console.log(`✅ Applying ${s.field} → ${targetField}: ${valueLength} characters (confidence: ${s.confidence})`);
+            if (valueLength > 500) {
+              console.log(`📝 Long value preview (first 200 chars): ${valueStr.substring(0, 200)}...`);
+            } else {
+              console.log(`📝 Full value: ${valueStr}`);
+            }
+            setFormData(prev => ({ ...prev, [targetField]: valueStr }));
             appliedCount++;
           } else {
             console.log(`⚠️ Skipped ${s.field}: ${!targetField ? 'no mapping' : 'empty value'}`);
@@ -863,10 +866,15 @@ export const CreateOpportunityModal = memo(({
                 <textarea
                   value={formData.projectDescription}
                   onChange={(e) => handleInputChange('projectDescription', e.target.value)}
-                  rows={4}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400 resize-none"
+                  rows={8}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 bg-white hover:border-gray-400 resize-y"
                   placeholder="Brief Project Description"
                 />
+                {formData.projectDescription && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {formData.projectDescription.length} characters
+                  </p>
+                )}
               </div>
             </div>
           </div>

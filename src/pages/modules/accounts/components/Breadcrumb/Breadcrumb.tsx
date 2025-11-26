@@ -9,7 +9,7 @@ type BreadcrumbProps = {
 
 export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <div className="flex items-center gap-1 text-[16px] font-inter font-medium">
+    <div className="flex items-center gap-1 text-[16px] font-outfit font-medium">
       {items.map((item, index) => (
         <React.Fragment key={index}>
           {index > 0 && (

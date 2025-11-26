@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/services/api/client';
+import { apiClient, API_BASE_URL } from '@/services/api/client';
 import { createApiClient as createOrgsApiClient } from '@/types/generated/orgs';
 import { createApiClient as createOpportunitiesApiClient } from '@/types/generated/Opportunities';
 import { createApiClient as createUserPermissionsApiClient } from '@/types/generated/user_permissions';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const BASE_URL = API_BASE_URL;
 const orgsApi = createOrgsApiClient(BASE_URL, { axiosInstance: apiClient });
 const opportunitiesApi = createOpportunitiesApiClient(BASE_URL, { axiosInstance: apiClient });
 const userPermissionsApi = createUserPermissionsApiClient(BASE_URL, { axiosInstance: apiClient });

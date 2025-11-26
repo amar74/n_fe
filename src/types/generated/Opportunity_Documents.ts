@@ -19,10 +19,10 @@ const OpportunityDocumentResponse = z
       .union([z.boolean(), z.null()])
       .optional()
       .default(true),
-    id: z.string().uuid(),
-    opportunity_id: z.string().uuid(),
     file_path: z.union([z.string(), z.null()]).optional(),
     file_url: z.union([z.string(), z.null()]).optional(),
+    id: z.string().uuid(),
+    opportunity_id: z.string().uuid(),
     upload_date: z.union([z.string(), z.null()]).optional(),
     uploaded_at: z.union([z.string(), z.null()]).optional(),
     updated_at: z.union([z.string(), z.null()]).optional(),
@@ -60,6 +60,8 @@ const OpportunityDocumentCreate = z
       .union([z.boolean(), z.null()])
       .optional()
       .default(true),
+    file_path: z.union([z.string(), z.null()]).optional(),
+    file_url: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
 const OpportunityDocumentUpdate = z

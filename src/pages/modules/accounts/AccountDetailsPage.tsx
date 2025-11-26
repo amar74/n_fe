@@ -32,7 +32,7 @@ function AccountDetailsPage() {
   // Loading state
   if (isLoading || (!account && !error)) {
     return (
-      <div className="w-full h-full bg-[#f5f3f2] font-inter flex items-center justify-center">
+      <div className="w-full h-full bg-[#f5f3f2] font-outfit flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ed8a09]"></div>
           <p className="text-[#6e6e6e] text-sm">Loading account details...</p>
@@ -44,7 +44,7 @@ function AccountDetailsPage() {
   // Error state
   if (error && !isLoading) {
     return (
-      <div className="w-full h-full bg-[#f5f3f2] font-inter flex items-center justify-center">
+      <div className="w-full h-full bg-[#f5f3f2] font-outfit flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4 text-center">
           <div className="text-red-500 text-6xl">⚠️</div>
           <h3 className="text-lg font-medium text-[#0f0901]">Account Not Found</h3>
@@ -64,7 +64,7 @@ function AccountDetailsPage() {
 
   if (!account || !formData) {
     return (
-      <div className="w-full h-full bg-[#f5f3f2] font-inter flex items-center justify-center">
+      <div className="w-full h-full bg-[#f5f3f2] font-outfit flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ed8a09]"></div>
       </div>
     );
@@ -131,10 +131,10 @@ function AccountDetailsPage() {
               {!['overview', 'notes', 'contacts', 'team', 'opportunities'].includes(activeTab) && (
                 <div className="bg-neutral-50 border border-[#f0f0f0] rounded-[28px] p-6 w-full">
                   <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <h3 className="font-inter font-semibold text-[#0f0901] text-[18px] mb-2">
+                    <h3 className="font-outfit font-semibold text-[#0f0901] text-[18px] mb-2">
                       {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Tab
                     </h3>
-                    <p className="font-inter font-medium text-[#a7a7a7] text-[16px]">
+                    <p className="font-outfit font-medium text-[#a7a7a7] text-[16px]">
                       This tab is coming soon. Stay tuned for updates!
                     </p>
                   </div>

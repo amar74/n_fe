@@ -11,6 +11,7 @@ import {
   ClipboardList,
   Layers,
   Database,
+  Bot,
 } from 'lucide-react';
 import { NavigationItem } from './DashboardSidebar.types';
 
@@ -140,5 +141,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     name: 'Delivery Models',
     path: '/module/delivery-models',
     icon: Layers,
+  },
+  {
+    id: 'ai-agentic',
+    name: 'AI Agentic',
+    path: '/module/ai-agentic',
+    icon: Bot,
   },
 ];

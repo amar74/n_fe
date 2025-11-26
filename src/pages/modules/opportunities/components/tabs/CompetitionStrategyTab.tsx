@@ -266,7 +266,7 @@ const CompetitionStrategyTab = memo(({ opportunity }: TabProps) => {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmitCompetitor} className="space-y-6 font-inter">
+          <form onSubmit={handleSubmitCompetitor} className="space-y-6 font-outfit">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label className="text-xs uppercase text-gray-500 tracking-wider">Company Name</Label>
@@ -358,7 +358,7 @@ const CompetitionStrategyTab = memo(({ opportunity }: TabProps) => {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmitStrategy} className="space-y-6 font-inter">
+          <form onSubmit={handleSubmitStrategy} className="space-y-6 font-outfit">
             <div className="space-y-2">
               <Label className="text-xs uppercase text-gray-500 tracking-wider">Strategy Detail</Label>
               <Textarea

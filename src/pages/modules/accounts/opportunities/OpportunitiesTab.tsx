@@ -228,7 +228,7 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
       <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 font-inter">
+            <h2 className="text-xl font-semibold text-gray-900 font-outfit">
               Opportunities
             </h2>
             <p className="text-sm text-gray-600 mt-1">
@@ -311,7 +311,7 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                     
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 font-inter group-hover:text-indigo-950 transition-colors">
+                        <h3 className="text-lg font-semibold text-gray-900 font-outfit group-hover:text-indigo-950 transition-colors">
                           {opportunity.project_name}
                         </h3>
                         <p className="text-sm text-gray-600 mt-1 line-clamp-2">

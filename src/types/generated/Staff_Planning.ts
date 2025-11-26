@@ -5,6 +5,30 @@ import { HTTPValidationError } from "./common";
 import { ValidationError } from "./common";
 import { stage } from "./common";
 
+const EscalationPeriod = z
+  .object({
+    start_month: z.number().int().gte(1),
+    end_month: z.number().int().gte(1),
+    rate: z.number().gte(0).lte(100),
+  })
+  .passthrough();
+const StaffAllocationCreate = z
+  .object({
+    resource_id: z.string().uuid(),
+    resource_name: z.string(),
+    role: z.string(),
+    level: z.union([z.string(), z.null()]).optional(),
+    start_month: z.number().int().gte(1).optional().default(1),
+    end_month: z.number().int().gte(1).optional().default(12),
+    hours_per_week: z.number().gte(0).lte(168).optional().default(40),
+    hourly_rate: z.number().gte(0),
+    escalation_rate: z.union([z.number(), z.null()]).optional(),
+    escalation_start_month: z.union([z.number(), z.null()]).optional(),
+    escalation_periods: z
+      .union([z.array(EscalationPeriod), z.null()])
+      .optional(),
+  })
+  .passthrough();
 const StaffAllocationResponse = z
   .object({
     id: z.number().int(),
@@ -20,13 +44,29 @@ const StaffAllocationResponse = z
     hourly_rate: z.number(),
     monthly_cost: z.number(),
     total_cost: z.number(),
-    initial_escalation_rate: z.union([z.number(), z.null()]).optional(),
     escalation_rate: z.union([z.number(), z.null()]).optional(),
-    escalation_effective_month: z.union([z.number(), z.null()]).optional(),
+    escalation_start_month: z.union([z.number(), z.null()]).optional(),
+    escalation_periods: z
+      .union([z.array(EscalationPeriod), z.null()])
+      .optional(),
     status: z.string(),
     created_at: z.string(),
     updated_at: z.string(),
   })
+  .passthrough();
+const StaffAllocationUpdate = z
+  .object({
+    start_month: z.union([z.number(), z.null()]),
+    end_month: z.union([z.number(), z.null()]),
+    hours_per_week: z.union([z.number(), z.null()]),
+    allocation_percentage: z.union([z.number(), z.null()]),
+    hourly_rate: z.union([z.number(), z.null()]),
+    escalation_rate: z.union([z.number(), z.null()]),
+    escalation_start_month: z.union([z.number(), z.null()]),
+    escalation_periods: z.union([z.array(EscalationPeriod), z.null()]),
+    status: z.union([z.string(), z.null()]),
+  })
+  .partial()
   .passthrough();
 const StaffPlanWithAllocations = z
   .object({
@@ -38,7 +78,7 @@ const StaffPlanWithAllocations = z
     duration_months: z.number().int(),
     overhead_rate: z.number(),
     profit_margin: z.number(),
-    annual_escalation_rate: z.number(),
+    annual_escalation_rate: z.union([z.number(), z.null()]),
     total_labor_cost: z.number(),
     total_overhead: z.number(),
     total_cost: z.number(),
@@ -63,7 +103,7 @@ const StaffPlanResponse = z
     duration_months: z.number().int(),
     overhead_rate: z.number(),
     profit_margin: z.number(),
-    annual_escalation_rate: z.number(),
+    annual_escalation_rate: z.union([z.number(), z.null()]),
     total_labor_cost: z.number(),
     total_overhead: z.number(),
     total_cost: z.number(),
@@ -87,7 +127,7 @@ const StaffPlanCreate = z
     duration_months: z.number().int().gte(1).lte(120).optional().default(12),
     overhead_rate: z.number().gte(0).lte(100).optional().default(25),
     profit_margin: z.number().gte(0).lte(100).optional().default(15),
-    annual_escalation_rate: z.number().gte(0).lte(50).optional().default(3),
+    annual_escalation_rate: z.union([z.number(), z.null()]).optional(),
   })
   .passthrough();
 const StaffPlanUpdate = z
@@ -103,44 +143,16 @@ const StaffPlanUpdate = z
   })
   .partial()
   .passthrough();
-const StaffAllocationCreate = z
-  .object({
-    resource_id: z.string().uuid(),
-    resource_name: z.string(),
-    role: z.string(),
-    level: z.union([z.string(), z.null()]).optional(),
-    start_month: z.number().int().gte(1).optional().default(1),
-    end_month: z.number().int().gte(1).optional().default(12),
-    hours_per_week: z.number().gte(0).lte(168).optional().default(40),
-    hourly_rate: z.number().gte(0),
-    initial_escalation_rate: z.union([z.number(), z.null()]).optional(),
-    escalation_rate: z.union([z.number(), z.null()]).optional(),
-    escalation_effective_month: z.union([z.number(), z.null()]).optional(),
-  })
-  .passthrough();
-const StaffAllocationUpdate = z
-  .object({
-    start_month: z.union([z.number(), z.null()]),
-    end_month: z.union([z.number(), z.null()]),
-    hours_per_week: z.union([z.number(), z.null()]),
-    allocation_percentage: z.union([z.number(), z.null()]),
-    hourly_rate: z.union([z.number(), z.null()]),
-    initial_escalation_rate: z.union([z.number(), z.null()]),
-    escalation_rate: z.union([z.number(), z.null()]),
-    escalation_effective_month: z.union([z.number(), z.null()]),
-    status: z.union([z.string(), z.null()]),
-  })
-  .partial()
-  .passthrough();
 
 export const schemas = {
+  EscalationPeriod,
+  StaffAllocationCreate,
   StaffAllocationResponse,
+  StaffAllocationUpdate,
   StaffPlanWithAllocations,
   StaffPlanResponse,
   StaffPlanCreate,
   StaffPlanUpdate,
-  StaffAllocationCreate,
-  StaffAllocationUpdate,
 };
 
 const endpoints = makeApi([
@@ -148,7 +160,6 @@ const endpoints = makeApi([
     method: "post",
     path: "/api/staff-planning/",
     alias: "create_staff_plan_api_staff_planning__post",
-    description: `Create a new staff plan`,
     requestFormat: "json",
     parameters: [
       {

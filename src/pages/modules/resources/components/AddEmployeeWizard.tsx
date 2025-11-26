@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Upload, FileText, Sparkles, Loader2, CheckCircle, Link2, User, ChevronRight, ChevronLeft, Award, Briefcase, Building2, DollarSign } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
+import { API_BASE_URL_WITH_PREFIX } from '@/services/api/client';
 
 type AddEmployeeWizardProps = {
   isOpen: boolean;
@@ -137,7 +138,7 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
     setAiProcessing(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/onboarding/profile-extract`, {
+      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/onboarding/profile-extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
         body: JSON.stringify({ linkedin_url: formData.linkedinUrl, portfolio_url: formData.profileUrl }),
@@ -209,7 +210,7 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
     try {
       const formDataObj = new FormData();
       formDataObj.append('file', file);
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/onboarding/upload-cv`, {
+      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/onboarding/upload-cv`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
         body: formDataObj,

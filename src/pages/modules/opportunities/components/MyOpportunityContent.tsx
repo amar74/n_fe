@@ -196,13 +196,13 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
               <div key={card.id} className="w-1/4 flex-shrink-0 px-3">
                 <div className="group p-6 bg-white rounded-2xl border border-[#E5E7EB] shadow-sm hover:shadow-lg hover:border-[#161950]/20 transition-all duration-300 cursor-pointer">
                   <div className="flex items-center justify-between mb-5">
-                    <div className="text-[#6B7280] text-sm font-medium font-['Inter'] leading-5">{card.title}</div>
+                    <div className="text-[#6B7280] text-sm font-medium font-['Outfit'] leading-5">{card.title}</div>
                     <div className={`p-2.5 ${card.iconBg} rounded-xl group-hover:scale-110 transition-transform duration-200`}>
                       <card.icon className={`w-5 h-5 ${card.iconColor}`} />
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <div className="text-[#111827] text-4xl font-bold font-['Inter'] leading-none">{card.value}</div>
+                    <div className="text-[#111827] text-4xl font-bold font-['Outfit'] leading-none">{card.value}</div>
                     <div className="text-xs font-medium text-[#6B7280]">{card.helper}</div>
                   </div>
                 </div>
@@ -233,8 +233,8 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
         <div className="px-8 py-8 border-b border-[#F3F4F6] bg-gradient-to-r from-[#FAFAFA] to-[#F9FAFB]">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-[#111827] text-2xl font-bold font-['Inter'] mb-2 tracking-tight">My Active Opportunities</h2>
-              <p className="text-[#6B7280] text-base font-['Inter'] leading-6">
+              <h2 className="text-[#111827] text-2xl font-bold font-['Outfit'] mb-2 tracking-tight">My Active Opportunities</h2>
+              <p className="text-[#6B7280] text-base font-['Outfit'] leading-6">
                 Track and manage opportunities you're currently working on
               </p>
             </div>
@@ -306,7 +306,7 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex-1">
                         <div className="flex items-center gap-4 mb-3">
-                          <h3 className="text-[#111827] text-xl font-bold font-['Inter'] leading-7 group-hover:text-[#161950] transition-colors">
+                          <h3 className="text-[#111827] text-xl font-bold font-['Outfit'] leading-7 group-hover:text-[#161950] transition-colors">
                             {opp.projectName}
                           </h3>
                           <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-[#6B7280] text-sm font-['Inter']">
+                        <div className="flex items-center gap-2 text-[#6B7280] text-sm font-['Outfit']">
                           <span className="font-semibold">Client:</span>
                           <span className="font-medium">{opp.clientName}</span>
                         </div>
@@ -334,7 +334,7 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
                           className="px-4 py-3 bg-[#161950] rounded-xl flex items-center gap-2 hover:bg-[#0f1440] hover:scale-105 transition-all duration-200 shadow-lg"
                         >
                           <Eye className="w-4 h-4 text-white" />
-                          <span className="text-white text-sm font-semibold font-['Inter']">Pipeline</span>
+                          <span className="text-white text-sm font-semibold font-['Outfit']">Pipeline</span>
                         </button>
                         <button 
                           onClick={() => {
@@ -344,49 +344,49 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
                           className="px-4 py-3 bg-[#10B981] rounded-xl flex items-center gap-2 hover:bg-[#059669] hover:scale-105 transition-all duration-200 shadow-lg"
                         >
                           <TrendingUp className="w-4 h-4 text-white" />
-                          <span className="text-white text-sm font-semibold font-['Inter']">AI Insights</span>
+                          <span className="text-white text-sm font-semibold font-['Outfit']">AI Insights</span>
                         </button>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-6 gap-8 mb-6">
                       <div className="flex flex-col gap-2">
-                        <div className="text-[#6B7280] text-xs font-bold font-['Inter'] uppercase tracking-wide">My Role</div>
-                        <div className="text-[#111827] text-sm font-bold font-['Inter']">{opp.myRole}</div>
+                        <div className="text-[#6B7280] text-xs font-bold font-['Outfit'] uppercase tracking-wide">My Role</div>
+                        <div className="text-[#111827] text-sm font-bold font-['Outfit']">{opp.myRole}</div>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <div className="text-[#6B7280] text-xs font-bold font-['Inter'] uppercase tracking-wide">Team Size</div>
+                        <div className="text-[#6B7280] text-xs font-bold font-['Outfit'] uppercase tracking-wide">Team Size</div>
                         <div className="flex items-center gap-2">
                           <Users className="w-4 h-4 text-[#161950]" />
-                          <span className="text-[#111827] text-sm font-bold font-['Inter']">{teamSizeLabel}</span>
+                          <span className="text-[#111827] text-sm font-bold font-['Outfit']">{teamSizeLabel}</span>
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <div className="text-[#6B7280] text-xs font-bold font-['Inter'] uppercase tracking-wide">Stage</div>
+                        <div className="text-[#6B7280] text-xs font-bold font-['Outfit'] uppercase tracking-wide">Stage</div>
                         <span className={`px-3 py-1.5 rounded-lg text-xs font-bold inline-block ${getStageBadge(opp.stageSlug)} shadow-sm`}>
                           {opp.stageLabel}
                         </span>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <div className="text-[#6B7280] text-xs font-bold font-['Inter'] uppercase tracking-wide">Project Value</div>
-                        <div className="text-[#16A34A] text-lg font-bold font-['Inter']">{opp.projectValue}</div>
+                        <div className="text-[#6B7280] text-xs font-bold font-['Outfit'] uppercase tracking-wide">Project Value</div>
+                        <div className="text-[#16A34A] text-lg font-bold font-['Outfit']">{opp.projectValue}</div>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <div className="text-[#6B7280] text-xs font-bold font-['Inter'] uppercase tracking-wide">Expected RFP Date</div>
+                        <div className="text-[#6B7280] text-xs font-bold font-['Outfit'] uppercase tracking-wide">Expected RFP Date</div>
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-[#161950]" />
-                          <span className="text-[#111827] text-sm font-bold font-['Inter']">{opp.expectedRFPDate}</span>
+                          <span className="text-[#111827] text-sm font-bold font-['Outfit']">{opp.expectedRFPDate}</span>
                         </div>
                       </div>
 
                       <div className="flex flex-col gap-2">
-                        <div className="text-[#6B7280] text-xs font-bold font-['Inter'] uppercase tracking-wide">Deadline</div>
+                        <div className="text-[#6B7280] text-xs font-bold font-['Outfit'] uppercase tracking-wide">Deadline</div>
                         <div className="flex flex-col gap-1">
-                          <span className="text-[#111827] text-sm font-bold font-['Inter']">{opp.deadline}</span>
+                          <span className="text-[#111827] text-sm font-bold font-['Outfit']">{opp.deadline}</span>
                           <div className="flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${opp.deadlineDaysRemaining === null ? 'bg-[#D1D5DB]' : deadlineIndicatorColor} ${opp.deadlineDaysRemaining === null ? '' : 'animate-pulse'}`}></div>
                             <span className={`text-sm font-semibold ${deadlineChipText}`}>
@@ -398,7 +398,7 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
                     </div>
 
                     <div className="flex items-center justify-between pt-6 border-t border-[#E5E7EB]">
-                      <div className="flex items-center gap-3 text-[#6B7280] text-sm font-medium font-['Inter']">
+                      <div className="flex items-center gap-3 text-[#6B7280] text-sm font-medium font-['Outfit']">
                         <Users className="w-4 h-4 text-[#161950]" />
                         <span>Team size recorded: {teamSizeLabel}</span>
                       </div>
