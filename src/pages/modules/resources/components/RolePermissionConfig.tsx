@@ -1,5 +1,6 @@
 import { Shield, Check, X, Edit2, Save, Search, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
 import { toast } from 'sonner';
 import { useRoles } from '@/hooks/useRoles';
@@ -13,7 +14,7 @@ type Permission = {
 
 type RolePermissionConfigProps = {
   employees: Employee[];
-  onUpdatePermissions: (employeeId: string, permissions: string[]) => void;
+  onUpdatePermissions: (employeeId: string, payload: { permissions: string[]; role?: string; department?: string }) => void;
 };
 
 const AVAILABLE_PERMISSIONS: Permission[] = [
@@ -33,8 +34,20 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
   const [editingEmployee, setEditingEmployee] = useState<string | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<Record<string, string[]>>({});
   const [selectedRoles, setSelectedRoles] = useState<Record<string, string>>({});
+  const [selectedDepartments, setSelectedDepartments] = useState<Record<string, string>>({});
   const [employeePermissions, setEmployeePermissions] = useState<Record<string, string[]>>({});
   const [isLoadingPermissions, setIsLoadingPermissions] = useState<Record<string, boolean>>({});
+
+  const {
+    data: departments = [],
+    isLoading: isLoadingDepartments,
+  } = useQuery({
+    queryKey: ['organization', 'departments'],
+    queryFn: async () => {
+      const response = await apiClient.get('/departments');
+      return response.data || [];
+    },
+  });
 
   // Fetch permissions for each employee
   useEffect(() => {
@@ -73,43 +86,40 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
   );
 
   const handleEditClick = (employeeId: string, employee: Employee) => {
+    const currentRoleName = (employee as any).role || '';
+    // Match role by name (since we're now using role names as values)
+    const matchedRoleName =
+      currentRoleName &&
+      allRoles.find(role => role.name.toLowerCase() === currentRoleName.toLowerCase())?.name ||
+      currentRoleName;
+
     setEditingEmployee(employeeId);
-    setSelectedPermissions({
-      ...selectedPermissions,
-      [employeeId]: employeePermissions[employeeId] || ['projects', 'resources']
-    });
     setSelectedRoles({
       ...selectedRoles,
-      [employeeId]: employee.position || 'developer'
+      [employeeId]: matchedRoleName || selectedRoles[employeeId] || allRoles[0]?.name || ''
+    });
+    setSelectedDepartments({
+      ...selectedDepartments,
+      [employeeId]: (employee as any).department || ''
     });
   };
 
   const handleSaveClick = async (employeeId: string, userId: string | null) => {
     try {
-      const permissions = selectedPermissions[employeeId] || [];
-      const role = selectedRoles[employeeId];
+      const roleName = selectedRoles[employeeId] || '';
+      const departmentName = selectedDepartments[employeeId] || '';
+
+      onUpdatePermissions(employeeId, {
+        permissions: [], // Permissions come from roles, not individual assignment
+        role: roleName,
+        department: departmentName,
+      });
       
-      // Update permissions via API if user_id exists
-      if (userId) {
-        await apiClient.patch(`/resources/users/${userId}/permissions`, {
-          permissions: permissions
-        });
-      }
-      
-      // Update role via employee update (if needed - can add endpoint)
-      onUpdatePermissions(employeeId, permissions);
-      
-      // Update local state
-      setEmployeePermissions(prev => ({
-        ...prev,
-        [employeeId]: permissions
-      }));
-      
-      toast.success('Role and permissions updated successfully');
+      toast.success('Role and department updated successfully');
       setEditingEmployee(null);
     } catch (error: any) {
-      console.error('Error saving permissions:', error);
-      toast.error(error.response?.data?.detail || 'Failed to update permissions');
+      console.error('Error saving role and department:', error);
+      toast.error(error.response?.data?.detail || 'Failed to update role and department');
     }
   };
 
@@ -171,14 +181,13 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Designation</th>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Department</th>
                 <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Role</th>
-                <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Permissions</th>
                 <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
+                  <td colSpan={5} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Shield className="w-12 h-12 text-gray-300" />
                       <p className="text-gray-500 font-medium">
@@ -195,11 +204,14 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
               ) : (
                 filteredEmployees.map((employee) => {
                   const isEditing = editingEmployee === employee.id;
-                  const permissions = isEditing 
-                    ? (selectedPermissions[employee.id] || employeePermissions[employee.id] || ['projects', 'resources'])
-                    : (employeePermissions[employee.id] || ['projects', 'resources']);
-                  const currentRole = selectedRoles[employee.id] || (employee as any).role || 'employee';
-                  const isLoadingPerms = isLoadingPermissions[employee.id];
+                  const roleFromEmployee = (employee as any).role || '';
+                  // Use role name as value (matching the dropdown)
+                  const currentRole =
+                    selectedRoles[employee.id] ||
+                    roleFromEmployee ||
+                    '';
+                  const currentDepartment =
+                    selectedDepartments[employee.id] || (employee as any).department || '';
 
                   return (
                     <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
@@ -220,9 +232,33 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
                       
                       {/* Department */}
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-700 font-medium">
-                          {(employee as any).department || 'Not assigned'}
-                        </span>
+                        {isEditing ? (
+                          <select
+                            value={currentDepartment}
+                            onChange={(e) =>
+                              setSelectedDepartments({
+                                ...selectedDepartments,
+                                [employee.id]: e.target.value,
+                              })
+                            }
+                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#161950] focus:border-transparent"
+                          >
+                            <option value="">Select department</option>
+                            {isLoadingDepartments ? (
+                              <option>Loading departments...</option>
+                            ) : (
+                              departments.map((dept: any) => (
+                                <option key={dept.id} value={dept.name}>
+                                  {dept.name}
+                                </option>
+                              ))
+                            )}
+                          </select>
+                        ) : (
+                          <span className="text-sm text-gray-700 font-medium">
+                            {currentDepartment || 'Not assigned'}
+                          </span>
+                        )}
                       </td>
                       
                       {/* Role (System Role: Employee, Admin, Manager, etc.) */}
@@ -236,11 +272,12 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
                             })}
                             className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#161950] focus:border-transparent"
                           >
+                            <option value="">Select role</option>
                             {isLoadingRoles ? (
                               <option>Loading roles...</option>
                             ) : (
                               allRoles.map(role => (
-                                <option key={role.id} value={role.id}>
+                                <option key={role.id} value={role.name}>
                                   {role.name}
                                 </option>
                               ))
@@ -248,54 +285,8 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
                           </select>
                         ) : (
                           <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                            {getRoleName(currentRole)}
+                            {currentRole || getRoleName((employee as any).role) || 'Not assigned'}
                           </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {isLoadingPerms ? (
-                          <div className="flex items-center gap-2 text-gray-500">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-sm">Loading permissions...</span>
-                          </div>
-                        ) : isEditing ? (
-                          <div className="space-y-2">
-                            {AVAILABLE_PERMISSIONS.map((perm) => (
-                              <label key={perm.id} className="flex items-center gap-2 cursor-pointer group">
-                                <input
-                                  type="checkbox"
-                                  checked={permissions.includes(perm.id)}
-                                  onChange={() => togglePermission(employee.id, perm.id)}
-                                  className="w-4 h-4 border-gray-300 rounded focus:ring-2"
-                                  style={{ 
-                                    accentColor: '#161950',
-                                  }}
-                                />
-                                <span className="text-sm text-gray-700 group-hover:text-gray-900 font-medium">
-                                  {perm.name}
-                                </span>
-                              </label>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {permissions.length > 0 ? (
-                              permissions.map((permId) => {
-                                const perm = AVAILABLE_PERMISSIONS.find(p => p.id === permId);
-                                return perm ? (
-                                  <span
-                                    key={permId}
-                                    className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full"
-                                  >
-                                    <Check className="w-3 h-3" />
-                                    {perm.name}
-                                  </span>
-                                ) : null;
-                              })
-                            ) : (
-                              <span className="text-sm text-gray-500 italic">No permissions assigned</span>
-                            )}
-                          </div>
                         )}
                       </td>
                       <td className="px-6 py-4">
@@ -338,24 +329,6 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
         </div>
       </div>
 
-      {/* Info Box */}
-      <div className="p-6 rounded-xl" style={{ backgroundColor: '#f0f0ff', borderColor: '#d0d0ff', borderWidth: '1px' }}>
-        <div className="flex items-start gap-3">
-          <Shield className="w-6 h-6 mt-1" style={{ color: '#161950' }} />
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 mb-2">Role-Based Access Control (RBAC)</h3>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              Control what each employee can access and modify in the system. Changes take effect immediately and are tracked for audit purposes.
-            </p>
-            <div className="mt-3 pt-3 border-t" style={{ borderColor: '#d0d0ff' }}>
-              <p className="text-xs text-gray-600 font-medium">
-                API Endpoints: <code className="px-2 py-1 bg-white rounded" style={{ color: '#161950' }}>GET /api/roles</code> • 
-                <code className="ml-2 px-2 py-1 bg-white rounded" style={{ color: '#161950' }}>PATCH /api/users/:id/permissions</code>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

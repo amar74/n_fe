@@ -37,11 +37,15 @@ import { useToast } from '@/hooks/use-toast';
 import { apiClient } from '@/services/api/client';
 import { authManager } from '@/services/auth';
 import { loadGoogleMaps } from '@/lib/google-maps-loader';
+import { ChangeProfilePictureDialog } from '@/pages/ProfilePage/components/ChangeProfilePictureDialog';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ProfileSettingsPage() {
   const { user, backendUser } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isProfilePictureDialogOpen, setIsProfilePictureDialogOpen] = useState(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -310,24 +314,43 @@ export default function ProfileSettingsPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="flex flex-col items-center">
-                    <div className="relative mb-4">
-                      <div className="w-32 h-32 rounded-2xl bg-[#161950] flex items-center justify-center text-white font-bold text-4xl shadow-lg">
-                        {getInitials()}
-                      </div>
-                      <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border-2 border-gray-100">
-                        <Camera className="h-5 w-5 text-gray-600" />
+                    <div className="relative mb-4 group">
+                      {(backendUser as any)?.profile_picture_url ? (
+                        <div className="w-32 h-32 rounded-2xl overflow-hidden border-4 border-white shadow-lg ring-4 ring-gray-100">
+                          <img
+                            src={(backendUser as any).profile_picture_url}
+                            alt={`${backendUser?.name || 'User'} profile`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-32 h-32 rounded-2xl bg-[#161950] flex items-center justify-center text-white font-bold text-4xl shadow-lg">
+                          {getInitials()}
+                        </div>
+                      )}
+                      <button 
+                        onClick={() => setIsProfilePictureDialogOpen(true)}
+                        className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#161950] hover:text-white transition-all border-2 border-gray-100 group-hover:scale-110"
+                        title="Change profile picture"
+                      >
+                        <Camera className="h-5 w-5 text-gray-600 group-hover:text-white transition-colors" />
                       </button>
                     </div>
                     <h3 className="font-bold text-xl text-gray-900 text-center mb-1 tracking-tight leading-tight">
                       {String(backendUser?.name || (typeof user?.email === 'string' ? user.email.split('@')[0] : '') || 'User')}
                     </h3>
                     <p className="text-base text-gray-600 text-center mb-4 font-medium tracking-tight">{user?.email}</p>
-                    <Button variant="outline" size="sm" className="w-full border-[#161950] text-[#161950] hover:bg-[#161950] hover:text-white">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full border-[#161950] text-[#161950] hover:bg-[#161950] hover:text-white"
+                      onClick={() => setIsProfilePictureDialogOpen(true)}
+                    >
                       <Camera className="h-4 w-4 mr-2" />
                       Change Photo
                     </Button>
                     <p className="text-xs text-gray-500 text-center mt-3">
-                      JPG, PNG or GIF. Max size 2MB.
+                      JPG, PNG or GIF. Max size 5MB.
                     </p>
                   </div>
                 </CardContent>
@@ -771,6 +794,22 @@ export default function ProfileSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Change Profile Picture Dialog */}
+      {backendUser && (
+        <ChangeProfilePictureDialog
+          open={isProfilePictureDialogOpen}
+          onOpenChange={(open) => {
+            setIsProfilePictureDialogOpen(open);
+            // Invalidate queries to refresh user data after upload
+            if (!open) {
+              queryClient.invalidateQueries({ queryKey: ['auth', 'user'] });
+            }
+          }}
+          currentPictureUrl={(backendUser as any)?.profile_picture_url}
+          userName={String(backendUser?.name || (typeof user?.email === 'string' ? user.email.split('@')[0] : '') || 'User')}
+        />
+      )}
     </div>
   );
 }

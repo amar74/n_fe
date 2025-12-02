@@ -325,7 +325,7 @@ function FinancePage() {
       // 2. Procurement Oversight: Purchase orders and vendor invoices (Equipment, Supplies, Rent, Utilities, Professional Services)
       // 3. Budget Categories Analysis: Actual spend vs. budget allocations for variance tracking
       overhead: overheadData?.categories && overheadData.categories.length > 0 
-        ? overheadData.categories.reduce((acc: Record<string, { values: number[], parent_id: number | null, category_id: number | null }>, item: any) => {
+        ? overheadData.categories.reduce((acc: Record<string, { values: number[], parent_id: number | null, category_id: number | null, ytd_spend: number }>, item: any) => {
             // Handle both snake_case and camelCase field names
             const ytdValue = item.ytd_spend ?? item.ytdSpend ?? 0;
             const monthlyAvg = item.monthly_average ?? item.monthlyAverage ?? (ytdValue / 12);
@@ -334,7 +334,8 @@ function FinancePage() {
             const parentId = item.parent_id ?? item.parentId ?? null;
             const categoryId = item.category_id ?? item.categoryId ?? null;
             console.log(`Overhead category: ${item.category}, YTD: ${ytdValue}, Monthly Avg: ${finalMonthlyAvg}, Parent ID: ${parentId}, Category ID: ${categoryId}`);
-            acc[item.category] = { values: Array(12).fill(finalMonthlyAvg), parent_id: parentId, category_id: categoryId };
+            // Store the actual YTD value from API to use directly instead of recalculating
+            acc[item.category] = { values: Array(12).fill(finalMonthlyAvg), parent_id: parentId, category_id: categoryId, ytd_spend: ytdValue };
             return acc;
           }, {})
         : Object.fromEntries(Object.entries(FINANCE_DATA[selectedUnit].overhead).map(([k, v]) => [k, { values: Array.isArray(v) ? v : [], parent_id: null, category_id: null }])),
@@ -596,7 +597,8 @@ function FinancePage() {
       const values = (typeof data === 'object' && data.values) ? data.values : (Array.isArray(data) ? data : []);
       const parentId = (typeof data === 'object' && data.parent_id !== undefined) ? data.parent_id : null;
       const categoryId = (typeof data === 'object' && data.category_id !== undefined) ? data.category_id : null;
-      categoryMap.set(category, { values, parent_id: parentId, category_id: categoryId });
+      const ytdSpend = (typeof data === 'object' && data.ytd_spend !== undefined) ? data.ytd_spend : null;
+      categoryMap.set(category, { values, parent_id: parentId, category_id: categoryId, ytd_spend: ytdSpend } as any);
       if (categoryId) {
         idToNameMap.set(categoryId, category);
       }
@@ -609,8 +611,11 @@ function FinancePage() {
     categoryMap.forEach((data, category) => {
       if (!data.parent_id && !processed.has(category)) {
         const values = Array.isArray(data.values) ? data.values : [];
-        const ytd = values.slice(0, monthsConsidered).reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
-        const avg = ytd / monthsConsidered;
+        // Use ytd_spend from API if available (full annual budget), otherwise calculate from monthly values
+        const ytd = (data as any).ytd_spend !== undefined && (data as any).ytd_spend !== null 
+          ? (data as any).ytd_spend 
+          : values.slice(0, monthsConsidered).reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
+        const avg = values.length > 0 ? values[0] : (ytd / 12); // Use first month's value as average, or calculate from YTD
         categoryEntries.push({ category, ytd, avg, parent_id: null, category_id: data.category_id, level: 0 });
         processed.add(category);
       }
@@ -621,8 +626,11 @@ function FinancePage() {
       categoryMap.forEach((data, category) => {
         if (data.parent_id === parentId && !processed.has(category)) {
           const values = Array.isArray(data.values) ? data.values : [];
-          const ytd = values.slice(0, monthsConsidered).reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
-          const avg = ytd / monthsConsidered;
+          // Use ytd_spend from API if available (full annual budget), otherwise calculate from monthly values
+          const ytd = (data as any).ytd_spend !== undefined && (data as any).ytd_spend !== null 
+            ? (data as any).ytd_spend 
+            : values.slice(0, monthsConsidered).reduce((sum, value) => sum + (typeof value === 'number' ? value : 0), 0);
+          const avg = values.length > 0 ? values[0] : (ytd / 12); // Use first month's value as average, or calculate from YTD
           // Find parent's index to insert after
           const parentIndex = categoryEntries.findIndex(e => e.category_id === parentId);
           const insertIndex = parentIndex >= 0 ? parentIndex + 1 : categoryEntries.length;

@@ -1,4 +1,5 @@
-import { TrendingUp, AlertTriangle, Users, Briefcase, Sparkles, Target, CheckCircle2 } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Users, Briefcase, Sparkles, Target, CheckCircle2, Loader2 } from 'lucide-react';
+import { useEmployeeAnalytics } from '@/hooks/useEmployees';
 
 type SkillGap = {
   skill: string;
@@ -22,8 +23,24 @@ type AISkillsGapWidgetProps = {
 };
 
 export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGapWidgetProps) {
-  // Calculate real skill gaps from actual employee data
-  const calculateSkillGaps = (): SkillGap[] => {
+  // Fetch AI-powered skills gap analysis from backend
+  const { skillsGap, isLoadingSkillsGap } = useEmployeeAnalytics();
+
+  // Use backend AI analysis if available, otherwise fallback to client-side calculation
+  const getSkillGaps = (): SkillGap[] => {
+    // If backend data is available, use it (real AI analysis)
+    if (skillsGap?.skill_gaps && skillsGap.skill_gaps.length > 0) {
+      return skillsGap.skill_gaps.map((gap: any) => ({
+        skill: gap.skill || 'Unknown',
+        required: gap.required || 0,
+        available: gap.available || 0,
+        gap: gap.gap || 0,
+        priority: (gap.priority || 'low') as 'high' | 'medium' | 'low',
+      }));
+    }
+
+    // Fallback: Calculate real skill gaps from actual employee data (client-side)
+    const calculateSkillGaps = (): SkillGap[] => {
     console.log('🔍 AI Skills Gap - Analyzing', employees.length, 'employees');
     
     if (!employees || employees.length === 0) {
@@ -91,12 +108,41 @@ export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGa
     console.log('✅ Skills Gap Analysis Complete:', gaps.length, 'skills analyzed');
     console.log('📊 Summary: Total Gap =', gaps.reduce((sum, g) => sum + g.gap, 0), '| Critical Gaps =', gaps.filter(g => g.priority === 'high').length);
     
-    return gaps;
+      return gaps;
+    };
+
+    return calculateSkillGaps();
   };
 
-  const skillGaps = calculateSkillGaps();
+  const skillGaps = getSkillGaps();
   const totalGap = skillGaps.reduce((sum, gap) => sum + gap.gap, 0);
   const criticalGaps = skillGaps.filter(g => g.priority === 'high');
+
+  // Show loading state
+  if (isLoadingSkillsGap) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-white rounded-xl shadow-sm">
+              <Sparkles className="w-6 h-6" style={{ color: '#161950' }} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">AI Skills Gap Analysis</h3>
+              <p className="text-sm text-gray-600 mt-1">Team vs. Project Demand</p>
+            </div>
+          </div>
+        </div>
+        <div className="p-12 text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Analyzing Skills Gap...</h3>
+          <p className="text-gray-600">
+            AI is analyzing your team's skills and project requirements
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (skillGaps.length === 0 || skillGaps[0].skill === 'No skills data') {
     return (
@@ -135,7 +181,15 @@ export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGa
             </div>
             <div>
               <h3 className="text-xl font-bold text-gray-900">AI Skills Gap Analysis</h3>
-              <p className="text-sm text-gray-600 mt-1">Based on Your Team's Skills</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {skillsGap?.skill_gaps ? (
+                  <>
+                    <span className="font-semibold text-purple-600">AI-Powered</span> - Skills suggested based on active opportunities/projects
+                  </>
+                ) : (
+                  'Analyzing opportunities to suggest required skills...'
+                )}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm">
@@ -185,7 +239,14 @@ export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGa
 
       {/* Skills Breakdown */}
       <div className="p-6 space-y-4">
-        <h4 className="text-sm font-bold text-gray-900 mb-4">Skills Breakdown</h4>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-sm font-bold text-gray-900">AI-Suggested Skills (Based on Active Projects)</h4>
+          {skillsGap?.skill_gaps && (
+            <span className="text-xs text-purple-600 font-semibold bg-purple-50 px-2 py-1 rounded">
+              {skillsGap.skill_gaps.length} skills identified
+            </span>
+          )}
+        </div>
         {skillGaps.map((gap, idx) => (
           <div key={idx} className="space-y-2">
             <div className="flex items-center justify-between">
@@ -232,9 +293,9 @@ export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGa
         <div className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 border-t border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-bold text-gray-900">Need to hire more talent?</p>
+              <p className="text-sm font-bold text-gray-900">AI Hiring Recommendation</p>
               <p className="text-xs text-gray-600 mt-1">
-                AI recommends adding {totalGap} more {totalGap === 1 ? 'person' : 'people'} to strengthen your team
+                Based on your active opportunities/projects, AI recommends adding {totalGap} more {totalGap === 1 ? 'person' : 'people'} with the skills above to fulfill project requirements
               </p>
             </div>
             <a href="/module/resources/onboarding">
@@ -245,6 +306,20 @@ export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGa
                 </div>
               </button>
             </a>
+          </div>
+        </div>
+      )}
+      
+      {skillGaps.length > 0 && totalGap === 0 && (
+        <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-t border-gray-200">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-600" />
+            <div>
+              <p className="text-sm font-bold text-gray-900">Team Capacity Sufficient</p>
+              <p className="text-xs text-gray-600 mt-1">
+                Based on current opportunities, your team has the required skills. No immediate hiring needed.
+              </p>
+            </div>
           </div>
         </div>
       )}

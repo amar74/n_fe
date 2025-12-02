@@ -19,8 +19,31 @@ export function ViewDocumentModal({ isOpen, document, onClose }: ViewDocumentMod
     });
   };
 
-  const handleDownload = () => {
-    // TODO: Implement document download when backend is ready
+  const handleDownload = async () => {
+    if (!document) return;
+    
+    try {
+      const { accountDocumentsApi } = await import('@/services/api/accountDocumentsApi');
+      const response = await accountDocumentsApi.downloadDocument(document.account_id, document.id);
+      
+      // Create a blob from the response
+      const blob = new Blob([response.data], { type: document.mime_type || 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = document.file_name || document.name;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error('Error downloading document:', error);
+      if (error.response?.status === 404) {
+        alert('Download endpoint not yet available. Please contact support.');
+      } else {
+        alert('Failed to download document. Please try again.');
+      }
+    }
   };
 
   return (

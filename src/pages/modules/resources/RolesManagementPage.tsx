@@ -66,19 +66,32 @@ function RolesManagementPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
 
-  const handleCreateRole = (roleData: Omit<Role, 'id'>) => {
-    createRole(roleData);
-    setIsCreateModalOpen(false);
+  const handleCreateRole = async (roleData: Omit<Role, 'id' | 'isSystem'>) => {
+    try {
+      await createRole(roleData);
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      // errors handled inside hook via toast
+    }
   };
 
-  const handleUpdateRole = (roleId: string, roleData: Partial<Role>) => {
-    updateRole(roleId, roleData);
-    setEditingRole(null);
+  const handleUpdateRole = async (roleId: string, roleData: Omit<Role, 'id' | 'isSystem'>) => {
+    try {
+      await updateRole(roleId, roleData);
+      setEditingRole(null);
+    } catch (error) {
+      // handled in hook
+    }
   };
 
-  const handleDeleteRole = (roleId: string) => {
-    if (window.confirm('Are you sure you want to delete this role? Employees with this role will need to be reassigned.')) {
-      deleteRole(roleId);
+  const handleDeleteRole = async (roleId: string) => {
+    if (!window.confirm('Are you sure you want to delete this role? Employees with this role will need to be reassigned.')) {
+      return;
+    }
+    try {
+      await deleteRole(roleId);
+    } catch (error) {
+      // handled in hook
     }
   };
 

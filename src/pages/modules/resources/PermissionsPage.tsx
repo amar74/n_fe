@@ -13,17 +13,23 @@ function PermissionsPage() {
     emp.status === 'active' && emp.user_id != null
   );
 
-  const handleUpdatePermissions = async (employeeId: string, permissions: string[]) => {
+  const handleUpdatePermissions = async (
+    employeeId: string,
+    payload: { permissions: string[]; role?: string; department?: string }
+  ) => {
+    const { permissions, role, department } = payload;
     console.log(`Updating permissions for ${employeeId}:`, permissions);
     try {
-      await updateEmployee({ 
-        id: employeeId, 
-        data: { 
+      await updateEmployee({
+        id: employeeId,
+        data: {
           // Store permissions in review_notes for now (can be moved to dedicated field later)
-          review_notes: `Permissions: ${permissions.join(', ')}`
-        } 
+          review_notes: `Permissions: ${permissions.join(', ')}`,
+          ...(role ? { role } : {}),
+          ...(department ? { department } : {}),
+        },
       });
-      toast.success('Permissions updated successfully');
+      toast.success('Role, department, and permissions updated successfully');
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Failed to update permissions');
     }

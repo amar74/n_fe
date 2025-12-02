@@ -3,10 +3,17 @@ import { TabNavigation } from './components/TabNavigation';
 import { AccountStatsCards } from './components/AccountStatsCards';
 import { AccountInformationForm } from './components/AccountInformationForm';
 import { RecentActivity } from './components/RecentActivity';
+import { AIHealthScoreWidget } from './components/AIHealthScoreWidget';
+import { AIInsightsPanel } from './components/AIInsightsPanel';
+import { AITieringWidget } from './components/AITieringWidget';
+import { DataEnrichmentPanel } from './components/DataEnrichmentPanel';
+import { AuditTrailPanel } from './components/AuditTrailPanel';
+import ChatbotSelector from '@/components/ChatbotSelector';
 import { NotesTab } from './notes';
 import { ContactsTab } from './contacts';
 import { OpportunitiesTab } from './opportunities';
 import { TeamTab } from './team';
+import { FinanceTab } from './finance';
 import { useAccountDetailsPage } from './useAccountDetailsPage';
 
 function AccountDetailsPage() {
@@ -72,6 +79,9 @@ function AccountDetailsPage() {
 
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] overflow-x-hidden">
+      {/* Universal Chatbot for Account Module */}
+      <ChatbotSelector />
+      
       <main className="py-6 px-6 lg:px-8">
         <div className="w-full">
           
@@ -98,17 +108,30 @@ function AccountDetailsPage() {
             
             <div className={activeTab === 'overview' ? 'flex-1 min-w-0' : 'w-full'}>
               {activeTab === 'overview' && (
-                <AccountInformationForm
-                  formData={formData}
-                  accountId={account.custom_id || account.account_id}
-                  isEditing={isEditing}
-                  isUpdating={isUpdating}
-                  onFormChange={handleFormChange}
-                  onSave={handleSaveChanges}
-                  onCancel={handleEditToggle}
-                  errors={updateErrors}
-                  account={account}
-                />
+                <>
+                  <AccountInformationForm
+                    formData={formData}
+                    accountId={account.custom_id || account.account_id}
+                    isEditing={isEditing}
+                    isUpdating={isUpdating}
+                    onFormChange={handleFormChange}
+                    onSave={handleSaveChanges}
+                    onCancel={handleEditToggle}
+                    errors={updateErrors}
+                    account={account}
+                  />
+                  
+                  <div className="mt-7">
+                    <AIInsightsPanel 
+                      accountId={account.account_id} 
+                      accountName={account.client_name}
+                    />
+                  </div>
+                  
+                  <div className="mt-7">
+                    <AuditTrailPanel accountId={account.account_id} />
+                  </div>
+                </>
               )}
               
               {activeTab === 'notes' && (
@@ -127,8 +150,12 @@ function AccountDetailsPage() {
                 <OpportunitiesTab accountId={account.account_id} />
               )}
               
+              {activeTab === 'financial' && (
+                <FinanceTab accountId={account.account_id} accountName={account.client_name} />
+              )}
               
-              {!['overview', 'notes', 'contacts', 'team', 'opportunities'].includes(activeTab) && (
+              
+              {!['overview', 'notes', 'contacts', 'team', 'opportunities', 'financial'].includes(activeTab) && (
                 <div className="bg-neutral-50 border border-[#f0f0f0] rounded-[28px] p-6 w-full">
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <h3 className="font-outfit font-semibold text-[#0f0901] text-[18px] mb-2">
@@ -146,10 +173,25 @@ function AccountDetailsPage() {
             {activeTab === 'overview' && (
               <div className="flex flex-col gap-7 flex-shrink-0 w-full max-w-[501px]">
                 
+                <AIHealthScoreWidget 
+                  accountId={account.account_id}
+                  initialScore={account.ai_health_score || undefined}
+                  initialRiskLevel={account.risk_level || undefined}
+                />
+                
                 <AccountStatsCards stats={statsCards} />
                 
+                <AITieringWidget 
+                  accountId={account.account_id}
+                  currentTier={account.client_type}
+                />
                 
                 <RecentActivity activities={recentActivity} isLoading={isLoadingActivities} />
+                
+                <DataEnrichmentPanel 
+                  accountId={account.account_id}
+                  accountName={account.client_name}
+                />
               </div>
             )}
           </div>

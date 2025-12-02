@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  ChevronUp,
   ClipboardList,
   FileDown,
   History,
@@ -21,8 +22,11 @@ import {
   Edit,
   Check,
   X,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
-import { useFinancePlanningAnnual, useFinancePlanningScenarios, useSaveAnnualBudget, useUpdateAnnualBudget, useUpdatePlanningConfig, useUpdateScenario, useGenerateForecast, useForecasts, useExportForecast } from '@/hooks/useFinance';
+import { useFinancePlanningAnnual, useFinancePlanningScenarios, useSaveAnnualBudget, useUpdateAnnualBudget, useUpdatePlanningConfig, useUpdateScenario, useGenerateForecast, useForecasts, useExportForecast, useBudgetApprovals, useSubmitBudgetForApproval, useProcessApprovalAction, useSaveVarianceExplanations, financeKeys } from '@/hooks/useFinance';
+import { useQueryClient } from '@tanstack/react-query';
 import { financeApiClient } from '@/hooks/useFinance';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -30,10 +34,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { Textarea } from '@/components/ui/textarea';
 import { AnnualBudgetTab, RevenueExpenseTab, BuAllocationTab, VarianceTab } from './components';
-import { formatCurrency, formatPercent, formatPercentSigned } from './components/utils';
+import { formatCurrency, formatPercent, formatPercentSigned, formatCurrencySigned } from './components/utils';
 import { BUSINESS_UNITS, SCENARIOS, SCENARIO_PROJECTIONS, SCENARIO_KPIS, DEFAULT_APPROVAL_STAGES, APPROVAL_CONDITIONS, FORECASTING_HISTORY, SCENARIO_CALLOUTS, DASHBOARD_TIMELINE, DASHBOARD_TASKS, DASHBOARD_AI_PLAYBOOK, VARIANCE_THRESHOLDS, REPORTING_SCHEDULE } from './components/constants';
 import type { TabKey, ScenarioKey, ApprovalStatus, ApprovalAction, ApprovalStage, ScenarioConfig } from './components/types';
 import { useExpenseCategories } from '@/hooks/useExpenseCategories';
+import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip } from 'recharts';
 
 type CategoryNode = {
   id?: number;
@@ -53,12 +58,32 @@ type LineItem = {
 const organizeCategoriesHierarchically = (
   categories: CategoryNode[] = [],
   existingLines: Array<{ label: string; target?: number; variance?: number }> = [],
+  onlyShowWithData: boolean = false,
 ): LineItem[] => {
   const organized: LineItem[] = [];
+  
+  // Create a case-insensitive lookup map for existing lines
+  const linesMap = new Map<string, { target: number; variance: number }>();
+  existingLines.forEach((line) => {
+    const key = line.label.toLowerCase().trim();
+    linesMap.set(key, {
+      target: line.target ?? 0,
+      variance: line.variance ?? 0,
+    });
+  });
+
   const topLevel = categories.filter((cat) => !cat.parent_id);
 
   const addCategoryAndSubs = (category: CategoryNode, level = 0) => {
-    const existingLine = existingLines.find((line) => line.label === category.name);
+    // Match by case-insensitive comparison to handle any case differences
+    const categoryKey = category.name.toLowerCase().trim();
+    const existingLine = linesMap.get(categoryKey);
+    
+    // If onlyShowWithData is true, skip categories with no data
+    if (onlyShowWithData && !existingLine) {
+      return;
+    }
+    
     organized.push({
       label: category.name,
       target: existingLine?.target ?? 0,
@@ -98,6 +123,7 @@ function FinancePlanningPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('annual');
   const [activeScenario, setActiveScenario] = useState<ScenarioKey>('balanced');
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   // Mutations for saving data
   const saveAnnualBudgetMutation = useSaveAnnualBudget();
@@ -110,7 +136,11 @@ function FinancePlanningPage() {
   const [editableExpenseLines, setEditableExpenseLines] = useState<Array<{ label: string; target: number; variance: number }>>([]);
   
   // Budget parameters state
-  const [budgetYear, setBudgetYear] = useState<string>('2026');
+  // Use most recent budget year by default (empty string = most recent)
+  // This will be set to actual year once data loads
+  const [budgetYear, setBudgetYear] = useState<string>('recent');
+  const [resolvedBudgetYear, setResolvedBudgetYear] = useState<string>('');
+  const [overrideBudgetId, setOverrideBudgetId] = useState<number | undefined>(undefined);
   const [targetGrowthRate, setTargetGrowthRate] = useState<number>(15);
   const [totalRevenueTarget, setTotalRevenueTarget] = useState<number>(5_000_000);
   const [totalExpenseBudget, setTotalExpenseBudget] = useState<number>(4_000_000);
@@ -118,6 +148,10 @@ function FinancePlanningPage() {
   
   // Edit mode state for Annual Budget tab
   const [isRevenueEditable, setIsRevenueEditable] = useState<boolean>(false);
+  
+  // Collapsible state for breakdown tables (start collapsed to show only 2 rows)
+  const [isRevenueBreakdownExpanded, setIsRevenueBreakdownExpanded] = useState<boolean>(false);
+  const [isExpenseBreakdownExpanded, setIsExpenseBreakdownExpanded] = useState<boolean>(false);
   const [isExpenseEditable, setIsExpenseEditable] = useState<boolean>(false);
   
   // Edit mode state for Revenue/Expense tab
@@ -155,7 +189,9 @@ function FinancePlanningPage() {
   const [isSubmittingApproval, setIsSubmittingApproval] = useState<boolean>(false);
 
   // Fetch data from APIs - fetch data for the selected budget year
-  const { data: annualData, isLoading: isLoadingAnnual, error: annualError, refetch: refetchAnnual } = useFinancePlanningAnnual(budgetYear);
+  // Convert 'recent' to undefined for API call (undefined = most recent)
+  const apiBudgetYear = budgetYear === 'recent' ? undefined : budgetYear;
+  const { data: annualData, isLoading: isLoadingAnnual, error: annualError, refetch: refetchAnnual } = useFinancePlanningAnnual(apiBudgetYear);
   const { data: scenariosData, isLoading: isLoadingScenarios, error: scenariosError } = useFinancePlanningScenarios();
   const { data: expenseCategories } = useExpenseCategories({ include_inactive: false, include_subcategories: true, category_type: 'expense' });
   const { data: revenueCategories } = useExpenseCategories({ include_inactive: false, include_subcategories: true, category_type: 'revenue' });
@@ -163,7 +199,7 @@ function FinancePlanningPage() {
   // Refetch data when budget year changes
   useEffect(() => {
     refetchAnnual();
-  }, [budgetYear, refetchAnnual]);
+  }, [apiBudgetYear, refetchAnnual]);
   
   // Initialize planning config from API data
   useEffect(() => {
@@ -184,8 +220,25 @@ function FinancePlanningPage() {
     }
   }, [scenariosData]);
   
+  // Track resolved budget metadata from API
+  useEffect(() => {
+    if (annualData?.budgetYear) {
+      setResolvedBudgetYear(annualData.budgetYear);
+      if (budgetYear !== 'recent' && budgetYear !== annualData.budgetYear) {
+        setBudgetYear(annualData.budgetYear);
+      }
+    }
+    if (annualData?.budgetId) {
+      setOverrideBudgetId(annualData.budgetId);
+    }
+  }, [annualData, budgetYear]);
+  
   // Initialize editable state when API data loads - use all dynamic categories from database
   useEffect(() => {
+    console.log('Finance Planning - annualData:', annualData);
+    console.log('Finance Planning - expense_lines:', annualData?.expense_lines);
+    console.log('Finance Planning - budgetYear:', apiBudgetYear);
+    
     // Use revenue categories for revenue lines - include all categories from database
     if (revenueCategories && revenueCategories.length > 0) {
       const categoryLines = organizeCategoriesHierarchically(revenueCategories, annualData?.revenue_lines);
@@ -194,11 +247,27 @@ function FinancePlanningPage() {
       setEditableRevenueLines([]);
     }
     
-    // Use expense categories for expense lines - include all categories from database
-    if (expenseCategories && expenseCategories.length > 0) {
-      const categoryLines = organizeCategoriesHierarchically(expenseCategories, annualData?.expense_lines);
-      setEditableExpenseLines(categoryLines);
-    } else if (expenseCategories && expenseCategories.length === 0) {
+    // Use expense categories for expense lines - only show categories that have data from Procurement
+    if (annualData?.expense_lines && annualData.expense_lines.length > 0) {
+      // If we have expense lines, show them directly (these are from Procurement)
+      // Match them with categories if available, otherwise show as-is
+      if (expenseCategories && expenseCategories.length > 0) {
+        // Only show categories that were added from Procurement (have expense lines)
+        const categoryLines = organizeCategoriesHierarchically(expenseCategories, annualData.expense_lines, true);
+        setEditableExpenseLines(categoryLines);
+      } else {
+        // No categories available, show expense lines directly
+        const directLines = annualData.expense_lines.map(line => ({
+          label: line.label,
+          target: line.target || 0,
+          variance: line.variance || 0,
+          level: 0,
+          parent_id: null,
+        }));
+        setEditableExpenseLines(directLines);
+      }
+    } else {
+      // No expense lines, show empty
       setEditableExpenseLines([]);
     }
     
@@ -209,7 +278,12 @@ function FinancePlanningPage() {
       if (revenueMetric?.value) setTotalRevenueTarget(revenueMetric.value);
       if (expenseMetric?.value) setTotalExpenseBudget(expenseMetric.value);
     }
-  }, [annualData, revenueCategories, expenseCategories]);
+    
+    // Store the actual budget year when data loads
+    // If budgetYear is 'recent' and we have data, we need to track the actual year
+    // Since the API doesn't return budget_year in the response, we'll use the apiBudgetYear
+    // or default to current year when saving
+  }, [annualData, revenueCategories, expenseCategories, budgetYear]);
   
   // Initialize scenarios state from API data
   useEffect(() => {
@@ -220,98 +294,165 @@ function FinancePlanningPage() {
     }
   }, [scenariosData]);
   
-  // Initialize approval stages with permission checks
+  // Fetch approval stages from backend - check both camelCase and snake_case
+  const effectiveBudgetId = overrideBudgetId ?? annualData?.budgetId ?? annualData?.budget_id;
+  const { data: approvalsData, refetch: refetchApprovals } = useBudgetApprovals(effectiveBudgetId);
+  const submitBudgetMutation = useSubmitBudgetForApproval();
+  const saveVarianceExplanationsMutation = useSaveVarianceExplanations();
+  const processApprovalMutation = useProcessApprovalAction();
+
+  // Initialize approval stages from backend or default
   useEffect(() => {
-    const stages: ApprovalStage[] = DEFAULT_APPROVAL_STAGES.map((stage) => {
-      const requiredRoles = Array.isArray(stage.requiredRole) 
-        ? stage.requiredRole 
-        : [stage.requiredRole];
-      
-      const canApprove = requiredRoles.some(role => {
-        // Check if user role matches or is admin
-        return currentUserRole === role || currentUserRole === 'admin';
+    // Always show approval stages if budget exists
+    if (effectiveBudgetId) {
+      if (approvalsData?.stages && approvalsData.stages.length > 0) {
+        // Use backend data
+        const stages: ApprovalStage[] = approvalsData.stages.map((stage: any) => {
+        // Handle both string and array formats for required roles
+        const requiredRoles = stage.required_role 
+          ? (typeof stage.required_role === 'string'
+              ? stage.required_role.split(',').map((r: string) => r.trim())
+              : stage.required_role)
+          : [];
+        
+        const canApprove = requiredRoles.some((role: string) => {
+          const normalizedRole = role.toLowerCase();
+          const normalizedUserRole = currentUserRole.toLowerCase();
+          
+          // Super admins can approve everything
+          if (normalizedUserRole === 'admin' || normalizedUserRole === 'vendor' || normalizedUserRole === 'owner') {
+            return true;
+          }
+          
+          // Check exact match
+          if (normalizedUserRole === normalizedRole) {
+            return true;
+          }
+          
+          // Handle role aliases
+          if (normalizedRole === 'manager' && (normalizedUserRole === 'department_head' || normalizedUserRole === 'team_lead')) {
+            return true;
+          }
+          
+          if (normalizedRole === 'finance_manager' && normalizedUserRole === 'finance_analyst') {
+            return true;
+          }
+          
+          return false;
+        });
+        
+        return {
+          id: stage.stage_id,
+          label: stage.stage_name,
+          description: stage.stage_name,
+          requiredRole: requiredRoles,
+          sequence: stage.sequence,
+          status: stage.status as ApprovalStatus,
+          canApprove,
+          approverName: stage.approver_name,
+          approverEmail: undefined,
+          approvedAt: stage.decision_at,
+          comments: stage.comments,
+        };
       });
       
-      // Determine initial status
-      let status: ApprovalStatus = 'not_started';
-      if (stage.sequence === 0) {
-        status = 'approved'; // Draft is always approved
-      } else if (stage.sequence === 1) {
-        // First review stage is pending (draft is approved)
-        status = 'pending';
+        setApprovalStages(stages);
+      } else {
+        // Budget exists but no approvals yet - initialize with defaults
+      const stages: ApprovalStage[] = DEFAULT_APPROVAL_STAGES.map((stage, index) => {
+        const stageRequiredRole = stage.requiredRole as string | string[] | undefined;
+        const requiredRolesArray = Array.isArray(stageRequiredRole)
+          ? stageRequiredRole
+          : (stageRequiredRole || '')
+              .split(',')
+              .map((r) => r.trim())
+              .filter(Boolean);
+        
+        const canApprove = requiredRolesArray.some((role: string) => {
+          const normalizedRole = role.toLowerCase();
+          const normalizedUserRole = currentUserRole.toLowerCase();
+          
+          // Super admins can approve everything
+          if (normalizedUserRole === 'admin' || normalizedUserRole === 'vendor' || normalizedUserRole === 'owner') {
+            return true;
+          }
+          
+          // Check exact match
+          if (normalizedUserRole === normalizedRole) {
+            return true;
+          }
+          
+          // Handle role aliases
+          if (normalizedRole === 'manager' && (normalizedUserRole === 'department_head' || normalizedUserRole === 'team_lead')) {
+            return true;
+          }
+          
+          if (normalizedRole === 'finance_manager' && normalizedUserRole === 'finance_analyst') {
+            return true;
+          }
+          
+          return false;
+        });
+        
+        // If budget is submitted, first stage should be pending
+        // Otherwise all stages are not_started
+        const isSubmitted = approvalsData?.overall_status === 'pending' || approvalsData?.overall_status === 'approved';
+        const stageStatus = isSubmitted && index === 0 ? 'pending' as ApprovalStatus : 'not_started' as ApprovalStatus;
+        
+        // Allow approval from draft/not_started if user has permission (for manager, admin, owner)
+        // This allows direct approval without requiring submission first
+        const canApproveFromDraft = canApprove && (approvalsData?.overall_status === 'draft' || !approvalsData?.overall_status);
+        const canApproveFromPending = canApprove && stageStatus === 'pending';
+        
+        return {
+          ...stage,
+          status: stageStatus,
+          canApprove: canApproveFromDraft || canApproveFromPending, // Can approve from draft or pending
+        };
+      });
+      
+        setApprovalStages(stages);
       }
-      
-      return {
-        ...stage,
-        status,
-        canApprove,
-      };
-    });
-    
-    setApprovalStages(stages);
-  }, [currentUserRole]);
+    } else {
+      // No budget yet - clear stages
+      setApprovalStages([]);
+    }
+  }, [approvalsData, effectiveBudgetId, currentUserRole]);
   
-  // Update stage status based on previous approvals (runs after stages are set)
-  useEffect(() => {
-    if (approvalStages.length === 0) return;
-    
-    setApprovalStages(prev => {
-      const updated = prev.map((stage, index) => {
-        if (stage.sequence === 0) {
-          return stage; // Draft is always approved
-        }
-        
-        // Check if all previous stages are approved
-        const previousStages = prev.slice(0, index);
-        const allPreviousApproved = previousStages.every(s => s.status === 'approved');
-        
-        // If previous stages are approved and this stage is not_started, make it pending
-        if (allPreviousApproved && stage.status === 'not_started') {
-          return { ...stage, status: 'pending' as ApprovalStatus };
-        }
-        
-        // If previous stages are not all approved and this stage is pending, make it not_started
-        if (!allPreviousApproved && (stage.status === 'pending' || stage.status === 'requested_changes')) {
-          return { ...stage, status: 'not_started' as ApprovalStatus };
-        }
-        
-        return stage;
-      });
-      
-      // Only update if something actually changed to prevent infinite loops
-      const hasChanges = updated.some((stage, index) => stage.status !== prev[index].status);
-      return hasChanges ? updated : prev;
-    });
-  }, [approvalStages.length]); // Only re-run when stages are initialized
+  // Note: Approval stages are now managed by backend, so we don't need local state updates
   
   // Use editable state - always from dynamic categories (no hardcoded fallback)
-  const revenueLines: Array<{ label: string; target: number; variance: number }> = editableRevenueLines.length > 0 
+  const revenueLines: LineItem[] = editableRevenueLines.length > 0 
     ? editableRevenueLines 
     : (annualData?.revenue_lines?.map(l => ({
         label: l.label,
         target: l.target,
         variance: l.variance,
+        level: (l as any).level ?? 0,
       })) || []);
   
-  const expenseLines: Array<{ label: string; target: number; variance: number }> = editableExpenseLines.length > 0
+  const expenseLines: LineItem[] = editableExpenseLines.length > 0
     ? editableExpenseLines
     : (annualData?.expense_lines?.map(l => ({
         label: l.label,
         target: l.target,
         variance: l.variance,
+        level: (l as any).level ?? 0,
       })) || []);
   
   // Calculate totals from Revenue/Expense tab
   const revenueTotals = useMemo(() => {
     const totalTarget = revenueLines.reduce((sum, line) => sum + (line.target || 0), 0);
     const totalVariance = revenueLines.reduce((sum, line) => sum + (line.variance || 0), 0);
-    return { totalTarget, totalVariance };
+    const totalActual = revenueLines.reduce((sum, line) => sum + ((line as any).actual || (line.target + (line.variance || 0))), 0);
+    return { totalTarget, totalVariance, totalActual };
   }, [revenueLines]);
 
   const expenseTotals = useMemo(() => {
     const totalTarget = expenseLines.reduce((sum, line) => sum + (line.target || 0), 0);
     const totalVariance = expenseLines.reduce((sum, line) => sum + (line.variance || 0), 0);
-    return { totalTarget, totalVariance };
+    const totalActual = expenseLines.reduce((sum, line) => sum + ((line as any).actual || (line.target + (line.variance || 0))), 0);
+    return { totalTarget, totalVariance, totalActual };
   }, [expenseLines]);
   
   // Sync totals from Revenue/Expense tab to Annual Budget tab (only when not in edit mode)
@@ -366,11 +507,16 @@ function FinancePlanningPage() {
     return [...BUSINESS_UNITS] as Array<{ name: string; revenue: number; expense: number; profit: number; headcount: number; margin: string | number }>;
   }, [annualData]);
   
+  const budgetYearForPersistence =
+    budgetYear === 'recent'
+      ? resolvedBudgetYear || new Date().getFullYear().toString()
+      : budgetYear || new Date().getFullYear().toString();
+  
   // Save budget handler
   const handleSaveBudget = async () => {
     try {
-      await saveAnnualBudgetMutation.mutateAsync({
-        budget_year: budgetYear,
+      const response = await saveAnnualBudgetMutation.mutateAsync({
+        budget_year: budgetYearForPersistence,
         target_growth_rate: targetGrowthRate,
         total_revenue_target: totalRevenueTarget,
         total_expense_budget: totalExpenseBudget,
@@ -386,9 +532,36 @@ function FinancePlanningPage() {
         })),
       });
       
+      // Check response first for budgetId (both camelCase and snake_case)
+      const responseBudgetId = response?.budgetId || response?.budget_id;
+      if (responseBudgetId) {
+        setOverrideBudgetId(responseBudgetId);
+      }
+      const responseBudgetYear = response?.budgetYear || response?.budget_year;
+      if (responseBudgetYear) {
+        setResolvedBudgetYear(responseBudgetYear);
+      }
+      
+      // Also refetch to ensure we have latest data
+      const refreshed = await refetchAnnual();
+      const refreshedData = refreshed.data;
+      const refreshedBudgetId = refreshedData?.budgetId || refreshedData?.budget_id;
+      if (refreshedBudgetId) {
+        setOverrideBudgetId(refreshedBudgetId);
+      }
+      const refreshedBudgetYear = refreshedData?.budgetYear || refreshedData?.budget_year;
+      if (refreshedBudgetYear) {
+        setResolvedBudgetYear(refreshedBudgetYear);
+      }
+      
+      // Refetch approvals to get status
+      if (refreshedData?.budgetId) {
+        await refetchApprovals();
+      }
+      
       toast({
         title: "Budget Saved",
-        description: `Budget for ${budgetYear} has been saved successfully. Revenue: ${formatCurrency(totalRevenueTarget)}, Expense: ${formatCurrency(totalExpenseBudget)}, Profit: ${formatCurrency(targetProfit)}.`,
+        description: `Budget for ${budgetYearForPersistence} has been saved successfully. Revenue: ${formatCurrency(totalRevenueTarget)}, Expense: ${formatCurrency(totalExpenseBudget)}, Profit: ${formatCurrency(targetProfit)}.`,
       });
     } catch (error: any) {
       toast({
@@ -406,8 +579,9 @@ function FinancePlanningPage() {
       const totalRevenue = revenueLines.reduce((sum, line) => sum + (line.target || 0), 0);
       const totalExpense = expenseLines.reduce((sum, line) => sum + (line.target || 0), 0);
       
+      // Determine the actual budget year to use
       console.log('Saving revenue/expense data:', {
-        budget_year: budgetYear,
+        budget_year: budgetYearForPersistence,
         revenue_lines: revenueLines,
         expense_lines: expenseLines,
         totalRevenue,
@@ -416,7 +590,7 @@ function FinancePlanningPage() {
       
       // Use POST to create/update the full budget, not just PATCH
       await saveAnnualBudgetMutation.mutateAsync({
-        budget_year: budgetYear,
+        budget_year: budgetYearForPersistence,
         target_growth_rate: targetGrowthRate,
         total_revenue_target: totalRevenue,
         total_expense_budget: totalExpense,
@@ -431,6 +605,18 @@ function FinancePlanningPage() {
           margin_percent: typeof u.margin === 'string' ? parseFloat(u.margin.replace('%', '')) : (u.margin || 0),
         })),
       });
+      
+      // Refetch annual data to get the budgetId (check both camelCase and snake_case)
+      const refreshed = await refetchAnnual();
+      const refreshedData = refreshed.data;
+      const refreshedBudgetId = refreshedData?.budgetId || refreshedData?.budget_id;
+      if (refreshedBudgetId) {
+        setOverrideBudgetId(refreshedBudgetId);
+      }
+      const refreshedBudgetYear = refreshedData?.budgetYear || refreshedData?.budget_year;
+      if (refreshedBudgetYear) {
+        setResolvedBudgetYear(refreshedBudgetYear);
+      }
       
       // Update local state to reflect saved changes
       setEditableRevenueLines(revenueLines);
@@ -776,8 +962,21 @@ function FinancePlanningPage() {
   
   // Approval handlers
   const handleApprovalAction = async (stageId: string, action: ApprovalAction) => {
+    const budgetIdToUse = effectiveBudgetId || overrideBudgetId || annualData?.budgetId || annualData?.budget_id;
+    if (!budgetIdToUse) {
+      toast({
+        title: "Error",
+        description: "Budget ID not found. Please save the budget first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const stage = approvalStages.find(s => s.id === stageId);
-    if (!stage) return;
+    if (!stage) {
+      console.error('Stage not found in approvalStages:', stageId, approvalStages);
+      return;
+    }
     
     if (!stage.canApprove) {
       toast({
@@ -791,78 +990,267 @@ function FinancePlanningPage() {
     setIsSubmittingApproval(true);
     
     try {
-      let newStatus: ApprovalStatus;
-      switch (action) {
-        case 'approve':
-          newStatus = 'approved';
-          break;
-        case 'reject':
-          newStatus = 'rejected';
-          break;
-        case 'request_changes':
-          newStatus = 'requested_changes';
-          break;
-        default:
-          newStatus = 'pending';
-      }
+      // Check if we need to submit first - only if no stages exist and status is draft
+      const hasStages = approvalsData?.stages && approvalsData.stages.length > 0;
+      const needsSubmit = !hasStages && (approvalsData?.overall_status === 'draft' || !approvalsData?.overall_status) && action === 'approve';
       
-      // Update the stage
-      setApprovalStages(prev => prev.map(s => {
-        if (s.id === stageId) {
-          return {
-            ...s,
-            status: newStatus,
-            approverName: authState.user?.name || authState.user?.email || 'Current User',
-            approverEmail: authState.user?.email,
-            approvedAt: new Date().toISOString(),
-            comments: approvalComment || undefined,
-          };
+      if (needsSubmit) {
+        try {
+          console.log('Submitting budget for approval:', budgetIdToUse);
+          await submitBudgetMutation.mutateAsync(budgetIdToUse);
+          // Wait a bit for stages to initialize
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          await refetchApprovals();
+          // Refetch again to get the updated stages
+          const refreshedApprovals = await refetchApprovals();
+          console.log('After submit - refreshed approvals:', refreshedApprovals.data);
+          toast({
+            title: "Budget Submitted",
+            description: "Budget has been submitted for approval and is now being processed.",
+          });
+        } catch (submitError: any) {
+          console.error('Error submitting budget:', submitError);
+          const errorDetail = submitError.response?.data?.detail || submitError.message || "Failed to submit budget";
+          console.error('Submit error details:', errorDetail);
+          
+          // If we have existing stages, we can still try to approve
+          if (hasStages) {
+            console.log('Submit failed but we have existing stages, proceeding with approval');
+            toast({
+              title: "Warning",
+              description: "Submit had an issue but proceeding with approval using existing stages.",
+              variant: "default",
+            });
+          } else {
+            toast({
+              title: "Submit Error",
+              description: errorDetail,
+              variant: "destructive",
+            });
+            setIsSubmittingApproval(false);
+            return;
+          }
         }
-        return s;
-      }));
-      
-      // Update subsequent stages if approved
-      if (newStatus === 'approved') {
-        setApprovalStages(prev => prev.map(s => {
-          if (s.sequence === stage.sequence + 1 && s.status === 'not_started') {
-            return { ...s, status: 'pending' };
-          }
-          return s;
-        }));
       }
       
-      // If rejected or changes requested, reset subsequent stages
-      if (newStatus === 'rejected' || newStatus === 'requested_changes') {
-        setApprovalStages(prev => prev.map(s => {
-          if (s.sequence > stage.sequence && s.status !== 'approved') {
-            return { ...s, status: 'not_started' };
-          }
-          return s;
-        }));
+      // Refetch approvals to ensure we have latest data (critical to avoid race conditions)
+      const latestApprovals = await refetchApprovals();
+      const latestApprovalsData = latestApprovals.data || approvalsData;
+      
+      if (!latestApprovalsData || !latestApprovalsData.stages || latestApprovalsData.stages.length === 0) {
+        console.error('No approval stages found after refetch:', {
+          stageId,
+          latestApprovalsData,
+          hasData: !!latestApprovalsData,
+          stagesCount: latestApprovalsData?.stages?.length
+        });
+        toast({
+          title: "Error",
+          description: "No approval stages found. Please refresh the page.",
+          variant: "destructive",
+        });
+        setIsSubmittingApproval(false);
+        return;
       }
       
-      toast({
-        title: action === 'approve' ? "Approved" : action === 'reject' ? "Rejected" : "Changes Requested",
-        description: `${stage.label} has been ${action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'marked for changes'}.`,
+      console.log('Looking for stage:', {
+        stageId,
+        hasLatestApprovals: !!latestApprovalsData,
+        stagesCount: latestApprovalsData?.stages?.length,
+        stages: latestApprovalsData?.stages?.map((s: any) => ({ 
+          id: s.id, 
+          stage_id: s.stage_id, 
+          stage_name: s.stage_name, 
+          status: s.status 
+        }))
       });
+      
+      // Find the backend stage ID (the numeric ID from backend)
+      // Try to find by stage_id first, then by sequence if needed
+      let backendStage = latestApprovalsData?.stages?.find((s: any) => s.stage_id === stageId);
+      
+      // If not found, try to find by matching the stage from approvalStages
+      if (!backendStage && stage) {
+        // Find stage by sequence or by matching stage_id
+        const stageIndex = approvalStages.findIndex(s => s.id === stageId);
+        if (stageIndex >= 0 && latestApprovalsData?.stages?.[stageIndex]) {
+          backendStage = latestApprovalsData.stages[stageIndex];
+        }
+      }
+      
+      if (!backendStage) {
+        console.error('Backend stage not found:', {
+          stageId,
+          availableStages: latestApprovalsData?.stages?.map((s: any) => ({ id: s.id, stage_id: s.stage_id, stage_name: s.stage_name, status: s.status })),
+          approvalStages: approvalStages.map(s => ({ id: s.id, label: s.label, status: s.status }))
+        });
+        throw new Error(`Stage ${stageId} not found in backend. Please refresh and try again.`);
+      }
+      
+      // Validate that the backend stage is actually pending
+      // Even super admins should only approve pending stages (backend enforces this)
+      if (backendStage.status !== 'pending') {
+        console.error('Backend stage is not pending:', {
+          stageId,
+          backendStageId: backendStage.id,
+          backendStageStageId: backendStage.stage_id,
+          backendStageStatus: backendStage.status,
+          expectedStatus: 'pending',
+          allStages: latestApprovalsData?.stages?.map((s: any) => ({ 
+            id: s.id, 
+            stage_id: s.stage_id, 
+            stage_name: s.stage_name, 
+            status: s.status 
+          }))
+        });
+        toast({
+          title: "Cannot Approve",
+          description: `Stage "${backendStage.stage_name}" is not pending. Current status: ${backendStage.status}. Please refresh the page to see the latest status.`,
+          variant: "destructive",
+        });
+        setIsSubmittingApproval(false);
+        // Refetch to get latest status
+        await refetchApprovals();
+        return;
+      }
+      
+      console.log('Using backend stage:', { 
+        stageId, 
+        backendStageId: backendStage.id, 
+        backendStageName: backendStage.stage_name,
+        backendStageStatus: backendStage.status
+      });
+
+      // Call backend API
+      console.log('Calling backend approval API:', {
+        budgetId: budgetIdToUse,
+        stageId: backendStage.id,
+        stageIdString: backendStage.stage_id,
+        stageName: backendStage.stage_name,
+        stageStatus: backendStage.status,
+        action
+      });
+      
+      let result;
+      try {
+        result = await processApprovalMutation.mutateAsync({
+          budgetId: budgetIdToUse,
+          stageId: backendStage.id,
+          action,
+          comments: approvalComment || undefined,
+        });
+      } catch (apiError: any) {
+        console.error('Backend API error details:', {
+          status: apiError.response?.status,
+          statusText: apiError.response?.statusText,
+          data: apiError.response?.data,
+          message: apiError.message,
+          stageId: backendStage.id,
+          stageIdString: backendStage.stage_id,
+          stageStatus: backendStage.status
+        });
+        throw apiError;
+      }
+
+      // Update local state from backend response
+      if (result?.stages) {
+        // Check if all stages are approved - if so, budget status should be 'active'
+        const allApproved = result.stages.every((s: any) => s.status === 'approved');
+        if (allApproved) {
+          // All stages approved - refetch to get updated status (should be 'active')
+          await refetchAnnual();
+          await refetchApprovals();
+          toast({
+            title: "Budget Approved",
+            description: "All approval stages completed. Budget is now active.",
+          });
+        } else {
+          toast({
+            title: "Stage Approved",
+            description: `${stage.label} has been approved. Next stage is now pending.`,
+          });
+        }
+        
+        const updatedStages: ApprovalStage[] = result.stages.map((s: any) => {
+          // Handle both string and array formats for required roles
+          const requiredRoles = s.required_role 
+            ? (typeof s.required_role === 'string'
+                ? s.required_role.split(',').map((r: string) => r.trim())
+                : s.required_role)
+            : [];
+          
+          const canApprove = requiredRoles.some((role: string) => {
+            const normalizedRole = role.toLowerCase();
+            const normalizedUserRole = currentUserRole.toLowerCase();
+            
+            // Super admins can approve everything
+            if (normalizedUserRole === 'admin' || normalizedUserRole === 'vendor' || normalizedUserRole === 'owner') {
+              return true;
+            }
+            
+            // Check exact match
+            if (normalizedUserRole === normalizedRole) {
+              return true;
+            }
+            
+            // Handle role aliases
+            if (normalizedRole === 'manager' && (normalizedUserRole === 'department_head' || normalizedUserRole === 'team_lead')) {
+              return true;
+            }
+            
+            if (normalizedRole === 'finance_manager' && normalizedUserRole === 'finance_analyst') {
+              return true;
+            }
+            
+            return false;
+          });
+          
+          return {
+            id: s.stage_id,
+            label: s.stage_name,
+            description: s.stage_name,
+            requiredRole: requiredRoles,
+            sequence: s.sequence,
+            status: s.status as ApprovalStatus,
+            canApprove,
+            approverName: s.approver_name,
+            approverEmail: undefined,
+            approvedAt: s.decision_at,
+            comments: s.comments,
+          };
+        });
+        
+        setApprovalStages(updatedStages);
+      }
       
       setApprovalComment('');
       setSelectedStageId(null);
       
-      // In a real app, this would call an API to save the approval
-      console.log("Approval action:", {
-        stageId,
-        action,
-        status: newStatus,
-        comment: approvalComment,
-        approver: authState.user?.email,
+      // Refetch approvals to ensure we have latest data
+      await refetchApprovals();
+    } catch (error: any) {
+      console.error('Error processing approval:', error);
+      const errorMessage = error.response?.data?.detail || error.message || "Failed to process approval. Please try again.";
+      const errorStatus = error.response?.status;
+      
+      console.error('Full error details:', {
+        status: errorStatus,
+        message: errorMessage,
+        responseData: error.response?.data,
+        stageId: stageId,
+        action
       });
-    } catch (error) {
+      
       toast({
-        title: "Error",
-        description: "Failed to process approval. Please try again.",
+        title: errorStatus === 400 ? "Cannot Approve" : "Error",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // If it's a 400 error, refetch to get latest status
+      if (errorStatus === 400) {
+        await refetchApprovals();
+      }
     } finally {
       setIsSubmittingApproval(false);
     }
@@ -2734,9 +3122,594 @@ function FinancePlanningPage() {
           
           <div className="h-px bg-slate-100" />
           
-          {/* Approval Stages */}
-          <div className="mt-6 space-y-4">
-            {approvalStages.map((stage, index) => {
+          {/* Quick Approve Button - Show if there's a pending stage user can approve, or if budget is draft and user can approve */}
+          {(() => {
+            // Check if user is admin/vendor/owner - they can always approve
+            const isSuperAdmin = currentUserRole && ['admin', 'vendor', 'owner'].includes(currentUserRole.toLowerCase());
+            
+            // Debug logging - check for budgetId from multiple sources
+            const debugHasBudgetId = effectiveBudgetId || overrideBudgetId || annualData?.budgetId || annualData?.budget_id;
+            console.log('Approval Button Debug:', {
+              currentUserRole,
+              isSuperAdmin,
+              approvalStagesCount: approvalStages.length,
+              approvalsDataStatus: approvalsData?.overall_status,
+              effectiveBudgetId,
+              overrideBudgetId,
+              annualDataBudgetId: annualData?.budgetId || annualData?.budget_id,
+              hasBudgetId: debugHasBudgetId,
+              stages: approvalStages.map(s => ({
+                id: s.id,
+                status: s.status,
+                canApprove: s.canApprove,
+                label: s.label
+              }))
+            });
+            
+            if (approvalStages.length > 0) {
+              // First, find stages that are actually pending
+              const pendingStage = approvalStages.find(s => s.status === 'pending' && s.canApprove);
+              
+              // Also check for not_started stages that user can approve (for direct approval from draft)
+              // But only if budget is in draft status
+              const draftStage = !pendingStage && (approvalsData?.overall_status === 'draft' || !approvalsData?.overall_status) 
+                ? approvalStages.find(s => s.status === 'not_started' && s.canApprove)
+                : null;
+              
+              // If super admin, allow approving any pending stage (not just any non-approved)
+              // This ensures we only approve stages that are ready
+              const superAdminStage = isSuperAdmin && !pendingStage && !draftStage && approvalStages.length > 0
+                ? approvalStages.find(s => s.status === 'pending') // Only pending stages for super admin too
+                : null;
+              
+              const stageToApprove = pendingStage || draftStage || superAdminStage;
+              
+              console.log('Stage to approve:', {
+                pendingStage: pendingStage?.id,
+                draftStage: draftStage?.id,
+                superAdminStage: superAdminStage?.id,
+                selected: stageToApprove?.id
+              });
+              
+              if (stageToApprove) {
+              return (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={async () => {
+                      await handleApprovalAction(stageToApprove.id, 'approve');
+                    }}
+                    disabled={isSubmittingApproval}
+                    className="inline-flex items-center gap-3 rounded-xl border-2 border-emerald-500 bg-emerald-500 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600 hover:border-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmittingApproval ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-5 w-5" />
+                        Approve Budget - {stageToApprove.label}
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            }
+              // If all stages are approved, show success message
+              const allApproved = approvalStages.every(s => s.status === 'approved');
+              if (allApproved && (approvalsData?.overall_status === 'approved' || approvalsData?.overall_status === 'active')) {
+                return (
+                  <div className="mt-6 flex justify-center">
+                    <div className="rounded-xl border-2 border-emerald-500 bg-emerald-50 px-8 py-4 text-center">
+                      <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                      <p className="text-lg font-semibold text-emerald-700">Budget Approved & Active</p>
+                      <p className="text-sm text-emerald-600 mt-1">All approval stages completed. Budget is now active and ready to use.</p>
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            }
+            
+            // If no stages but budget exists and user is super admin, show approve button
+            // Also check if we have budgetId from overrideBudgetId or annualData
+            const hasBudgetId = effectiveBudgetId || overrideBudgetId || annualData?.budgetId || annualData?.budget_id;
+            if (approvalStages.length === 0 && hasBudgetId && isSuperAdmin && (approvalsData?.overall_status === 'draft' || !approvalsData?.overall_status)) {
+              return (
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={async () => {
+                      // Submit and approve in one flow
+                      const budgetIdToUse = effectiveBudgetId || overrideBudgetId || annualData?.budgetId || annualData?.budget_id;
+                      if (!budgetIdToUse) {
+                        toast({
+                          title: "Error",
+                          description: "Budget ID not found. Please save the budget first.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      try {
+                        await submitBudgetMutation.mutateAsync(budgetIdToUse);
+                        await refetchApprovals();
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        const refreshed = await refetchApprovals();
+                        if (refreshed.data?.stages && refreshed.data.stages.length > 0) {
+                          // Approve all stages
+                          for (const stage of refreshed.data.stages) {
+                            await processApprovalMutation.mutateAsync({
+                              budgetId: budgetIdToUse,
+                              stageId: stage.id,
+                              action: 'approve',
+                              comments: undefined,
+                            });
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                          }
+                          await refetchApprovals();
+                          await refetchAnnual();
+                        }
+                      } catch (error: any) {
+                        console.error('Error in approve flow:', error);
+                        toast({
+                          title: "Error",
+                          description: error.response?.data?.detail || "Failed to approve budget",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    disabled={isSubmittingApproval || submitBudgetMutation.isPending}
+                    className="inline-flex items-center gap-3 rounded-xl border-2 border-emerald-500 bg-emerald-500 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600 hover:border-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {(isSubmittingApproval || submitBudgetMutation.isPending) ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-5 w-5" />
+                        Approve Budget & Activate
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            }
+            
+            return null;
+          })()}
+          
+          {(() => {
+            const nonSuperAdminHasBudgetId = effectiveBudgetId || overrideBudgetId || annualData?.budgetId || annualData?.budget_id;
+            const isNotSuperAdmin = !['admin', 'vendor', 'owner'].includes(currentUserRole?.toLowerCase() || '');
+            return approvalStages.length === 0 && nonSuperAdminHasBudgetId && (approvalsData?.overall_status === 'draft' || !approvalsData?.overall_status) && isNotSuperAdmin;
+          })() && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={async () => {
+                  // First submit for approval, then approve the first stage
+                  const budgetIdForNonSuperAdmin = effectiveBudgetId || overrideBudgetId || annualData?.budgetId || annualData?.budget_id;
+                  if (!budgetIdForNonSuperAdmin) {
+                    toast({
+                      title: "Error",
+                      description: "Budget ID not found. Please save the budget first.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  if (!approvalsData || approvalsData.overall_status === 'draft') {
+                    // Submit first
+                    try {
+                      await submitBudgetMutation.mutateAsync(budgetIdForNonSuperAdmin);
+                      await refetchApprovals();
+                      // Wait a bit for stages to initialize
+                      await new Promise(resolve => setTimeout(resolve, 500));
+                      const refreshed = await refetchApprovals();
+                      if (refreshed.data?.stages && refreshed.data.stages.length > 0) {
+                        const firstStage = refreshed.data.stages[0];
+                        const backendStage = refreshed.data.stages.find((s: any) => s.stage_id === firstStage.stage_id);
+                        if (backendStage) {
+                          await processApprovalMutation.mutateAsync({
+                            budgetId: budgetIdForNonSuperAdmin,
+                            stageId: backendStage.id,
+                            action: 'approve',
+                            comments: undefined,
+                          });
+                          await refetchApprovals();
+                          await refetchAnnual();
+                        }
+                      }
+                    } catch (error: any) {
+                      console.error('Error in approve flow:', error);
+                      toast({
+                        title: "Error",
+                        description: error.response?.data?.detail || "Failed to approve budget",
+                        variant: "destructive",
+                      });
+                    }
+                  }
+                }}
+                disabled={isSubmittingApproval || submitBudgetMutation.isPending}
+                className="inline-flex items-center gap-3 rounded-xl border-2 border-emerald-500 bg-emerald-500 px-8 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-emerald-600 hover:border-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {(isSubmittingApproval || submitBudgetMutation.isPending) ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="h-5 w-5" />
+                    Approve Budget & Activate
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+          
+          {/* Comprehensive Budget Summary for Approval Review */}
+          {/* Show budget summary if we have budgetId OR if we have budget data (revenue/expense lines) */}
+          {(effectiveBudgetId || annualData?.budgetId || (revenueLines.length > 0 || expenseLines.length > 0)) && (
+            <div className="mt-6 space-y-6">
+              {/* Budget Overview Cards */}
+              <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5 text-[#161950]" />
+                  Budget Overview
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="rounded-lg border border-slate-200 bg-white p-4">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Budget Year</div>
+                    <div className="text-2xl font-bold text-slate-900">{displayedBudgetYear}</div>
+                  </div>
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-emerald-600 mb-1">Total Revenue Target</div>
+                    <div className="text-2xl font-bold text-emerald-700">{formatCurrency(totalRevenueTarget)}</div>
+                    <div className="text-xs text-emerald-600 mt-1">
+                      {revenueTotals.totalTarget > 0 && `${formatPercent((revenueTotals.totalTarget / totalRevenueTarget) * 100)} allocated`}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-rose-600 mb-1">Total Expense Budget</div>
+                    <div className="text-2xl font-bold text-rose-700">{formatCurrency(totalExpenseBudget)}</div>
+                    <div className="text-xs text-rose-600 mt-1">
+                      {expenseTotals.totalTarget > 0 && `${formatPercent((expenseTotals.totalTarget / totalExpenseBudget) * 100)} allocated`}
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-blue-600 mb-1">Net Profit Target</div>
+                    <div className={`text-2xl font-bold ${targetProfit >= 0 ? 'text-blue-700' : 'text-rose-700'}`}>
+                      {formatCurrency(targetProfit)}
+                    </div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      {totalRevenueTarget > 0 && `${formatPercent((targetProfit / totalRevenueTarget) * 100)} margin`}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Budget Distribution Pie Chart */}
+                {expenseLines.length > 0 && (() => {
+                  // Prepare pie chart data from expense lines (only top-level categories, no subcategories)
+                  const topLevelExpenses = expenseLines.filter(line => !line.level || line.level === 0);
+                  const pieChartData = topLevelExpenses
+                    .filter(line => line.target > 0)
+                    .map((line, index) => {
+                      const colors = ['#161950', '#9333EA', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899', '#84CC16', '#F97316', '#6366F1', '#14B8A6'];
+                      return {
+                        name: line.label,
+                        value: line.target,
+                        color: colors[index % colors.length],
+                      };
+                    });
+                  
+                  return (
+                    <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-slate-200">
+                      <div className="rounded-xl border border-slate-200 bg-white p-6">
+                        <div className="mb-4">
+                          <h4 className="text-base font-semibold text-slate-900 mb-1">Budget Distribution</h4>
+                          <p className="text-xs text-slate-600">Allocation by category</p>
+                        </div>
+                        {pieChartData.length > 0 ? (
+                          <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%" minHeight={256}>
+                              <RechartsPieChart>
+                                <Pie
+                                  data={pieChartData}
+                                  cx="50%"
+                                  cy="50%"
+                                  labelLine={false}
+                                  label={(props: any) => {
+                                    const { name, percent } = props;
+                                    return percent > 0.05 ? `${name}: ${((percent || 0) * 100).toFixed(0)}%` : '';
+                                  }}
+                                  outerRadius={80}
+                                  fill="#8884d8"
+                                  dataKey="value"
+                                >
+                                  {pieChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                  ))}
+                                </Pie>
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'white',
+                                    border: '1px solid #E5E7EB',
+                                    borderRadius: '8px',
+                                  }}
+                                  formatter={(value: number, name: string, props: any) => [
+                                    `$${value.toLocaleString()}`,
+                                    `${name} (${((props.payload.percent || 0) * 100).toFixed(1)}%)`
+                                  ]}
+                                />
+                              </RechartsPieChart>
+                            </ResponsiveContainer>
+                          </div>
+                        ) : (
+                          <div className="h-64 flex items-center justify-center text-slate-500">
+                            No expense data available
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Category List */}
+                      <div className="rounded-xl border border-slate-200 bg-white p-6">
+                        <div className="mb-4">
+                          <h4 className="text-base font-semibold text-slate-900 mb-1">Expense Categories</h4>
+                          <p className="text-xs text-slate-600">All category expenses list</p>
+                        </div>
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                          {pieChartData.map((cat, index) => {
+                            const percent = totalExpenseBudget > 0 ? (cat.value / totalExpenseBudget) * 100 : 0;
+                            return (
+                              <div key={index} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                                <div className="flex items-center gap-3">
+                                  <div 
+                                    className="h-3 w-3 rounded-full" 
+                                    style={{ backgroundColor: cat.color }}
+                                  />
+                                  <span className="text-sm font-medium text-slate-900">{cat.name}</span>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-sm font-semibold text-slate-900">{formatCurrency(cat.value)}</div>
+                                  <div className="text-xs text-slate-500">{percent.toFixed(1)}%</div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* Additional Metrics */}
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-200">
+                  <div className="text-sm">
+                    <span className="font-medium text-slate-600">Revenue Lines:</span>
+                    <span className="ml-2 font-semibold text-slate-900">{revenueLines.length}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium text-slate-600">Expense Lines:</span>
+                    <span className="ml-2 font-semibold text-slate-900">{expenseLines.length}</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium text-slate-600">Target Growth Rate:</span>
+                    <span className="ml-2 font-semibold text-slate-900">{formatPercentSigned(targetGrowthRate)}</span>
+                  </div>
+                </div>
+                
+                {/* Budget Status */}
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-slate-600">Budget Status:</span>
+                    <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold uppercase tracking-wide ${
+                      budgetWorkflowStatus === 'draft' ? 'bg-slate-100 text-slate-700' :
+                      budgetWorkflowStatus === 'pending' || budgetWorkflowStatus === 'submitted' || budgetWorkflowStatus === 'in_review' ? 'bg-blue-100 text-blue-700' :
+                      budgetWorkflowStatus === 'approved' || budgetWorkflowStatus === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                      budgetWorkflowStatus === 'rejected' ? 'bg-rose-100 text-rose-700' :
+                      'bg-slate-100 text-slate-700'
+                    }`}>
+                      {budgetWorkflowStatus === 'active' ? 'Active' : budgetWorkflowStatus || 'draft'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Revenue Breakdown */}
+              {revenueLines.length > 0 && (
+                <div className="rounded-xl border border-slate-200 bg-white p-6">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-emerald-600" />
+                    Revenue Breakdown
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-slate-200">
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Revenue Category</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">Target Amount</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">Variance</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">% of Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {revenueLines.slice(0, isRevenueBreakdownExpanded ? revenueLines.length : 2).map((line, idx) => {
+                          const percentOfTotal = totalRevenueTarget > 0 ? (line.target / totalRevenueTarget) * 100 : 0;
+                          const indentLevel = (line.level || 0) * 20;
+                          return (
+                            <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
+                              <td className="py-3 px-4" style={{ paddingLeft: `${16 + indentLevel}px` }}>
+                                <span className={`${line.level && line.level > 0 ? 'text-sm text-slate-600' : 'font-medium text-slate-900'}`}>
+                                  {line.level && line.level > 0 ? '└ ' : ''}{line.label}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-right font-semibold text-emerald-700">
+                                {formatCurrency(line.target)}
+                              </td>
+                              <td className={`py-3 px-4 text-right ${line.variance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                {formatCurrencySigned(line.variance)}
+                              </td>
+                              <td className="py-3 px-4 text-right text-slate-600">
+                                {formatPercent(percentOfTotal)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {!isRevenueBreakdownExpanded && revenueLines.length > 2 && (
+                          <tr>
+                            <td colSpan={4} className="py-2 px-4 text-center">
+                              <button
+                                onClick={() => setIsRevenueBreakdownExpanded(true)}
+                                className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 mx-auto"
+                              >
+                                <ChevronDown className="h-4 w-4" />
+                                View All ({revenueLines.length - 2} more)
+                              </button>
+                            </td>
+                          </tr>
+                        )}
+                        {isRevenueBreakdownExpanded && revenueLines.length > 2 && (
+                          <tr>
+                            <td colSpan={4} className="py-2 px-4 text-center">
+                              <button
+                                onClick={() => setIsRevenueBreakdownExpanded(false)}
+                                className="text-sm font-medium text-slate-600 hover:text-slate-700 flex items-center gap-1 mx-auto"
+                              >
+                                <ChevronUp className="h-4 w-4" />
+                                Hide ({revenueLines.length - 2} items)
+                              </button>
+                            </td>
+                          </tr>
+                        )}
+                        <tr className="border-t-2 border-slate-300 bg-slate-50 font-semibold">
+                          <td className="py-3 px-4 text-slate-900">Total Revenue</td>
+                          <td className="py-3 px-4 text-right text-emerald-700">{formatCurrency(revenueTotals.totalTarget)}</td>
+                          <td className={`py-3 px-4 text-right ${revenueTotals.totalVariance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {formatCurrencySigned(revenueTotals.totalVariance)}
+                          </td>
+                          <td className="py-3 px-4 text-right text-slate-900">100%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Detailed Expense Breakdown */}
+              {expenseLines.length > 0 && (
+                <div className="rounded-xl border border-slate-200 bg-white p-6">
+                  <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-rose-600" />
+                    Expense Breakdown
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-slate-200">
+                          <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Expense Category</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">Budget Amount</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">Variance</th>
+                          <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700">% of Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {expenseLines.slice(0, isExpenseBreakdownExpanded ? expenseLines.length : 2).map((line, idx) => {
+                          const percentOfTotal = totalExpenseBudget > 0 ? (line.target / totalExpenseBudget) * 100 : 0;
+                          const indentLevel = (line.level || 0) * 20;
+                          return (
+                            <tr key={idx} className="border-b border-slate-100 hover:bg-slate-50">
+                              <td className="py-3 px-4" style={{ paddingLeft: `${16 + indentLevel}px` }}>
+                                <span className={`${line.level && line.level > 0 ? 'text-sm text-slate-600' : 'font-medium text-slate-900'}`}>
+                                  {line.level && line.level > 0 ? '└ ' : ''}{line.label}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-right font-semibold text-rose-700">
+                                {formatCurrency(line.target)}
+                              </td>
+                              <td className={`py-3 px-4 text-right ${line.variance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                {formatCurrencySigned(line.variance)}
+                              </td>
+                              <td className="py-3 px-4 text-right text-slate-600">
+                                {formatPercent(percentOfTotal)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {!isExpenseBreakdownExpanded && expenseLines.length > 2 && (
+                          <tr>
+                            <td colSpan={4} className="py-2 px-4 text-center">
+                              <button
+                                onClick={() => setIsExpenseBreakdownExpanded(true)}
+                                className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 mx-auto"
+                              >
+                                <ChevronDown className="h-4 w-4" />
+                                View All ({expenseLines.length - 2} more)
+                              </button>
+                            </td>
+                          </tr>
+                        )}
+                        {isExpenseBreakdownExpanded && expenseLines.length > 2 && (
+                          <tr>
+                            <td colSpan={4} className="py-2 px-4 text-center">
+                              <button
+                                onClick={() => setIsExpenseBreakdownExpanded(false)}
+                                className="text-sm font-medium text-slate-600 hover:text-slate-700 flex items-center gap-1 mx-auto"
+                              >
+                                <ChevronUp className="h-4 w-4" />
+                                Hide ({expenseLines.length - 2} items)
+                              </button>
+                            </td>
+                          </tr>
+                        )}
+                        <tr className="border-t-2 border-slate-300 bg-slate-50 font-semibold">
+                          <td className="py-3 px-4 text-slate-900">Total Expenses</td>
+                          <td className="py-3 px-4 text-right text-rose-700">{formatCurrency(expenseTotals.totalTarget)}</td>
+                          <td className={`py-3 px-4 text-right ${expenseTotals.totalVariance >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {formatCurrencySigned(expenseTotals.totalVariance)}
+                          </td>
+                          <td className="py-3 px-4 text-right text-slate-900">100%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Budget Parameters Summary */}
+              <div className="rounded-xl border border-slate-200 bg-white p-6">
+                <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <Settings2 className="h-5 w-5 text-[#161950]" />
+                  Budget Parameters
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div className="text-sm font-medium text-slate-600 mb-1">Target Growth Rate</div>
+                    <div className="text-xl font-bold text-slate-900">{formatPercentSigned(targetGrowthRate)}</div>
+                  </div>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <div className="text-sm font-medium text-slate-600 mb-1">Profit Margin</div>
+                    <div className={`text-xl font-bold ${targetProfit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                      {totalRevenueTarget > 0 ? formatPercent((targetProfit / totalRevenueTarget) * 100) : '0%'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Approval Stages - No Submit button here, only review and approve/reject actions */}
+          {!effectiveBudgetId && !annualData?.budgetId && approvalStages.length === 0 && (revenueLines.length === 0 && expenseLines.length === 0) ? (
+            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
+              <p className="text-slate-600">No budget created yet. Create a budget first to see approval stages.</p>
+            </div>
+          ) : approvalStages.length === 0 && (effectiveBudgetId || annualData?.budgetId) ? (
+            <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-8 text-center">
+              <p className="text-amber-700 font-medium">Budget saved successfully. Approval stages will be initialized when you submit for approval from the Annual Budget tab.</p>
+            </div>
+          ) : approvalStages.length > 0 ? (
+            <div className="mt-6 space-y-4">
+              {approvalStages.map((stage, index) => {
               const isSelected = selectedStageId === stage.id;
               const conditions = APPROVAL_CONDITIONS[stage.id as keyof typeof APPROVAL_CONDITIONS] || [];
               
@@ -2763,14 +3736,14 @@ function FinancePlanningPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <p className="text-base font-semibold text-slate-900">{stage.label}</p>
-                            {stage.canApprove && stage.status === 'pending' && (
+                            {stage.canApprove && (stage.status === 'pending' || stage.status === 'not_started') && (
                               <span className="rounded-full bg-[#161950]/10 px-2 py-0.5 text-sm font-semibold uppercase tracking-wide text-[#161950]">
                                 You Can Approve
-              </span>
+                              </span>
                             )}
-            </div>
+                          </div>
                           <p className="text-sm text-slate-500 mt-0.5">{stage.description}</p>
-          </div>
+                        </div>
                         <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold uppercase tracking-wide ${getStatusColor(stage.status)}`}>
                           {getStatusLabel(stage.status)}
                         </span>
@@ -2823,7 +3796,7 @@ function FinancePlanningPage() {
                       )}
                       
                       {/* Action Buttons */}
-                      {stage.status === 'pending' && stage.canApprove && (
+                      {(stage.status === 'pending' || (stage.status === 'not_started' && stage.canApprove)) && stage.canApprove && (
                         <div className="mt-4 flex gap-2">
                           <button
                             onClick={() => setSelectedStageId(isSelected ? null : stage.id)}
@@ -2836,7 +3809,7 @@ function FinancePlanningPage() {
                       )}
                       
                       {/* Approval Form */}
-                      {isSelected && stage.status === 'pending' && stage.canApprove && (
+                      {isSelected && (stage.status === 'pending' || stage.status === 'not_started') && stage.canApprove && (
                         <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
                           <label className="block text-sm font-semibold uppercase tracking-wide text-slate-500 mb-2">
                             Add Comment (Optional)
@@ -2883,43 +3856,19 @@ function FinancePlanningPage() {
                           </div>
                         </div>
                       )}
-                      
-                      {/* Permission Denied Message */}
-                      {stage.status === 'pending' && !stage.canApprove && (
+                      {(stage.status === 'pending' || stage.status === 'not_started') && !stage.canApprove && (
                         <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-sm text-amber-700">
                           <AlertTriangle className="inline h-3.5 w-3.5 mr-1" />
                           You don't have permission to approve this stage. Required role: {Array.isArray(stage.requiredRole) ? stage.requiredRole.join(' or ') : stage.requiredRole}
                         </div>
                       )}
                     </div>
-      </div>
-    </div>
-  );
-            })}
-          </div>
-          
-          {/* Workflow Summary */}
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h4 className="text-base font-semibold text-slate-900 mb-3">Workflow Summary</h4>
-            <div className="space-y-2 text-sm text-slate-600">
-              <div className="flex items-center justify-between">
-                <span>Current User Role:</span>
-                <span className="font-semibold text-[#161950]">{currentUserRole}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Can Approve Stages:</span>
-                <span className="font-semibold text-emerald-600">
-                  {approvalStages.filter(s => s.canApprove).length} of {approvalStages.length}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Next Action Required:</span>
-                <span className="font-semibold text-blue-600">
-                  {approvalStages.find(s => s.status === 'pending')?.label || 'All stages completed'}
-                </span>
-              </div>
+                  </div>
+                </div>
+              );
+              })}
             </div>
-          </div>
+          ) : null}
         </section>
       </div>
     );
@@ -2949,6 +3898,27 @@ function FinancePlanningPage() {
   );
   };
 
+  const displayedBudgetYear =
+    budgetYear === 'recent'
+      ? resolvedBudgetYear || 'Most Recent'
+      : budgetYear || 'Most Recent';
+  // Determine budget status - use approvalsData if available, otherwise check if we have budget data
+  // Map 'approved' to 'active' for display when all stages are completed
+  let rawStatus: string | undefined;
+  if (approvalsData?.overall_status) {
+    rawStatus = approvalsData.overall_status;
+  } else if (effectiveBudgetId || annualData?.budgetId) {
+    rawStatus = 'draft';
+  } else if (revenueLines.length > 0 || expenseLines.length > 0 || totalRevenueTarget > 0 || totalExpenseBudget > 0) {
+    rawStatus = 'draft';
+  } else {
+    rawStatus = 'draft';
+  }
+  
+  // If all stages are approved, show as 'active'
+  const allStagesApproved = approvalStages.length > 0 && approvalStages.every(s => s.status === 'approved');
+  const budgetWorkflowStatus = (rawStatus === 'approved' && allStagesApproved) ? 'active' : rawStatus;
+  
   const renderTabContent = () => {
     switch (activeTab) {
       case 'annual':
@@ -2957,6 +3927,7 @@ function FinancePlanningPage() {
             annualMetrics={annualMetrics}
             aiHighlights={aiHighlights}
             budgetYear={budgetYear}
+            displayBudgetYear={displayedBudgetYear}
             setBudgetYear={setBudgetYear}
             targetGrowthRate={targetGrowthRate}
             setTargetGrowthRate={setTargetGrowthRate}
@@ -2975,6 +3946,276 @@ function FinancePlanningPage() {
             handleSaveBudget={handleSaveBudget}
             handleCopyFromYear={handleCopyFromYear}
             handleReviewPreviousYear={handleReviewPreviousYear}
+            budgetStatus={budgetWorkflowStatus}
+            budgetId={effectiveBudgetId}
+            onSubmitForApproval={async () => {
+              // Initialize currentBudgetId with effectiveBudgetId
+              let currentBudgetId: number | undefined = effectiveBudgetId;
+              
+              // First, ensure budget is saved if we have budget data but no budgetId
+              // Check if we need to save first
+              const needsSave = !currentBudgetId && !annualData?.budgetId && (revenueLines.length > 0 || expenseLines.length > 0 || totalRevenueTarget > 0 || totalExpenseBudget > 0);
+              
+              if (needsSave) {
+                console.log('No budgetId found but budget data exists. Saving budget first...', {
+                  budgetYearForPersistence,
+                  totalRevenueTarget,
+                  totalExpenseBudget,
+                  revenueLinesCount: revenueLines.length,
+                  expenseLinesCount: expenseLines.length
+                });
+                toast({
+                  title: "Saving Budget",
+                  description: "Saving budget before submission...",
+                });
+                try {
+                  // Save the budget directly using the mutation
+                  const saveResponse = await saveAnnualBudgetMutation.mutateAsync({
+                    budget_year: budgetYearForPersistence,
+                    target_growth_rate: targetGrowthRate,
+                    total_revenue_target: totalRevenueTarget,
+                    total_expense_budget: totalExpenseBudget,
+                    revenue_lines: revenueLines,
+                    expense_lines: expenseLines,
+                    business_units: businessUnits.map(u => ({
+                      name: u.name,
+                      revenue: u.revenue,
+                      expense: u.expense,
+                      profit: u.profit,
+                      headcount: u.headcount,
+                      margin_percent: typeof u.margin === 'string' ? parseFloat(u.margin.replace('%', '')) : (u.margin || 0),
+                    })),
+                  });
+                  
+                  console.log('Save response:', saveResponse);
+                  
+                  // Check if response has budgetId (camelCase) or budget_id (snake_case)
+                  // Also check nested paths and all possible variations
+                  const saveResponseBudgetId = saveResponse?.budgetId || 
+                                               saveResponse?.budget_id || 
+                                               saveResponse?.data?.budgetId ||
+                                               saveResponse?.data?.budget_id ||
+                                               (saveResponse as any)?.['budget_id'] ||
+                                               (saveResponse as any)?.['budgetId'];
+                  
+                  if (saveResponseBudgetId) {
+                    setOverrideBudgetId(saveResponseBudgetId);
+                    console.log('Budget saved with ID from response:', saveResponseBudgetId);
+                  }
+                  
+                  // Wait for save to complete and refetch
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  
+                  // Refetch to get the new budgetId
+                  const refreshed = await refetchAnnual();
+                  console.log('After save - refreshed data:', refreshed.data);
+                  
+                  // Check both camelCase and snake_case, and also check all possible paths
+                  const refreshedBudgetId = refreshed.data?.budgetId || 
+                                            refreshed.data?.budget_id ||
+                                            (refreshed.data as any)?.['budget_id'] ||
+                                            (refreshed.data as any)?.['budgetId'];
+                            
+                  if (refreshedBudgetId) {
+                    setOverrideBudgetId(refreshedBudgetId);
+                    console.log('Budget saved with ID from refetch:', refreshedBudgetId);
+                    currentBudgetId = refreshedBudgetId;
+                  } else if (saveResponseBudgetId) {
+                    // Use the ID from save response if refetch doesn't have it
+                    console.log('Using budgetId from save response:', saveResponseBudgetId);
+                    setOverrideBudgetId(saveResponseBudgetId);
+                    currentBudgetId = saveResponseBudgetId;
+                  } else {
+                    // Last resort: try to extract from the budget year query
+                    // The budget should exist now, so we can query by year
+                    console.warn('Budget saved but no budgetId in response or refetch. Attempting to find by year...', {
+                      saveResponse,
+                      refreshedData: refreshed.data,
+                      saveResponseKeys: Object.keys(saveResponse || {}),
+                      refreshedDataKeys: Object.keys(refreshed.data || {}),
+                      budgetYear: budgetYearForPersistence
+                    });
+                    
+                    // Don't return error - just continue and let the submission try
+                    // The budget was saved, so it should exist in the database
+                    // The approval endpoint might be able to find it by year
+                  }
+                } catch (saveError: any) {
+                  console.error('Error saving budget before submission:', saveError);
+                  toast({
+                    title: "Save Failed",
+                    description: saveError?.response?.data?.detail || saveError?.message || "Please save the budget first before submitting for approval.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+              }
+              
+              // Try multiple sources to get budgetId (after potential save)
+              // Note: currentBudgetId might already be set in the save block above
+              if (!currentBudgetId) {
+                // Re-check after save - check both camelCase and snake_case
+                const updatedEffectiveBudgetId = overrideBudgetId ?? 
+                                                 annualData?.budgetId ?? 
+                                                 annualData?.budget_id;
+                if (updatedEffectiveBudgetId) {
+                  currentBudgetId = updatedEffectiveBudgetId;
+                }
+              }
+              
+              // Final fallback: use effectiveBudgetId if still not found
+              if (!currentBudgetId) {
+                currentBudgetId = effectiveBudgetId;
+              }
+              
+              // Priority 1: If approvalsData exists, extract budgetId from query cache
+              // Since the query ran successfully, the budgetId is in the query key
+              if (approvalsData) {
+                try {
+                  const cache = queryClient.getQueryCache();
+                  const queries = cache.getAll();
+                  const approvalQuery = queries.find((q: any) => {
+                    const key = q.queryKey;
+                    return key && 
+                      Array.isArray(key) &&
+                      key.length >= 4 &&
+                      key[0] === 'finance' && 
+                      key[1] === 'planning' && 
+                      key[2] === 'approvals' &&
+                      typeof key[3] === 'number';
+                  });
+                  if (approvalQuery && approvalQuery.queryKey[3]) {
+                    currentBudgetId = approvalQuery.queryKey[3] as number;
+                    console.log('Found budgetId from query cache:', currentBudgetId);
+                  }
+                } catch (cacheError) {
+                  console.error('Error accessing query cache:', cacheError);
+                }
+              }
+              
+              // Priority 2: Check approval stages (backend response includes budget_id)
+              if (!currentBudgetId && approvalsData?.stages && approvalsData.stages.length > 0) {
+                currentBudgetId = (approvalsData.stages[0] as any)?.budget_id;
+              }
+              
+              // Priority 3: Check approvalsData.budget_id directly
+              if (!currentBudgetId && approvalsData?.budget_id) {
+                currentBudgetId = approvalsData.budget_id;
+              }
+              
+              // Priority 4: Check effectiveBudgetId and annualData (both camelCase and snake_case)
+              if (!currentBudgetId) {
+                currentBudgetId = effectiveBudgetId || 
+                                 annualData?.budgetId || 
+                                 annualData?.budget_id;
+              }
+              
+              // Debug logging
+              console.log('Submit for Approval - Budget ID sources:', {
+                effectiveBudgetId,
+                overrideBudgetId,
+                annualDataBudgetId: annualData?.budgetId || annualData?.budget_id,
+                approvalsDataBudgetId: approvalsData?.budget_id,
+                approvalsDataStages: approvalsData?.stages?.length,
+                firstStageBudgetId: approvalsData?.stages?.[0] ? (approvalsData.stages[0] as any)?.budget_id : undefined,
+                currentBudgetId,
+                hasApprovalsData: !!approvalsData,
+                approvalStagesCount: approvalStages.length,
+                revenueLinesCount: revenueLines.length,
+                expenseLinesCount: expenseLines.length
+              });
+              
+              // If still not found, try refetching annual data
+              if (!currentBudgetId) {
+                console.log('Refetching annual data to get budgetId...');
+                const refreshed = await refetchAnnual();
+                currentBudgetId = refreshed.data?.budgetId || refreshed.data?.budget_id;
+                console.log('After refetch - budgetId:', currentBudgetId, 'full data:', refreshed.data);
+                if (currentBudgetId) {
+                  setOverrideBudgetId(currentBudgetId);
+                }
+              }
+              
+              // If still not found but we have budget data, try saving first
+              if (!currentBudgetId && (revenueLines.length > 0 || expenseLines.length > 0 || totalRevenueTarget > 0 || totalExpenseBudget > 0)) {
+                console.log('Budget ID not found but budget data exists. Attempting to save first...');
+                try {
+                  await handleSaveBudget();
+                  // Wait a bit for the save to complete and refetch
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  // Try refetching again
+                  const refreshed = await refetchAnnual();
+                  currentBudgetId = refreshed.data?.budgetId;
+                  if (currentBudgetId) {
+                    setOverrideBudgetId(currentBudgetId);
+                    // Also refetch approvals to get the budgetId from there
+                    await refetchApprovals();
+                  }
+                } catch (saveError) {
+                  console.error('Error saving budget before submission:', saveError);
+                  toast({
+                    title: "Save Failed",
+                    description: "Failed to save budget. Please try saving manually first.",
+                    variant: "destructive",
+                  });
+                }
+              }
+              
+              // If still not found, try refetching approvals
+              if (!currentBudgetId && effectiveBudgetId) {
+                console.log('Refetching approvals with effectiveBudgetId:', effectiveBudgetId);
+                const refreshedApprovals = await refetchApprovals();
+                currentBudgetId = refreshedApprovals.data?.budget_id || 
+                                 (refreshedApprovals.data?.stages?.[0] as any)?.budget_id;
+                if (currentBudgetId) {
+                  setOverrideBudgetId(currentBudgetId);
+                }
+              }
+              
+              if (!currentBudgetId) {
+                console.error('Submit for Approval - Budget ID not found after all attempts', {
+                  effectiveBudgetId,
+                  annualData: annualData?.budgetId,
+                  approvalsData: approvalsData ? {
+                    budget_id: approvalsData.budget_id,
+                    stages_count: approvalsData.stages?.length,
+                    first_stage: approvalsData.stages?.[0] ? {
+                      stage_id: (approvalsData.stages[0] as any)?.stage_id,
+                      budget_id: (approvalsData.stages[0] as any)?.budget_id
+                    } : null
+                  } : null
+                });
+                toast({
+                  title: "Error",
+                  description: "Budget ID not found. Please save the budget first, then try submitting again.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              
+              console.log('Submit for Approval - Using budgetId:', currentBudgetId);
+              
+              try {
+                await submitBudgetMutation.mutateAsync(currentBudgetId);
+                await refetchApprovals();
+                const refreshed = await refetchAnnual();
+                if (refreshed.data?.budgetId) {
+                  setOverrideBudgetId(refreshed.data.budgetId);
+                }
+                toast({
+                  title: "Success",
+                  description: "Budget submitted for approval successfully",
+                });
+              } catch (error: any) {
+                console.error('Error submitting budget:', error);
+                toast({
+                  title: "Error",
+                  description: error.response?.data?.detail || "Failed to submit budget for approval",
+                  variant: "destructive",
+                });
+              }
+            }}
+            isSubmitting={submitBudgetMutation.isPending}
           />
         );
       case 'revenue-expense':
@@ -2996,6 +4237,37 @@ function FinancePlanningPage() {
       case 'bu-allocation':
         return <BuAllocationTab businessUnits={businessUnits} />;
       case 'variance':
+        // Use actual amounts from API if available, otherwise calculate from variance
+        const revenueActual = revenueTotals.totalActual || (totalRevenueTarget + revenueTotals.totalVariance);
+        const expenseActual = expenseTotals.totalActual || (totalExpenseBudget + expenseTotals.totalVariance);
+        const profitActual = revenueActual - expenseActual;
+        
+        // Extract explanations from API response
+        const revenueExplanation = annualData?.revenue_lines?.[0] ? {
+          explanation: annualData.revenue_lines[0].variance_explanation || '',
+          rootCause: annualData.revenue_lines[0].root_cause || '',
+          actionPlan: annualData.revenue_lines[0].action_plan || '',
+        } : { explanation: '', rootCause: '', actionPlan: '' };
+        
+        const expenseExplanation = annualData?.expense_lines?.[0] ? {
+          explanation: annualData.expense_lines[0].variance_explanation || '',
+          rootCause: annualData.expense_lines[0].root_cause || '',
+          actionPlan: annualData.expense_lines[0].action_plan || '',
+        } : { explanation: '', rootCause: '', actionPlan: '' };
+        
+        // For profit, extract from revenue line (where we save it)
+        const profitExplanation = revenueExplanation.explanation.includes('[Profit]') ? {
+          explanation: revenueExplanation.explanation.split('[Profit]')[1]?.trim() || '',
+          rootCause: revenueExplanation.rootCause.split('[Profit]')[1]?.trim() || '',
+          actionPlan: revenueExplanation.actionPlan.split('[Profit]')[1]?.trim() || '',
+        } : { explanation: '', rootCause: '', actionPlan: '' };
+        
+        const varianceExplanations = [
+          { category: 'revenue' as const, ...revenueExplanation },
+          { category: 'expense' as const, ...expenseExplanation },
+          { category: 'profit' as const, ...profitExplanation },
+        ];
+        
         return (
           <VarianceTab
             varianceThresholds={varianceThresholds}
@@ -3008,6 +4280,35 @@ function FinancePlanningPage() {
             revenueVariance={revenueTotals.totalVariance}
             expenseVariance={expenseTotals.totalVariance}
             profitVariance={revenueTotals.totalVariance - expenseTotals.totalVariance}
+            revenueActual={revenueActual}
+            expenseActual={expenseActual}
+            profitActual={profitActual}
+            explanations={varianceExplanations}
+            onSaveExplanations={async (explanations) => {
+              if (!effectiveBudgetId) {
+                toast({
+                  title: 'Error',
+                  description: 'Budget ID not found. Please save the budget first.',
+                  variant: 'destructive',
+                });
+                return;
+              }
+              
+              try {
+                await saveVarianceExplanationsMutation.mutateAsync({
+                  budgetId: effectiveBudgetId,
+                  explanations: explanations.map(exp => ({
+                    category: exp.category,
+                    explanation: exp.explanation,
+                    rootCause: exp.rootCause,
+                    actionPlan: exp.actionPlan,
+                  })),
+                });
+              } catch (error) {
+                // Error handling is done in the mutation hook
+                console.error('Error saving variance explanations:', error);
+              }
+            }}
           />
         );
       case 'dashboard':

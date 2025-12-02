@@ -58,5 +58,4 @@ export const STATS_CARDS = [
     color: '#ed8a09',
     suffix: ' Portfolio',
   },
-// TODO: need to fix this - rishabh
 ] as const;

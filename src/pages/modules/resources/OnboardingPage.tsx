@@ -8,9 +8,9 @@ import { ActivateEmployeeModal } from './components/ActivateEmployeeModal';
 import { BulkUploadModal } from './components/BulkUploadModal';
 import { RolePermissionConfig } from './components/RolePermissionConfig';
 import { AISkillsGapWidget } from './components/AISkillsGapWidget';
-import { SmartNotificationPreview } from './components/SmartNotificationPreview';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeActivation } from '@/hooks/useEmployeeActivation';
+import { toast } from 'sonner';
 
 type TabType = 'onboarding' | 'permissions' | 'analytics';
 
@@ -23,7 +23,8 @@ function OnboardingPage() {
     changeStage,
     uploadResume,
     isCreating,
-    isChangingStage 
+    isChangingStage,
+    updateEmployee
   } = useEmployees();
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -168,10 +169,25 @@ function OnboardingPage() {
     }
   };
 
-  const handleUpdatePermissions = (employeeId: string, permissions: string[]) => {
-    console.log(`Updating permissions for ${employeeId}:`, permissions);
-    // In real implementation, this would call API
-    alert(`Permissions updated successfully for employee ${employeeId}`);
+  const handleUpdatePermissions = async (
+    employeeId: string,
+    payload: { permissions: string[]; role?: string; department?: string }
+  ) => {
+    const { role, department } = payload;
+    console.log(`Updating role and department for ${employeeId}:`, role, department);
+    try {
+      await updateEmployee({
+        id: employeeId,
+        data: {
+          ...(role ? { role } : {}),
+          ...(department ? { department } : {}),
+        },
+      });
+      toast.success('Role and department updated successfully');
+    } catch (error: any) {
+      console.error('Failed to update role and department:', error);
+      toast.error(error.response?.data?.detail || 'Failed to update role and department');
+    }
   };
 
   const stats = [
@@ -496,13 +512,6 @@ function OnboardingPage() {
               employees={employees.filter(e => e.stage === 'accepted')} 
             />
             
-            {employees.filter(e => e.stage === 'accepted').length > 0 && (
-              <SmartNotificationPreview
-                employeeName={employees.filter(e => e.stage === 'accepted')[0]?.name || 'New Employee'}
-                employeeEmail={employees.filter(e => e.stage === 'accepted')[0]?.email || 'employee@company.com'}
-                role={employees.filter(e => e.stage === 'accepted')[0]?.position || 'Team Member'}
-              />
-            )}
           </div>
         )}
       </div>

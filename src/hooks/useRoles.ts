@@ -1,132 +1,103 @@
-import { useState, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
 import { toast } from 'sonner';
 
 export interface Role {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   permissions?: string[];
   isSystem?: boolean;
   color?: string;
 }
 
-const CUSTOM_ROLES_STORAGE_KEY = 'megapolis_custom_roles';
+type RolePayload = {
+  name: string;
+  description?: string;
+  permissions?: string[];
+  color?: string;
+};
 
-/**
- * Hook for managing roles (system + custom)
- * System roles come from backend API
- * Custom roles are stored in localStorage
- */
+const roleKeys = {
+  all: ['organization', 'roles'] as const,
+};
+
 export function useRoles() {
-  const [systemRoles, setSystemRoles] = useState<Role[]>([]);
-  const [customRoles, setCustomRoles] = useState<Role[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Load custom roles from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(CUSTOM_ROLES_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setCustomRoles(parsed);
-      }
-    } catch (err) {
-      console.error('Error loading custom roles from localStorage:', err);
-    }
-  }, []);
+  const {
+    data: roles = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: roleKeys.all,
+    queryFn: async () => {
+      const response = await apiClient.get('/resources/roles');
+      return response.data?.roles || [];
+    },
+  });
 
-  // Fetch system roles from backend
-  useEffect(() => {
-    const fetchSystemRoles = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await apiClient.get('/resources/roles');
-        setSystemRoles(response.data.roles || []);
-      } catch (err: any) {
-        console.error('Error fetching system roles:', err);
-        setError(err.response?.data?.detail || 'Failed to load system roles');
-        toast.error('Failed to load system roles');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const createMutation = useMutation({
+    mutationFn: async (payload: RolePayload) => {
+      const response = await apiClient.post('/resources/roles', payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Role created successfully');
+      queryClient.invalidateQueries({ queryKey: roleKeys.all });
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.detail || 'Failed to create role');
+    },
+  });
 
-    fetchSystemRoles();
-  }, []);
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: RolePayload }) => {
+      const response = await apiClient.put(`/resources/roles/${id}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success('Role updated successfully');
+      queryClient.invalidateQueries({ queryKey: roleKeys.all });
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.detail || 'Failed to update role');
+    },
+  });
 
-  // Save custom roles to localStorage whenever they change
-  useEffect(() => {
-    try {
-      localStorage.setItem(CUSTOM_ROLES_STORAGE_KEY, JSON.stringify(customRoles));
-    } catch (err) {
-      console.error('Error saving custom roles to localStorage:', err);
-    }
-  }, [customRoles]);
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(`/resources/roles/${id}`);
+    },
+    onSuccess: () => {
+      toast.success('Role deleted successfully');
+      queryClient.invalidateQueries({ queryKey: roleKeys.all });
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.detail || 'Failed to delete role');
+    },
+  });
 
-  // Combined roles (system + custom)
-  const allRoles = [...systemRoles, ...customRoles];
+  const systemRoles = roles.filter((role: Role) => role.isSystem);
+  const customRoles = roles.filter((role: Role) => !role.isSystem);
 
-  // Create a new custom role
-  const createRole = (roleData: Omit<Role, 'id' | 'isSystem'>) => {
-    const newRole: Role = {
-      ...roleData,
-      id: `custom_${Date.now()}`,
-      isSystem: false,
-    };
-    setCustomRoles(prev => [...prev, newRole]);
-    toast.success(`Role "${newRole.name}" created successfully`);
-    return newRole;
-  };
+  const createRole = (data: RolePayload) => createMutation.mutateAsync(data);
+  const updateRole = (id: string, data: RolePayload) =>
+    updateMutation.mutateAsync({ id, data });
+  const deleteRole = (id: string) => deleteMutation.mutateAsync(id);
 
-  // Update an existing custom role
-  const updateRole = (roleId: string, roleData: Partial<Role>) => {
-    // Can only update custom roles, not system roles
-    const role = customRoles.find(r => r.id === roleId);
-    if (!role) {
-      toast.error('Cannot update system roles');
-      return;
-    }
+  const getRoleById = (roleId: string): Role | undefined =>
+    roles.find((role: Role) => role.id === roleId);
 
-    setCustomRoles(prev =>
-      prev.map(r => (r.id === roleId ? { ...r, ...roleData } : r))
-    );
-    toast.success('Role updated successfully');
-  };
-
-  // Delete a custom role
-  const deleteRole = (roleId: string) => {
-    const role = customRoles.find(r => r.id === roleId);
-    if (!role) {
-      toast.error('Cannot delete system roles');
-      return;
-    }
-
-    setCustomRoles(prev => prev.filter(r => r.id !== roleId));
-    toast.success(`Role "${role.name}" deleted successfully`);
-  };
-
-  // Get a role by ID
-  const getRoleById = (roleId: string): Role | undefined => {
-    return allRoles.find(r => r.id === roleId);
-  };
-
-  // Get role name by ID
-  const getRoleName = (roleId: string): string => {
-    return getRoleById(roleId)?.name || roleId;
-  };
+  const getRoleName = (roleId: string): string =>
+    getRoleById(roleId)?.name || roleId;
 
   return {
-    // State
-    allRoles,
+    allRoles: roles,
     systemRoles,
     customRoles,
     isLoading,
     error,
-
-    // Actions
     createRole,
     updateRole,
     deleteRole,
@@ -134,4 +105,6 @@ export function useRoles() {
     getRoleName,
   };
 }
+
+export default useRoles;
 

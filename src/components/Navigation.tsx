@@ -6,8 +6,9 @@ import {
   FolderKanban, DollarSign, ShoppingCart, BarChart3, 
   Bell, ChevronDown, ChevronRight, LogOut, User, Settings, Building2, ClipboardList, Shield, Bot
 } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/useToast';
+import { NotificationCenter } from '@/components/NotificationCenter';
 
 const menuItems = [
   { icon: TrendingUp, label: 'Opportunities', path: '/module/opportunities' },
@@ -49,7 +50,7 @@ const menuItems = [
 export default function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, backendUser, signOut } = useAuth();
   const { toast } = useToast();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -356,14 +357,7 @@ export default function Navigation() {
           <div className="flex items-center gap-4">
             
             <div className="flex items-start gap-3">
-              <button className="relative p-3 bg-white rounded-full border border-gray-200 flex items-center justify-center">
-                <Bell className="w-5 h-5 text-gray-500" />
-                <div className="absolute top-[3px] right-[9px]">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="6" cy="6" r="5" fill="#FD853A" stroke="white" strokeWidth="2"/>
-                  </svg>
-                </div>
-              </button>
+              <NotificationCenter />
             </div>
 
             
@@ -372,7 +366,13 @@ export default function Navigation() {
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                 className="flex items-center gap-3"
               >
-                <Avatar className="w-11 h-11">
+                <Avatar className="w-11 h-11 ring-2 ring-gray-200">
+                  {(backendUser as any)?.profile_picture_url && (
+                    <AvatarImage 
+                      src={(backendUser as any).profile_picture_url} 
+                      alt={getUserDisplayName()}
+                    />
+                  )}
                   <AvatarFallback className="text-white text-sm font-semibold" style={{ backgroundColor: '#161950' }}>
                     {getUserDisplayName().charAt(0).toUpperCase()}
                   </AvatarFallback>

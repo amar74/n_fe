@@ -84,6 +84,10 @@ export function PlacesAutocomplete({
 
           // Call parent onChange with place details
           const address = place.formatted_address || place.name || '';
+          // Update the input value to show the selected address
+          if (inputRef.current) {
+            inputRef.current.value = address;
+          }
           onChange(address, place);
         });
 

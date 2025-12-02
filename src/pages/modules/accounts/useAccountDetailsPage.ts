@@ -33,7 +33,6 @@ export function useAccountDetailsPage() {
   
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [isEditing, setIsEditing] = useState(false);
-  // FIXME: this not working properly - guddy.tech
   const [formData, setFormData] = useState<AccountFormData | null>(null);
   const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>(MOCK_RECENT_ACTIVITY);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);

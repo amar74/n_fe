@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { AISkillsGapWidget } from './components/AISkillsGapWidget';
-import { SmartNotificationPreview } from './components/SmartNotificationPreview';
+import { UtilizationAnalytics } from './components/UtilizationAnalytics';
+import { PerformanceAnalytics } from './components/PerformanceAnalytics';
 import { useEmployees, useEmployeeAnalytics } from '@/hooks/useEmployees';
 import { Loader2 } from 'lucide-react';
 
@@ -54,14 +55,10 @@ function AnalyticsPage() {
         </div>
 
         <AISkillsGapWidget totalEmployees={acceptedEmployees.length} employees={acceptedEmployees} />
-
-        {acceptedEmployees.length > 0 && (
-          <SmartNotificationPreview
-            employeeName={acceptedEmployees[0].name}
-            employeeEmail={acceptedEmployees[0].email}
-            role={acceptedEmployees[0].role || acceptedEmployees[0].job_title || 'Employee'}
-          />
-        )}
+        
+        <UtilizationAnalytics employees={acceptedEmployees} />
+        
+        <PerformanceAnalytics employees={acceptedEmployees} />
       </div>
     </div>
   );

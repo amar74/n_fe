@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, Users, Target, Award, Briefcase, MapPin, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, Filter, List, UserCheck, Calendar, Eye } from 'lucide-react';
+import { Search, Users, Target, Award, Briefcase, MapPin, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, Filter, List, UserCheck, Calendar, Eye, Loader2 } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
+import { apiClient } from '@/services/api/client';
+import { toast } from 'sonner';
 import { EmployeeDetailsModal } from './components/EmployeeDetailsModal';
 import { ScheduleInterviewModal } from './components/ScheduleInterviewModal';
 
@@ -29,22 +31,28 @@ type SearchResult = {
   currentStage?: string; // pending or review
 };
 
+// Contractor-specific skills for builders, interior designers, and material suppliers
 const SKILLS_OPTIONS = [
-  'Project Management',
-  'Technical Engineering',
-  'Design & Planning',
-  'Environmental Sciences',
-  'Construction Management',
-  'Quality Assurance',
-  'Financial Analysis',
-  'Client Relations',
-  'Risk Management',
-  'Regulatory Compliance',
-  'Software Development',
-  'Data Analysis',
-  'Team Leadership',
-  'Budget Planning',
-  'Contract Management'
+  // Construction & Building Skills
+  'General Construction', 'Residential Construction', 'Commercial Construction', 'Industrial Construction',
+  'Framing & Carpentry', 'Concrete Work', 'Masonry & Stonework', 'Roofing & Waterproofing',
+  'Electrical Installation', 'Plumbing Installation', 'HVAC Installation', 'Drywall & Plastering',
+  'Flooring Installation', 'Painting & Finishing', 'Tile & Stone Installation', 'Insulation & Weatherproofing',
+  
+  // Interior Design Skills
+  'Interior Design', 'Space Planning', 'Color Consultation', 'Furniture Selection',
+  'Kitchen Design', 'Bathroom Design', 'Lighting Design', 'Material Selection',
+  '3D Rendering & Visualization', 'CAD Design', 'Design Consultation', 'Styling & Staging',
+  
+  // Material Supply & Logistics
+  'Material Procurement', 'Supply Chain Management', 'Inventory Management', 'Vendor Relations',
+  'Quality Control & Inspection', 'Material Sourcing', 'Logistics Coordination', 'Cost Estimation',
+  'Material Specifications', 'Delivery Management', 'Supplier Negotiation', 'Material Testing',
+  
+  // Project Management & Business
+  'Project Management', 'Site Supervision', 'Quality Assurance', 'Safety Management',
+  'Budget Planning', 'Cost Control', 'Contract Management', 'Client Relations',
+  'Team Leadership', 'Subcontractor Management', 'Permit & Code Compliance', 'Risk Management',
 ];
 
 const SECTORS_OPTIONS = [
@@ -118,6 +126,9 @@ export default function EmployeeSearchPage() {
 
   const [allCandidates, setAllCandidates] = useState<SearchResult[]>([]);
   const [filteredCandidates, setFilteredCandidates] = useState<SearchResult[]>([]);
+  const [isAISearching, setIsAISearching] = useState(false);
+  const [aiSearchResults, setAiSearchResults] = useState<SearchResult[]>([]);
+  const [aiFilters, setAiFilters] = useState<any>(null);
   
   // Modals
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
@@ -146,6 +157,16 @@ export default function EmployeeSearchPage() {
     setAllCandidates(candidates);
     setFilteredCandidates(candidates); // Show all by default
   }, [employees]);
+
+  // Reset AI search results when switching modes
+  useEffect(() => {
+    if (searchMode === 'filters') {
+      setAiSearchResults([]);
+      setAiFilters(null);
+      // Reset to all candidates
+      setFilteredCandidates(allCandidates);
+    }
+  }, [searchMode, allCandidates]);
 
   // Auto-filter when search criteria changes
   useEffect(() => {
@@ -248,23 +269,57 @@ export default function EmployeeSearchPage() {
   };
 
   const handleAISearch = async () => {
-    if (!aiQuery.trim()) return;
+    if (!aiQuery.trim()) {
+      toast.error('Please enter a search query');
+      return;
+    }
     
+    setIsAISearching(true);
     try {
-      console.log('AI Search query:', aiQuery);
-      // Call AI search API
-      const response = await fetch('/api/resources/employees/ai-search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: aiQuery })
+      console.log('🤖 AI Search query:', aiQuery);
+      
+      // Call AI search API endpoint
+      const response = await apiClient.post('/resources/employees/ai-search', {
+        query: aiQuery
       });
       
-      if (response.ok) {
-        const results = await response.json();
+      const data = response.data;
+      console.log('✅ AI Search results:', data);
+      
+      if (data.results && data.results.length > 0) {
+        // Convert backend results to SearchResult format
+        const results: SearchResult[] = data.results.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          role: r.role || 'Not specified',
+          location: r.location || 'Not specified',
+          experience: r.experience || 'Not specified',
+          matchPercentage: r.matchPercentage || 0,
+          availability: r.availability || 'available',
+          source: r.source || 'internal',
+          skills: r.skills || [],
+          email: r.email || '',
+          phone: r.phone,
+          currentStage: r.currentStage || 'pending',
+        }));
+        
+        setAiSearchResults(results);
         setFilteredCandidates(results);
+        setAiFilters(data.ai_filters || null);
+        
+        toast.success(`Found ${data.count} matching candidates (${data.match_range} match)`);
+      } else {
+        setAiSearchResults([]);
+        setFilteredCandidates([]);
+        toast.info('No candidates found matching your search');
       }
-    } catch (error) {
-      console.error('AI search failed:', error);
+    } catch (error: any) {
+      console.error('❌ AI search failed:', error);
+      toast.error(error.response?.data?.detail || 'AI search failed. Please try again.');
+      setAiSearchResults([]);
+      setFilteredCandidates([]);
+    } finally {
+      setIsAISearching(false);
     }
   };
 
@@ -435,13 +490,39 @@ export default function EmployeeSearchPage() {
 
                       <button
                         onClick={handleAISearch}
-                        disabled={!aiQuery.trim()}
+                        disabled={!aiQuery.trim() || isAISearching}
                         className="w-full h-11 px-5 py-2 rounded-lg text-white text-sm font-semibold font-outfit hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         style={{ backgroundColor: '#161950' }}
                       >
-                        <Sparkles className="w-4 h-4" />
-                        AI Search
+                        {isAISearching ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Searching...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            AI Search
+                          </>
+                        )}
                       </button>
+                      
+                      {/* Show AI-extracted filters if available */}
+                      {aiFilters && Object.keys(aiFilters).length > 0 && (
+                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-xs font-semibold text-blue-900 mb-2">AI Extracted Filters:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(aiFilters).map(([key, value]: [string, any]) => {
+                              if (!value || (Array.isArray(value) && value.length === 0)) return null;
+                              return (
+                                <span key={key} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                                  {key}: {Array.isArray(value) ? value.join(', ') : String(value)}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     /* Enhanced Filter-Based Search */

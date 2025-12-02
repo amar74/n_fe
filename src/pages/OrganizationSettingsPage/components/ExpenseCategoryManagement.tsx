@@ -37,6 +37,7 @@ import {
   Loader2,
   ChevronDown,
   ChevronRight,
+  ChevronUp,
   Save,
   X,
 } from 'lucide-react';
@@ -46,6 +47,7 @@ import { Label } from '@/components/ui/label';
 
 export function ExpenseCategoryManagement() {
   const [categoryTypeFilter, setCategoryTypeFilter] = useState<'all' | 'revenue' | 'expense'>('all');
+  const [showAllCategories, setShowAllCategories] = useState(false);
   
   const { data: allCategories, isLoading, error } = useExpenseCategories({
     include_inactive: true,
@@ -595,7 +597,30 @@ export function ExpenseCategoryManagement() {
           </div>
         ) : (
           <div className="space-y-2">
-            {topLevelCategories.map(category => renderCategory(category))}
+            {topLevelCategories
+              .slice(0, showAllCategories ? topLevelCategories.length : 4)
+              .map(category => renderCategory(category))}
+            {topLevelCategories.length > 4 && (
+              <div className="flex justify-center pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllCategories(!showAllCategories)}
+                  className="border-gray-300 hover:bg-gray-50"
+                >
+                  {showAllCategories ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 mr-2" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-2" />
+                      Show All ({topLevelCategories.length - 4} more)
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

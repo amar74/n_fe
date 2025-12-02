@@ -73,7 +73,6 @@ export const CLIENT_TYPES = [
   { value: 'tier_3', label: 'Tier 3' },
 ];
 
-// TODO: need to fix this - harsh.pawar
 export const FORM_FIELD_LABELS = {
   client_name: 'Client Name',
   client_type: 'Client Type',

@@ -31,9 +31,14 @@ import {
   Loader2
 } from 'lucide-react';
 import { ExpenseCategoryManagement } from '@/pages/OrganizationSettingsPage/components/ExpenseCategoryManagement';
+import { DepartmentManagement } from '@/pages/OrganizationSettingsPage/components/DepartmentManagement';
+import { RoleManagement } from '@/pages/OrganizationSettingsPage/components/RoleManagement';
+import { ChangeLogoDialog } from '@/pages/OrganizationSettingsPage/components/ChangeLogoDialog';
+import { useState } from 'react';
 
 export default function OrganizationSettingsPage() {
   const { data: organization, isLoading, error } = useMyOrganization();
+  const [isLogoDialogOpen, setIsLogoDialogOpen] = useState(false);
 
   // Fetch recent activity
   const { data: recentActivity } = useQuery({
@@ -171,7 +176,7 @@ export default function OrganizationSettingsPage() {
         <div className="absolute top-10 right-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-10 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="relative max-w-7xl mx-auto px-1 sm:px-3 lg:px-4 py-10">
           <Link 
             to="/profile" 
             className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-all hover:gap-3 gap-2"
@@ -181,15 +186,15 @@ export default function OrganizationSettingsPage() {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-5xl font-extrabold mb-3 tracking-tight leading-tight text-white drop-shadow-lg">
+              <h1 className="text-5xl font-extrabold mb-3 tracking-tight leading-tight text-white drop-shadow-lg" style={{ fontFamily: "'Outfit', sans-serif" }}>
                 Organization Settings
               </h1>
-              <p className="text-white text-lg font-medium leading-relaxed drop-shadow-md">
+              <p className="text-white text-lg font-medium leading-relaxed drop-shadow-md" style={{ fontFamily: "'Outfit', sans-serif" }}>
                 Manage your organization's information and team
               </p>
             </div>
             <Link to="/organization/update">
-              <Button className="bg-white text-[#161950] hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all hover:scale-105 h-12 px-6 font-semibold">
+              <Button className="bg-white text-[#161950] hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all hover:scale-105 h-12 px-6 font-semibold" style={{ fontFamily: "'Outfit', sans-serif" }}>
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Details
               </Button>
@@ -198,30 +203,48 @@ export default function OrganizationSettingsPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-1 sm:px-3 lg:px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
               
-              <Card className="border border-gray-100 shadow-md">
-                <CardHeader className="border-b border-gray-100">
-                  <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight">
-                    <Building2 className="h-5 w-5 text-[#161950]" />
+              {/* Enhanced Logo Card */}
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-[#161950]"></div>
+                <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
+                  <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    <div className="w-8 h-8 bg-gradient-to-br from-[#161950] to-blue-600 rounded-lg flex items-center justify-center">
+                      <Building2 className="h-4 w-4 text-white" />
+                    </div>
                     Organization Logo
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-8">
                   <div className="flex flex-col items-center">
-                    <div className="relative mb-4">
-                      <div className="w-32 h-32 rounded-2xl bg-[#161950] flex items-center justify-center text-white font-bold text-4xl shadow-lg">
-                        {getInitials(organization.name)}
-                      </div>
-                      <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border-2 border-gray-100">
-                        <Camera className="h-5 w-5 text-gray-600" />
+                    <div className="relative mb-6 group">
+                      {organization.logo_url ? (
+                        <div className="w-36 h-36 rounded-3xl overflow-hidden border-4 border-white shadow-2xl ring-4 ring-gray-100 transition-transform group-hover:scale-105">
+                          <img
+                            src={organization.logo_url as string}
+                            alt={`${organization.name} logo`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-36 h-36 rounded-3xl bg-gradient-to-br from-[#161950] via-blue-700 to-purple-700 flex items-center justify-center text-white font-bold text-5xl shadow-2xl ring-4 ring-gray-100 transition-transform group-hover:scale-105">
+                          {getInitials(organization.name)}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setIsLogoDialogOpen(true)}
+                        className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-white to-gray-50 rounded-full shadow-xl flex items-center justify-center hover:from-[#161950] hover:to-blue-600 hover:scale-110 transition-all duration-200 border-4 border-white ring-2 ring-gray-100"
+                        title="Change logo"
+                      >
+                        <Camera className="h-5 w-5 text-gray-700 group-hover:text-white transition-colors" />
                       </button>
                     </div>
-                    <h3 className="font-extrabold text-2xl text-gray-900 text-center mb-1 tracking-tight leading-tight">
+                    <h3 className="font-extrabold text-2xl text-gray-900 text-center mb-2 tracking-tight leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
                       {organization.name}
                     </h3>
                     {organization.website && (
@@ -229,46 +252,72 @@ export default function OrganizationSettingsPage() {
                         href={organization.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline text-center mb-4"
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium text-center mb-6 flex items-center justify-center gap-2 transition-colors"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                       >
+                        <Globe className="h-4 w-4" />
                         {organization.website}
                       </a>
                     )}
-                    <Link to="/organization/update" className="w-full">
-                      <Button variant="outline" size="sm" className="w-full border-[#161950] text-[#161950] hover:bg-[#161950] hover:text-white">
-                        <Camera className="h-4 w-4 mr-2" />
-                        Change Logo
-                      </Button>
-                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-2 border-[#161950] text-[#161950] hover:bg-gradient-to-r hover:from-[#161950] hover:to-blue-600 hover:text-white hover:border-transparent hover:shadow-lg transition-all duration-200 font-semibold"
+                      onClick={() => setIsLogoDialogOpen(true)}
+                      style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      Change Logo
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
 
               
-              <Card className="border border-gray-100 shadow-md">
+              {/* Enhanced Profile Completion Card */}
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-600"></div>
                 <CardContent className="p-6">
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-600">Profile Completion</span>
-                      <span className={`text-lg font-bold ${getCompletionColor(Number(organization.profile_completion || 0))}`}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center">
+                          <Award className="h-4 w-4 text-green-600" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: "'Outfit', sans-serif" }}>Profile Completion</span>
+                      </div>
+                      <span className={`text-2xl font-extrabold ${getCompletionColor(Number(organization.profile_completion || 0))}`} style={{ fontFamily: "'Outfit', sans-serif" }}>
                         {Number(organization.profile_completion || 0)}%
                       </span>
                     </div>
-                    <div className="flex-1 bg-gray-200 rounded-full h-3">
+                    <div className="relative flex-1 bg-gray-100 rounded-full h-4 overflow-hidden shadow-inner">
                       <div 
-                        className={`${getCompletionBgColor(Number(organization.profile_completion || 0))} h-3 rounded-full transition-all duration-300`}
+                        className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ease-out ${
+                          Number(organization.profile_completion || 0) === 100 
+                            ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                            : Number(organization.profile_completion || 0) >= 70
+                            ? 'bg-gradient-to-r from-blue-400 to-blue-500'
+                            : Number(organization.profile_completion || 0) >= 40
+                            ? 'bg-gradient-to-r from-orange-400 to-orange-500'
+                            : 'bg-gradient-to-r from-red-400 to-red-500'
+                        } shadow-lg`}
                         style={{ width: `${organization.profile_completion || 0}%` }}
-                      ></div>
+                      >
+                        <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                      </div>
                     </div>
                     {Number(organization.profile_completion || 0) < 100 && (
-                      <p className="text-xs text-gray-600">
-                        Complete your organization profile to unlock all features
-                      </p>
+                      <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                        <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-amber-700 font-medium" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                          Complete your organization profile to unlock all features
+                        </p>
+                      </div>
                     )}
                     {Number(organization.profile_completion || 0) === 100 && (
-                      <div className="flex items-center gap-2 text-green-600 text-sm">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Profile Complete!</span>
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="text-sm font-semibold text-green-700" style={{ fontFamily: "'Outfit', sans-serif" }}>Profile Complete!</span>
                       </div>
                     )}
                   </div>
@@ -276,26 +325,33 @@ export default function OrganizationSettingsPage() {
               </Card>
 
               
-              <Card className="border border-gray-100 shadow-md">
-                <CardHeader className="border-b border-gray-100">
-                  <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight">
-                    <TrendingUp className="h-5 w-5 text-[#161950]" />
+              {/* Enhanced Quick Stats Card */}
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600"></div>
+                <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
+                  <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                      <TrendingUp className="h-4 w-4 text-white" />
+                    </div>
                     Quick Stats
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {stats.map((stat) => {
+                    {stats.map((stat, index) => {
                       const Icon = stat.icon;
                       return (
-                        <div key={stat.label} className="flex items-center justify-between">
+                        <div 
+                          key={stat.label} 
+                          className="flex items-center justify-between p-3 rounded-xl bg-white/60 hover:bg-white transition-all duration-200 border border-gray-100/50 hover:border-gray-200 hover:shadow-md group"
+                        >
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
-                              <Icon className={`h-5 w-5 ${stat.color}`} />
+                            <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-200`}>
+                              <Icon className={`h-6 w-6 ${stat.color}`} />
                             </div>
-                            <span className="text-sm font-medium text-gray-600">{stat.label}</span>
+                            <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: "'Outfit', sans-serif" }}>{stat.label}</span>
                           </div>
-                          <span className="text-sm font-semibold text-gray-900">{String(stat.value)}</span>
+                          <span className="text-lg font-extrabold text-gray-900 bg-gray-50 px-3 py-1 rounded-lg" style={{ fontFamily: "'Outfit', sans-serif" }}>{String(stat.value)}</span>
                         </div>
                       );
                     })}
@@ -304,10 +360,14 @@ export default function OrganizationSettingsPage() {
               </Card>
 
               
-              <Card className="border border-gray-100 shadow-md">
-                <CardHeader className="border-b border-gray-100">
-                  <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight">
-                    <Clock className="h-5 w-5 text-[#161950]" />
+              {/* Enhanced Quick Actions Card */}
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 via-pink-500 to-rose-600"></div>
+                <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
+                  <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                      <Clock className="h-4 w-4 text-white" />
+                    </div>
                     Quick Actions
                   </CardTitle>
                 </CardHeader>
@@ -316,19 +376,25 @@ export default function OrganizationSettingsPage() {
                     {quickActions.map((action) => {
                       const Icon = action.icon;
                       const content = (
-                        <div className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${action.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'}`}>
-                          <div className={`w-8 h-8 ${action.bgColor} rounded-lg flex items-center justify-center`}>
-                            <Icon className={`h-4 w-4 ${action.color}`} />
+                        <div className={`flex items-center gap-3 p-4 rounded-xl transition-all duration-200 ${
+                          action.disabled 
+                            ? 'opacity-50 cursor-not-allowed bg-gray-50/50' 
+                            : 'bg-white/60 hover:bg-white hover:shadow-md cursor-pointer border border-gray-100/50 hover:border-gray-200 group'
+                        }`}>
+                          <div className={`w-10 h-10 ${action.bgColor} rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-200`}>
+                            <Icon className={`h-5 w-5 ${action.color}`} />
                           </div>
-                          <span className="text-sm font-medium text-gray-700">{action.label}</span>
-                          {!action.disabled && <ChevronRight className="h-4 w-4 text-gray-400 ml-auto" />}
+                          <span className="text-sm font-semibold text-gray-700 flex-1" style={{ fontFamily: "'Outfit', sans-serif" }}>{action.label}</span>
+                          {!action.disabled && (
+                            <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-[#161950] group-hover:translate-x-1 transition-all duration-200" />
+                          )}
                         </div>
                       );
                       
                       return action.disabled ? (
                         <div key={action.label}>{content}</div>
                       ) : (
-                        <Link key={action.label} to={action.link}>
+                        <Link key={action.label} to={action.link} className="block">
                           {content}
                         </Link>
                       );
@@ -342,40 +408,64 @@ export default function OrganizationSettingsPage() {
           
           <div className="lg:col-span-2 space-y-6">
             
-            <Card className="border border-gray-100 shadow-md">
-              <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-2xl font-bold tracking-tight leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>Organization Information</CardTitle>
+            {/* Enhanced Organization Information Card */}
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#161950] via-blue-600 to-indigo-600"></div>
+              <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl font-bold tracking-tight leading-tight flex items-center gap-3" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#161950] to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                      <Building2 className="h-5 w-5 text-white" />
+                    </div>
+                    Organization Information
+                  </CardTitle>
+                  <Link to="/organization/update">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="border-[#161950] text-[#161950] hover:bg-[#161950] hover:text-white"
+                      style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                  </Link>
+                </div>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block" style={{ fontFamily: "'Outfit', sans-serif" }}>Organization Name</label>
-                    <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>{organization.name}</p>
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50/50 to-indigo-50/30 border border-blue-100/50 hover:shadow-md transition-all duration-200">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                      <Building2 className="h-3.5 w-3.5" />
+                      Organization Name
+                    </label>
+                    <p className="text-lg font-bold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>{organization.name}</p>
                   </div>
                   {organization.website && (
-                    <div>
-                      <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                        <Globe className="h-4 w-4" />
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-green-50/50 to-emerald-50/30 border border-green-100/50 hover:shadow-md transition-all duration-200">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        <Globe className="h-3.5 w-3.5" />
                         Website
                       </label>
                       <a 
                         href={organization.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-base font-semibold text-blue-600 hover:underline"
+                        className="text-lg font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-2 group"
                         style={{ fontFamily: "'Outfit', sans-serif" }}
                       >
                         {organization.website}
+                        <Globe className="h-4 w-4 group-hover:scale-110 transition-transform" />
                       </a>
                     </div>
                   )}
                   {organization.address && (
-                    <div>
-                      <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                        <MapPin className="h-4 w-4" />
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-purple-50/50 to-pink-50/30 border border-purple-100/50 hover:shadow-md transition-all duration-200">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        <MapPin className="h-3.5 w-3.5" />
                         Address
                       </label>
-                      <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                      <p className="text-base font-semibold text-gray-900 leading-relaxed" style={{ fontFamily: "'Outfit', sans-serif" }}>
                         {organization.address.line1}
                         {organization.address.line2 && `, ${organization.address.line2}`}
                         {organization.address.city && `, ${organization.address.city}`}
@@ -385,21 +475,35 @@ export default function OrganizationSettingsPage() {
                     </div>
                   )}
                   {organization.contact?.email && (
-                    <div>
-                      <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                        <Mail className="h-4 w-4" />
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50/50 to-orange-50/30 border border-amber-100/50 hover:shadow-md transition-all duration-200">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        <Mail className="h-3.5 w-3.5" />
                         Email
                       </label>
-                      <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>{organization.contact.email}</p>
+                      <a 
+                        href={`mailto:${organization.contact.email}`}
+                        className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-2 group"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                      >
+                        {organization.contact.email}
+                        <Mail className="h-4 w-4 text-gray-400 group-hover:text-blue-600 group-hover:scale-110 transition-all" />
+                      </a>
                     </div>
                   )}
                   {organization.contact?.phone && (
-                    <div>
-                      <label className="text-base font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
-                        <Phone className="h-4 w-4" />
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-teal-50/50 to-cyan-50/30 border border-teal-100/50 hover:shadow-md transition-all duration-200">
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block flex items-center gap-2" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                        <Phone className="h-3.5 w-3.5" />
                         Phone
                       </label>
-                      <p className="text-base font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>{organization.contact.phone}</p>
+                      <a 
+                        href={`tel:${organization.contact.phone}`}
+                        className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-2 group"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                      >
+                        {organization.contact.phone}
+                        <Phone className="h-4 w-4 text-gray-400 group-hover:text-blue-600 group-hover:scale-110 transition-all" />
+                      </a>
                     </div>
                   )}
                 </div>
@@ -410,23 +514,38 @@ export default function OrganizationSettingsPage() {
             <ExpenseCategoryManagement />
 
             
+            <DepartmentManagement />
+
+            
+            <RoleManagement />
+
+            
             {recentActivity && recentActivity.length > 0 && (
-              <Card className="border border-gray-100 shadow-md">
-                <CardHeader className="border-b border-gray-100">
-                  <CardTitle className="text-2xl font-bold tracking-tight leading-tight">Recent Activity</CardTitle>
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-600"></div>
+                <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
+                  <CardTitle className="text-2xl font-bold tracking-tight leading-tight flex items-center gap-3" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                      <Clock className="h-5 w-5 text-white" />
+                    </div>
+                    Recent Activity
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {recentActivity.map((activity: any) => {
                       const Icon = activity.icon;
                       return (
-                        <div key={activity.id} className="flex items-center gap-4 p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                          <div className={`w-10 h-10 ${activity.color} rounded-lg flex items-center justify-center`}>
-                            <Icon className="h-5 w-5 text-white" />
+                        <div 
+                          key={activity.id} 
+                          className="flex items-center gap-4 p-4 rounded-xl bg-white/60 border border-gray-100/50 hover:bg-white hover:shadow-md hover:border-gray-200 transition-all duration-200 group"
+                        >
+                          <div className={`w-12 h-12 ${activity.color} rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-200`}>
+                            <Icon className="h-6 w-6 text-white" />
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-gray-900">{activity.title}</p>
-                            <p className="text-xs text-gray-500">{formatTimeAgo(activity.time)}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate" style={{ fontFamily: "'Outfit', sans-serif" }}>{activity.title}</p>
+                            <p className="text-xs text-gray-500 font-medium mt-1" style={{ fontFamily: "'Outfit', sans-serif" }}>{formatTimeAgo(activity.time)}</p>
                           </div>
                         </div>
                       );
@@ -438,6 +557,17 @@ export default function OrganizationSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Change Logo Dialog */}
+      {organization && (
+        <ChangeLogoDialog
+          open={isLogoDialogOpen}
+          onOpenChange={setIsLogoDialogOpen}
+          organizationId={String(organization.id)}
+          currentLogoUrl={organization.logo_url as string | null | undefined}
+          organizationName={organization.name}
+        />
+      )}
     </div>
   );
 }

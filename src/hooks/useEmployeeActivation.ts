@@ -8,7 +8,7 @@ export interface ActivationData {
   sendWelcomeEmail: boolean;
   temporaryPassword: string;
   userRole: string;
-  permissions: string[];
+  department?: string;
 }
 
 export function useEmployeeActivation() {
@@ -19,7 +19,7 @@ export function useEmployeeActivation() {
       const response = await apiClient.post(`/resources/employees/${data.employeeId}/activate`, {
         temporary_password: data.temporaryPassword,
         user_role: data.userRole,
-        permissions: data.permissions,
+        department: data.department,
         send_welcome_email: data.sendWelcomeEmail,
       });
       return response.data;

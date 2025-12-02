@@ -99,6 +99,7 @@ export const financeKeys = {
   annual: () => [...financeKeys.planning(), 'annual'] as const,
   scenarios: () => [...financeKeys.planning(), 'scenarios'] as const,
   forecasts: () => [...financeKeys.planning(), 'forecasts'] as const,
+  approvals: (budgetId?: number) => [...financeKeys.planning(), 'approvals', budgetId] as const,
 };
 
 export function useFinanceDashboardSummary(businessUnit?: string | null) {
@@ -216,8 +217,14 @@ export function useSaveAnnualBudget() {
       const response = await financeApiClient.post('/api/v1/finance/planning/annual', budgetData);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Invalidate all annual budget queries (with and without specific year)
       queryClient.invalidateQueries({ queryKey: financeKeys.annual() });
+      // Also invalidate dashboard queries that depend on budget data
+      queryClient.invalidateQueries({ queryKey: financeKeys.dashboard() });
+      // Specifically invalidate overhead and revenue queries
+      queryClient.invalidateQueries({ queryKey: financeKeys.overhead() });
+      queryClient.invalidateQueries({ queryKey: financeKeys.revenue() });
     },
   });
 }
@@ -353,6 +360,121 @@ export function useExportForecast() {
       window.URL.revokeObjectURL(url);
       
       return response.data;
+    },
+  });
+}
+
+
+// Budget Approval Workflow Hooks
+
+export function useBudgetApprovals(budgetId: number | undefined) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useQuery({
+    queryKey: financeKeys.approvals(budgetId),
+    queryFn: async () => {
+      if (!budgetId) throw new Error('Budget ID is required');
+      const response = await financeApiClient.get(`/api/v1/finance/planning/annual/${budgetId}/approvals`);
+      return response.data;
+    },
+    enabled: !!budgetId,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
+export function useSaveVarianceExplanations() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  return useMutation({
+    mutationFn: async (data: {
+      budgetId: number;
+      explanations: Array<{
+        category: 'revenue' | 'expense' | 'profit';
+        explanation: string;
+        rootCause: string;
+        actionPlan: string;
+      }>;
+    }) => {
+      const response = await financeApiClient.post(
+        `/api/v1/finance/planning/annual/${data.budgetId}/variance-explanations`,
+        { explanations: data.explanations }
+      );
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      // Invalidate annual budget query to refresh with new explanations
+      queryClient.invalidateQueries({ queryKey: financeKeys.annual() });
+      toast({
+        title: 'Success',
+        description: 'Variance explanations saved successfully',
+      });
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to save variance explanations';
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
+export function useSubmitBudgetForApproval() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (budgetId: number) => {
+      const response = await financeApiClient.post(`/api/v1/finance/planning/annual/${budgetId}/submit`);
+      return response.data;
+    },
+    onSuccess: (data, budgetId) => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.approvals(budgetId) });
+      queryClient.invalidateQueries({ queryKey: financeKeys.annual() });
+      toast({
+        title: 'Success',
+        description: 'Budget submitted for approval successfully',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.detail || 'Failed to submit budget for approval',
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
+export function useProcessApprovalAction() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ budgetId, stageId, action, comments }: { budgetId: number; stageId: number; action: string; comments?: string }) => {
+      const response = await financeApiClient.post(
+        `/api/v1/finance/planning/annual/${budgetId}/approve`,
+        { stage_id: stageId, action, comments }
+      );
+      return response.data;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: financeKeys.approvals(variables.budgetId) });
+      queryClient.invalidateQueries({ queryKey: financeKeys.annual() });
+      toast({
+        title: 'Success',
+        description: `Budget ${variables.action === 'approve' ? 'approved' : variables.action === 'reject' ? 'rejected' : 'changes requested'} successfully`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.detail || 'Failed to process approval action',
+        variant: 'destructive',
+      });
     },
   });
 }

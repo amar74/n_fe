@@ -51,4 +51,19 @@ export const orgsApi = {
     const { data } = await apiClient.get('/orgs/hello');
     return data;
   },
+
+  async uploadLogo(orgId: string, file: File): Promise<{ success: boolean; logo_url: string; message: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await apiClient.post<{ success: boolean; logo_url: string; message: string }>(
+      `/orgs/${orgId}/logo`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return data;
+  },
 };

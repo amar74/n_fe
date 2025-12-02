@@ -753,12 +753,14 @@ const AccountDetails: React.FC = () => {
                 
                 
                 {(() => {
-                  const storedApprovals = localStorage.getItem('accountApprovals');
-                  const approvalMap = storedApprovals ? JSON.parse(storedApprovals) : {};
-                  const approvalStatus = approvalMap[account.account_id] || 'pending';
+                  // Use approval status from backend account data
+                  const approvalStatus = (account as any).approval_status || 'pending';
                   
                   if (approvalStatus === 'approved') {
-                    const approvalDate = new Date().toLocaleDateString();
+                    const approvalDate = account.approval_date 
+                      ? new Date(account.approval_date).toLocaleDateString()
+                      : new Date().toLocaleDateString();
+                    const approver = (account as any).account_approver || 'Unknown';
                     return (
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -766,14 +768,16 @@ const AccountDetails: React.FC = () => {
                           <p className="text-sm font-medium text-emerald-900">✅ Account Approved</p>
                           <p className="text-xs text-gray-600">{approvalDate}</p>
                           <p className="text-xs text-gray-500 mt-1">
-                            Approved by: amar74.soft
+                            Approved by: {approver}
                           </p>
                         </div>
                       </div>
                     );
                   } else if (approvalStatus === 'declined') {
-                    // TODO: need to fix this - abhishek.softication
-                    const declineDate = new Date().toLocaleDateString();
+                    const declineDate = account.approval_date 
+                      ? new Date(account.approval_date).toLocaleDateString()
+                      : new Date().toLocaleDateString();
+                    const decliner = (account as any).account_approver || 'Unknown';
                     return (
                       <div className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-red-500 rounded-full"></div>
@@ -781,7 +785,7 @@ const AccountDetails: React.FC = () => {
                           <p className="text-sm font-medium text-red-900">❌ Account Declined</p>
                           <p className="text-xs text-gray-600">{declineDate}</p>
                           <p className="text-xs text-gray-500 mt-1">
-                            Declined by: amar74.soft
+                            Declined by: {decliner}
                           </p>
                         </div>
                       </div>

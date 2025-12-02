@@ -21,9 +21,12 @@ import {
   Users,
   CheckCircle2
 } from 'lucide-react';
+import { ChangeProfilePictureDialog } from '@/pages/ProfilePage/components/ChangeProfilePictureDialog';
+import { useState } from 'react';
 
 export default function ProfilePage() {
   const { user, backendUser } = useAuth();
+  const [isProfilePictureDialogOpen, setIsProfilePictureDialogOpen] = useState(false);
 
   // Fetch profile statistics from backend
   const { data: profileStats, isLoading: statsLoading } = useQuery({
@@ -100,9 +103,9 @@ export default function ProfilePage() {
       bgColor: 'bg-gray-100',
     },
     {
-      label: 'Performance',
-      value: statsLoading ? '...' : `${profileStats?.performance || 0}%`,
-      icon: TrendingUp,
+      label: 'Total Accounts',
+      value: statsLoading ? '...' : String(profileStats?.total_accounts || 0),
+      icon: Building2,
       color: 'text-[#161950]',
       bgColor: 'bg-gray-100',
     },
@@ -175,11 +178,25 @@ export default function ProfilePage() {
               <div className="flex flex-col md:flex-row md:items-start gap-8">
                 {/* Avatar */}
                 <div className="relative group flex-shrink-0">
-                  <div className="w-40 h-40 rounded-3xl bg-[#161950] flex items-center justify-center text-white font-bold text-5xl shadow-xl ring-4 ring-gray-100">
-                    {getInitials()}
-                  </div>
-                  <button className="absolute bottom-2 right-2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center hover:bg-gray-50 transition-all border-2 border-gray-200 group-hover:scale-110">
-                    <Camera className="h-5 w-5 text-[#161950]" />
+                  {backendUser?.profile_picture_url ? (
+                    <div className="w-40 h-40 rounded-3xl overflow-hidden border-4 border-white shadow-xl ring-4 ring-gray-100">
+                      <img
+                        src={backendUser.profile_picture_url as string}
+                        alt={`${backendUser?.name || 'User'} profile`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-40 h-40 rounded-3xl bg-[#161950] flex items-center justify-center text-white font-bold text-5xl shadow-xl ring-4 ring-gray-100">
+                      {getInitials()}
+                    </div>
+                  )}
+                  <button 
+                    onClick={() => setIsProfilePictureDialogOpen(true)}
+                    className="absolute bottom-2 right-2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center hover:bg-[#161950] hover:text-white transition-all border-2 border-gray-200 group-hover:scale-110"
+                    title="Change profile picture"
+                  >
+                    <Camera className="h-5 w-5 text-[#161950] group-hover:text-white transition-colors" />
                   </button>
                 </div>
 
@@ -223,18 +240,32 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Stats Section */}
+            {/* Enhanced Stats Section - Icon Left, Value Top, Label Bottom */}
             <div className="border-t-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white px-10 py-8">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                {stats.map((stat) => {
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                {stats.map((stat, index) => {
                   const Icon = stat.icon;
+                  const iconColors = [
+                    'bg-[#161950]',
+                    'bg-[#161950]',
+                    'bg-[#161950]',
+                    'bg-[#161950]',
+                  ];
                   return (
-                    <div key={stat.label} className="text-center group cursor-pointer">
-                      <div className={`w-16 h-16 ${stat.bgColor} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md group-hover:shadow-xl transition-all group-hover:scale-110`}>
-                        <Icon className={`h-8 w-8 ${stat.color}`} />
+                    <div 
+                      key={stat.label} 
+                      className="group cursor-pointer p-6 rounded-2xl bg-white border border-gray-100 hover:border-[#161950] hover:shadow-xl transition-all duration-200 hover:-translate-y-1 flex items-center gap-4"
+                    >
+                      {/* Left Side - Icon */}
+                      <div className={`w-14 h-14 ${iconColors[index % iconColors.length]} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-200`}>
+                        <Icon className="h-7 w-7 text-white" />
                       </div>
-                      <div className="text-4xl font-bold text-gray-900 mb-1">{stat.value}</div>
-                      <div className="text-xs text-gray-500 font-semibold uppercase tracking-widest">{stat.label}</div>
+                      
+                      {/* Right Side - Value and Label */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-3xl font-extrabold text-gray-900 mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>{stat.value}</div>
+                        <div className="text-xs text-gray-600 font-semibold uppercase tracking-wider leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>{stat.label}</div>
+                      </div>
                     </div>
                   );
                 })}
@@ -385,6 +416,16 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Change Profile Picture Dialog */}
+      {backendUser && (
+        <ChangeProfilePictureDialog
+          open={isProfilePictureDialogOpen}
+          onOpenChange={setIsProfilePictureDialogOpen}
+          currentPictureUrl={backendUser.profile_picture_url as string | null | undefined}
+          userName={String(backendUser?.name || (typeof user?.email === 'string' ? user.email.split('@')[0] : '') || 'User')}
+        />
+      )}
     </div>
   );
 }

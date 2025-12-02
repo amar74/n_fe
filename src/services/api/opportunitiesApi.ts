@@ -660,6 +660,124 @@ class OpportunitiesApiService {
       throw err;
     }
   }
+
+  // AI Analysis endpoints
+  async performComprehensiveAIAnalysis(opportunityId: string): Promise<any> {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${opportunityId}/ai-analysis/comprehensive`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `AI comprehensive analysis failed for ${opportunityId}`);
+      throw err;
+    }
+  }
+
+  async analyzeCompetition(opportunityId: string): Promise<any> {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${opportunityId}/ai-analysis/competition`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `Competition analysis failed for ${opportunityId}`);
+      throw err;
+    }
+  }
+
+  async analyzeTechnicalFit(opportunityId: string): Promise<any> {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${opportunityId}/ai-analysis/technical`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `Technical fit analysis failed for ${opportunityId}`);
+      throw err;
+    }
+  }
+
+  async analyzeFinancialViability(opportunityId: string): Promise<any> {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${opportunityId}/ai-analysis/financial`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `Financial analysis failed for ${opportunityId}`);
+      throw err;
+    }
+  }
+
+  async getStrategicRecommendations(opportunityId: string): Promise<any> {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/${opportunityId}/ai-analysis/recommendations`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `Strategic recommendations failed for ${opportunityId}`);
+      throw err;
+    }
+  }
+
+  // Filter Presets endpoints
+  async getFilterPresets(): Promise<any[]> {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/filter-presets`);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, 'get filter presets failed');
+      throw err;
+    }
+  }
+
+  async createFilterPreset(data: { name: string; description?: string; filters: any; is_shared?: boolean; is_default?: boolean }): Promise<any> {
+    try {
+      const response = await apiClient.post(`${this.baseUrl}/filter-presets`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, 'create filter preset failed');
+      throw err;
+    }
+  }
+
+  async updateFilterPreset(presetId: string, data: { name?: string; description?: string; filters?: any; is_shared?: boolean; is_default?: boolean }): Promise<any> {
+    try {
+      const response = await apiClient.put(`${this.baseUrl}/filter-presets/${presetId}`, data);
+      return response.data;
+    } catch (err) {
+      this.handleError(err, `update filter preset failed ${presetId}`);
+      throw err;
+    }
+  }
+
+  async deleteFilterPreset(presetId: string): Promise<void> {
+    try {
+      await apiClient.delete(`${this.baseUrl}/filter-presets/${presetId}`);
+    } catch (err) {
+      this.handleError(err, `delete filter preset failed ${presetId}`);
+      throw err;
+    }
+  }
+
+  // Export endpoints
+  async exportOpportunitiesToExcel(params?: any): Promise<Blob> {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/export/excel`, {
+        params,
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (err) {
+      this.handleError(err, 'Excel export failed');
+      throw err;
+    }
+  }
+
+  async exportOpportunitiesToPDF(params?: any): Promise<Blob> {
+    try {
+      const response = await apiClient.get(`${this.baseUrl}/export/pdf`, {
+        params,
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (err) {
+      this.handleError(err, 'PDF export failed');
+      throw err;
+    }
+  }
 }
 
 export const opportunitiesApi = new OpportunitiesApiService();

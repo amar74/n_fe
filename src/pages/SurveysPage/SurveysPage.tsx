@@ -29,7 +29,8 @@ import {
   MoreVertical,
   CheckCircle,
   FileText,
-  Trash2
+  Trash2,
+  Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiClient } from '@/services/api/client';
@@ -72,6 +73,12 @@ export default function SurveysPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [deletingSurveyId, setDeletingSurveyId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'client' | 'employee'>('all');
+
+  // Helper function to check if survey is employee type
+  const isEmployeeSurvey = (type: string) => {
+    return type === 'employee_satisfaction' || type === 'employee_feedback';
+  };
 
   useEffect(() => {
     loadSurveys();
@@ -95,10 +102,48 @@ export default function SurveysPage() {
     }
   };
 
-  const filteredSurveys = surveys.filter(survey => 
-    survey.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    survey.description.toLowerCase().includes(searchTerm.toLowerCase())
+  // Separate surveys by type
+  const clientSurveys = surveys.filter(survey => 
+    !isEmployeeSurvey(survey.survey_type)
   );
+  const employeeSurveys = surveys.filter(survey => 
+    isEmployeeSurvey(survey.survey_type)
+  );
+
+  // Filter surveys based on active tab and search
+  const getFilteredSurveys = () => {
+    let surveysToFilter: Survey[] = [];
+    
+    if (activeTab === 'client') {
+      surveysToFilter = clientSurveys;
+    } else if (activeTab === 'employee') {
+      surveysToFilter = employeeSurveys;
+    } else {
+      surveysToFilter = surveys;
+    }
+    
+    return surveysToFilter.filter(survey => 
+      survey.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      survey.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  const filteredSurveys = getFilteredSurveys();
+
+  // Calculate stats for each type
+  const clientStats = {
+    total: clientSurveys.length,
+    draft: clientSurveys.filter(s => s.status === 'draft').length,
+    active: clientSurveys.filter(s => s.status === 'active').length,
+    completed: clientSurveys.filter(s => s.status === 'completed').length,
+  };
+
+  const employeeStats = {
+    total: employeeSurveys.length,
+    draft: employeeSurveys.filter(s => s.status === 'draft').length,
+    active: employeeSurveys.filter(s => s.status === 'active').length,
+    completed: employeeSurveys.filter(s => s.status === 'completed').length,
+  };
 
   const handleCreateSurvey = () => {
     navigate('/surveys/builder');
@@ -171,10 +216,6 @@ export default function SurveysPage() {
     return labels[type] || type;
   };
 
-  const isEmployeeSurvey = (type: string) => {
-    return type === 'employee_satisfaction' || type === 'employee_feedback';
-  };
-
   return (
     <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
@@ -185,8 +226,8 @@ export default function SurveysPage() {
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Surveys</span>
             </div>
-            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">Client Surveys</h1>
-            <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">Create and manage client satisfaction surveys</p>
+            <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">Surveys</h1>
+            <p className="text-[#667085] text-sm font-normal font-outfit leading-tight">Create and manage client and employee surveys</p>
           </div>
           
           <div className="flex items-start gap-3">
@@ -207,6 +248,163 @@ export default function SurveysPage() {
           </div>
         </div>
 
+        {/* Tabs for Client/Employee Surveys */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`flex-1 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
+                activeTab === 'all'
+                  ? 'bg-indigo-950 text-white shadow-md'
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              All Surveys ({surveys.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('client')}
+              className={`flex-1 px-4 py-3 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+                activeTab === 'client'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Building2 className="h-4 w-4" />
+              Client Surveys ({clientStats.total})
+            </button>
+            <button
+              onClick={() => setActiveTab('employee')}
+              className={`flex-1 px-4 py-3 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+                activeTab === 'employee'
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              Employee Surveys ({employeeStats.total})
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {activeTab === 'all' && (
+            <>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-600">Client Surveys</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{clientStats.total}</p>
+                <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                  <span>{clientStats.active} active</span>
+                  <span>{clientStats.draft} draft</span>
+                </div>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-5 w-5 text-purple-600" />
+                  <span className="text-sm font-semibold text-gray-600">Employee Surveys</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{employeeStats.total}</p>
+                <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                  <span>{employeeStats.active} active</span>
+                  <span>{employeeStats.draft} draft</span>
+                </div>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="text-sm font-semibold text-gray-600">Total Active</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{clientStats.active + employeeStats.active}</p>
+                <p className="text-xs text-gray-500 mt-2">Across all surveys</p>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-5 w-5 text-gray-600" />
+                  <span className="text-sm font-semibold text-gray-600">Total Drafts</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{clientStats.draft + employeeStats.draft}</p>
+                <p className="text-xs text-gray-500 mt-2">In progress</p>
+              </div>
+            </>
+          )}
+          {activeTab === 'client' && (
+            <>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-600">Total</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{clientStats.total}</p>
+                <p className="text-xs text-gray-500 mt-2">Client surveys</p>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="text-sm font-semibold text-gray-600">Active</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{clientStats.active}</p>
+                <p className="text-xs text-gray-500 mt-2">Currently running</p>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-5 w-5 text-gray-600" />
+                  <span className="text-sm font-semibold text-gray-600">Draft</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{clientStats.draft}</p>
+                <p className="text-xs text-gray-500 mt-2">In progress</p>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-600">Completed</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{clientStats.completed}</p>
+                <p className="text-xs text-gray-500 mt-2">Finished</p>
+              </div>
+            </>
+          )}
+          {activeTab === 'employee' && (
+            <>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-5 w-5 text-purple-600" />
+                  <span className="text-sm font-semibold text-gray-600">Total</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{employeeStats.total}</p>
+                <p className="text-xs text-gray-500 mt-2">Employee surveys</p>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="text-sm font-semibold text-gray-600">Active</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{employeeStats.active}</p>
+                <p className="text-xs text-gray-500 mt-2">Currently running</p>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-5 w-5 text-gray-600" />
+                  <span className="text-sm font-semibold text-gray-600">Draft</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{employeeStats.draft}</p>
+                <p className="text-xs text-gray-500 mt-2">In progress</p>
+              </div>
+              <div className="p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-semibold text-gray-600">Completed</span>
+                </div>
+                <p className="text-2xl font-bold text-gray-900">{employeeStats.completed}</p>
+                <p className="text-xs text-gray-500 mt-2">Finished</p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Filters */}
         <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
@@ -228,22 +426,32 @@ export default function SurveysPage() {
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="paused">Paused</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
+                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-full sm:w-48 h-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="customer_satisfaction">Customer Satisfaction</SelectItem>
-                <SelectItem value="account_feedback">Account Feedback</SelectItem>
-                <SelectItem value="nps">NPS Survey</SelectItem>
-                <SelectItem value="opportunity_feedback">Opportunity Feedback</SelectItem>
-                <SelectItem value="general">General Survey</SelectItem>
+                {activeTab !== 'employee' && (
+                  <>
+                    <SelectItem value="customer_satisfaction">Customer Satisfaction</SelectItem>
+                    <SelectItem value="account_feedback">Account Feedback</SelectItem>
+                    <SelectItem value="nps">NPS Survey</SelectItem>
+                    <SelectItem value="opportunity_feedback">Opportunity Feedback</SelectItem>
+                    <SelectItem value="general">General Survey</SelectItem>
+                  </>
+                )}
+                {activeTab !== 'client' && (
+                  <>
+                    <SelectItem value="employee_satisfaction">Employee Satisfaction</SelectItem>
+                    <SelectItem value="employee_feedback">Employee Feedback</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>

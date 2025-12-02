@@ -429,14 +429,14 @@ export function AccountsList({
       </div>
 
       
-      {filteredAccounts.length > 0 && (
+      {pagination && filteredAccounts.length > 0 && (
         <div className="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-6 py-4 rounded-b-2xl">
           
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-700">
-              Showing <span className="font-medium">1</span> to{' '}
-              <span className="font-medium">{filteredAccounts.length}</span> of{' '}
-              <span className="font-medium">{filteredAccounts.length}</span> accounts
+              Showing <span className="font-medium">{((pagination.page - 1) * pagination.size) + 1}</span> to{' '}
+              <span className="font-medium">{Math.min(pagination.page * pagination.size, pagination.total)}</span> of{' '}
+              <span className="font-medium">{pagination.total}</span> accounts
               {showOnlyApproved && <span className="text-indigo-600"> (Approved only)</span>}
             </span>
           </div>

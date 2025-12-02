@@ -43,6 +43,8 @@ import ProjectsPage from '@/pages/modules/projects/ProjectsPage';
 import FinancePage from '@/pages/modules/finance/FinancePage';
 import FinancePlanningPage from '@/pages/modules/finance/FinancePlanningPage';
 import ProcurementPage from '@/pages/modules/procurement/ProcurementPage';
+import BudgetCreationPage from '@/pages/modules/procurement/BudgetCreationPage';
+import { SubmissionsApprovalPage } from '@/pages/modules/procurement/SubmissionsApprovalPage';
 import KpisPage from '@/pages/modules/kpis/KpisPage';
 import AIAgenticPage from '@/pages/modules/ai-agentic/AIAgenticPage';
 import OrganizationUpdatePage from '@/pages/OrganizationUpdatePage';
@@ -196,6 +198,14 @@ const router = createBrowserRouter([
       {
         path: 'module/procurement',
         element: <ProcurementPage />,
+      },
+      {
+        path: 'module/procurement/budget/create',
+        element: <BudgetCreationPage />,
+      },
+      {
+        path: 'submissions-approval',
+        element: <SubmissionsApprovalPage />,
       },
       {
         path: 'module/delivery-models',

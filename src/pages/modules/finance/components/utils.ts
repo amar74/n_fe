@@ -21,3 +21,9 @@ export const formatPercentSigned = (value: number, fractionDigits = 1) => {
   return `${value >= 0 ? '+' : '-'}${formatted}%`;
 };
 
+export const formatCurrencySigned = (value: number) => {
+  const absValue = Math.abs(value);
+  const formatted = formatCurrency(absValue);
+  return `${value >= 0 ? '+' : '-'}${formatted}`;
+};
+

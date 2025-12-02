@@ -1,10 +1,15 @@
-import { memo, useState } from 'react';
+import { memo, useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Download, Eye, Filter, Users, TrendingUp, Clock, CheckCircle, DollarSign, Mail, Phone, MapPin, Briefcase, Award, Star, Plus, Edit, Trash2, Loader2, Save, X } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
+import { useRoles } from '@/hooks/useRoles';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/services/api/client';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PlacesAutocomplete } from '@/components/ui/places-autocomplete';
+import { loadGoogleMaps } from '@/lib/google-maps-loader';
 
 type Employee = {
   id: string;
@@ -637,6 +642,30 @@ function EmployeeManagementPage() {
   );
 }
 
+// Contractor-specific skills for builders, interior designers, and material suppliers
+const SKILLS_OPTIONS = [
+  // Construction & Building Skills
+  'General Construction', 'Residential Construction', 'Commercial Construction', 'Industrial Construction',
+  'Framing & Carpentry', 'Concrete Work', 'Masonry & Stonework', 'Roofing & Waterproofing',
+  'Electrical Installation', 'Plumbing Installation', 'HVAC Installation', 'Drywall & Plastering',
+  'Flooring Installation', 'Painting & Finishing', 'Tile & Stone Installation', 'Insulation & Weatherproofing',
+  
+  // Interior Design Skills
+  'Interior Design', 'Space Planning', 'Color Consultation', 'Furniture Selection',
+  'Kitchen Design', 'Bathroom Design', 'Lighting Design', 'Material Selection',
+  '3D Rendering & Visualization', 'CAD Design', 'Design Consultation', 'Styling & Staging',
+  
+  // Material Supply & Logistics
+  'Material Procurement', 'Supply Chain Management', 'Inventory Management', 'Vendor Relations',
+  'Quality Control & Inspection', 'Material Sourcing', 'Logistics Coordination', 'Cost Estimation',
+  'Material Specifications', 'Delivery Management', 'Supplier Negotiation', 'Material Testing',
+  
+  // Project Management & Business
+  'Project Management', 'Site Supervision', 'Quality Assurance', 'Safety Management',
+  'Budget Planning', 'Cost Control', 'Contract Management', 'Client Relations',
+  'Team Leadership', 'Subcontractor Management', 'Permit & Code Compliance', 'Risk Management',
+];
+
 function EditEmployeeModal({ 
   employee, 
   onClose, 
@@ -648,6 +677,19 @@ function EditEmployeeModal({
   onSave: (data: any) => Promise<void>; 
   isUpdating: boolean;
 }) {
+  // Fetch departments and roles
+  const { allRoles, isLoading: isLoadingRoles } = useRoles();
+  const {
+    data: departments = [],
+    isLoading: isLoadingDepartments,
+  } = useQuery({
+    queryKey: ['organization', 'departments'],
+    queryFn: async () => {
+      const response = await apiClient.get('/departments');
+      return response.data || [];
+    },
+  });
+
   const [formData, setFormData] = useState({
     name: employee.name,
     email: employee.email,
@@ -660,8 +702,139 @@ function EditEmployeeModal({
     skills: (employee.skills || []).join(', '),
   });
 
+  const [phoneError, setPhoneError] = useState('');
+  const [skillsSuggestions, setSkillsSuggestions] = useState<string[]>([]);
+  const [showSkillsDropdown, setShowSkillsDropdown] = useState(false);
+  const skillsInputRef = useRef<HTMLInputElement>(null);
+  const skillsDropdownRef = useRef<HTMLDivElement>(null);
+
+  // USA phone number formatting
+  const formatPhoneNumber = (value: string) => {
+    const phoneNumber = value.replace(/\D/g, '');
+    const limitedNumber = phoneNumber.slice(0, 11);
+    
+    if (limitedNumber.length === 0) return '';
+    if (limitedNumber.length <= 1) return `+${limitedNumber}`;
+    if (limitedNumber.length <= 4) return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1)}`;
+    if (limitedNumber.length <= 7) return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1, 4)}-${limitedNumber.slice(4)}`;
+    return `+${limitedNumber.slice(0, 1)} ${limitedNumber.slice(1, 4)}-${limitedNumber.slice(4, 7)}-${limitedNumber.slice(7, 11)}`;
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 0) {
+      setPhoneError('');
+      return true;
+    }
+    if (cleaned.length < 10) {
+      setPhoneError('Phone number must be at least 10 digits');
+      return false;
+    }
+    if (cleaned.length > 11) {
+      setPhoneError('Phone number must not exceed 11 digits');
+      return false;
+    }
+    if (cleaned.length === 11 && !cleaned.startsWith('1')) {
+      setPhoneError('Invalid country code. USA numbers should start with 1');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+    validatePhoneNumber(formatted);
+  };
+
+  // Skills autocomplete
+  const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, skills: value });
+    
+    // Get the last skill being typed
+    const skillsArray = value.split(',').map(s => s.trim());
+    const lastSkill = skillsArray[skillsArray.length - 1];
+    
+    if (lastSkill && lastSkill.length > 0) {
+      const filtered = SKILLS_OPTIONS.filter(skill =>
+        skill.toLowerCase().includes(lastSkill.toLowerCase()) &&
+        !skillsArray.slice(0, -1).includes(skill)
+      );
+      setSkillsSuggestions(filtered.slice(0, 5));
+      setShowSkillsDropdown(filtered.length > 0);
+    } else {
+      setShowSkillsDropdown(false);
+    }
+  };
+
+  const handleSkillSelect = (skill: string) => {
+    const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(Boolean);
+    const lastIndex = skillsArray.length - 1;
+    
+    if (lastIndex >= 0 && skillsArray[lastIndex] && !skillsArray[lastIndex].includes(skill)) {
+      skillsArray[lastIndex] = skill;
+    } else {
+      skillsArray.push(skill);
+    }
+    
+    setFormData({ ...formData, skills: skillsArray.join(', ') });
+    setShowSkillsDropdown(false);
+    if (skillsInputRef.current) {
+      skillsInputRef.current.focus();
+    }
+  };
+
+  // Close skills dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        skillsDropdownRef.current &&
+        !skillsDropdownRef.current.contains(event.target as Node) &&
+        skillsInputRef.current &&
+        !skillsInputRef.current.contains(event.target as Node)
+      ) {
+        setShowSkillsDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle location change from Google Maps
+  const handleLocationChange = (value: string, placeDetails?: google.maps.places.PlaceResult) => {
+    if (placeDetails && placeDetails.address_components) {
+      let city = '';
+      let state = '';
+      
+      placeDetails.address_components.forEach((component: any) => {
+        const types = component.types;
+        if (types.includes('locality')) {
+          city = component.long_name;
+        }
+        if (types.includes('administrative_area_level_1')) {
+          state = component.short_name;
+        }
+      });
+      
+      const location = city && state ? `${city}, ${state}` : value;
+      setFormData({ ...formData, location });
+    } else {
+      setFormData({ ...formData, location: value });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate phone number before submitting
+    if (formData.phone && !validatePhoneNumber(formData.phone)) {
+      toast.error('Please enter a valid USA phone number');
+      return;
+    }
+    
     await onSave({
       name: formData.name,
       email: formData.email,
@@ -676,7 +849,7 @@ function EditEmployeeModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="sticky top-0 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
@@ -724,13 +897,20 @@ function EditEmployeeModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="border-gray-300"
-              />
+              <Label htmlFor="phone">Phone (USA)</Label>
+              <div className="relative">
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handlePhoneChange}
+                  placeholder="+1 555-123-4567"
+                  className={`border-gray-300 ${phoneError ? 'border-red-500' : ''}`}
+                />
+                {phoneError && (
+                  <p className="text-xs text-red-500 mt-1">{phoneError}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -745,32 +925,53 @@ function EditEmployeeModal({
 
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Input
+              <select
                 id="role"
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="border-gray-300"
-              />
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select role</option>
+                {isLoadingRoles ? (
+                  <option>Loading roles...</option>
+                ) : (
+                  allRoles.map((role: any) => (
+                    <option key={role.id} value={role.name}>
+                      {role.name}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="department">Department</Label>
-              <Input
+              <select
                 id="department"
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="border-gray-300"
-              />
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select department</option>
+                {isLoadingDepartments ? (
+                  <option>Loading departments...</option>
+                ) : (
+                  departments.map((dept: any) => (
+                    <option key={dept.id} value={dept.name}>
+                      {dept.name}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
+              <Label htmlFor="location">Location (USA)</Label>
+              <PlacesAutocomplete
                 value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="City, State"
-                className="border-gray-300"
+                onChange={handleLocationChange}
+                placeholder="Enter city, state or address"
+                className="w-full"
               />
             </div>
 
@@ -789,14 +990,45 @@ function EditEmployeeModal({
 
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="skills">Skills (comma-separated)</Label>
-              <Input
-                id="skills"
-                value={formData.skills}
-                onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                placeholder="React, TypeScript, Node.js"
-                className="border-gray-300"
-              />
-              <p className="text-xs text-gray-500">Separate multiple skills with commas</p>
+              <div className="relative">
+                <Input
+                  ref={skillsInputRef}
+                  id="skills"
+                  value={formData.skills}
+                  onChange={handleSkillsChange}
+                  onFocus={() => {
+                    const lastSkill = formData.skills.split(',').pop()?.trim() || '';
+                    if (lastSkill) {
+                      const filtered = SKILLS_OPTIONS.filter(skill =>
+                        skill.toLowerCase().includes(lastSkill.toLowerCase()) &&
+                        !formData.skills.split(',').map(s => s.trim()).includes(skill)
+                      );
+                      setSkillsSuggestions(filtered.slice(0, 5));
+                      setShowSkillsDropdown(filtered.length > 0);
+                    }
+                  }}
+                  placeholder="React, TypeScript, Node.js"
+                  className="border-gray-300"
+                />
+                {showSkillsDropdown && skillsSuggestions.length > 0 && (
+                  <div
+                    ref={skillsDropdownRef}
+                    className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                  >
+                    {skillsSuggestions.map((skill, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSkillSelect(skill)}
+                        className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none text-sm"
+                      >
+                        {skill}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-500">Separate multiple skills with commas. Start typing for suggestions.</p>
             </div>
           </div>
 

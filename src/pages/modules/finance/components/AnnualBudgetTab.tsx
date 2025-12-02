@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ClipboardList, ChevronRight, Edit, Check, X, FileDown, History } from 'lucide-react';
+import { ArrowRight, ClipboardList, ChevronRight, Edit, Check, X, FileDown, History, CheckCircle2, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from './utils';
@@ -10,6 +10,7 @@ interface AnnualBudgetTabProps {
   annualMetrics: AnnualMetric[];
   aiHighlights: Array<{ title: string; detail: string; tone?: string }>;
   budgetYear: string;
+  displayBudgetYear: string;
   setBudgetYear: (year: string) => void;
   targetGrowthRate: number;
   setTargetGrowthRate: (rate: number) => void;
@@ -28,12 +29,17 @@ interface AnnualBudgetTabProps {
   handleSaveBudget: () => void;
   handleCopyFromYear: () => void;
   handleReviewPreviousYear: () => void;
+  budgetStatus?: string;
+  budgetId?: number;
+  onSubmitForApproval?: () => Promise<void>;
+  isSubmitting?: boolean;
 }
 
 export function AnnualBudgetTab({
   annualMetrics,
   aiHighlights,
   budgetYear,
+  displayBudgetYear,
   setBudgetYear,
   targetGrowthRate,
   setTargetGrowthRate,
@@ -52,17 +58,31 @@ export function AnnualBudgetTab({
   handleSaveBudget,
   handleCopyFromYear,
   handleReviewPreviousYear,
+  budgetStatus = 'draft',
+  budgetId,
+  onSubmitForApproval,
+  isSubmitting = false,
 }: AnnualBudgetTabProps) {
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_48px_-24px_rgba(79,70,229,0.25)]">
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold text-slate-900">Budget Summary</h3>
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#161950]/10 px-3 py-1 text-sm font-semibold text-[#161950]">
+          <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${
+            budgetStatus === 'draft' ? 'bg-slate-100 text-slate-700' :
+            budgetStatus === 'pending' || budgetStatus === 'submitted' || budgetStatus === 'in_review' ? 'bg-blue-100 text-blue-700' :
+            budgetStatus === 'approved' || budgetStatus === 'active' ? 'bg-emerald-100 text-emerald-700' :
+            budgetStatus === 'rejected' ? 'bg-rose-100 text-rose-700' :
+            'bg-slate-100 text-slate-700'
+          }`}>
             <ClipboardList className="h-3.5 w-3.5" />
-            Draft
+            {budgetStatus === 'active' ? 'Active' : budgetStatus || 'draft'}
           </span>
         </div>
+        <p className="mt-2 text-sm text-slate-500">
+          Working year:&nbsp;
+          <span className="font-semibold text-slate-800">{displayBudgetYear || 'Most Recent'}</span>
+        </p>
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {annualMetrics.map((metric) => (
             <div
@@ -117,11 +137,12 @@ export function AnnualBudgetTab({
         <div className="mt-6 space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-semibold uppercase tracking-wide text-slate-500">Budget Year</label>
-            <Select value={budgetYear} onValueChange={setBudgetYear}>
+            <Select value={budgetYear || 'recent'} onValueChange={(value) => setBudgetYear(value === 'recent' ? '' : value)}>
               <SelectTrigger className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-base font-medium text-slate-700 shadow-sm transition hover:border-[#161950]/40">
-                <SelectValue />
+                <SelectValue placeholder="Most Recent" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="recent">Most Recent</SelectItem>
                 <SelectItem value="2024">2024</SelectItem>
                 <SelectItem value="2025">2025</SelectItem>
                 <SelectItem value="2026">2026</SelectItem>
@@ -316,6 +337,50 @@ export function AnnualBudgetTab({
             <History className="h-4 w-4 text-[#161950] transition group-hover:text-white" />
             Review Previous Year
           </button>
+          {/* Submit for Approval Button - Show if budget exists and is in draft status (or status unknown) */}
+          {/* Show button if: budgetId exists OR we have budget data, AND status is NOT already submitted/approved/active/rejected, AND handler exists */}
+          {(() => {
+            const hasBudgetData = !!(budgetId || revenueTotals.totalTarget > 0 || expenseTotals.totalTarget > 0 || totalRevenueTarget > 0 || totalExpenseBudget > 0);
+            const submittedStates = ['pending', 'submitted', 'in_review', 'approved', 'active', 'rejected'];
+            const isNotSubmitted = !budgetStatus || !submittedStates.includes(budgetStatus);
+            const shouldShow = hasBudgetData && isNotSubmitted && !!onSubmitForApproval;
+            
+            // Debug logging (remove in production)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Submit Button Debug:', {
+                hasBudgetData,
+                budgetStatus,
+                isNotSubmitted,
+                hasHandler: !!onSubmitForApproval,
+                shouldShow,
+                budgetId,
+                revenueTotal: revenueTotals.totalTarget,
+                expenseTotal: expenseTotals.totalTarget,
+                totalRevenue: totalRevenueTarget,
+                totalExpense: totalExpenseBudget
+              });
+            }
+            
+            return shouldShow;
+          })() && (
+            <button 
+              onClick={onSubmitForApproval}
+              disabled={isSubmitting}
+              className="group h-10 inline-flex items-center gap-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-emerald-700 shadow-sm transition hover:bg-emerald-100 hover:border-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Submit for Approval
+                </>
+              )}
+            </button>
+          )}
           <Link
             to="/module/finance"
             className="group h-10 bg-[#161950] outline outline-1 outline-offset-[-1px] outline-indigo-950 inline-flex items-center gap-2.5 rounded-xl border border-[#161950] px-4 py-2 text-sm font-semibold uppercase tracking-wide shadow-sm transition text-white hover:text-white"

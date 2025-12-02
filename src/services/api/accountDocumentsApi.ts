@@ -70,6 +70,19 @@ class AccountDocumentsApiService {
     const response = await apiClient.delete<AccountDocumentDeleteResponse>(`${this.baseUrl}/${accountId}/documents/${documentId}`);
     return response.data;
   }
+
+  async downloadDocument(accountId: string, documentId: string) {
+    try {
+      const response = await apiClient.get(
+        `${this.baseUrl}/${accountId}/documents/${documentId}/download`,
+        { responseType: 'blob' }
+      );
+      return response;
+    } catch (err) {
+      console.error(`Download document failed for account ${accountId}, document ${documentId}:`, err);
+      throw err;
+    }
+  }
 }
 
 export const accountDocumentsApi = new AccountDocumentsApiService();

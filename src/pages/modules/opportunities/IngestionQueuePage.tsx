@@ -241,6 +241,9 @@ export default function IngestionQueuePage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createModalDraft, setCreateModalDraft] = useState<OpportunityTempResponse | null>(null);
   const [createModalDefaults, setCreateModalDefaults] = useState<Partial<OpportunityFormData>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<'created_at' | 'match_score' | 'project_title'>('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const { data: tempOpportunities = [], isLoading } = useOpportunityTemp(
     statusFilter === 'all' ? undefined : statusFilter,
@@ -255,15 +258,134 @@ export default function IngestionQueuePage() {
   );
 
   const filteredOpportunities = useMemo(() => {
-    if (!searchQuery.trim()) return tempOpportunities;
-    const query = searchQuery.toLowerCase();
-    return tempOpportunities.filter(opp => 
-      opp.project_title.toLowerCase().includes(query) ||
-      opp.client_name?.toLowerCase().includes(query) ||
-      opp.location?.toLowerCase().includes(query) ||
-      opp.tags?.some(tag => tag.toLowerCase().includes(query))
-    );
-  }, [tempOpportunities, searchQuery]);
+    let filtered = tempOpportunities;
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(opp => 
+        opp.project_title.toLowerCase().includes(query) ||
+        opp.client_name?.toLowerCase().includes(query) ||
+        opp.location?.toLowerCase().includes(query) ||
+        opp.tags?.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+    
+    // Status filter (already handled by API, but double-check)
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(opp => opp.status === statusFilter);
+    }
+    
+    // Sorting
+    filtered = [...filtered].sort((a, b) => {
+      let aVal: any, bVal: any;
+      
+      if (sortBy === 'created_at') {
+        aVal = new Date(a.created_at).getTime();
+        bVal = new Date(b.created_at).getTime();
+      } else if (sortBy === 'match_score') {
+        aVal = a.match_score ?? 0;
+        bVal = b.match_score ?? 0;
+      } else if (sortBy === 'project_title') {
+        aVal = a.project_title.toLowerCase();
+        bVal = b.project_title.toLowerCase();
+      }
+      
+      if (sortOrder === 'asc') {
+        return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+      } else {
+        return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+      }
+    });
+    
+    return filtered;
+  }, [tempOpportunities, searchQuery, statusFilter, sortBy, sortOrder]);
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.size === 0) {
+      toast.error('Please select opportunities to approve');
+      return;
+    }
+    
+    try {
+      const promises = Array.from(selectedIds).map(id => {
+        const opp = tempOpportunities.find(o => o.id === id);
+        if (opp) {
+          return update.mutateAsync({
+            id: opp.id,
+            payload: { status: 'approved' as TempStatus },
+          });
+        }
+      });
+      await Promise.all(promises);
+      toast.success(`${selectedIds.size} opportunities approved`);
+      setSelectedIds(new Set());
+    } catch (error) {
+      toast.error('Failed to approve some opportunities');
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedIds.size === 0) {
+      toast.error('Please select opportunities to reject');
+      return;
+    }
+    
+    if (!confirm(`Are you sure you want to reject ${selectedIds.size} opportunities?`)) return;
+    
+    try {
+      const promises = Array.from(selectedIds).map(id => {
+        const opp = tempOpportunities.find(o => o.id === id);
+        if (opp) {
+          return update.mutateAsync({
+            id: opp.id,
+            payload: { status: 'rejected' as TempStatus },
+          });
+        }
+      });
+      await Promise.all(promises);
+      toast.success(`${selectedIds.size} opportunities rejected`);
+      setSelectedIds(new Set());
+    } catch (error) {
+      toast.error('Failed to reject some opportunities');
+    }
+  };
+
+  const handleBulkPromote = async () => {
+    if (selectedIds.size === 0) {
+      toast.error('Please select opportunities to promote');
+      return;
+    }
+    
+    try {
+      const promises = Array.from(selectedIds).map(id => {
+        return promote.mutateAsync({ id });
+      });
+      await Promise.all(promises);
+      toast.success(`${selectedIds.size} opportunities promoted`);
+      setSelectedIds(new Set());
+    } catch (error) {
+      toast.error('Failed to promote some opportunities');
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === filteredOpportunities.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredOpportunities.map(o => o.id)));
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
 
   const handleStatusChange = async (opp: OpportunityTempResponse, newStatus: TempStatus) => {
     try {
@@ -430,8 +552,8 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        {/* Filters and Bulk Actions */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -458,7 +580,75 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
                 </SelectContent>
               </Select>
             </div>
+            <div className="w-full sm:w-48">
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="created_at">Created Date</SelectItem>
+                  <SelectItem value="match_score">Match Score</SelectItem>
+                  <SelectItem value="project_title">Project Title</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full sm:w-32">
+              <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as any)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">Descending</SelectItem>
+                  <SelectItem value="asc">Ascending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          
+          {/* Bulk Actions */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
+              <span className="text-sm text-gray-600">
+                {selectedIds.size} selected
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkApprove}
+                disabled={update.isPending}
+              >
+                <CheckCircle2 className="w-4 h-4 mr-1" />
+                Approve Selected
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkReject}
+                disabled={update.isPending}
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                <XCircle className="w-4 h-4 mr-1" />
+                Reject Selected
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkPromote}
+                disabled={promote.isPending}
+                className="text-green-600 border-green-300 hover:bg-green-50"
+              >
+                <CheckCircle2 className="w-4 h-4 mr-1" />
+                Promote Selected
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedIds(new Set())}
+              >
+                Clear Selection
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Stats */}
@@ -487,6 +677,21 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
           </div>
         </div>
 
+        {/* Select All */}
+        {filteredOpportunities.length > 0 && (
+          <div className="mb-4 flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={selectedIds.size === filteredOpportunities.length && filteredOpportunities.length > 0}
+              onChange={handleSelectAll}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label className="text-sm text-gray-700">
+              Select All ({filteredOpportunities.length})
+            </label>
+          </div>
+        )}
+
         {/* Opportunities List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
@@ -507,13 +712,26 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
               const projectValue = getProjectValue(opp);
               const displayLocation = getDisplayLocation(opp);
               const statusInfo = statusConfig[opp.status];
+              const isSelected = selectedIds.has(opp.id);
 
               return (
                 <div
                   key={opp.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+                  className={`bg-white rounded-lg shadow-sm border-2 p-6 hover:shadow-md transition-shadow ${
+                    isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                  }`}
                 >
                   <div className="flex flex-col lg:flex-row gap-4">
+                    {/* Checkbox for bulk selection */}
+                    <div className="flex items-start pt-1">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleSelect(opp.id)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      />
+                    </div>
+                    
                     {/* Main Content */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-3">

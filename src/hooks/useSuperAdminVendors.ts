@@ -77,12 +77,16 @@ export function useSuperAdminVendors() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Dashboard query removed - this hook is for vendor user management, not procurement suppliers
+  // Super admin dashboard should be accessed separately if needed
   const dashboardQuery = useQuery({
     queryKey: vendorKeys.dashboard(),
     queryFn: async () => {
       const response = await apiClient.get<DashboardData>('/super-admin/dashboard');
       return response.data;
     },
+    retry: false,
+    enabled: false, // Disabled - not needed for vendor management
   });
 
   const statsQuery = useQuery({

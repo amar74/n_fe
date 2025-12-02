@@ -18,22 +18,88 @@ export function AIHealthScoreWidget({ accountId, initialScore, initialRiskLevel 
   }, [accountId]);
 
   const loadHealthScore = async () => {
-    const data = await getHealthScore(accountId);
-    if (data) {
-      setHealthData(data);
-    } else if (initialScore !== undefined) {
-      setHealthData({
-        health_score: initialScore,
-        risk_level: (initialRiskLevel as any) || 'medium',
-        health_trend: 'stable',
-        last_analysis: new Date().toISOString(),
-        components: {
-          data_quality: 0,
-          communication: 0,
-          business_value: 0,
-          completeness: 0,
-        },
-      });
+    try {
+      const data = await getHealthScore(accountId);
+      if (data) {
+        // Backend returns ai_health_score, not health_score
+        const healthScoreValue = data.ai_health_score ?? data.health_score;
+        const healthScore = typeof healthScoreValue === 'number' && !isNaN(healthScoreValue)
+          ? Number(healthScoreValue)
+          : (typeof healthScoreValue === 'string' ? parseFloat(healthScoreValue) : 0);
+        
+        // Backend returns score_breakdown, map to components format
+        const scoreBreakdown = data.score_breakdown || {};
+        const components = {
+          data_quality: Number(data.data_quality_score ?? scoreBreakdown.data_quality ?? 0),
+          communication: Number(data.communication_frequency ?? scoreBreakdown.communication ?? 0),
+          business_value: Number(data.win_rate ?? scoreBreakdown.business_value ?? scoreBreakdown.win_rate ?? 0),
+          completeness: Number(scoreBreakdown.completeness ?? 0),
+        };
+        
+        setHealthData({
+          health_score: Math.max(0, Math.min(100, healthScore)),
+          risk_level: data.risk_level || (initialRiskLevel as any) || 'medium',
+          health_trend: data.health_trend || 'stable',
+          last_analysis: data.last_ai_analysis || data.last_analysis || new Date().toISOString(),
+          components: components,
+        });
+      } else if (initialScore !== undefined && !isNaN(initialScore) && initialScore >= 0) {
+        // Use initial score as fallback
+        setHealthData({
+          health_score: initialScore,
+          risk_level: (initialRiskLevel as any) || 'medium',
+          health_trend: 'stable',
+          last_analysis: new Date().toISOString(),
+          components: {
+            data_quality: 0,
+            communication: 0,
+            business_value: 0,
+            completeness: 0,
+          },
+        });
+      } else {
+        // If no data and no initial score, calculate it
+        const calculated = await calculateHealthScore(accountId, false);
+        if (calculated) {
+          const healthScoreValue = calculated.ai_health_score ?? calculated.health_score;
+          const healthScore = typeof healthScoreValue === 'number' && !isNaN(healthScoreValue)
+            ? Number(healthScoreValue)
+            : (typeof healthScoreValue === 'string' ? parseFloat(healthScoreValue) : 0);
+          
+          const scoreBreakdown = calculated.score_breakdown || {};
+          const components = {
+            data_quality: Number(calculated.data_quality_score ?? scoreBreakdown.data_quality ?? 0),
+            communication: Number(calculated.communication_frequency ?? scoreBreakdown.communication ?? 0),
+            business_value: Number(calculated.win_rate ?? scoreBreakdown.business_value ?? scoreBreakdown.win_rate ?? 0),
+            completeness: Number(scoreBreakdown.completeness ?? 0),
+          };
+          
+          setHealthData({
+            health_score: Math.max(0, Math.min(100, healthScore)),
+            risk_level: calculated.risk_level || 'medium',
+            health_trend: calculated.health_trend || 'stable',
+            last_analysis: calculated.last_ai_analysis || calculated.last_analysis || new Date().toISOString(),
+            components: components,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error loading health score:', error);
+      // Set default values on error
+      if (initialScore !== undefined && !isNaN(initialScore) && initialScore >= 0) {
+        setHealthData({
+          health_score: initialScore,
+          risk_level: (initialRiskLevel as any) || 'medium',
+          health_trend: 'stable',
+          last_analysis: new Date().toISOString(),
+          components: {
+            data_quality: 0,
+            communication: 0,
+            business_value: 0,
+            completeness: 0,
+          },
+        });
+      }
     }
   };
 
@@ -139,7 +205,9 @@ export function AIHealthScoreWidget({ accountId, initialScore, initialRiskLevel 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className={`text-6xl font-bold text-white`}>
-              {Math.round(healthData.health_score)}
+              {typeof healthData.health_score === 'number' && !isNaN(healthData.health_score) 
+                ? Math.round(healthData.health_score) 
+                : 0}
               <span className="text-2xl text-white/70">%</span>
             </div>
             <div className="flex flex-col gap-1">
@@ -166,11 +234,12 @@ export function AIHealthScoreWidget({ accountId, initialScore, initialRiskLevel 
           <span className="text-sm text-gray-500">{showDetails ? 'Hide' : 'Show'} Details</span>
         </button>
 
-        {showDetails && (
+        {showDetails && healthData.components && (
           <div className="space-y-4">
             {Object.entries(healthData.components).map(([key, value]) => {
               const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-              const percentage = Math.round(value);
+              const numValue = typeof value === 'number' ? value : parseFloat(String(value)) || 0;
+              const percentage = Math.round(Math.max(0, Math.min(100, numValue)));
               const color = percentage >= 80 ? 'bg-emerald-500' : percentage >= 60 ? 'bg-amber-500' : 'bg-red-500';
 
               return (

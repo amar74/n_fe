@@ -4,7 +4,8 @@ import {
   authManager, 
   clearAuthData
 } from '@services/auth';
-import { API_BASE_URL_WITH_PREFIX } from '@services/api/client';
+import { apiClient } from '@services/api/client';
+import { STORAGE_CONSTANTS } from '@/constants/storageConstants';
 
 /**
  * Custom hook for managing local authentication state and operations.
@@ -81,38 +82,26 @@ export function useAuth() {
       const initPromise = (async () => {
         try {
           // Check for stored token instead of Supabase session
-          const storedToken = localStorage.getItem('authToken');
+          const storedToken = localStorage.getItem(STORAGE_CONSTANTS.AUTH_TOKEN);
           
           if (storedToken) {
+            // Set token in apiClient headers
+            apiClient.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+            
             // Verify token with backend
             try {
-              const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/me`, {
-                headers: {
-                  'Authorization': `Bearer ${storedToken}`,
-                },
-              });
+              const response = await apiClient.get<{ user: CurrentUser }>('/auth/me');
               
-              if (response.ok) {
-                try {
-                  const responseData = await response.json();
-                  // Backend returns { user: {...} } wrapper
-                  const userData = responseData.user || responseData;
-                  authManager.setAuthState(true, userData);
-                  setBackendUser(userData);
-                  setIsAuthenticated(true);
-                } catch (jsonError) {
-                  // If JSON parsing fails, clear auth data
-                  console.error('Failed to parse user data:', jsonError);
-                  handleClearAuthData();
-                }
-              } else {
-                // Token is invalid, clear it
-                handleClearAuthData();
-              }
-            } catch (error) {
-              // Network error or other error, clear token
+              // Backend returns { user: {...} } wrapper
+              const userData = response.data.user || response.data as any;
+              authManager.setAuthState(true, userData);
+              setBackendUser(userData);
+              setIsAuthenticated(true);
+            } catch (error: any) {
+              // Token is invalid or expired, clear it
               console.error('Auth initialization error:', error);
               handleClearAuthData();
+              delete apiClient.defaults.headers.common['Authorization'];
             }
           } else {
             handleClearAuthData();
@@ -142,81 +131,63 @@ export function useAuth() {
     try {
       setError(null);
       
-      const loginUrl = `${API_BASE_URL_WITH_PREFIX}/auth/login`;
-      console.log('[useAuth] Attempting login to:', loginUrl);
-      console.log('[useAuth] Email:', email);
+      console.log('[useAuth] Attempting login for:', email);
       
-      // Create AbortController for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
-      // Use local authentication instead of Supabase
-      const response = await fetch(loginUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal,
+      // Use apiClient which has proper timeout and error handling
+      const result = await apiClient.post<{ token: string; user: CurrentUser }>('/auth/login', {
+        email,
+        password,
       });
       
-      clearTimeout(timeoutId);
+      const responseData = result.data;
+      console.log('[useAuth] Login successful, received token:', responseData.token ? 'Yes' : 'No');
       
-      console.log('[useAuth] Login response status:', response.status, response.statusText);
-      
-      if (!response.ok) {
-        let errorMessage = 'Login failed';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.detail || errorData.message || 'Login failed';
-          console.log('[useAuth] Login error response:', errorData);
-        } catch (jsonError) {
-          // If JSON parsing fails, use status text or default message
-          errorMessage = response.statusText || `Login failed with status ${response.status}`;
-          console.log('[useAuth] Failed to parse error response:', jsonError);
-        }
-        setError(errorMessage);
-        return { data: null, error: { message: errorMessage } };
-      }
-      
-      let result;
-      try {
-        result = await response.json();
-        console.log('[useAuth] Login successful, received token:', result.token ? 'Yes' : 'No');
-      } catch (jsonError) {
-        const errorMessage = 'Invalid response format from server';
-        console.error('[useAuth] Failed to parse login response:', jsonError);
-        setError(errorMessage);
-        return { data: null, error: { message: errorMessage } };
-      }
-      
-      if (result.token && result.user) {
+      if (responseData.token && responseData.user) {
         // Store the token and user data
-        localStorage.setItem('authToken', result.token);
-        localStorage.setItem('userRole', result.user.role);
-        localStorage.setItem('userEmail', result.user.email);
+        localStorage.setItem(STORAGE_CONSTANTS.AUTH_TOKEN, responseData.token);
+        localStorage.setItem('userRole', responseData.user.role || '');
+        localStorage.setItem('userEmail', responseData.user.email || '');
+        
+        // Set token in apiClient headers for subsequent requests
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${responseData.token}`;
         
         console.log('[useAuth] Stored auth token and user data');
         
         // Update auth state
-        authManager.setAuthState(true, result.user);
-        setBackendUser(result.user);
+        authManager.setAuthState(true, responseData.user);
+        setBackendUser(responseData.user);
         setIsAuthenticated(true);
       } else {
-        console.warn('[useAuth] Login response missing token or user:', result);
+        console.warn('[useAuth] Login response missing token or user:', responseData);
+        const errorMessage = 'Invalid response from server';
+        setError(errorMessage);
+        return { data: null, error: { message: errorMessage } };
       }
       
-      return { data: result, error: null };
-    } catch (err) {
+      return { data: responseData, error: null };
+    } catch (err: any) {
       let errorMessage = 'Sign in failed';
-      if (err instanceof Error) {
-        if (err.name === 'AbortError') {
-          errorMessage = 'Login request timed out. Please check your connection and try again.';
-        } else {
-          errorMessage = err.message;
-        }
+      
+      if (err.response) {
+        // Server responded with error
+        errorMessage = err.response.data?.detail || 
+                      err.response.data?.message || 
+                      `Login failed: ${err.response.statusText || err.response.status}`;
+        console.error('[useAuth] Login error response:', err.response.data);
+      } else if (err.request) {
+        // Request was made but no response received
+        errorMessage = 'No response from server. Please check your connection and try again.';
+        console.error('[useAuth] Login network error:', err.request);
+      } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        // Timeout error
+        errorMessage = 'Login request timed out. Please check your connection and try again.';
+        console.error('[useAuth] Login timeout:', err);
+      } else {
+        // Other error
+        errorMessage = err.message || 'An unexpected error occurred during login';
+        console.error('[useAuth] Login exception:', err);
       }
-      console.error('[useAuth] Login exception:', err);
+      
       setError(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
@@ -226,52 +197,43 @@ export function useAuth() {
     try {
       setError(null);
       
-      // Use local authentication for signup
-      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      // Use apiClient for signup
+      const result = await apiClient.post<{ token: string; user: CurrentUser }>('/auth/signup', {
+        email,
+        password,
       });
       
-      if (!response.ok) {
-        let errorMessage = 'Signup failed';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.detail || errorData.message || 'Signup failed';
-        } catch (jsonError) {
-          // If JSON parsing fails, use status text or default message
-          errorMessage = response.statusText || `Signup failed with status ${response.status}`;
-        }
-        setError(errorMessage);
-        return { data: null, error: { message: errorMessage } };
-      }
+      const responseData = result.data;
       
-      let result;
-      try {
-        result = await response.json();
-      } catch (jsonError) {
-        const errorMessage = 'Invalid response format from server';
-        setError(errorMessage);
-        return { data: null, error: { message: errorMessage } };
-      }
-      
-      if (result.token && result.user) {
+      if (responseData.token && responseData.user) {
         // Store the token and user data
-        localStorage.setItem('authToken', result.token);
-        localStorage.setItem('userRole', result.user.role);
-        localStorage.setItem('userEmail', result.user.email);
+        localStorage.setItem(STORAGE_CONSTANTS.AUTH_TOKEN, responseData.token);
+        localStorage.setItem('userRole', responseData.user.role || '');
+        localStorage.setItem('userEmail', responseData.user.email || '');
+        
+        // Set token in apiClient headers
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${responseData.token}`;
         
         // Update auth state
-        authManager.setAuthState(true, result.user);
-        setBackendUser(result.user);
+        authManager.setAuthState(true, responseData.user);
+        setBackendUser(responseData.user);
         setIsAuthenticated(true);
       }
       
-      return { data: result, error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Sign up failed';
+      return { data: responseData, error: null };
+    } catch (err: any) {
+      let errorMessage = 'Sign up failed';
+      
+      if (err.response) {
+        errorMessage = err.response.data?.detail || 
+                      err.response.data?.message || 
+                      `Signup failed: ${err.response.statusText || err.response.status}`;
+      } else if (err.request) {
+        errorMessage = 'No response from server. Please check your connection and try again.';
+      } else {
+        errorMessage = err.message || 'An unexpected error occurred during signup';
+      }
+      
       setError(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }
@@ -282,9 +244,12 @@ export function useAuth() {
       setError(null);
       
       // Clear local storage and auth state
-      localStorage.removeItem('authToken');
+      localStorage.removeItem(STORAGE_CONSTANTS.AUTH_TOKEN);
       localStorage.removeItem('userRole');
       localStorage.removeItem('userEmail');
+      
+      // Remove token from apiClient headers
+      delete apiClient.defaults.headers.common['Authorization'];
       
       handleClearAuthData();
       authManager.setAuthState(false, null);
@@ -303,40 +268,23 @@ export function useAuth() {
     try {
       setError(null);
       
-      // Use local backend for password reset
-      const response = await fetch(`${API_BASE_URL_WITH_PREFIX}/auth/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      // Use apiClient for password reset
+      const result = await apiClient.post('/auth/reset-password', { email });
       
-      if (!response.ok) {
-        let errorMessage = 'Password reset failed';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.detail || errorData.message || 'Password reset failed';
-        } catch (jsonError) {
-          // If JSON parsing fails, use status text or default message
-          errorMessage = response.statusText || `Password reset failed with status ${response.status}`;
-        }
-        setError(errorMessage);
-        return { data: null, error: { message: errorMessage } };
+      return { data: result.data, error: null };
+    } catch (err: any) {
+      let errorMessage = 'Password reset failed';
+      
+      if (err.response) {
+        errorMessage = err.response.data?.detail || 
+                      err.response.data?.message || 
+                      `Password reset failed: ${err.response.statusText || err.response.status}`;
+      } else if (err.request) {
+        errorMessage = 'No response from server. Please check your connection and try again.';
+      } else {
+        errorMessage = err.message || 'An unexpected error occurred during password reset';
       }
       
-      let result;
-      try {
-        result = await response.json();
-      } catch (jsonError) {
-        const errorMessage = 'Invalid response format from server';
-        setError(errorMessage);
-        return { data: null, error: { message: errorMessage } };
-      }
-      
-      return { data: result, error: null };
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Password reset failed';
       setError(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }

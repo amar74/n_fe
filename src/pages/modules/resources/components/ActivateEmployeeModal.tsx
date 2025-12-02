@@ -5,6 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/utils/clipboard';
+import { useRoles } from '@/hooks/useRoles';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/services/api/client';
 
 interface ActivateEmployeeModalProps {
   employee: {
@@ -24,24 +27,9 @@ export interface ActivationData {
   sendWelcomeEmail: boolean;
   temporaryPassword: string;
   userRole: string;
-  permissions: string[];
+  department?: string;
 }
 
-const ROLES = [
-  { value: 'employee', label: 'Employee', description: 'Standard access to assigned projects' },
-  { value: 'team_lead', label: 'Team Lead', description: 'Manage team and projects' },
-  { value: 'manager', label: 'Manager', description: 'Department management access' },
-  { value: 'admin', label: 'Admin', description: 'Full system access' },
-];
-
-const PERMISSIONS = [
-  { id: 'view_projects', label: 'View Projects', category: 'Projects' },
-  { id: 'edit_projects', label: 'Edit Projects', category: 'Projects' },
-  { id: 'view_accounts', label: 'View Accounts', category: 'Accounts' },
-  { id: 'edit_accounts', label: 'Edit Accounts', category: 'Accounts' },
-  { id: 'view_reports', label: 'View Reports', category: 'Reports' },
-  { id: 'manage_team', label: 'Manage Team', category: 'Team' },
-];
 
 const getEmployeeLoginId = (employee: ActivateEmployeeModalProps['employee']) => {
   return employee?.employee_number?.trim() ?? '';
@@ -69,8 +57,21 @@ const getEmployeeRecordId = (employee: ActivateEmployeeModalProps['employee']) =
 };
 
 export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }: ActivateEmployeeModalProps) {
-  const [userRole, setUserRole] = useState('employee');
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  // Fetch roles and departments from organization settings
+  const { allRoles, isLoading: isLoadingRoles } = useRoles();
+  const {
+    data: departments = [],
+    isLoading: isLoadingDepartments,
+  } = useQuery({
+    queryKey: ['organization', 'departments'],
+    queryFn: async () => {
+      const response = await apiClient.get('/departments');
+      return response.data || [];
+    },
+  });
+
+  const [userRole, setUserRole] = useState('');
+  const [department, setDepartment] = useState('');
   const [sendEmail, setSendEmail] = useState(true);
   const [temporaryPassword, setTemporaryPassword] = useState('');
   const [isActivating, setIsActivating] = useState(false);
@@ -110,43 +111,21 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
     setTemporaryPassword(password);
   };
 
-  // Smart role suggestion based on job title/position
-  const suggestRole = () => {
-    const position = employee.role?.toLowerCase() || '';
-    if (position.includes('manager') || position.includes('lead')) return 'team_lead';
-    if (position.includes('admin') || position.includes('director')) return 'manager';
-    if (position.includes('head') || position.includes('vp')) return 'admin';
-    return 'employee';
-  };
-
   // Auto-populate defaults when modal opens
   const handleModalOpen = () => {
-    if (!temporaryPassword) generatePassword();
-    const suggestedRole = suggestRole();
-    setUserRole(suggestedRole);
-    
-    // Set default permissions based on suggested role
-    const defaultPermissions: Record<string, string[]> = {
-      employee: ['view_projects', 'view_accounts', 'view_resources'],
-      team_lead: ['view_projects', 'edit_projects', 'view_accounts', 'edit_accounts', 'manage_team', 'view_reports'],
-      manager: ['view_projects', 'edit_projects', 'view_accounts', 'edit_accounts', 'view_opportunities', 'edit_opportunities', 'manage_team', 'view_reports', 'export_data'],
-      admin: PERMISSIONS.map(p => p.id),
-    };
-    setSelectedPermissions(defaultPermissions[suggestedRole] || []);
+    if (!temporaryPassword) {
+      generatePassword();
+    }
+    // Set default role to first available role or empty
+    if (!userRole && allRoles.length > 0) {
+      setUserRole(allRoles[0].name);
+    }
   };
 
   // Call handleModalOpen when modal opens
   if (isOpen && !temporaryPassword) {
     handleModalOpen();
   }
-
-  const togglePermission = (permissionId: string) => {
-    setSelectedPermissions(prev =>
-      prev.includes(permissionId)
-        ? prev.filter(p => p !== permissionId)
-        : [...prev, permissionId]
-    );
-  };
 
   const handleActivate = async () => {
     if (!temporaryPassword) {
@@ -161,7 +140,7 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
         sendWelcomeEmail: sendEmail,
         temporaryPassword,
         userRole,
-        permissions: selectedPermissions,
+        department: department || undefined,
       });
       // Success toast is handled in useEmployeeActivation hook
       onClose();
@@ -178,12 +157,6 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
     }
   };
 
-  // Group permissions by category
-  const permissionsByCategory = PERMISSIONS.reduce((acc, perm) => {
-    if (!acc[perm.category]) acc[perm.category] = [];
-    acc[perm.category].push(perm);
-    return acc;
-  }, {} as Record<string, typeof PERMISSIONS>);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -253,7 +226,7 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
                 <div>
                   <p className="text-sm font-semibold text-green-900">Quick Activate Enabled</p>
                   <p className="text-sm text-green-700 mt-1">
-                    Auto-configured role: <strong>{userRole.replace('_', ' ').toUpperCase()}</strong> • {selectedPermissions.length} permissions • Email will be sent
+                    Auto-configured role: <strong>{userRole}</strong> • Email will be sent
                   </p>
                 </div>
               </div>
@@ -351,72 +324,56 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
 
           {!useQuickActivate && (
             <>
-              {/* Role Selection */}
+              {/* User Role */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 text-base font-semibold">
                   <Shield className="w-4 h-4" />
-                  User Role {userRole !== 'employee' && <span className="text-xs text-purple-600">(AI Suggested)</span>}
+                  User Role
                 </Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {ROLES.map((role) => (
-                    <button
-                      key={role.value}
-                      onClick={() => setUserRole(role.value)}
-                      className={`p-4 border-2 rounded-xl text-left transition-all ${
-                        userRole === role.value
-                          ? 'border-[#151950] bg-[#151950]/5'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <div
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                            userRole === role.value
-                              ? 'border-[#151950] bg-[#151950]'
-                              : 'border-gray-300'
-                          }`}
-                        >
-                          {userRole === role.value && (
-                            <div className="w-2 h-2 bg-white rounded-full" />
-                          )}
-                        </div>
-                        <span className="font-semibold text-gray-900">{role.label}</span>
-                      </div>
-                      <p className="text-xs text-gray-600 ml-6">{role.description}</p>
-                    </button>
-                  ))}
-                </div>
+                <select
+                  value={userRole}
+                  onChange={(e) => setUserRole(e.target.value)}
+                  className="flex h-12 w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-[#151950] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  required
+                >
+                  <option value="">Select role</option>
+                  {isLoadingRoles ? (
+                    <option>Loading roles...</option>
+                  ) : (
+                    allRoles.map((role: any) => (
+                      <option key={role.id} value={role.name}>
+                        {role.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+                <p className="text-xs text-gray-500">
+                  Permissions are automatically assigned based on the selected role.
+                </p>
               </div>
 
-              {/* Permissions */}
+              {/* Department */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 text-base font-semibold">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Permissions ({selectedPermissions.length} selected)
+                  <Shield className="w-4 h-4" />
+                  Department
                 </Label>
-                <div className="space-y-4 max-h-[300px] overflow-y-auto">
-                  {Object.entries(permissionsByCategory).map(([category, perms]) => (
-                    <div key={category} className="border border-gray-200 rounded-xl p-4">
-                      <h4 className="font-semibold text-sm text-gray-700 mb-3">{category}</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {perms.map((perm) => (
-                          <label
-                            key={perm.id}
-                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedPermissions.includes(perm.id)}
-                              onChange={() => togglePermission(perm.id)}
-                              className="w-4 h-4 text-[#151950] border-gray-300 rounded focus:ring-[#151950]"
-                            />
-                            <span className="text-sm text-gray-700">{perm.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <select
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  className="flex h-12 w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-[#151950] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Select department (optional)</option>
+                  {isLoadingDepartments ? (
+                    <option>Loading departments...</option>
+                  ) : (
+                    departments.map((dept: any) => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))
+                  )}
+                </select>
               </div>
             </>
           )}

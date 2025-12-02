@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { X, Upload, FileText, Sparkles, Loader2, CheckCircle, Link2, User, ChevronRight, ChevronLeft, Award, Briefcase, Building2, DollarSign } from 'lucide-react';
 import { useEmployees } from '@/hooks/useEmployees';
+import { useRoles } from '@/hooks/useRoles';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/services/api/client';
 import { API_BASE_URL_WITH_PREFIX } from '@/services/api/client';
 
 type AddEmployeeWizardProps = {
@@ -9,11 +12,28 @@ type AddEmployeeWizardProps = {
   onSubmit: (data: any) => void;
 };
 
-// Skills, Sectors, Services, Project Types - same as before
+// Contractor-specific skills for builders, interior designers, and material suppliers
 const SKILL_SETS = [
-  'Project Management', 'Technical Engineering', 'Design & Planning',
-  'Environmental Sciences', 'Construction Management', 'Quality Assurance',
-  'Financial Analysis', 'Client Relations', 'Risk Management', 'Regulatory Compliance',
+  // Construction & Building Skills
+  'General Construction', 'Residential Construction', 'Commercial Construction', 'Industrial Construction',
+  'Framing & Carpentry', 'Concrete Work', 'Masonry & Stonework', 'Roofing & Waterproofing',
+  'Electrical Installation', 'Plumbing Installation', 'HVAC Installation', 'Drywall & Plastering',
+  'Flooring Installation', 'Painting & Finishing', 'Tile & Stone Installation', 'Insulation & Weatherproofing',
+  
+  // Interior Design Skills
+  'Interior Design', 'Space Planning', 'Color Consultation', 'Furniture Selection',
+  'Kitchen Design', 'Bathroom Design', 'Lighting Design', 'Material Selection',
+  '3D Rendering & Visualization', 'CAD Design', 'Design Consultation', 'Styling & Staging',
+  
+  // Material Supply & Logistics
+  'Material Procurement', 'Supply Chain Management', 'Inventory Management', 'Vendor Relations',
+  'Quality Control & Inspection', 'Material Sourcing', 'Logistics Coordination', 'Cost Estimation',
+  'Material Specifications', 'Delivery Management', 'Supplier Negotiation', 'Material Testing',
+  
+  // Project Management & Business
+  'Project Management', 'Site Supervision', 'Quality Assurance', 'Safety Management',
+  'Budget Planning', 'Cost Control', 'Contract Management', 'Client Relations',
+  'Team Leadership', 'Subcontractor Management', 'Permit & Code Compliance', 'Risk Management',
 ];
 
 const SECTORS = [
@@ -46,14 +66,20 @@ const DOCUMENT_TYPES = [
   { id: 'project_photos', label: 'Project photos and documentation', icon: Upload },
 ];
 
-const DEPARTMENTS = [
-  'Construction', 'Civil Engineering', 'Electrical', 'Plumbing', 'HVAC',
-  'Architecture', 'Site Management', 'Quality Control', 'Safety & Compliance',
-  'Procurement', 'Operations', 'Human Resources', 'Finance & Accounts',
-];
-
 export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWizardProps) {
   const { isCreating } = useEmployees();
+  // Fetch roles and departments from organization settings
+  const { allRoles, isLoading: isLoadingRoles } = useRoles();
+  const {
+    data: departments = [],
+    isLoading: isLoadingDepartments,
+  } = useQuery({
+    queryKey: ['organization', 'departments'],
+    queryFn: async () => {
+      const response = await apiClient.get('/departments');
+      return response.data || [];
+    },
+  });
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
 
@@ -81,7 +107,7 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
 
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '',
-    jobTitle: '', department: '', location: '', hourlyRate: '', experience: '',
+    jobTitle: '', department: '', role: '', location: '', hourlyRate: '', experience: '',
     linkedinUrl: '', profileUrl: '', cvFile: null as File | null,
   });
 
@@ -309,6 +335,7 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
       phone: formData.phone,
       jobTitle: formData.jobTitle,
       department: formData.department,
+      role: formData.role || undefined,
       location: formData.location,
       billRate: formData.hourlyRate,
       experience: formData.experience,
@@ -599,18 +626,42 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Department *</label>
-                      <input
-                        type="text"
-                        list="dept-suggestions"
+                      <select
                         value={formData.department}
                         onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                        className="w-full h-12 px-4 rounded-xl border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all"
-                        placeholder="e.g., Civil Engineering"
+                        className="w-full h-12 px-4 rounded-xl border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all bg-white"
                         required
-                      />
-                      <datalist id="dept-suggestions">
-                        {DEPARTMENTS.map((dept) => <option key={dept} value={dept} />)}
-                      </datalist>
+                      >
+                        <option value="">Select department</option>
+                        {isLoadingDepartments ? (
+                          <option>Loading departments...</option>
+                        ) : (
+                          departments.map((dept: any) => (
+                            <option key={dept.id} value={dept.name}>
+                              {dept.name}
+                            </option>
+                          ))
+                        )}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
+                      <select
+                        value={formData.role}
+                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                        className="w-full h-12 px-4 rounded-xl border-2 border-green-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all bg-white"
+                      >
+                        <option value="">Select role (optional)</option>
+                        {isLoadingRoles ? (
+                          <option>Loading roles...</option>
+                        ) : (
+                          allRoles.map((role: any) => (
+                            <option key={role.id} value={role.name}>
+                              {role.name}
+                            </option>
+                          ))
+                        )}
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
