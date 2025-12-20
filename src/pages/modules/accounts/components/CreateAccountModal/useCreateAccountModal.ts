@@ -4,7 +4,7 @@ import { INITIAL_FORM_DATA, US_STATES, WEBSITE_ANALYSIS_DELAY } from './CreateAc
 import { UseCreateAccountModalReturn, UIAccountFormData, UIAddressData } from './CreateAccountModal.types';
 import { AccountCreate } from '@/types/accounts';
 import { scraperApi, ApiError } from '@/services/api/scraperApi';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 
 export function useCreateAccountModal(
   onSubmit: (data: AccountCreate) => void,

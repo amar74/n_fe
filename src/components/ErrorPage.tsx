@@ -35,19 +35,16 @@ export const ErrorPage = memo(({
           </div>
         </div>
 
-        
         <div className="bg-white rounded-2xl shadow-xl border border-[#E5E7EB] p-8 text-center">
           
           <h1 className="text-3xl font-bold text-[#111827] mb-4 font-['Inter']">
             {title}
           </h1>
 
-          
           <p className="text-lg text-[#6B7280] mb-8 font-['Inter'] leading-relaxed">
             {message}
           </p>
 
-          
           {error && (
             <div className="bg-[#F9FAFB] rounded-xl border border-[#E5E7EB] p-6 mb-8 text-left">
               <div className="flex items-center gap-2 mb-3">
@@ -76,7 +73,6 @@ export const ErrorPage = memo(({
             </div>
           )}
 
-          
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {showRetry && (
               <button
@@ -97,7 +93,6 @@ export const ErrorPage = memo(({
             </Link>
           </div>
 
-          
           <div className="mt-8 pt-6 border-t border-[#E5E7EB]">
             <p className="text-sm text-[#6B7280] font-['Inter']">
               If this problem persists, please contact our support team or check our{' '}
@@ -112,7 +107,6 @@ export const ErrorPage = memo(({
           </div>
         </div>
 
-        
         <div className="text-center mt-8">
           <p className="text-sm text-[#9CA3AF] font-['Inter']">
             Error ID: {Date.now().toString(36).toUpperCase()}

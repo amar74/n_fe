@@ -104,10 +104,8 @@ export function AccountInformationForm({
           </p>
         </div>
 
-        
         <div className="h-px w-full bg-[#e6e6e6]" />
 
-        
         <div className="flex flex-col gap-6 w-full">
           
           <div className="flex gap-3 w-full">
@@ -125,40 +123,34 @@ export function AccountInformationForm({
             {renderField('client_name', 'text')}
           </div>
 
-          
           <div className="flex gap-3 w-full">
             {renderField('client_type', 'select', CLIENT_TYPES)}
             {renderField('market_sector', 'text')}
           </div>
 
-          
           <div className="flex flex-col gap-3 h-[87px] w-full">
             {renderField('client_address_line1', 'text')}
             {renderField('client_address_line2', 'text')}
           </div>
 
-          
           <div className="flex gap-7 w-full">
             {renderField('client_address_city', 'text')}
             {renderField('client_address_state', 'select', US_STATES.map((state) => ({ value: state, label: state })))}
             {renderField('client_address_zip_code', 'text')}
           </div>
 
-          
           <div className="flex gap-3 w-full">
             {renderField('company_website', 'text')}
             {renderField('hosting_area', 'text', undefined, 'narrow')}
             {renderField('msa_in_place', 'boolean', undefined, 'narrow')}
           </div>
 
-          
           <div className="flex gap-3 w-full">
             {renderField('account_approver', 'text')}
             {renderField('approval_date_time', 'text')}
           </div>
         </div>
 
-        
         {isEditing && (
           <div className="flex items-center justify-between w-full pt-4">
             <button

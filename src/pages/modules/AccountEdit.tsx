@@ -36,8 +36,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
-import { useAccountContacts, useAccountDetail, useAccounts } from '@/hooks/useAccounts';
+import { useToast } from '@/hooks/shared';
+import { useAccountContacts, useAccountDetail, useAccounts } from '@/hooks/accounts';
 import {  AccountUpdate, ContactFormData } from '@/types/accounts';
 import { ArrowLeft, Building2, Save, X, Award, Edit, Users, Mail, Phone, Plus } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
@@ -456,7 +456,6 @@ const AccountEdit: React.FC = () => {
           </div>
         </div>
 
-        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -486,7 +485,6 @@ const AccountEdit: React.FC = () => {
           </div>
         </div>
 
-        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="mx-auto h-12 w-12 text-red-500 mb-4">
@@ -547,7 +545,6 @@ const AccountEdit: React.FC = () => {
         </div>
       </div>
 
-      
       <div className="max-w-4xl mx-auto px-6 py-8">
         
         <Card className="mb-8">
@@ -580,7 +577,6 @@ const AccountEdit: React.FC = () => {
           </CardHeader>
         </Card>
 
-        
         <div className="space-y-8">
           
           <Card>
@@ -666,7 +662,6 @@ const AccountEdit: React.FC = () => {
             </CardContent>
           </Card>
 
-          
           <Card>
             <CardHeader>
               <CardTitle>Address Information</CardTitle>
@@ -715,7 +710,6 @@ const AccountEdit: React.FC = () => {
                     />
                   </div>
 
-                  
                   <div>
                     <Label htmlFor="pincode">
                       ZIP Code* {isZipLoading && <span className="text-xs text-blue-600 ml-2">🔍 Looking up...</span>}
@@ -735,7 +729,6 @@ const AccountEdit: React.FC = () => {
                     )}
                   </div>
 
-                  
                   <div>
                     <Label htmlFor="state">State*</Label>
                     <Select
@@ -755,7 +748,6 @@ const AccountEdit: React.FC = () => {
                     </Select>
                   </div>
 
-                  
                   <div>
                     <Label htmlFor="city">City*</Label>
                     {availableCities.length > 0 ? (
@@ -812,7 +804,6 @@ const AccountEdit: React.FC = () => {
             </CardContent>
           </Card>
 
-          
           {account &&
             (account.primary_contact ||
               (account.secondary_contacts && account.secondary_contacts.length > 0)) && (
@@ -888,7 +879,6 @@ const AccountEdit: React.FC = () => {
                       </div>
                     )}
 
-                    
                     {account.secondary_contacts?.map((contact, index) => (
                       <div
                         key={contact.contact_id || index}
@@ -968,7 +958,6 @@ const AccountEdit: React.FC = () => {
               </Card>
             )}
 
-          
           <Card>
             <CardHeader>
               <CardTitle>Internal Notes</CardTitle>
@@ -991,7 +980,6 @@ const AccountEdit: React.FC = () => {
             </CardContent>
           </Card>
 
-          
           <div className="flex items-center justify-end space-x-4 pt-6 border-t">
             <Button variant="outline" onClick={handleCancel} disabled={isUpdating}>
               <X className="h-4 w-4 mr-2" />
@@ -1014,7 +1002,6 @@ const AccountEdit: React.FC = () => {
         </div>
       </div>
 
-      
       <Dialog open={showAddContactModal} onOpenChange={setShowAddContactModal}>
         <DialogContent className="sm:max-w-[425px] bg-white">
           <DialogHeader>
@@ -1096,7 +1083,6 @@ const AccountEdit: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      
       <Dialog open={showEditContactModal} onOpenChange={setShowEditContactModal}>
         <DialogContent className="sm:max-w-[425px] bg-white">
           <DialogHeader>
@@ -1178,7 +1164,6 @@ const AccountEdit: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      
       <AlertDialog open={showDeleteContactDialog} onOpenChange={setShowDeleteContactDialog}>
         <AlertDialogContent className="bg-white">
           <AlertDialogHeader>

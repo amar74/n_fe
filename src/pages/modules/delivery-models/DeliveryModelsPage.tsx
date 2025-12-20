@@ -33,13 +33,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import {
   useCreateDeliveryModelTemplate,
   useDeleteDeliveryModelTemplate,
   useDeliveryModelTemplates,
   useUpdateDeliveryModelTemplate,
-} from '@/hooks/useDeliveryModels';
+} from '@/hooks/delivery-models';
 import type { DeliveryModelTemplate, DeliveryModelTemplatePhase } from '@/types/deliveryModels';
 import { cn } from '@/lib/utils';
 
@@ -482,16 +482,20 @@ const DeliveryModelsPage = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-6 pb-10">
+    <div className="mx-auto max-w-7xl space-y-6 px-6 pt-8 pb-10">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Delivery Models</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>Delivery Models</h1>
+          <p className="mt-2 text-sm text-gray-600" style={{ fontFamily: "'Outfit', sans-serif" }}>
             Build a catalog of delivery approaches and reusable phases. Opportunity teams can import
             these templates and tailor them as needed.
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} className="gap-2 bg-indigo-950 hover:bg-indigo-900">
+        <Button 
+          onClick={() => setShowCreateModal(true)} 
+          className="gap-2 bg-[#161950] hover:bg-[#1E2B5B] text-white shadow-lg hover:shadow-xl transition-all duration-300"
+          style={{ fontFamily: "'Outfit', sans-serif" }}
+        >
           <Plus className="h-4 w-4" />
           New delivery model
         </Button>
@@ -499,21 +503,22 @@ const DeliveryModelsPage = () => {
 
       <div className="grid gap-6 lg:grid-cols-12">
         <aside className="space-y-4 lg:col-span-4">
-          <div className="rounded-3xl border border-gray-200 bg-white shadow-lg shadow-indigo-100/40">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-5">
+          <div className="rounded-3xl border border-gray-200 bg-white shadow-xl shadow-indigo-100/50 overflow-hidden">
+            <div className="h-2 bg-gradient-to-r from-[#161950] to-[#1E2B5B]"></div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-5 bg-gradient-to-br from-white to-gray-50/50">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-[#161950]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#161950] text-white shadow-lg">
                   <Layers className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Delivery Model</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>Delivery Model</p>
+                  <p className="text-xs text-gray-500" style={{ fontFamily: "'Outfit', sans-serif" }}>
                     List of all delivery models created by your team.
                   </p>
                 </div>
               </div>
               {selectedTemplate && (
-                <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-[#161950]">
+                <span className="inline-flex items-center gap-2 rounded-full bg-[#161950]/10 px-3 py-1.5 text-xs font-medium text-[#161950] border border-[#161950]/20 shadow-sm" style={{ fontFamily: "'Outfit', sans-serif" }}>
                   <ClipboardList className="h-4 w-4" />
                   {selectedTemplate.phases.length} phase
                   {selectedTemplate.phases.length === 1 ? '' : 's'} selected
@@ -545,11 +550,12 @@ const DeliveryModelsPage = () => {
                         type="button"
                         onClick={() => handleSelectTemplate(template.id)}
                         className={cn(
-                          'w-full rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg',
+                          'w-full rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#161950] hover:shadow-xl',
                           template.id === selectedTemplateId
-                            ? 'border-[#161950] shadow-md ring-1 ring-[#161950]/30'
-                            : '',
+                            ? 'border-[#161950] shadow-lg ring-2 ring-[#161950]/20 bg-gradient-to-br from-white to-[#161950]/5'
+                            : 'hover:bg-gray-50',
                         )}
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                       >
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-semibold text-gray-900">{template.approach}</p>
@@ -580,11 +586,12 @@ const DeliveryModelsPage = () => {
 
         <section className="space-y-5 lg:col-span-8">
           {selectedTemplate ? (
-            <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-5">
+            <div className="rounded-2xl border border-gray-200 bg-white shadow-xl overflow-hidden">
+              <div className="h-2 bg-gradient-to-r from-[#161950] to-[#1E2B5B]"></div>
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-5 bg-gradient-to-br from-white to-gray-50/50">
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Template details</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>Template details</p>
+                  <p className="text-xs text-gray-500" style={{ fontFamily: "'Outfit', sans-serif" }}>
                     View the approach summary and manage phases from here.
                   </p>
                 </div>

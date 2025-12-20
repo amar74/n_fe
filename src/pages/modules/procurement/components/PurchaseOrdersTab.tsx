@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { PurchaseOrder } from '../types';
 import { getStatusBadge } from '../utils';
 import { CreatePurchaseOrderModal, ViewPurchaseOrderModal } from '../modals';
-import { useProcurement } from '@/hooks/useProcurement';
-import { useProcurementVendors } from '@/hooks/useProcurementVendors';
+import { useProcurement } from '@/hooks/procurement';
+import { useProcurementVendors } from '@/hooks/procurement';
 import {
   AlertDialog,
   AlertDialogAction,

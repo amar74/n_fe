@@ -22,9 +22,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ResponsiveContainer, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart as RechartsPieChart, Pie, Cell } from 'recharts';
-import { useFinancePlanningAnnual } from '@/hooks/useFinance';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
-import { useProcurement } from '@/hooks/useProcurement';
+import { useFinancePlanningAnnual } from '@/hooks/finance';
+import { useExpenseCategories } from '@/hooks/finance';
+import { useProcurement } from '@/hooks/procurement';
 import { useMemo, useState } from 'react';
 
 interface BudgetTabProps {

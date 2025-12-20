@@ -26,7 +26,7 @@ import {
   useDeleteAIAgenticTemplate,
   type AIAgenticTemplate,
   type AIAgenticTemplateCreate,
-} from '@/hooks/useAIAgentic';
+} from '@/hooks/ai';
 import {
   Bot,
   Plus,
@@ -38,8 +38,10 @@ import {
   Sparkles,
   Tag,
   Layers,
+  Grid3x3,
+  List,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -79,6 +81,7 @@ export default function AIAgenticPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<AIAgenticTemplate | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const [formData, setFormData] = useState<AIAgenticTemplateCreate>({
     name: '',
@@ -278,44 +281,88 @@ export default function AIAgenticPage() {
         </div>
 
       <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg overflow-hidden">
-        <div className="p-6 border-b border-[#E5E7EB]">
+        <div className="p-6 border-b border-[#E5E7EB] bg-gradient-to-r from-[#161950] to-[#1E2B5B]">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-[#161950]">Templates</h2>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-48 border-[#E5E7EB]">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {CATEGORIES.map(cat => (
-                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-white" />
+                AI Chatbot Templates
+              </h2>
+              <p className="text-sm text-white/80 mt-1">Create and manage AI chatbot templates for different modules</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 bg-white/10 rounded-lg p-1 border border-white/20">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={`h-8 px-3 ${viewMode === 'grid' ? 'bg-white text-[#161950]' : 'text-white hover:bg-white/20'}`}
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={`h-8 px-3 ${viewMode === 'list' ? 'bg-white text-[#161950]' : 'text-white hover:bg-white/20'}`}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-48 border-white/20 bg-white/10 text-white">
+                  <SelectValue placeholder="Filter by category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {CATEGORIES.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         <div className="p-6">
           {filteredTemplates.length === 0 ? (
-            <div className="text-center py-12">
-              <Bot className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-600">No templates found. Create your first template to get started.</p>
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-gradient-to-br from-[#161950] to-[#1E2B5B] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Bot className="h-10 w-10 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-[#161950] mb-2">No templates found</h3>
+              <p className="text-gray-600 mb-6">Create your first AI chatbot template to get started</p>
+              <Button
+                onClick={() => {
+                  resetForm();
+                  setIsCreateDialogOpen(true);
+                }}
+                className="bg-[#161950] hover:bg-[#0f1440] text-white shadow-lg"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Template
+              </Button>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          ) : viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTemplates.map(template => (
-                <div key={template.id} className="bg-white rounded-xl border border-[#E5E7EB] shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden">
-                  <div className="p-5 border-b border-[#E5E7EB]">
+                <Card key={template.id} className="border border-[#E5E7EB] shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden group">
+                  <div className="h-2 bg-gradient-to-r from-[#161950] to-[#1E2B5B]"></div>
+                  <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-[#161950] mb-2">{template.name}</h3>
-                        <Badge className="bg-[#F8FAFC] text-[#161950] border border-[#E5E7EB]" variant="outline">{template.category}</Badge>
+                        <CardTitle className="text-lg font-bold text-[#161950] mb-2 group-hover:text-[#0f1440] transition-colors">
+                          {template.name}
+                        </CardTitle>
+                        <Badge className="bg-[#F8FAFC] text-[#161950] border border-[#E5E7EB] hover:bg-[#161950] hover:text-white transition-colors">
+                          {template.category}
+                        </Badge>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(template)}
-                          className="hover:bg-[#F8FAFC]"
+                          className="h-8 w-8 p-0 hover:bg-[#F8FAFC]"
                         >
                           <Edit className="h-4 w-4 text-[#161950]" />
                         </Button>
@@ -323,41 +370,51 @@ export default function AIAgenticPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(template.id)}
-                          className="text-red-600 hover:bg-red-50"
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                  </div>
-                  <div className="p-5">
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                     {template.description && (
-                      <p className="text-sm text-gray-600 mb-4">{template.description}</p>
+                      <p className="text-sm text-gray-600 leading-relaxed line-clamp-2">{template.description}</p>
                     )}
-                    <div className="space-y-3">
-                      {template.tags && template.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {template.tags.map(tag => (
-                            <Badge key={tag} variant="secondary" className="text-xs bg-[#F8FAFC] text-[#161950] border border-[#E5E7EB]">
-                              <Tag className="h-3 w-3 mr-1" />
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      {template.assigned_modules && template.assigned_modules.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {template.assigned_modules.map(module => (
-                            <Badge key={module} variant="outline" className="text-xs border-[#E5E7EB] text-gray-700">
-                              <Layers className="h-3 w-3 mr-1" />
-                              {module}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4 pt-2 border-t border-[#E5E7EB]">
+                    {template.tags && template.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {template.tags.slice(0, 3).map(tag => (
+                          <Badge key={tag} variant="secondary" className="text-xs bg-[#F8FAFC] text-[#161950] border border-[#E5E7EB]">
+                            <Tag className="h-3 w-3 mr-1" />
+                            {tag}
+                          </Badge>
+                        ))}
+                        {template.tags.length > 3 && (
+                          <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                            +{template.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    {template.assigned_modules && template.assigned_modules.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {template.assigned_modules.slice(0, 3).map(module => (
+                          <Badge key={module} variant="outline" className="text-xs border-[#E5E7EB] text-gray-700 bg-white">
+                            <Layers className="h-3 w-3 mr-1" />
+                            {module.replace('-', ' ')}
+                          </Badge>
+                        ))}
+                        {template.assigned_modules.length > 3 && (
+                          <Badge variant="outline" className="text-xs border-[#E5E7EB] text-gray-600">
+                            +{template.assigned_modules.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between pt-3 border-t border-[#E5E7EB]">
+                      <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
-                          <Switch checked={template.is_active} disabled />
+                          <Switch checked={template.is_active} disabled className="data-[state=checked]:bg-[#161950]" />
                           <Label className="text-xs font-medium text-gray-700">
                             {template.is_active ? 'Active' : 'Inactive'}
                           </Label>
@@ -367,15 +424,92 @@ export default function AIAgenticPage() {
                         )}
                       </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredTemplates.map(template => (
+                <Card key={template.id} className="border border-[#E5E7EB] shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden group">
+                  <div className="h-1 bg-gradient-to-r from-[#161950] to-[#1E2B5B]"></div>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between gap-6">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-4 mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <CardTitle className="text-lg font-bold text-[#161950] group-hover:text-[#0f1440] transition-colors">
+                                {template.name}
+                              </CardTitle>
+                              <Badge className="bg-[#F8FAFC] text-[#161950] border border-[#E5E7EB] hover:bg-[#161950] hover:text-white transition-colors">
+                                {template.category}
+                              </Badge>
+                              {template.is_default && (
+                                <Badge className="text-xs bg-[#161950] text-white">Default</Badge>
+                              )}
+                            </div>
+                            {template.description && (
+                              <p className="text-sm text-gray-600 leading-relaxed mb-3">{template.description}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="flex items-center gap-2">
+                              <Switch checked={template.is_active} disabled className="data-[state=checked]:bg-[#161950]" />
+                              <Label className="text-xs font-medium text-gray-700">
+                                {template.is_active ? 'Active' : 'Inactive'}
+                              </Label>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(template)}
+                              className="h-8 w-8 p-0 hover:bg-[#F8FAFC]"
+                            >
+                              <Edit className="h-4 w-4 text-[#161950]" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDelete(template.id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                          {template.tags && template.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {template.tags.map(tag => (
+                                <Badge key={tag} variant="secondary" className="text-xs bg-[#F8FAFC] text-[#161950] border border-[#E5E7EB]">
+                                  <Tag className="h-3 w-3 mr-1" />
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                          {template.assigned_modules && template.assigned_modules.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {template.assigned_modules.map(module => (
+                                <Badge key={module} variant="outline" className="text-xs border-[#E5E7EB] text-gray-700 bg-white">
+                                  <Layers className="h-3 w-3 mr-1" />
+                                  {module.replace('-', ' ')}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Create/Edit Dialog */}
       <Dialog open={isCreateDialogOpen || !!editingTemplate} onOpenChange={(open) => {
         if (!open) {
           setIsCreateDialogOpen(false);

@@ -180,11 +180,9 @@ export default function SurveyAnalyticsPage() {
     );
   }
 
-
   return (
     <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Button
@@ -221,7 +219,6 @@ export default function SurveyAnalyticsPage() {
           </div>
         </div>
 
-        {/* Survey Link Section */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -265,7 +262,6 @@ export default function SurveyAnalyticsPage() {
           </div>
         </div>
 
-        {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="border border-gray-200 bg-white">
             <CardContent className="p-6">
@@ -328,7 +324,6 @@ export default function SurveyAnalyticsPage() {
           </Card>
         </div>
 
-        {/* Response Overview */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-[#1A1A1A] mb-1">Response Overview</h2>
@@ -336,7 +331,6 @@ export default function SurveyAnalyticsPage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Sent vs Responses */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-gray-600">Distribution</h3>
               <div className="flex items-center justify-between">
@@ -353,7 +347,6 @@ export default function SurveyAnalyticsPage() {
               </div>
             </div>
 
-            {/* Visual Progress */}
             <div className="col-span-2">
               <h3 className="text-sm font-medium text-gray-600 mb-3">Response Progress</h3>
               <div className="relative">
@@ -385,7 +378,6 @@ export default function SurveyAnalyticsPage() {
           </div>
         </div>
 
-        {/* Engagement Score - Circular Progress */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -440,7 +432,6 @@ export default function SurveyAnalyticsPage() {
           </div>
         </div>
 
-        {/* Response Distribution by Account */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -452,7 +443,6 @@ export default function SurveyAnalyticsPage() {
             </Badge>
           </div>
           
-          {/* Horizontal Bar Chart */}
           <div className="space-y-4">
             {analytics.by_account.slice(0, 10).map((account, idx) => {
               const maxResponses = Math.max(...analytics.by_account.map(a => a.total_responses));
@@ -490,7 +480,6 @@ export default function SurveyAnalyticsPage() {
           </div>
         </div>
 
-        {/* Account Cards Grid */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-[#1A1A1A] mb-1">Detailed Account Breakdown</h2>

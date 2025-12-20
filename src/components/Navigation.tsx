@@ -1,23 +1,38 @@
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { useState } from 'react';
-import { useAuth } from '@hooks/useAuth';
+import { useState, useMemo } from 'react';
+import { useAuth } from '@/hooks/auth';
+import { useEmployeeRole } from '@/hooks/useEmployeeRole';
 import { 
   TrendingUp, Users, FileText, Package, FileSignature, 
   FolderKanban, DollarSign, ShoppingCart, BarChart3, 
-  Bell, ChevronDown, ChevronRight, LogOut, User, Settings, Building2, ClipboardList, Shield, Bot
+  Bell, ChevronDown, ChevronRight, LogOut, User, Settings, Building2, ClipboardList, Shield, Bot,
+  Book, MessageSquare, Megaphone
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import { NotificationCenter } from '@/components/NotificationCenter';
 
-const menuItems = [
-  { icon: TrendingUp, label: 'Opportunities', path: '/module/opportunities' },
-  { icon: Users, label: 'Accounts', path: '/module/accounts' },
-  { icon: FileText, label: 'Proposals', path: '/module/proposals' },
+// Define all menu items with their permission keys
+const ALL_MENU_ITEMS = [
+  { icon: TrendingUp, label: 'Opportunities', path: '/module/opportunities', permissionKey: 'opportunities' },
+  { icon: Users, label: 'Accounts', path: '/module/accounts', permissionKey: 'accounts' },
+  { 
+    icon: FileText, 
+    label: 'Proposals', 
+    path: '/module/proposals', 
+    permissionKey: 'proposals',
+    children: [
+      { icon: FileText, label: 'Dashboard', path: '/module/proposals' },
+      { icon: Book, label: 'Brochures', path: '/module/proposals/brochures' },
+      { icon: MessageSquare, label: 'Interviews', path: '/module/proposals/interviews' },
+      { icon: Megaphone, label: 'Campaigns', path: '/module/proposals/campaigns' },
+    ]
+  },
   { 
     icon: Package, 
     label: 'Resources', 
     path: '/module/resources',
+    permissionKey: 'resources',
     children: [
       { icon: Package, label: 'Dashboard', path: '/module/resources' },
       { icon: Users, label: 'Onboarding', path: '/module/resources/onboarding' },
@@ -27,23 +42,24 @@ const menuItems = [
       { icon: FileText, label: 'Staff Planning', path: '/staffing-plan' },
     ]
   },
-  { icon: FileSignature, label: 'Contracts', path: '/module/contracts' },
-  { icon: FolderKanban, label: 'Projects', path: '/module/projects' },
-  { icon: DollarSign, label: 'Finance', path: '/module/finance' },
-  { icon: ShoppingCart, label: 'Procurements', path: '/module/procurement' },
-  { icon: BarChart3, label: "KPI's", path: '/module/kpis' },
+  { icon: FileSignature, label: 'Contracts', path: '/module/contracts', permissionKey: 'contracts' },
+  { icon: FolderKanban, label: 'Projects', path: '/module/projects', permissionKey: 'projects' },
+  { icon: DollarSign, label: 'Finance', path: '/module/finance', permissionKey: 'finance' },
+  { icon: ShoppingCart, label: 'Procurements', path: '/module/procurement', permissionKey: 'procurement' },
+  { icon: BarChart3, label: "KPI's", path: '/module/kpis', permissionKey: 'kpis' },
   { 
     icon: ClipboardList, 
     label: 'Surveys', 
     path: '/surveys',
+    permissionKey: 'surveys',
     children: [
       { icon: ClipboardList, label: 'View All Surveys', path: '/surveys' },
       { icon: Building2, label: 'Account Survey', path: '/surveys/account-dashboard' },
       { icon: Users, label: 'Employee Survey', path: '/surveys/employee-dashboard' },
     ]
   },
-  { icon: Package, label: 'Delivery Models', path: '/module/delivery-models' },
-  { icon: Bot, label: 'AI Agentic', path: '/module/ai-agentic' },
+  { icon: Package, label: 'Delivery Models', path: '/module/delivery-models', permissionKey: 'delivery_models' },
+  { icon: Bot, label: 'AI Agentic', path: '/module/ai-agentic', permissionKey: 'ai_agentic' },
 ];
 
 // will optimize later - guddy.tech
@@ -52,11 +68,53 @@ export default function Navigation() {
   const navigate = useNavigate();
   const { user, backendUser, signOut } = useAuth();
   const { toast } = useToast();
+  const { rbacRole, employeeRecord } = useEmployeeRole();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
+
+  // Filter menu items based on RBAC role - same logic as Employee Dashboard
+  const menuItems = useMemo(() => {
+    if (!backendUser) return ALL_MENU_ITEMS;
+
+    const userRole = backendUser.role?.toLowerCase() || '';
+    const isEmployee = !!employeeRecord;
+
+    // Admin and vendor roles have access to all modules (bypass RBAC filtering)
+    // BUT: Only if they're NOT employees (true platform/org admins)
+    if (!isEmployee && (userRole === 'admin' || userRole === 'vendor' || userRole === 'super_admin' || userRole === 'platform_admin' || userRole === 'org_admin')) {
+      return ALL_MENU_ITEMS;
+    }
+
+    // RBAC-based module access according to rbac-entitlements.md
+    // Same configuration as Employee Dashboard
+    const rbacModuleAccess: Record<string, string[]> = {
+      org_admin: [
+        'opportunities', 'accounts', 'proposals', 'projects', 'contracts',
+        'procurement', 'finance', 'resources', 'kpis', 'surveys',
+        'delivery_models', 'ai_agentic'
+      ],
+      manager: [
+        'opportunities', 'accounts', 'proposals', 'projects', 'contracts',
+        'procurement', 'finance', 'resources', 'kpis', 'surveys',
+        'delivery_models', 'ai_agentic'
+      ],
+      contributor: [
+        'opportunities', 'accounts', 'proposals', 'projects',
+        'resources', 'surveys', 'kpis'
+      ],
+      viewer: [
+        'opportunities', 'accounts', 'projects', 'resources', 'surveys'
+      ],
+    };
+
+    const allowedModules = rbacModuleAccess[rbacRole] || rbacModuleAccess.viewer;
+    
+    // Filter menu items based on allowed modules
+    return ALL_MENU_ITEMS.filter(item => allowedModules.includes(item.permissionKey));
+  }, [backendUser, rbacRole, employeeRecord]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path);
@@ -166,7 +224,6 @@ export default function Navigation() {
                 )}
               </div>
 
-              {/* Scrollable nav area */}
               <div className="flex-1 min-h-0 flex flex-col gap-5 pr-1">
                 <div className="flex flex-col gap-3">
                   {shouldExpand && (
@@ -318,7 +375,6 @@ export default function Navigation() {
               </div>
             </div>
 
-            
             <button
               onClick={handleSignOut}
               disabled={isSigningOut}
@@ -337,7 +393,6 @@ export default function Navigation() {
           </div>
       </aside>
 
-      
       <div className="flex-1 flex flex-col overflow-hidden">
         
         <header className="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0">
@@ -353,14 +408,12 @@ export default function Navigation() {
             </button>
           </div>
 
-          
           <div className="flex items-center gap-4">
             
             <div className="flex items-start gap-3">
               <NotificationCenter />
             </div>
 
-            
             <div className="relative flex items-center gap-3">
               <button
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
@@ -395,8 +448,7 @@ export default function Navigation() {
                       <p className="text-sm font-semibold text-gray-900">{getUserDisplayName()}</p>
                       <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                     </div>
-                    
-                    
+
                     <div className="py-1">
                       <button
                         onClick={() => {
@@ -431,11 +483,9 @@ export default function Navigation() {
                         Organization Setting
                       </button>
                     </div>
-                    
-                    
+
                     <div className="border-t border-gray-100 my-1"></div>
-                    
-                    
+
                     <button
                       onClick={handleSignOut}
                       disabled={isSigningOut}
@@ -455,7 +505,6 @@ export default function Navigation() {
           )}
         </header>
 
-        
         <main className="flex-1 overflow-auto bg-[#F5F3F2]">
           <Outlet />
         </main>

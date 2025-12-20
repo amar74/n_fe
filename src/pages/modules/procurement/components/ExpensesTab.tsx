@@ -15,10 +15,10 @@ import {
 import { EmployeeExpense } from '../types';
 import { getStatusBadge } from '../utils';
 import { SubmitExpenseModal } from '../modals';
-import { useProcurement } from '@/hooks/useProcurement';
+import { useProcurement } from '@/hooks/procurement';
 import { procurementApi } from '@/services/api/procurementApi';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
-import { useToast } from '@/hooks/use-toast';
+import { useExpenseCategories } from '@/hooks/finance';
+import { useToast } from '@/hooks/shared';
 
 interface ExpensesTabProps {
   expenses: EmployeeExpense[];

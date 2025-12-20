@@ -248,7 +248,6 @@ export function VarianceTab({
           })}
         </div>
         
-        {/* Budget vs Actual Comparison Table */}
         <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
           <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-700">Budget vs Actual Comparison</h4>
           <div className="overflow-x-auto">
@@ -301,7 +300,6 @@ export function VarianceTab({
           </div>
         </div>
         
-        {/* Variance Status Display */}
         <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-700">Current Variance Status</h4>
           <div className="space-y-2 text-sm">
@@ -409,7 +407,6 @@ export function VarianceTab({
         </div>
       </div>
 
-      {/* Variance Explanations Section */}
       <div className="col-span-full rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_48px_-24px_rgba(79,70,229,0.25)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

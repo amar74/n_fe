@@ -4,11 +4,11 @@ import { Search, Filter, TrendingUp, MapPin, DollarSign, Calendar, Star, Plus, E
 import { toast } from 'react-hot-toast';
 import { Opportunity, OpportunityCreate, OpportunityStage, OpportunityStageType, RiskLevel, RiskLevelType } from '@/types/opportunities';
 import { parseProjectValue, formatProjectValue } from '@/utils/opportunityUtils';
-import { useUpdateOpportunityStage, useDeleteOpportunity, useUpdateOpportunity } from '@/hooks/useOpportunities';
+import { useUpdateOpportunityStage, useDeleteOpportunity, useUpdateOpportunity } from '@/hooks/opportunities';
 import { scraperApi, ApiError as ScraperApiError } from '@/services/api/scraperApi';
-import { useDataEnrichment } from '@/hooks/useDataEnrichment';
+import { useDataEnrichment } from '@/hooks/ai';
 import type { ScrapeResult, ScrapedOpportunity, ScrapedInfo } from '@/types/scraper';
-import { useMutateOpportunityTemp } from '@/hooks/useOpportunityIngestion';
+import { useMutateOpportunityTemp } from '@/hooks/opportunities';
 import { opportunityIngestionApi } from '@/services/api/opportunityIngestionApi';
 import { API_BASE_URL } from '@/services/api/client';
 import { exportToCSV } from '@/utils/exportUtils';
@@ -1278,7 +1278,6 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
         </div>
       </div>
 
-      
       <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg p-8 mb-8">
         
         <div className="relative mb-8">
@@ -1302,7 +1301,6 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
           </div>
         </div>
 
-        
         {showFilters && (
           <div className="mb-8 p-6 bg-[#F9FAFB] rounded-xl border border-[#E5E7EB]">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -1535,8 +1533,7 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                       )
                     )}
                   </td>
-                  
-                  
+
                   <td className="px-4 lg:px-6 py-6">
                     {editingOpportunity === opp.id ? (
                       <input
@@ -1553,8 +1550,7 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                       </div>
                     )}
                   </td>
-                  
-                  
+
                   <td className="px-4 lg:px-6 py-6">
                     {editingOpportunity === opp.id ? (
                       <input
@@ -1570,8 +1566,7 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                       </span>
                     )}
                   </td>
-                  
-                  
+
                   <td className="px-4 lg:px-6 py-6">
                     {editingOpportunity === opp.id ? (
                       <input
@@ -1588,8 +1583,7 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                       </div>
                     )}
                   </td>
-                  
-                  
+
                   <td className="px-4 lg:px-6 py-6">
                     <div className="flex items-center gap-2">
                       <div className="w-12 lg:w-16 bg-[#E5E7EB] rounded-full h-2 flex-shrink-0">
@@ -1607,8 +1601,7 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                       </span>
                     </div>
                   </td>
-                  
-                  
+
                   <td className="px-4 lg:px-6 py-6">
                     <div className="flex items-center gap-2">
                       <Star className={`w-4 h-4 ${getAIScoreColor(opp.aiScore)} flex-shrink-0`} />
@@ -1617,15 +1610,13 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                       </span>
                     </div>
                   </td>
-                  
-                  
+
                   <td className="px-4 lg:px-6 py-6">
                     <span className={`inline-flex px-2 lg:px-3 py-1 lg:py-1.5 text-xs font-semibold rounded-full border whitespace-nowrap ${getPriorityColor(opp.priority)}`}>
                       {opp.priority}
                     </span>
                   </td>
-                  
-                  
+
                   <td className="px-4 lg:px-6 py-6">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-[#6B7280] flex-shrink-0" />
@@ -1634,8 +1625,7 @@ export const SourceOpportunitiesContent = memo(({ opportunities, isLoading, acco
                       </span>
                     </div>
                   </td>
-                  
-                  
+
                   <td className="px-6 lg:px-8 py-6">
                     <div className="flex items-center gap-1 lg:gap-2">
                       {editingOpportunity === opp.id ? (

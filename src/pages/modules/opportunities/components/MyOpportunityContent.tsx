@@ -178,7 +178,6 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
           <ChevronLeft className="w-5 h-5 text-[#6B7280] group-hover:text-[#161950] transition-colors mx-auto" />
         </button>
 
-        
         <button 
           onClick={nextCard}
           className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white rounded-full border border-[#E5E7EB] shadow-lg hover:shadow-xl hover:border-[#161950] hover:scale-105 transition-all duration-200 group"
@@ -186,7 +185,6 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
           <ChevronRight className="w-5 h-5 text-[#6B7280] group-hover:text-[#161950] transition-colors mx-auto" />
         </button>
 
-        
         <div className="mx-14 overflow-hidden">
           <div 
             className="flex transition-transform duration-500 ease-out"
@@ -211,7 +209,6 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
           </div>
         </div>
 
-        
         <div className="flex justify-center mt-6 gap-2">
           {statsCards.map((_, index) => (
             <button
@@ -227,7 +224,6 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
         </div>
       </div>
 
-      
       <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm overflow-hidden">
         
         <div className="px-8 py-8 border-b border-[#F3F4F6] bg-gradient-to-r from-[#FAFAFA] to-[#F9FAFB]">
@@ -252,7 +248,6 @@ export const MyOpportunityContent = memo(({ opportunities, pipelineData, isLoadi
           </div>
         </div>
 
-        
         <div className="p-8">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">

@@ -68,7 +68,6 @@ const PastPerformanceCard: React.FC = () => {
                   <Icon size={22} weight="fill" className="text-orange-400" />
                 </div>
 
-                
                 <p className="text-xl font-bold text-gray-900">
                   {metric.value}
                   {metric.subLabel && (
@@ -79,10 +78,8 @@ const PastPerformanceCard: React.FC = () => {
                   )}
                 </p>
 
-                
                 <p className="text-xs font-semibold mt-1 text-[#9C9C9C]">{metric.label}</p>
 
-                
               </div>
             );
           })}

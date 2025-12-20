@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button';
 import {
   MessageCircle,
 } from 'lucide-react';
-import { useAIAgenticTemplatesByModule, type AIAgenticTemplate } from '@/hooks/useAIAgentic';
+import { useAIAgenticTemplatesByModule, type AIAgenticTemplate } from '@/hooks/ai';
 import UniversalChatbot from './UniversalChatbot';
 import ChatHistorySidebar from './ChatHistorySidebar';
 import ChatSessionModal from './ChatSessionModal';
-import { useChatSession } from '@/hooks/useChat';
+import { useChatSession } from '@/hooks/ai';
 
 const MODULE_MAP: Record<string, string> = {
   '/module/opportunities': 'opportunities',
@@ -87,7 +87,6 @@ export default function ChatbotSelector() {
 
   return (
     <>
-      {/* Chat History Sidebar */}
       <div className="fixed bottom-24 right-6 z-40">
         <ChatHistorySidebar
           currentModule={currentModule}
@@ -97,7 +96,6 @@ export default function ChatbotSelector() {
         />
       </div>
 
-      {/* Chat Session Creation Modal */}
       <ChatSessionModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -105,7 +103,6 @@ export default function ChatbotSelector() {
         currentModule={currentModule}
       />
 
-      {/* Chatbot Component */}
       <UniversalChatbot
         currentModule={currentModule}
         template={selectedTemplate}

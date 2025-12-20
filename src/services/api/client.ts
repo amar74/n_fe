@@ -34,6 +34,57 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: false, // Important for CORS
 });
 
+// Verify baseURL is set correctly (runtime check)
+if (import.meta.env.DEV) {
+  console.log('[API Client] ========================================');
+  console.log('[API Client] API Configuration Check:');
+  console.log('[API Client] API_BASE_URL:', API_BASE_URL);
+  console.log('[API Client] API_BASE_URL_WITH_PREFIX:', API_BASE_URL_WITH_PREFIX);
+  console.log('[API Client] apiClient.baseURL:', apiClient.defaults.baseURL);
+  console.log('[API Client] ========================================');
+  
+  // Validate that baseURL includes /api
+  if (!apiClient.defaults.baseURL?.includes('/api')) {
+    console.error('[API Client] ❌ ERROR: baseURL does not include /api prefix!');
+    console.error('[API Client] Current baseURL:', apiClient.defaults.baseURL);
+    console.error('[API Client] Expected baseURL:', API_BASE_URL_WITH_PREFIX);
+    console.error('[API Client] ⚠️  Please restart your frontend dev server (Ctrl+C then pnpm dev)');
+  } else {
+    console.log('[API Client] ✅ baseURL is correctly configured with /api prefix');
+  }
+  
+  // Add interceptor to log all requests and ensure baseURL is correct
+  apiClient.interceptors.request.use((config) => {
+    const originalUrl = config.url || '';
+
+    // Skip if URL is already absolute
+    if (originalUrl.startsWith('http://') || originalUrl.startsWith('https://')) {
+      return config;
+    }
+
+    // Ensure baseURL is set correctly (use default if not set)
+    if (!config.baseURL || !config.baseURL.includes('/api')) {
+      config.baseURL = API_BASE_URL_WITH_PREFIX;
+    }
+
+    // Construct full URL for logging
+    const cleanBaseURL = (config.baseURL || API_BASE_URL_WITH_PREFIX).endsWith('/') 
+      ? (config.baseURL || API_BASE_URL_WITH_PREFIX).slice(0, -1) 
+      : (config.baseURL || API_BASE_URL_WITH_PREFIX);
+    const cleanUrl = originalUrl.startsWith('/') ? originalUrl : `/${originalUrl}`;
+    const fullUrl = cleanBaseURL + cleanUrl;
+
+    // Don't log expected 404 endpoints
+    const isExpected404Endpoint = originalUrl.includes('/resources/employees/me');
+
+    if (!isExpected404Endpoint && import.meta.env.DEV) {
+      console.log('[API Client] → Request URL:', fullUrl);
+    }
+
+    return config;
+  });
+}
+
 // Request interceptor
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -41,6 +92,13 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem(STORAGE_CONSTANTS.AUTH_TOKEN);
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    // For FormData requests, remove Content-Type to let browser set it with boundary
+    // Axios will automatically set multipart/form-data with boundary for FormData
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+      // Don't set Content-Type manually - let browser/Axios set it with boundary
     }
 
     return config;
@@ -63,6 +121,15 @@ apiClient.interceptors.response.use(
       
       // Redirect to correct login path
       window.location.href = '/auth/login';
+    }
+
+    // Suppress console errors for expected 404s on /resources/employees/me
+    // (user might not have an employee record, which is normal)
+    if (error.response?.status === 404 && error.config?.url?.includes('/resources/employees/me')) {
+      // Suppress console error for this expected case
+      error.suppressConsoleError = true;
+      // Don't log this error - it's expected behavior
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);

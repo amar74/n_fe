@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { VendorInvoice } from '../types';
 import { getStatusBadge } from '../utils';
 import { UploadInvoiceModal } from '../modals';
-import { useProcurement } from '@/hooks/useProcurement';
+import { useProcurement } from '@/hooks/procurement';
 
 interface InvoicesTabProps {
   invoices: VendorInvoice[];

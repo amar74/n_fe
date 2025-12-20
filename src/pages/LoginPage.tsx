@@ -2,14 +2,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { LoginCredentials, LoginFormData } from '@/types/auth';
 import { LoginFormSchema } from '@/types/auth';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import { STORAGE_CONSTANTS } from '@/constants/storageConstants';
 import { Eye, EyeOff } from 'lucide-react';
 import LogoIcon from '@assets/Asset 2 1.svg';
@@ -140,7 +140,6 @@ export default function LoginPage() {
             <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Back to dashboard</span>
           </button>
 
-          
           <div className="w-full max-w-[440px] sm:max-w-[480px] lg:w-[460px] xl:w-[480px] p-8 sm:p-10 lg:p-12 rounded-2xl border border-[#E6E6E6] bg-white flex flex-col justify-start items-start gap-8 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-1px_rgba(0,0,0,0.06)] hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] transition-shadow duration-300">
             
             <div className="self-stretch flex flex-col justify-start items-start gap-3">
@@ -150,7 +149,6 @@ export default function LoginPage() {
               </p>
             </div>
 
-            
             <Form {...form}>
               <form onSubmit={onSubmit} className="self-stretch flex flex-col justify-start items-start gap-6">
                 
@@ -176,7 +174,6 @@ export default function LoginPage() {
                   )}
                 />
 
-                
                 <FormField
                   control={form.control}
                   name="password"
@@ -212,7 +209,6 @@ export default function LoginPage() {
                   )}
                 />
 
-                
                 <div className="self-stretch flex justify-between items-center">
                   <FormField
                     control={form.control}
@@ -241,14 +237,12 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                
                 {form.formState.errors.root && (
                   <div className="text-[#F04438] text-sm text-center self-stretch bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-outfit">
                     {form.formState.errors.root.message}
                   </div>
                 )}
 
-                
                 <Button
                   type="submit"
                   className="self-stretch h-[48px] px-5 py-3 bg-[#161950] rounded-lg text-white text-[15px] font-semibold font-outfit leading-tight hover:bg-[#1E2B5B] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
@@ -257,7 +251,6 @@ export default function LoginPage() {
                   {isSubmitting ? 'Signing in...' : 'Sign In'}
                 </Button>
 
-                
                 <p className="self-stretch text-center text-sm font-normal font-outfit leading-tight">
                   <span className="text-[#667085]">Don't have an account? </span>
                   <button
@@ -274,7 +267,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      
       <div className="hidden lg:flex lg:w-[50%] flex-shrink-0 relative items-center justify-center overflow-hidden min-h-screen">
         
         <div className="absolute inset-0 w-full h-full">
@@ -282,8 +274,7 @@ export default function LoginPage() {
             <path d="M0 -3.98999H702.062V800H108C48.3532 800 0 751.647 0 692V-3.98999Z" fill="#161950"/>
           </svg>
         </div>
-        
-        
+
         <img 
           src={VectorGrid1} 
           alt="" 
@@ -294,8 +285,7 @@ export default function LoginPage() {
           alt="" 
           className="absolute left-[2%] bottom-[68px] w-[450px] h-[255px] opacity-30 pointer-events-none"
         />
-        
-        
+
         <svg 
           width="52" 
           height="53" 
@@ -317,7 +307,6 @@ export default function LoginPage() {
           <path d="M51.1538 0.70166L0.609253 0.701656L0.609248 52.5575C28.5242 52.5575 51.1538 29.9279 51.1538 2.01293L51.1538 0.70166Z" fill="white" fillOpacity="0.08"/>
         </svg>
 
-        
         <svg 
           width="52" 
           height="53" 
@@ -339,7 +328,6 @@ export default function LoginPage() {
           <path d="M0.783691 52.2883L51.3282 52.2883L51.3282 0.432526C23.4133 0.432526 0.783691 23.0621 0.783691 50.9771L0.783691 52.2883Z" fill="white" fillOpacity="0.08"/>
         </svg>
 
-        
         <div className="relative z-10 inline-flex flex-col justify-start items-center gap-6">
           <div className="inline-flex justify-start items-center gap-5">
             <img src={LogoIcon} alt="Megapolis Logo" className="w-[88px] h-[88px]" />

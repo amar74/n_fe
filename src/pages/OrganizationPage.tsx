@@ -11,9 +11,9 @@ import {
   CaretRight,
   ShieldCheckered,
 } from 'phosphor-react';
-import { useToast } from '@/hooks/useToast';
-import { useMyOrganization } from '@/hooks/useOrganizations';
-import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/shared';
+import { useMyOrganization } from '@/hooks/organization';
+import { useAuth } from '@/hooks/auth';
 import image from '@/assets/image.png';
 
 export default function OrganizationPage() {
@@ -95,7 +95,6 @@ export default function OrganizationPage() {
             <span>Organization Detail</span>
           </div>
 
-          
           <div className="w-full max-w-[1000px] mx-auto p-6 sm:p-8 lg:p-10 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6 sm:gap-8 shadow-sm">
             
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
@@ -132,7 +131,6 @@ export default function OrganizationPage() {
               </div>
             </div>
 
-            
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-2">
               <Badge className="h-6 w-fit pl-1.5 pr-2 py-0.5 bg-[#ED8A09] rounded-[999px] flex items-center gap-1">
                 <ShieldCheckered className="w-4 h-4 text-white" />
@@ -149,7 +147,6 @@ export default function OrganizationPage() {
               </div>
             </div>
 
-            
             <div className="flex flex-col gap-6">
               
               <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-8 lg:gap-10">
@@ -181,7 +178,6 @@ export default function OrganizationPage() {
                       )}
                     </div>
 
-                    
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                       <div className="flex flex-col gap-2.5">
                         <span className="text-gray-500 text-xs font-normal font-['Outfit'] leading-none">
@@ -202,7 +198,6 @@ export default function OrganizationPage() {
                     </div>
                   </div>
 
-                  
                   <div className="flex flex-col gap-7">
                     
                     <div className="flex flex-col gap-2.5">
@@ -215,7 +210,6 @@ export default function OrganizationPage() {
                       </span>
                     </div>
 
-                    
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                       <div className="flex flex-col gap-2.5">
                         <span className="text-gray-500 text-xs font-normal font-['Outfit'] leading-none">
@@ -239,7 +233,6 @@ export default function OrganizationPage() {
                   </div>
                 </div>
 
-                
                 <div className="w-full lg:w-72 py-5 bg-neutral-50 rounded-2xl border border-zinc-100 flex flex-col gap-2 flex-shrink-0">
                   <div className="flex flex-col gap-4">
                     <div className="px-6 flex flex-col gap-2">

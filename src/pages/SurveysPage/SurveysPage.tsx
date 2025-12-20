@@ -248,7 +248,6 @@ export default function SurveysPage() {
           </div>
         </div>
 
-        {/* Tabs for Client/Employee Surveys */}
         <div className="bg-white rounded-2xl border border-gray-200 p-2">
           <div className="flex gap-2">
             <button
@@ -286,7 +285,6 @@ export default function SurveysPage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {activeTab === 'all' && (
             <>
@@ -404,7 +402,6 @@ export default function SurveysPage() {
           )}
         </div>
 
-        {/* Filters */}
         <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">

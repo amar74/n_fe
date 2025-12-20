@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
+import { useExpenseCategories } from '@/hooks/finance';
 
 interface SubmitExpenseModalProps {
   open: boolean;
@@ -385,5 +385,4 @@ export function SubmitExpenseModal({
     </Dialog>
   );
 }
-
 

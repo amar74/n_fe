@@ -155,7 +155,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="px-6 py-5 border-b border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -180,7 +179,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
           </div>
         </div>
 
-        {/* Employee Info */}
         {employee && (
           <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
             <div className="grid grid-cols-4 gap-4">
@@ -223,10 +221,8 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-2 gap-6 mb-6">
-            {/* Start Month */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-blue-600" />
@@ -245,7 +241,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
               <p className="text-xs text-gray-500 mt-1">When does this person start?</p>
             </div>
 
-            {/* End Month */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-orange-600" />
@@ -264,7 +259,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
               <p className="text-xs text-gray-500 mt-1">When does this person end?</p>
             </div>
 
-            {/* Hours Per Week */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <Clock className="w-4 h-4 text-green-600" />
@@ -283,7 +277,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
               <p className="text-xs text-gray-500 mt-1">Standard: 40 hrs/week</p>
             </div>
 
-            {/* Hourly Rate */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-purple-600" />
@@ -301,7 +294,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
               <p className="text-xs text-gray-500 mt-1">Billable rate per hour</p>
             </div>
 
-        {/* Escalation Settings */}
         <div className="col-span-2 p-5 rounded-xl border-2 border-blue-100 bg-blue-50/60">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -425,7 +417,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
         </div>
           </div>
 
-          {/* Cost Summary */}
           <div className="mb-6 p-5 rounded-xl" style={{ backgroundColor: '#f0f0ff', borderWidth: '2px', borderColor: '#d0d0ff' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
@@ -468,7 +459,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
               </div>
             </div>
             
-            {/* Calculation Details */}
             <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
               <details className="cursor-pointer">
                 <summary className="text-sm font-bold text-gray-700 mb-2">
@@ -497,7 +487,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3">
             <button
               type="button"
@@ -516,7 +505,6 @@ export function AddStaffModal({ employee, projectInfo, editingStaff, onSave, onC
             </button>
           </div>
 
-          {/* Validation Messages */}
           {startMonth > endMonth && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
               <X className="w-4 h-4 text-red-600" />

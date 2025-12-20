@@ -18,7 +18,6 @@ export default function ResourcesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Tab Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="px-8">
           <div className="flex gap-1">
@@ -45,7 +44,6 @@ export default function ResourcesPage() {
         </div>
       </div>
 
-      {/* Tab Content */}
       <div>
         {activeTab === 'create' && <OnboardingPage />}
         {activeTab === 'search' && <EmployeeSearchPage />}

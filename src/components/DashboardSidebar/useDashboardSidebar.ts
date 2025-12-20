@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/auth';
+import { useToast } from '@/hooks/shared';
 import { apiClient } from '@/services/api/client';
 
 // @author guddy.tech
@@ -12,13 +11,15 @@ export function useDashboardSidebar() {
 
   const handleLogout = useCallback(async () => {
     try {
-      await supabase.auth.signOut();
+      // Clear local storage and API client headers
       localStorage.removeItem('authToken');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userEmail');
       delete apiClient.defaults.headers.common['Authorization'];
       
       toast({
         title: 'Logged Out',
-        description: 'You have been sucessfully logged out.',
+        description: 'You have been successfully logged out.',
       });
       
       navigate('/auth/login', { replace: true });

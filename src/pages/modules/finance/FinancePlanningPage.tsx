@@ -25,19 +25,19 @@ import {
   TrendingUp,
   TrendingDown,
 } from 'lucide-react';
-import { useFinancePlanningAnnual, useFinancePlanningScenarios, useSaveAnnualBudget, useUpdateAnnualBudget, useUpdatePlanningConfig, useUpdateScenario, useGenerateForecast, useForecasts, useExportForecast, useBudgetApprovals, useSubmitBudgetForApproval, useProcessApprovalAction, useSaveVarianceExplanations, financeKeys } from '@/hooks/useFinance';
+import { useFinancePlanningAnnual, useFinancePlanningScenarios, useSaveAnnualBudget, useUpdateAnnualBudget, useUpdatePlanningConfig, useUpdateScenario, useGenerateForecast, useForecasts, useExportForecast, useBudgetApprovals, useSubmitBudgetForApproval, useProcessApprovalAction, useSaveVarianceExplanations, financeKeys } from '@/hooks/finance';
 import { useQueryClient } from '@tanstack/react-query';
-import { financeApiClient } from '@/hooks/useFinance';
+import { financeApiClient } from '@/hooks/finance';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/shared';
+import { useAuth } from '@/hooks/auth';
 import { Textarea } from '@/components/ui/textarea';
 import { AnnualBudgetTab, RevenueExpenseTab, BuAllocationTab, VarianceTab } from './components';
 import { formatCurrency, formatPercent, formatPercentSigned, formatCurrencySigned } from './components/utils';
 import { BUSINESS_UNITS, SCENARIOS, SCENARIO_PROJECTIONS, SCENARIO_KPIS, DEFAULT_APPROVAL_STAGES, APPROVAL_CONDITIONS, FORECASTING_HISTORY, SCENARIO_CALLOUTS, DASHBOARD_TIMELINE, DASHBOARD_TASKS, DASHBOARD_AI_PLAYBOOK, VARIANCE_THRESHOLDS, REPORTING_SCHEDULE } from './components/constants';
 import type { TabKey, ScenarioKey, ApprovalStatus, ApprovalAction, ApprovalStage, ScenarioConfig } from './components/types';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
+import { useExpenseCategories } from '@/hooks/finance';
 import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, Tooltip } from 'recharts';
 
 type CategoryNode = {
@@ -1316,8 +1316,7 @@ function FinancePlanningPage() {
       )
     );
   };
-  
-  
+
   const varianceThresholds = annualData?.variance_thresholds?.map(t => ({
     label: t.label,
     value: String(t.value_percent),
@@ -1564,7 +1563,6 @@ function FinancePlanningPage() {
           ))}
         </div>
         
-        {/* AI Highlights */}
         {aiHighlights && aiHighlights.length > 0 && (
           <div className="mt-6 space-y-3">
             <h4 className="text-base font-semibold text-slate-900">AI Insights</h4>
@@ -3089,7 +3087,6 @@ function FinancePlanningPage() {
     
     return (
       <div className="space-y-6">
-        {/* Approval Overview */}
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_24px_48px_-24px_rgba(79,70,229,0.25)]">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -3122,7 +3119,6 @@ function FinancePlanningPage() {
           
           <div className="h-px bg-slate-100" />
           
-          {/* Quick Approve Button - Show if there's a pending stage user can approve, or if budget is draft and user can approve */}
           {(() => {
             // Check if user is admin/vendor/owner - they can always approve
             const isSuperAdmin = currentUserRole && ['admin', 'vendor', 'owner'].includes(currentUserRole.toLowerCase());
@@ -3348,11 +3344,8 @@ function FinancePlanningPage() {
             </div>
           )}
           
-          {/* Comprehensive Budget Summary for Approval Review */}
-          {/* Show budget summary if we have budgetId OR if we have budget data (revenue/expense lines) */}
           {(effectiveBudgetId || annualData?.budgetId || (revenueLines.length > 0 || expenseLines.length > 0)) && (
             <div className="mt-6 space-y-6">
-              {/* Budget Overview Cards */}
               <div className="rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6">
                 <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                   <ClipboardList className="h-5 w-5 text-[#161950]" />
@@ -3388,7 +3381,6 @@ function FinancePlanningPage() {
                   </div>
                 </div>
                 
-                {/* Budget Distribution Pie Chart */}
                 {expenseLines.length > 0 && (() => {
                   // Prepare pie chart data from expense lines (only top-level categories, no subcategories)
                   const topLevelExpenses = expenseLines.filter(line => !line.level || line.level === 0);
@@ -3452,7 +3444,6 @@ function FinancePlanningPage() {
                         )}
                       </div>
                       
-                      {/* Category List */}
                       <div className="rounded-xl border border-slate-200 bg-white p-6">
                         <div className="mb-4">
                           <h4 className="text-base font-semibold text-slate-900 mb-1">Expense Categories</h4>
@@ -3483,7 +3474,6 @@ function FinancePlanningPage() {
                   );
                 })()}
                 
-                {/* Additional Metrics */}
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-200">
                   <div className="text-sm">
                     <span className="font-medium text-slate-600">Revenue Lines:</span>
@@ -3499,7 +3489,6 @@ function FinancePlanningPage() {
                   </div>
                 </div>
                 
-                {/* Budget Status */}
                 <div className="mt-4 pt-4 border-t border-slate-200">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-slate-600">Budget Status:</span>
@@ -3516,7 +3505,6 @@ function FinancePlanningPage() {
                 </div>
               </div>
 
-              {/* Detailed Revenue Breakdown */}
               {revenueLines.length > 0 && (
                 <div className="rounded-xl border border-slate-200 bg-white p-6">
                   <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
@@ -3596,7 +3584,6 @@ function FinancePlanningPage() {
                 </div>
               )}
 
-              {/* Detailed Expense Breakdown */}
               {expenseLines.length > 0 && (
                 <div className="rounded-xl border border-slate-200 bg-white p-6">
                   <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
@@ -3676,7 +3663,6 @@ function FinancePlanningPage() {
                 </div>
               )}
 
-              {/* Budget Parameters Summary */}
               <div className="rounded-xl border border-slate-200 bg-white p-6">
                 <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                   <Settings2 className="h-5 w-5 text-[#161950]" />
@@ -3698,7 +3684,6 @@ function FinancePlanningPage() {
             </div>
           )}
           
-          {/* Approval Stages - No Submit button here, only review and approve/reject actions */}
           {!effectiveBudgetId && !annualData?.budgetId && approvalStages.length === 0 && (revenueLines.length === 0 && expenseLines.length === 0) ? (
             <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
               <p className="text-slate-600">No budget created yet. Create a budget first to see approval stages.</p>
@@ -3749,7 +3734,6 @@ function FinancePlanningPage() {
                         </span>
                       </div>
                       
-                      {/* Approval Info */}
                       {stage.approverName && (
                         <div className="mt-2 text-sm text-slate-600">
                           <span className="font-medium">Approved by:</span> {stage.approverName}
@@ -3761,14 +3745,12 @@ function FinancePlanningPage() {
                         </div>
                       )}
                       
-                      {/* Comments */}
                       {stage.comments && (
                         <div className="mt-2 rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-600">
                           <span className="font-medium">Comment:</span> {stage.comments}
                         </div>
                       )}
                       
-                      {/* Required Role */}
                       <div className="mt-2 text-sm text-slate-500">
                         <span className="font-medium">Required Role:</span>{' '}
                         {Array.isArray(stage.requiredRole) 
@@ -3776,7 +3758,6 @@ function FinancePlanningPage() {
                           : stage.requiredRole}
                       </div>
                       
-                      {/* Approval Conditions */}
                       {conditions.length > 0 && (
                         <div className="mt-3">
                           <p className="text-sm font-semibold uppercase tracking-wide text-slate-500 mb-1">
@@ -3795,7 +3776,6 @@ function FinancePlanningPage() {
                         </div>
                       )}
                       
-                      {/* Action Buttons */}
                       {(stage.status === 'pending' || (stage.status === 'not_started' && stage.canApprove)) && stage.canApprove && (
                         <div className="mt-4 flex gap-2">
                           <button
@@ -3808,7 +3788,6 @@ function FinancePlanningPage() {
                         </div>
                       )}
                       
-                      {/* Approval Form */}
                       {isSelected && (stage.status === 'pending' || stage.status === 'not_started') && stage.canApprove && (
                         <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
                           <label className="block text-sm font-semibold uppercase tracking-wide text-slate-500 mb-2">

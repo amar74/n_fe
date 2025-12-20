@@ -1,13 +1,17 @@
 import { memo, useEffect, useMemo, useState, useCallback } from 'react';
-import { MapPin, Building, FileText, Download, Pencil, Plus, Trash2, Sparkles, ExternalLink, DollarSign } from 'lucide-react';
+import { MapPin, Building, FileText, Download, Pencil, Plus, Trash2, Sparkles, ExternalLink, DollarSign, Target, ArrowRight, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { Card, AddButton } from './shared';
 import { TabProps } from './types';
-import { useOpportunityOverview, useUpdateOpportunityOverview } from '@/hooks/useOpportunityTabs';
-import { useOpportunityDocuments, useDeleteOpportunityDocument } from '@/hooks/useOpportunityDocuments';
+import { useOpportunityOverview, useUpdateOpportunityOverview } from '@/hooks/opportunities';
+import { useOpportunityDocuments, useDeleteOpportunityDocument } from '@/hooks/opportunities';
+import { useOpportunityFinancialSummary } from '@/hooks/opportunities';
 import AddDocumentModal from '../modals/AddDocumentModal';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
+import { useProposals } from '@/hooks/proposals';
+import { useNavigate } from 'react-router-dom';
 import { opportunityDocumentsApi } from '@/services/api/opportunityDocumentsApi';
 import type { OpportunityDocument } from '@/services/api/opportunityDocumentsApi';
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell } from 'recharts';
@@ -26,6 +30,7 @@ import { scraperApi } from '@/services/api/scraperApi';
 import { formatProjectValue, parseProjectValue } from '@/utils/opportunityUtils';
 
 const OverviewTab = memo(({ opportunity }: TabProps) => {
+  const navigate = useNavigate();
   const { data: overviewData, isLoading: overviewLoading, refetch } = useOpportunityOverview(opportunity?.id || '');
   const updateOverviewMutation = useUpdateOpportunityOverview(opportunity?.id || '');
   const {
@@ -34,6 +39,9 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
     refetch: refetchDocuments,
   } = useOpportunityDocuments(opportunity?.id || '');
   const deleteDocumentMutation = useDeleteOpportunityDocument(opportunity?.id || '');
+  const { data: financialSummary } = useOpportunityFinancialSummary(opportunity?.id || '');
+  const { useProposalsByOpportunity, createProposal } = useProposals();
+  const { data: proposalsData, isLoading: isLoadingProposals } = useProposalsByOpportunity(opportunity?.id);
   const { toast } = useToast();
 
   const parseNumericValue = (value: unknown): number | null => {
@@ -476,8 +484,136 @@ const OverviewTab = memo(({ opportunity }: TabProps) => {
     );
   }
 
+  // Quick create proposal handler
+  const handleQuickCreateProposal = async () => {
+    if (!opportunity?.id) {
+      toast.error('Opportunity ID is required');
+      return;
+    }
+
+    try {
+      const proposalPayload: any = {
+        title: `${opportunity.project_name || 'Proposal'} - ${new Date().getFullYear()}`,
+        proposal_type: 'proposal',
+        currency: 'USD',
+        opportunity_id: opportunity.id,
+      };
+
+      if (opportunity.account_id) {
+        proposalPayload.account_id = opportunity.account_id;
+      }
+
+      if (opportunity.project_value) {
+        proposalPayload.total_value = opportunity.project_value;
+      }
+
+      if (opportunity.submission_deadline) {
+        proposalPayload.due_date = opportunity.submission_deadline;
+      }
+
+      const newProposal = await createProposal(proposalPayload);
+      toast.success('Proposal created successfully. Redirecting to editor...');
+      navigate(`/proposals/${newProposal.id}/edit`);
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Failed to create proposal');
+    }
+  };
+
+  const proposals = proposalsData?.proposals || proposalsData?.items || [];
+  const financialData = financialSummary;
+  const totalBudget = financialData?.total_budget || financialData?.budget_categories?.reduce((sum: number, cat: any) => sum + (cat.amount || 0), 0) || 0;
+
   return (
     <div className="space-y-6">
+      {/* Quick Actions & Summary Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Budget Summary Card */}
+        <Card className="p-6 bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-emerald-700" />
+              <div className="text-sm font-semibold text-emerald-900">Budget Summary</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-3xl font-bold text-emerald-900">
+              {totalBudget > 0 
+                ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalBudget)
+                : 'Not Set'}
+            </div>
+            {financialData?.profit_margin_percentage !== undefined && (
+              <div className="text-sm text-emerald-700">
+                Profit Margin: {financialData.profit_margin_percentage}%
+              </div>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const tabs = document.querySelectorAll('button[class*="tab"]');
+                const financialTab = Array.from(tabs).find((tab: any) => tab.textContent?.includes('Financial'));
+                if (financialTab) (financialTab as HTMLElement).click();
+              }}
+              className="mt-2 border-emerald-300 text-emerald-700 hover:bg-emerald-200"
+            >
+              View Full Budget →
+            </Button>
+          </div>
+        </Card>
+
+        {/* Proposals Summary Card */}
+        <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-700" />
+              <div className="text-sm font-semibold text-blue-900">Proposals</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-3xl font-bold text-blue-900">
+              {proposals.length}
+            </div>
+            <div className="text-sm text-blue-700">
+              {proposals.filter((p: any) => p.status === 'draft').length} Draft,{' '}
+              {proposals.filter((p: any) => p.status === 'submitted').length} Submitted
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleQuickCreateProposal}
+              className="mt-2 border-blue-300 text-blue-700 hover:bg-blue-200"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Create Proposal
+            </Button>
+          </div>
+        </Card>
+
+        {/* Scope Summary Card */}
+        <Card className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-purple-700" />
+              <div className="text-sm font-semibold text-purple-900">Project Scope</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-3xl font-bold text-purple-900">
+              {scopeItems.length}
+            </div>
+            <div className="text-sm text-purple-700">
+              Scope Items Defined
+            </div>
+            {scopeItems.length > 0 && (
+              <div className="text-xs text-purple-600 mt-2 line-clamp-2">
+                {scopeItems.slice(0, 2).join(', ')}
+                {scopeItems.length > 2 && ` +${scopeItems.length - 2} more`}
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6 space-y-8">
           <div>

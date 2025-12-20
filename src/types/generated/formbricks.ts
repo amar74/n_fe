@@ -91,7 +91,6 @@ Returns the created survey mapped to our Survey schema.`,
   },
 ]);
 
-
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);
 }

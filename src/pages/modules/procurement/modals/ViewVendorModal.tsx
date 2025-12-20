@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Mail, Phone, Globe, MapPin, Calendar, CheckCircle, Clock, XCircle, CreditCard, FileText } from 'lucide-react';
-import type { ProcurementVendor } from '@/hooks/useProcurementVendors';
+import type { ProcurementVendor } from '@/hooks/procurement';
 import { getStatusBadge } from '../utils';
 
 interface ViewVendorModalProps {
@@ -35,7 +35,6 @@ export function ViewVendorModal({ open, onOpenChange, vendor }: ViewVendorModalP
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
-          {/* Status Badge */}
           <div className="flex items-center justify-between pb-4 border-b border-gray-200">
             <span className="text-sm font-medium text-gray-600 font-outfit">Status</span>
             <Badge className={`${statusBadge.className} font-outfit`}>
@@ -43,7 +42,6 @@ export function ViewVendorModal({ open, onOpenChange, vendor }: ViewVendorModalP
             </Badge>
           </div>
 
-          {/* Vendor Name & Organization */}
           <div className="space-y-4">
             <div>
               <div className="flex items-center space-x-2 mb-2">
@@ -62,7 +60,6 @@ export function ViewVendorModal({ open, onOpenChange, vendor }: ViewVendorModalP
             </div>
           </div>
 
-          {/* Contact Information */}
           <div className="space-y-4 pt-4 border-t border-gray-200">
             <h3 className="text-lg font-semibold text-[#1A1A1A] font-outfit mb-3">Contact Information</h3>
             
@@ -140,7 +137,6 @@ export function ViewVendorModal({ open, onOpenChange, vendor }: ViewVendorModalP
             )}
           </div>
 
-          {/* Timestamps */}
           <div className="space-y-4 pt-4 border-t border-gray-200">
             <h3 className="text-lg font-semibold text-[#1A1A1A] font-outfit mb-3">Timeline</h3>
             
@@ -177,7 +173,6 @@ export function ViewVendorModal({ open, onOpenChange, vendor }: ViewVendorModalP
             )}
           </div>
 
-          {/* Vendor ID */}
           <div className="pt-4 border-t border-gray-200">
             <div className="flex items-center space-x-2 mb-2">
               <span className="text-sm font-medium text-gray-600 font-outfit">Vendor ID</span>

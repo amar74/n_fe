@@ -25,7 +25,37 @@ import OpportunitiesDashboardPage from '@/pages/modules/opportunities/Opportunit
 import AIAnalysisPage from '@/pages/modules/opportunities/AIAnalysisPage';
 import PipelineOverviewPage from '@/pages/modules/opportunities/PipelineOverviewPage';
 import IngestionQueuePage from '@/pages/modules/opportunities/IngestionQueuePage';
-import ProposalsPage from '@/pages/modules/proposals/ProposalsPage';
+import {
+  ProposalsPage,
+  ProposalSetupPage,
+  ProposalEditorPage,
+  OngoingProposalsPage,
+  CompletedProposalsPage,
+} from '@/pages/modules/proposals/proposals/pages';
+import ProposalDetailPage from '@/pages/modules/proposals/proposals/pages/ProposalDetailPage';
+import {
+  BrochuresPage,
+  BrochuresSetupPage,
+  BrochureEditorPage,
+  OngoingBrochuresPage,
+  CompletedBrochuresPage,
+} from '@/pages/modules/proposals/brochures/pages';
+import {
+  InterviewsPage,
+  InterviewsSetupPage,
+  InterviewEditorPage,
+  InterviewCreatePage,
+  OngoingInterviewsPage,
+  CompletedInterviewsPage,
+} from '@/pages/modules/proposals/interviews/pages';
+import {
+  CampaignsPage,
+  CampaignsSetupPage,
+  CampaignEditorPage,
+  CampaignCreatePage,
+  OngoingCampaignsPage,
+  CompletedCampaignsPage,
+} from '@/pages/modules/proposals/campaigns/pages';
 import ResourcesPage from '@/pages/modules/resources/ResourcesPage';
 import ResourcesDashboardPage from '@/pages/modules/resources/ResourcesDashboardPage';
 import OnboardingPage from '@/pages/modules/resources/OnboardingPage';
@@ -58,6 +88,8 @@ import AccountSurveyDashboard from '@/pages/AccountSurveyDashboard/AccountSurvey
 import EmployeeSurveyDashboard from '@/pages/EmployeeSurveyDashboard/EmployeeSurveyDashboard';
 import SurveyBuilderPage from '@/pages/SurveyBuilderPage/SurveyBuilderPage';
 import EmployeeSurveyBuilderPage from '@/pages/EmployeeSurveyBuilderPage/EmployeeSurveyBuilderPage';
+import EmployeeDashboardPage from '@/pages/EmployeeDashboardPage/EmployeeDashboardPage';
+import { EmployeeAttendancePage } from '@/pages/EmployeeDashboardPage/components/EmployeeAttendancePage';
 import SurveyResponsesPage from '@/pages/SurveyResponsesPage/SurveyResponsesPage';
 import SurveyAnalyticsPage from '@/pages/SurveyAnalyticsPage/SurveyAnalyticsPage';
 import SurveyPreviewPage from '@/pages/SurveyPreviewPage/SurveyPreviewPage';
@@ -126,6 +158,107 @@ const router = createBrowserRouter([
       {
         path: 'module/proposals',
         element: <ProposalsPage />,
+      },
+      {
+        path: 'module/proposals/brochures',
+        element: <BrochuresPage />,
+      },
+      {
+        path: 'module/proposals/brochures/setup',
+        element: <BrochuresSetupPage />,
+      },
+      {
+        path: 'module/proposals/brochures/create',
+        element: <BrochureEditorPage />,
+      },
+      {
+        path: 'module/proposals/brochures/:id/edit',
+        element: <BrochureEditorPage />,
+      },
+      {
+        path: 'module/proposals/brochures/ongoing',
+        element: <OngoingBrochuresPage />,
+      },
+      {
+        path: 'module/proposals/brochures/completed',
+        element: <CompletedBrochuresPage />,
+      },
+      {
+        path: 'module/proposals/interviews',
+        element: <InterviewsPage />,
+      },
+      {
+        path: 'module/proposals/interviews/setup',
+        element: <InterviewsSetupPage />,
+      },
+      {
+        path: 'module/proposals/interviews/create',
+        element: <InterviewCreatePage />,
+      },
+      {
+        path: 'module/proposals/interviews/:id/edit',
+        element: <InterviewEditorPage />,
+      },
+      {
+        path: 'module/proposals/interviews/ongoing',
+        element: <OngoingInterviewsPage />,
+      },
+      {
+        path: 'module/proposals/interviews/completed',
+        element: <CompletedInterviewsPage />,
+      },
+      {
+        path: 'module/proposals/campaigns',
+        element: <CampaignsPage />,
+      },
+      {
+        path: 'module/proposals/campaigns/setup',
+        element: <CampaignsSetupPage />,
+      },
+      {
+        path: 'module/proposals/campaigns/create',
+        element: <CampaignCreatePage />,
+      },
+      {
+        path: 'module/proposals/campaigns/:id/edit',
+        element: <CampaignEditorPage />,
+      },
+      {
+        path: 'module/proposals/campaigns/active',
+        element: <OngoingCampaignsPage />,
+      },
+      {
+        path: 'module/proposals/campaigns/completed',
+        element: <CompletedCampaignsPage />,
+      },
+      // Proposal routes (without module prefix for cleaner URLs)
+      {
+        path: 'proposals',
+        element: <ProposalsPage />,
+      },
+      {
+        path: 'proposals/setup',
+        element: <ProposalSetupPage />,
+      },
+      {
+        path: 'proposals/create',
+        element: <ProposalEditorPage />,
+      },
+      {
+        path: 'proposals/:id',
+        element: <ProposalDetailPage />,
+      },
+      {
+        path: 'proposals/:id/edit',
+        element: <ProposalEditorPage />,
+      },
+      {
+        path: 'proposals/ongoing',
+        element: <OngoingProposalsPage />,
+      },
+      {
+        path: 'proposals/completed',
+        element: <CompletedProposalsPage />,
       },
       {
         path: 'module/resources',
@@ -254,6 +387,18 @@ const router = createBrowserRouter([
       {
         path: 'profile/settings',
         element: <ProfileSettingsPage />,
+      },
+      {
+        path: 'settings/notifications',
+        element: <ProfileSettingsPage />,
+      },
+      {
+        path: 'employee/dashboard',
+        element: <EmployeeDashboardPage />,
+      },
+      {
+        path: 'employee/attendance',
+        element: <EmployeeAttendancePage />,
       },
       {
         path: 'organization',

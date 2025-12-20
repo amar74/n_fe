@@ -6,7 +6,7 @@ import {
   Loader2, Building2, Tag, FileText, AlertCircle, RefreshCw
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { useOpportunityTemp, useMutateOpportunityTemp } from '@/hooks/useOpportunityIngestion';
+import { useOpportunityTemp, useMutateOpportunityTemp } from '@/hooks/opportunities';
 import type { OpportunityTempResponse, TempStatus, OpportunityTempUpdate } from '@/types/opportunityIngestion';
 import { formatCurrency } from '@/utils/opportunityUtils';
 import { Button } from '@/components/ui/button';
@@ -544,7 +544,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Opportunity Ingestion Queue</h1>
           <p className="text-gray-600">
@@ -552,7 +551,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
           </p>
         </div>
 
-        {/* Filters and Bulk Actions */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
@@ -605,7 +603,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
             </div>
           </div>
           
-          {/* Bulk Actions */}
           {selectedIds.size > 0 && (
             <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
               <span className="text-sm text-gray-600">
@@ -651,7 +648,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
           )}
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="text-sm text-gray-600 mb-1">Total</div>
@@ -677,7 +673,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
           </div>
         </div>
 
-        {/* Select All */}
         {filteredOpportunities.length > 0 && (
           <div className="mb-4 flex items-center gap-2">
             <input
@@ -692,7 +687,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
           </div>
         )}
 
-        {/* Opportunities List */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-[#161950]" />
@@ -722,7 +716,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
                   }`}
                 >
                   <div className="flex flex-col lg:flex-row gap-4">
-                    {/* Checkbox for bulk selection */}
                     <div className="flex items-start pt-1">
                       <input
                         type="checkbox"
@@ -732,7 +725,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
                       />
                     </div>
                     
-                    {/* Main Content */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -800,7 +792,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
                       )}
                     </div>
 
-                    {/* Actions */}
                     <div className="flex flex-col gap-2 lg:w-48">
                       {opp.status !== 'promoted' && (
                         <>
@@ -867,7 +858,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
         )}
       </div>
 
-      {/* Promote Modal */}
       <Dialog open={promoteModalOpen} onOpenChange={setPromoteModalOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -879,7 +869,6 @@ const buildModalDefaultsFromDraft = (opp: OpportunityTempResponse): Partial<Oppo
 
           {selectedOpportunity && (
             <div className="space-y-5">
-              {/* Opportunity Details */}
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                 <div>
                   <Label className="text-sm font-semibold text-gray-700">Project Title</Label>

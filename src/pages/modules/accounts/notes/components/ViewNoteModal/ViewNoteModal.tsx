@@ -54,7 +54,6 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
           </div>
         </div>
 
-        
         <div className="p-6 space-y-6">
           
           <div className="flex gap-8">
@@ -86,7 +85,6 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
             )}
           </div>
 
-          
           <div>
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 font-['Outfit']">
               Title
@@ -96,7 +94,6 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
             </h3>
           </div>
 
-          
           <div>
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 font-['Outfit']">
               Content
@@ -108,7 +105,6 @@ export function ViewNoteModal({ isOpen, note, onClose, onEdit }: ViewNoteModalPr
             </div>
           </div>
 
-          
           {note.updated_at && note.updated_at !== note.created_at && (
             <div className="pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-500 font-['Outfit']">

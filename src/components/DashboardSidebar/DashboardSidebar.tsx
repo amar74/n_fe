@@ -107,8 +107,7 @@ function DashboardSidebar() {
       <div className="content-stretch flex flex-col gap-2 items-start justify-start relative shrink-0 w-full overflow-y-auto">
         {NAVIGATION_ITEMS.map((item) => renderMenuItem(item))}
       </div>
-      
-      
+
       <button
         onClick={handleLogout}
         className="box-border content-stretch flex gap-3 h-[60px] items-center justify-start px-7 py-5 relative rounded-[19px] shrink-0 w-full transition-colors duration-200 hover:bg-gray-50"

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { useAccounts } from '@/hooks/useAccounts';
+import { useToast } from '@/hooks/shared';
+import { useAccounts } from '@/hooks/accounts';
 import { AccountStatsData, FilterState } from './AccountsPage.types';
 import { AccountCreate, AccountListItem } from '@/types/accounts';
 import { STATE_ABBREVIATION_TO_NAME } from './components/CreateAccountModal/CreateAccountModal.constants';
@@ -37,9 +37,6 @@ export function useAccountsPage() {
   } = useAccounts({eager: true});
 
   const accounts = accountsList?.accounts || [];
- 
-
-
 
   const stats: AccountStatsData = useMemo(() => {
     if (accounts.length === 0) {

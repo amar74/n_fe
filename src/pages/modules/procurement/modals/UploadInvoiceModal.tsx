@@ -19,8 +19,8 @@ import {
 } from '@/components/ui/select';
 import { Upload, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { procurementApi } from '@/services/api/procurementApi';
-import { useProcurementVendors } from '@/hooks/useProcurementVendors';
-import { useToast } from '@/hooks/use-toast';
+import { useProcurementVendors } from '@/hooks/procurement';
+import { useToast } from '@/hooks/shared';
 
 interface UploadInvoiceModalProps {
   open: boolean;

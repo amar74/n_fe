@@ -1,5 +1,5 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useNote } from '@/hooks/useNotes';
+import { useNote } from '@/hooks/notes';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -139,7 +139,6 @@ export default function NoteDetailsPage() {
         </div>
       </div>
 
-      
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
@@ -167,8 +166,7 @@ export default function NoteDetailsPage() {
 
         <CardContent className="space-y-6">
           <Separator />
-          
-          
+
           <div>
             <h3 className="text-lg font-semibold mb-3">Meeting Notes</h3>
             <div className="prose prose-sm max-w-none">
@@ -180,7 +178,6 @@ export default function NoteDetailsPage() {
 
           <Separator />
 
-          
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

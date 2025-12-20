@@ -223,8 +223,6 @@ Returns list of employees with their details and assignment information`,
   },
 ]);
 
-
-
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);
 }

@@ -28,9 +28,11 @@ import {
   Code,
   FileText,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/shared";
 import { copyToClipboard } from "@/utils/clipboard";
-import { useAddChatMessage, type ChatMessage } from "@/hooks/useChat";
+import { useAddChatMessage, type ChatMessage } from "@/hooks/ai";
+import { getModuleQuestions, MODULE_QUESTIONS, type ModuleQuestion } from '@/pages/modules/ai-agentic/moduleQuestions';
+import { aiApiClient } from "@/services/api/client";
 
 // Enhanced markdown-like formatting component with code block support
 const FormattedText = ({ text }: { text: string }) => {
@@ -310,36 +312,117 @@ export default function UniversalChatbot({ currentModule = "General", template, 
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const generateBotResponse = (userMessage: string, mode: typeof thinkingMode): string => {
-    const message = userMessage.toLowerCase();
-    
-    // Enhanced responses based on thinking mode
-    let baseResponse = "";
-    
-    if (message.includes("account") || message.includes("client")) {
-      baseResponse = "I can help you with account management! You can create new accounts by clicking the 'Add New Account' button, view client details including health scores and contact information, track communication history, and manage MSA status. Would you like me to guide you through any specific account-related task?";
-    } else if (message.includes("opportunity") || message.includes("lead") || message.includes("pipeline")) {
-      baseResponse = "For opportunities, you can track your sales pipeline, manage lead stages, view opportunity values and probabilities, set follow-up reminders, and generate pipeline reports. I can help you navigate to specific opportunities or explain how to update opportunity stages. What specific aspect of opportunity management interests you?";
-    } else if (message.includes("proposal")) {
-      baseResponse = "Regarding proposals, you can create new proposals using templates, track submission status, monitor win rates, collaborate with team members, and manage proposal deadlines. I can walk you through the proposal creation process or help you find specific proposals. What would you like to do with proposals?";
-    } else if (message.includes("project")) {
-      baseResponse = "For project management, you can view project timelines, track deliverables, monitor project health, assign team members, and generate progress reports. I can help you navigate to specific projects or explain how to update project status. What project information do you need?";
-    } else if (message.includes("finance") || message.includes("budget") || message.includes("revenue")) {
-      baseResponse = "Regarding finance, you can track revenue, manage budgets, monitor expenses, generate financial reports, analyze profitability, and set financial goals. I can help you navigate financial data or explain specific financial metrics. What financial information do you need?";
-    } else {
-      baseResponse = `Great question! Since you're in the ${currentModule} module, I can provide specific guidance. Could you be more specific about what you'd like to know?`;
-    }
+  const generateBotResponse = async (userMessage: string, mode: typeof thinkingMode): Promise<string> => {
+    try {
+      // Build conversation history from current messages
+      const conversationHistory = messages
+        .filter(msg => msg.type === 'user' || msg.type === 'bot')
+        .slice(-10) // Last 10 messages for context
+        .map(msg => ({
+          role: msg.type === 'user' ? 'user' : 'bot',
+          content: msg.content
+        }));
 
-    // Add thinking mode prefixes
-    if (mode === "think") {
-      return `**Thinking through this...**\n\n${baseResponse}\n\n*I've considered the key aspects of your question and provided a thoughtful response.*`;
-    } else if (mode === "deep-think") {
-      return `**Deep Analysis**\n\n${baseResponse}\n\n**Additional Considerations:**\n- This requires careful evaluation of multiple factors\n- Consider the long-term implications\n- Review related data points for comprehensive understanding\n\n*I've conducted a thorough analysis to provide you with the most comprehensive answer.*`;
-    } else if (mode === "research") {
-      return `**Research Mode**\n\n${baseResponse}\n\n**Research Findings:**\n- Based on current data patterns\n- Cross-referenced with best practices\n- Analyzed similar scenarios\n\n**Sources Considered:**\n- Internal documentation\n- Historical data patterns\n- Industry standards\n\n*I've researched this topic thoroughly to give you an informed response.*`;
+      // Detect use case from user message
+      const messageLower = userMessage.toLowerCase();
+      let useCase: string | undefined = undefined;
+      
+      if (messageLower.includes('enrich') || messageLower.includes('enhance') || messageLower.includes('improve') || messageLower.includes('expand')) {
+        useCase = 'content_enrichment';
+      } else if (messageLower.includes('create') || messageLower.includes('develop') || messageLower.includes('write') || messageLower.includes('generate')) {
+        useCase = 'content_development';
+      } else if (messageLower.includes('suggest') || messageLower.includes('recommend') || messageLower.includes('idea') || messageLower.includes('option')) {
+        useCase = 'suggestions';
+      } else if (messageLower.includes('auto') || messageLower.includes('optimize') || messageLower.includes('refine')) {
+        useCase = 'auto_enhancement';
+      } else if (messageLower.includes('brainstorm') || messageLower.includes('creative') || messageLower.includes('innovative')) {
+        useCase = 'ideas';
+      }
+
+      // Call AI API
+      const response = await aiApiClient.post('/v1/chat/generate-response', {
+        user_message: userMessage,
+        module: currentModule !== "General" ? currentModule : undefined,
+        thinking_mode: mode,
+        conversation_history: conversationHistory,
+        use_case: useCase
+      });
+
+      return response.data.response || "I apologize, but I couldn't generate a response. Please try again.";
+    } catch (error: any) {
+      console.error('Error generating AI response:', error);
+      
+      // Fallback to predefined responses if AI fails
+      const message = userMessage.toLowerCase().trim();
+      let baseResponse = "";
+      
+      // Try to match against predefined module questions first
+      if (currentModule && currentModule !== "General" && MODULE_QUESTIONS[currentModule]) {
+        const moduleQuestions = MODULE_QUESTIONS[currentModule];
+        const stopWords = ['how', 'do', 'i', 'what', 'are', 'the', 'can', 'is', 'a', 'an', 'to', 'for', 'with', 'in', 'on', 'at', 'by', 'from', 'as', 'be', 'or', 'and', 'but', 'if', 'of', 'this', 'that', 'it', 'you', 'your', 'my', 'me', 'we', 'our'];
+        const userWords = message.split(/\s+/).filter(w => w.length > 2 && !stopWords.includes(w));
+        
+        let bestMatch: { question: ModuleQuestion; score: number } | null = null;
+        
+        for (const q of moduleQuestions) {
+          const questionLower = q.question.toLowerCase();
+          const questionWords = questionLower.split(/\s+/).filter(w => w.length > 2 && !stopWords.includes(w));
+          
+          let score = 0;
+          if (questionLower.includes(message) || message.includes(questionLower.split('?')[0].trim())) {
+            score += 100;
+          }
+          
+          const matchingWords = userWords.filter(uw => 
+            questionWords.some(qw => qw.includes(uw) || uw.includes(qw))
+          );
+          score += matchingWords.length * 10;
+          
+          if (q.tags) {
+            const matchingTags = q.tags.filter(tag => 
+              message.includes(tag.toLowerCase())
+            );
+            score += matchingTags.length * 15;
+          }
+          
+          if (score > 0 && (!bestMatch || score > bestMatch.score)) {
+            bestMatch = { question: q, score };
+          }
+        }
+        
+        if (bestMatch && bestMatch.score >= 15) {
+          baseResponse = bestMatch.question.answer;
+        }
+      }
+      
+      // Fallback responses
+      if (!baseResponse) {
+        if (message.includes("account") || message.includes("client")) {
+          baseResponse = "I can help you with account management! You can create new accounts, view client details, track communication history, and manage MSA status. Would you like me to guide you through any specific account-related task?";
+        } else if (message.includes("opportunity") || message.includes("lead") || message.includes("pipeline")) {
+          baseResponse = "For opportunities, you can track your sales pipeline, manage lead stages, view opportunity values, and generate pipeline reports. What specific aspect of opportunity management interests you?";
+        } else if (message.includes("proposal")) {
+          baseResponse = "Regarding proposals, you can create new proposals using templates, track submission status, monitor win rates, and manage proposal deadlines. What would you like to do with proposals?";
+        } else if (message.includes("project")) {
+          baseResponse = "For project management, you can view project timelines, track deliverables, monitor project health, and generate progress reports. What project information do you need?";
+        } else if (message.includes("finance") || message.includes("budget") || message.includes("revenue")) {
+          baseResponse = "Regarding finance, you can track revenue, manage budgets, monitor expenses, generate financial reports, and analyze profitability. What financial information do you need?";
+        } else {
+          baseResponse = `Great question! Since you're in the ${currentModule} module, I can provide specific guidance. Could you be more specific about what you'd like to know?`;
+        }
+      }
+
+      // Add thinking mode prefixes for fallback
+      if (mode === "think") {
+        return `**Thinking through this...**\n\n${baseResponse}\n\n*I've considered the key aspects of your question and provided a thoughtful response.*`;
+      } else if (mode === "deep-think") {
+        return `**Deep Analysis**\n\n${baseResponse}\n\n**Additional Considerations:**\n- This requires careful evaluation of multiple factors\n- Consider the long-term implications\n- Review related data points for comprehensive understanding\n\n*I've conducted a thorough analysis to provide you with the most comprehensive answer.*`;
+      } else if (mode === "research") {
+        return `**Research Mode**\n\n${baseResponse}\n\n**Research Findings:**\n- Based on current data patterns\n- Cross-referenced with best practices\n- Analyzed similar scenarios\n\n**Sources Considered:**\n- Internal documentation\n- Historical data patterns\n- Industry standards\n\n*I've researched this topic thoroughly to give you an informed response.*`;
+      }
+      
+      return baseResponse;
     }
-    
-    return baseResponse;
   };
 
   const handleSendMessage = async () => {
@@ -373,13 +456,9 @@ export default function UniversalChatbot({ currentModule = "General", template, 
       console.error('Error saving user message:', error);
     }
 
-    // Simulate thinking delay based on mode
-    const delay = thinkingMode === "normal" ? 1000 : 
-                  thinkingMode === "think" ? 2000 : 
-                  thinkingMode === "deep-think" ? 3000 : 4000;
-
-    setTimeout(async () => {
-      const botResponseContent = generateBotResponse(currentInput, thinkingMode);
+    // Generate AI response
+    try {
+      const botResponseContent = await generateBotResponse(currentInput, thinkingMode);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: "bot",
@@ -407,7 +486,15 @@ export default function UniversalChatbot({ currentModule = "General", template, 
           console.error('Error saving bot message:', error);
         }
       }
-    }, delay + Math.random() * 1000);
+    } catch (error) {
+      console.error('Error generating bot response:', error);
+      setIsTyping(false);
+      toast({
+        title: "Error",
+        description: "Failed to generate response. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleQuickAction = (action: string) => {
@@ -462,7 +549,6 @@ export default function UniversalChatbot({ currentModule = "General", template, 
 
   return (
     <>
-      {/* Floating Chat Button - Bottom Right */}
       <div className="fixed bottom-6 right-6 z-50">
         <TooltipProvider>
           <Tooltip>
@@ -486,7 +572,6 @@ export default function UniversalChatbot({ currentModule = "General", template, 
         )}
       </div>
 
-      {/* Chat Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 font-['Outfit',sans-serif] shadow-2xl border border-gray-200/50 rounded-xl overflow-hidden">
           <style>{`
@@ -501,7 +586,6 @@ export default function UniversalChatbot({ currentModule = "General", template, 
               }
             }
           `}</style>
-          {/* Professional Header */}
           <DialogHeader className="px-6 py-4 bg-[#161950] text-white border-b border-[#1E2B5B]">
             <div className="flex items-center justify-between">
               <DialogTitle className="flex items-center gap-3 text-white">
@@ -526,7 +610,6 @@ export default function UniversalChatbot({ currentModule = "General", template, 
             </div>
           </DialogHeader>
 
-          {/* Messages Container */}
           <div 
             ref={messagesContainerRef}
             className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-gradient-to-b from-[#F5F3F2] via-white to-white font-['Outfit',sans-serif]"
@@ -634,12 +717,20 @@ export default function UniversalChatbot({ currentModule = "General", template, 
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Actions */}
           {(() => {
-            // Use session prompts if available, otherwise use template quick actions or defaults
-            const prompts = sessionData?.selected_prompts && sessionData.selected_prompts.length > 0
-              ? sessionData.selected_prompts
-              : (template?.quick_actions ? Object.values(template.quick_actions) : DEFAULT_QUICK_ACTIONS);
+            // Use session prompts if available, otherwise use module questions, template quick actions, or defaults
+            let prompts: string[] = [];
+            if (sessionData?.selected_prompts && sessionData.selected_prompts.length > 0) {
+              prompts = sessionData.selected_prompts;
+            } else if (currentModule && currentModule !== "General") {
+              const moduleQuestions = getModuleQuestions(currentModule);
+              if (moduleQuestions.length > 0) {
+                prompts = moduleQuestions.slice(0, 6).map(q => q.question);
+              }
+            }
+            if (prompts.length === 0) {
+              prompts = template?.quick_actions ? Object.values(template.quick_actions) : DEFAULT_QUICK_ACTIONS;
+            }
             
             return prompts.length > 0 && messages.length === 1 && (
               <div className="px-6 py-4 border-t border-gray-200 bg-white/50 backdrop-blur-sm">
@@ -660,9 +751,7 @@ export default function UniversalChatbot({ currentModule = "General", template, 
             );
           })()}
 
-          {/* Input Area */}
           <div className="border-t border-gray-200 bg-white px-6 py-4 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
-            {/* Thinking Mode Selector */}
             <div className="flex items-center gap-3 mb-3">
               <span className="text-xs text-gray-600 font-semibold font-['Outfit',sans-serif] uppercase tracking-wider">Mode:</span>
               <div className="flex gap-2">
@@ -702,7 +791,6 @@ export default function UniversalChatbot({ currentModule = "General", template, 
               </div>
             </div>
 
-            {/* Input Field */}
             <div className="flex gap-2.5">
               <Input
                 value={inputValue}

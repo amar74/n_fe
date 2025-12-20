@@ -19,7 +19,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from '@/components/ui/alert';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 
 interface Vendor {
   id: string;
@@ -161,7 +161,6 @@ export default function VendorListPage() {
         </div>
       </div>
 
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {vendors.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
@@ -287,7 +286,6 @@ export default function VendorListPage() {
         )}
       </div>
 
-      
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="sm:max-w-[525px]">
           <DialogHeader>
@@ -353,7 +351,6 @@ export default function VendorListPage() {
         </DialogContent>
       </Dialog>
 
-      
       <Dialog open={isCredentialsDialogOpen} onOpenChange={setIsCredentialsDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>

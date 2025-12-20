@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useInviteAcceptance } from '@/hooks/useInviteAcceptance';
+import { useInviteAcceptance } from '@/hooks/auth';
 import { LoadingCard } from '@/components/invite/LoadingCard';
 import { SignupForm } from '@/components/invite/SignupForm';
 import { SuccessMessage } from '@/components/invite/SuccessMessage';
@@ -46,12 +46,10 @@ export default function AcceptInvitePage() {
       
       {isAcceptingInvite && <LoadingCard message="Accepting invitation..." />}
 
-      
       {(inviteError || !inviteData || !inviteData.email || !inviteData.role) && (
         <ErrorCard error={inviteError} onGoToLogin={goToLogin} />
       )}
 
-      
       {signupComplete && inviteData && (
         <SuccessMessage 
           email={inviteData.email} 
@@ -59,7 +57,6 @@ export default function AcceptInvitePage() {
         />
       )}
 
-      
       {inviteAccepted && inviteData && !signupComplete && (
         <SignupForm
           inviteData={inviteData}
@@ -68,7 +65,6 @@ export default function AcceptInvitePage() {
         />
       )}
 
-      
       <Toaster />
     </>
   );

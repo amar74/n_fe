@@ -198,7 +198,6 @@ export default function AgentManagementPage() {
         </button>
       </div>
 
-      {/* Agents Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {agents.map((agent) => (
           <div key={agent.id} className="bg-white rounded-lg shadow p-6 border border-gray-200">
@@ -323,7 +322,6 @@ export default function AgentManagementPage() {
         </div>
       )}
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">

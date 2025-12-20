@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/select';
 import { Building2, Mail, Phone, Globe, MapPin, CreditCard, FileText } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import type { ProcurementVendor } from '@/hooks/useProcurementVendors';
+import type { ProcurementVendor } from '@/hooks/procurement';
 
 interface EditVendorModalProps {
   open: boolean;
@@ -166,7 +166,6 @@ export function EditVendorModal({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Vendor Name */}
             <div className="space-y-2">
               <Label htmlFor="vendorName" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <Building2 className="h-4 w-4 text-gray-500" />
@@ -184,7 +183,6 @@ export function EditVendorModal({
               )}
             </div>
 
-            {/* Organization */}
             <div className="space-y-2">
               <Label htmlFor="organisation" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <Building2 className="h-4 w-4 text-gray-500" />
@@ -202,7 +200,6 @@ export function EditVendorModal({
               )}
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-gray-500" />
@@ -221,7 +218,6 @@ export function EditVendorModal({
               )}
             </div>
 
-            {/* Contact Number */}
             <div className="space-y-2">
               <Label htmlFor="contactNumber" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-gray-500" />
@@ -242,7 +238,6 @@ export function EditVendorModal({
               )}
             </div>
 
-            {/* Website */}
             <div className="space-y-2">
               <Label htmlFor="website" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <Globe className="h-4 w-4 text-gray-500" />
@@ -258,7 +253,6 @@ export function EditVendorModal({
               />
             </div>
 
-            {/* Payment Terms */}
             <div className="space-y-2">
               <Label htmlFor="paymentTerms" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <CreditCard className="h-4 w-4 text-gray-500" />
@@ -282,7 +276,6 @@ export function EditVendorModal({
               </Select>
             </div>
 
-            {/* Tax ID / EIN */}
             <div className="space-y-2">
               <Label htmlFor="taxId" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <FileText className="h-4 w-4 text-gray-500" />
@@ -297,7 +290,6 @@ export function EditVendorModal({
               />
             </div>
 
-            {/* Address */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="address" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-gray-500" />
@@ -312,7 +304,6 @@ export function EditVendorModal({
               />
             </div>
 
-            {/* Notes */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="notes" className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <FileText className="h-4 w-4 text-gray-500" />

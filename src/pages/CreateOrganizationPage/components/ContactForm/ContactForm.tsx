@@ -65,7 +65,6 @@ export function ContactForm({ control, isSubmitting, userEmail }: ContactFormPro
         )}
       />
 
-      
       <FormField
         control={control}
         name="contact.phone"
@@ -102,7 +101,6 @@ export function ContactForm({ control, isSubmitting, userEmail }: ContactFormPro
                 </SelectContent>
               </Select>
 
-              
               <FormControl>
                 <Input
                   {...field}

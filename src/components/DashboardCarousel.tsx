@@ -138,7 +138,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
           </div>
         </div>
 
-        
         <div className="min-h-[500px]">
           {currentDashboard === 1 && (
             // Accounts Dashboard Content
@@ -468,7 +467,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -569,7 +567,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2 border-blue-200 bg-blue-50">
                   <CardHeader>
@@ -818,7 +815,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              
               <Card className="border-2 border-blue-200 bg-blue-50">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -850,7 +846,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </CardContent>
               </Card>
 
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -963,7 +958,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -1040,7 +1034,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              
               <Card className="border-2 border-emerald-200 bg-emerald-50">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -1137,7 +1130,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -1263,7 +1255,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="border-2">
                   <CardHeader>
@@ -1393,7 +1384,6 @@ export function DashboardCarousel({ dashboards, currentDashboard, setCurrentDash
                 </Card>
               </div>
 
-              
               <Card className="border-2 border-amber-200 bg-amber-50">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">

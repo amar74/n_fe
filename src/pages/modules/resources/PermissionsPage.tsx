@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { RolePermissionConfig } from './components/RolePermissionConfig';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useEmployees } from '@/hooks/resources';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 

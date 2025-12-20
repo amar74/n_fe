@@ -42,10 +42,10 @@ import {
   Lightbulb,
   Loader2,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useExpenseCategories, ExpenseCategory } from '@/hooks/useExpenseCategories';
+import { useToast } from '@/hooks/shared';
+import { useExpenseCategories, ExpenseCategory } from '@/hooks/finance';
 import { useNavigate } from 'react-router-dom';
-import { useFinancePlanningAnnual, useSaveAnnualBudget } from '@/hooks/useFinance';
+import { useFinancePlanningAnnual, useSaveAnnualBudget } from '@/hooks/finance';
 
 interface BudgetCategoryData {
   id: string;
@@ -437,7 +437,6 @@ export default function BudgetCreationPage() {
         description: `${selectedCategory.name} has been added (historical data unavailable).`,
       });
     }
-
 
   };
 

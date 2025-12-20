@@ -28,10 +28,10 @@ import {
   Grid3x3,
   List,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth';
 
 interface Role {
   id: string;
@@ -289,7 +289,6 @@ export function RoleManagement() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* View Toggle */}
             <div className="flex items-center gap-1 p-1 bg-white border border-gray-300 rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
@@ -472,7 +471,6 @@ export function RoleManagement() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* System Roles */}
             <div>
               <div className="flex items-center gap-2 mb-5">
                 <div className="h-px flex-1 bg-gray-200"></div>
@@ -580,7 +578,6 @@ export function RoleManagement() {
               )}
             </div>
 
-            {/* Custom Roles */}
             {customRoles && customRoles.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-5">
@@ -741,7 +738,6 @@ export function RoleManagement() {
           </div>
         )}
 
-        {/* Edit Dialog */}
         {editingRole && isEditMode && (
           <Dialog open={!!editingRole} onOpenChange={() => setEditingRole(null)}>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">

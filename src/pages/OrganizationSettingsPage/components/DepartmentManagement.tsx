@@ -25,7 +25,7 @@ import {
   Grid3x3,
   List,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
 
@@ -198,7 +198,6 @@ export function DepartmentManagement() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* View Toggle */}
             <div className="flex items-center gap-1 p-1 bg-white border border-gray-300 rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
@@ -447,7 +446,6 @@ export function DepartmentManagement() {
           </div>
         )}
 
-        {/* Edit Dialog */}
         {editingDepartment && (
           <Dialog open={!!editingDepartment} onOpenChange={() => setEditingDepartment(null)}>
             <DialogContent className="max-w-2xl">

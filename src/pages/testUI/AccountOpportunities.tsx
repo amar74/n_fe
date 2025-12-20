@@ -50,7 +50,6 @@ export function AccountOpportunities() {
               </span>
             </div>
 
-            
             <div className="flex py-2.5 flex-col md:flex-row md:items-center md:justify-between gap-2 border border-[#8C8C8C] rounded-xl p-2">
               <div className="border-r-2 border-gray-200 flex-1 flex justify-center flex-col items-center text-center">
                 <p className="text-sm font-semibold text-[#ED8A09] pb-1">Value</p>
@@ -72,7 +71,6 @@ export function AccountOpportunities() {
               </div>
             </div>
 
-            
             <div className="flex items-center gap-4 justify-end">
               {opp.hasProposal && (
                 <Button className="bg-black text-white rounded-md px-3 h-7 text-xs font-medium">

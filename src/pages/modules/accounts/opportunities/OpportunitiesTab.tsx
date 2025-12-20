@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { opportunitiesApi } from '@/services/api/opportunitiesApi';
 import { OpportunityListResponse } from '@/types/opportunities';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { 
   Briefcase, 
   DollarSign, 
@@ -30,6 +31,7 @@ type OpportunitiesTabProps = {
 
 export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
   const navigate = useNavigate();
+  const { canCreate } = useRolePermissions();
   const [opportunities, setOpportunities] = useState<OpportunityListResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -211,12 +213,14 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
           <p className="text-gray-600 mb-4">
             There are no opportunities linked to this account.
           </p>
-          <button
-            onClick={() => navigate('/module/opportunities?tab=source')}
-            className="px-4 py-2 bg-indigo-950 text-white rounded-lg hover:bg-indigo-900 transition-colors"
-          >
-            Create Opportunity
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => navigate('/module/opportunities?tab=source')}
+              className="px-4 py-2 bg-indigo-950 text-white rounded-lg hover:bg-indigo-900 transition-colors"
+            >
+              Create Opportunity
+            </button>
+          )}
         </div>
       </div>
     );
@@ -246,17 +250,18 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
               <Filter className="w-4 h-4" />
               Filters
             </button>
-            <button
-              onClick={() => navigate('/module/opportunities?tab=source')}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-950 to-indigo-900 text-white text-sm font-medium rounded-lg hover:from-indigo-900 hover:to-indigo-800 transition-all shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              New Opportunity
-            </button>
+            {canCreate && (
+              <button
+                onClick={() => navigate('/module/opportunities?tab=source')}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-950 to-indigo-900 text-white text-sm font-medium rounded-lg hover:from-indigo-900 hover:to-indigo-800 transition-all shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                New Opportunity
+              </button>
+            )}
           </div>
         </div>
 
-        
         <div className="mt-4 flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -290,7 +295,6 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
         </div>
       </div>
 
-      
       <div className="p-6">
         <div className="grid gap-4">
           {opportunities.opportunities.map((opportunity) => {
@@ -318,15 +322,13 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                           {opportunity.description || 'No description available'}
                         </p>
                       </div>
-                      
-                      
+
                       <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ml-4 ${stageConfig.bg} ${stageConfig.text}`}>
                         {stageConfig.icon}
                         <span className="capitalize">{opportunity.stage.replace(/_/g, ' ')}</span>
                       </div>
                     </div>
 
-                    
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                       
                       {opportunity.project_value && (
@@ -339,7 +341,6 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                         </div>
                       )}
 
-                      
                       {opportunity.market_sector && (
                         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
@@ -350,7 +351,6 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                         </div>
                       )}
 
-                      
                       {opportunity.deadline && (
                         <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
@@ -368,7 +368,6 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                         </div>
                       )}
 
-                      
                       {opportunity.risk_level && (
                         <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3">
                           <div className="flex items-center gap-2 mb-1">
@@ -380,7 +379,6 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                       )}
                     </div>
 
-                    
                     <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                       <div className="flex items-center gap-4">
                         {opportunity.match_score && (
@@ -396,7 +394,6 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                     </div>
                   </div>
 
-                  
                   <div className="ml-4 flex flex-col gap-2">
                     <button
                       onClick={(e) => {
@@ -426,7 +423,6 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
         </div>
       </div>
 
-      
       {opportunities.total_pages > 1 && (
         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -448,8 +444,7 @@ export function OpportunitiesTab({ accountId }: OpportunitiesTabProps) {
                 <ChevronRight className="w-4 h-4 rotate-180" />
                 Previous
               </button>
-              
-              
+
               <div className="flex items-center gap-1">
                 {Array.from({ length: Math.min(5, opportunities.total_pages) }, (_, i) => {
                   const pageNum = Math.max(1, Math.min(opportunities.total_pages - 4, opportunities.page - 2)) + i;

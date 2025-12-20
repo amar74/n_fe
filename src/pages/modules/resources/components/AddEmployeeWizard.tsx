@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Upload, FileText, Sparkles, Loader2, CheckCircle, Link2, User, ChevronRight, ChevronLeft, Award, Briefcase, Building2, DollarSign } from 'lucide-react';
-import { useEmployees } from '@/hooks/useEmployees';
-import { useRoles } from '@/hooks/useRoles';
+import { useEmployees } from '@/hooks/resources';
+import { useRoles } from '@/hooks/user-management';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
 import { API_BASE_URL_WITH_PREFIX } from '@/services/api/client';
@@ -363,7 +363,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
     <div className="fixed inset-0 bg-white/10 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-7xl w-full max-h-[92vh] overflow-hidden shadow-xl border border-gray-200">
         
-        {/* Header - Clean & Classic */}
         <div className="bg-white border-b border-gray-200 px-8 py-5">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -378,7 +377,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
             </button>
           </div>
 
-          {/* Simple Progress Steps */}
           <div className="flex items-center gap-2">
             {steps.map((step, idx) => {
               const Icon = step.icon;
@@ -412,7 +410,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
           </div>
         </div>
 
-        {/* AI Processing Banner - Classic */}
         {aiProcessing && (
           <div className="mx-8 mt-4 p-4 bg-gray-100 border border-gray-300 rounded-lg">
             <div className="flex items-center gap-3">
@@ -427,7 +424,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
           </div>
         )}
 
-        {/* Content Area */}
         <form 
           onSubmit={handleSubmit}
           onKeyDown={(e) => {
@@ -440,10 +436,8 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
         >
           <div className="overflow-y-auto p-8" style={{ maxHeight: 'calc(92vh - 250px)' }}>
             
-            {/* STEP 1: Extract & Upload */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              {/* Important Note */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900">
                   <span className="font-semibold">Note:</span> LinkedIn profiles don't show email/phone publicly. 
@@ -451,7 +445,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                 </p>
               </div>
 
-              {/* LinkedIn/Profile Extract */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="mb-5">
                   <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
@@ -504,14 +497,12 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                     </div>
               </div>
 
-              {/* OR Divider */}
               <div className="flex items-center gap-4">
                 <div className="flex-1 h-px bg-gray-300"></div>
                 <span className="px-3 py-1 bg-gray-100 text-gray-600 font-medium rounded text-xs">OR</span>
                 <div className="flex-1 h-px bg-gray-300"></div>
               </div>
 
-              {/* CV/Resume Upload */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <div className="mb-5">
                   <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
@@ -554,11 +545,9 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
             </div>
           )}
 
-          {/* STEP 2: Basic Information */}
           {currentStep === 2 && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Personal Info Card */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <User className="w-5 h-5 text-gray-900" />
@@ -599,7 +588,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                   </div>
                 </div>
 
-                {/* Job Details Card */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Briefcase className="w-5 h-5 text-gray-900" />
@@ -694,7 +682,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                 </div>
               </div>
 
-              {/* Hourly Rate Auto-Suggestion */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-gray-900" />
@@ -732,11 +719,9 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
             </div>
           )}
 
-          {/* STEP 3: Skills & Expertise Matrices */}
           {currentStep === 3 && (
             <div className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Skills Matrix */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <Award className="w-5 h-5 text-gray-900" />
@@ -764,7 +749,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                   </div>
                 </div>
 
-                {/* Sectors Matrix */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-gray-900" />
@@ -792,7 +776,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                   </div>
                 </div>
 
-                {/* Services Matrix */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <Briefcase className="w-5 h-5 text-gray-900" />
@@ -820,7 +803,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                   </div>
                 </div>
 
-                {/* Project Types Matrix */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h3 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-gray-900" />
@@ -851,7 +833,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
             </div>
           )}
 
-          {/* STEP 4: Document Checklist */}
           {currentStep === 4 && (
             <div className="space-y-6">
               <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -948,8 +929,7 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
                   })}
                 </div>
 
-                {/* Summary */}
-                <div className="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg">
+                <div className="mt-6 p-5 bg-[#161950]/10 border-2 border-[#161950]/20 rounded-lg">
                   <p className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" style={{ color: '#161950' }} />
                     Onboarding Summary
@@ -979,7 +959,6 @@ export function AddEmployeeWizard({ isOpen, onClose, onSubmit }: AddEmployeeWiza
 
           </div>
 
-          {/* Footer Navigation */}
           <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {currentStep > 1 && (

@@ -102,7 +102,6 @@ export default function SuperAdminLoginPage() {
             <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Back to dashboard</span>
           </button>
 
-          
           <div className="w-full max-w-[440px] sm:max-w-[480px] lg:w-[460px] xl:w-[480px] p-8 sm:p-10 lg:p-12 rounded-2xl border-2 border-[#7C3AED] border-opacity-30 bg-white flex flex-col justify-start items-start gap-8 shadow-[0_4px_6px_-1px_rgba(124,58,237,0.1),0_2px_4px_-1px_rgba(124,58,237,0.06)] hover:shadow-[0_10px_15px_-3px_rgba(124,58,237,0.15),0_4px_6px_-2px_rgba(124,58,237,0.1)] transition-shadow duration-300">
             
             <div className="self-stretch flex flex-col justify-start items-start gap-3">
@@ -115,7 +114,6 @@ export default function SuperAdminLoginPage() {
               </p>
             </div>
 
-            
             <Form {...form}>
               <form onSubmit={onSubmit} className="self-stretch flex flex-col justify-start items-start gap-6">
                 
@@ -141,7 +139,6 @@ export default function SuperAdminLoginPage() {
                   )}
                 />
 
-                
                 <FormField
                   control={form.control}
                   name="password"
@@ -177,7 +174,6 @@ export default function SuperAdminLoginPage() {
                   )}
                 />
 
-                
                 <div className="self-stretch flex justify-start items-center">
                   <FormField
                     control={form.control}
@@ -199,14 +195,12 @@ export default function SuperAdminLoginPage() {
                   />
                 </div>
 
-                
                 {form.formState.errors.root && (
                   <div className="text-[#F04438] text-sm text-center self-stretch bg-[#FEF3F2] border border-[#FECDCA] rounded-lg px-4 py-3 font-outfit">
                     {form.formState.errors.root.message}
                   </div>
                 )}
 
-                
                 <Button
                   type="submit"
                   className="self-stretch h-[48px] px-5 py-3 bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] rounded-lg text-white text-[15px] font-semibold font-outfit leading-tight hover:from-[#6D28D9] hover:to-[#161950] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-[0_1px_2px_rgba(16,24,40,0.05)]"
@@ -215,7 +209,6 @@ export default function SuperAdminLoginPage() {
                   {isSubmitting ? 'Authenticating...' : 'Access Admin Portal'}
                 </Button>
 
-                
                 <div className="self-stretch flex items-center justify-center gap-2 px-4 py-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M8 1.33334L3.33333 3.33334V7.33334C3.33333 10.6 5.66667 13.7333 8 14.6667C10.3333 13.7333 12.6667 10.6 12.6667 7.33334V3.33334L8 1.33334Z" fill="#7C3AED" fillOpacity="0.2" stroke="#7C3AED" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -229,7 +222,6 @@ export default function SuperAdminLoginPage() {
         </div>
       </div>
 
-      
       <div className="hidden lg:flex lg:w-[50%] flex-shrink-0 relative items-center justify-center overflow-hidden min-h-screen">
         
         <div className="absolute inset-0 w-full h-full">
@@ -237,8 +229,7 @@ export default function SuperAdminLoginPage() {
             <path d="M0 -3.98999H702.062V800H108C48.3532 800 0 751.647 0 692V-3.98999Z" fill="#161950"/>
           </svg>
         </div>
-        
-        
+
         <img 
           src={VectorGrid1} 
           alt="" 
@@ -249,8 +240,7 @@ export default function SuperAdminLoginPage() {
           alt="" 
           className="absolute left-[2%] bottom-[68px] w-[450px] h-[255px] opacity-30 pointer-events-none"
         />
-        
-        
+
         <svg 
           width="52" 
           height="53" 
@@ -272,7 +262,6 @@ export default function SuperAdminLoginPage() {
           <path d="M51.1538 0.70166L0.609253 0.701656L0.609248 52.5575C28.5242 52.5575 51.1538 29.9279 51.1538 2.01293L51.1538 0.70166Z" fill="white" fillOpacity="0.08"/>
         </svg>
 
-        
         <svg 
           width="52" 
           height="53" 
@@ -294,7 +283,6 @@ export default function SuperAdminLoginPage() {
           <path d="M0.783691 52.2883L51.3282 52.2883L51.3282 0.432526C23.4133 0.432526 0.783691 23.0621 0.783691 50.9771L0.783691 52.2883Z" fill="white" fillOpacity="0.08"/>
         </svg>
 
-        
         <div className="relative z-10 inline-flex flex-col justify-start items-center gap-8 px-8">
           
           <div className="inline-flex justify-start items-center gap-5">
@@ -304,14 +292,11 @@ export default function SuperAdminLoginPage() {
               <p className="text-white text-xl font-medium font-poppins" style={{ color: '#ffffff' }}>Advisory</p>
             </div>
           </div>
-          
-          
+
           <div className="w-full h-[1px] bg-white bg-opacity-20"></div>
-          
-          
+
           <div className="inline-flex flex-col items-center gap-4">
-            
-            
+
             <p className="text-center text-white text-opacity-80 text-base font-normal font-outfit leading-relaxed max-w-md">
               Complete system control with elevated privileges for managing vendors, users, and platform operations
             </p>

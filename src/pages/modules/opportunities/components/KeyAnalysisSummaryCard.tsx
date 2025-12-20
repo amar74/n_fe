@@ -44,7 +44,6 @@ export const KeyAnalysisSummaryCard = memo<KeyAnalysisSummaryCardProps>(({ analy
         </h3>
       </div>
 
-      
       <div className="p-8 flex gap-7">
         
         <div className="flex-1 p-7 bg-gradient-to-br from-[#F9FAFB] to-[#F3F4F6] rounded-2xl border border-[#E5E7EB] flex flex-col gap-5">
@@ -55,10 +54,8 @@ export const KeyAnalysisSummaryCard = memo<KeyAnalysisSummaryCardProps>(({ analy
             </h4>
           </div>
 
-          
           <div className="h-px bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"></div>
 
-          
           <div className="flex flex-col">
             {competitiveAdvantages.map((advantage, index) => (
               <div
@@ -75,7 +72,6 @@ export const KeyAnalysisSummaryCard = memo<KeyAnalysisSummaryCardProps>(({ analy
           </div>
         </div>
 
-        
         <div className="flex-1 p-7 bg-gradient-to-br from-[#F9FAFB] to-[#F3F4F6] rounded-2xl border border-[#E5E7EB] flex flex-col gap-5">
           
           <div className="flex items-start gap-5">
@@ -84,10 +80,8 @@ export const KeyAnalysisSummaryCard = memo<KeyAnalysisSummaryCardProps>(({ analy
             </h4>
           </div>
 
-          
           <div className="h-px bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"></div>
 
-          
           <div className="flex flex-col">
             {keyRiskFactors.map((risk, index) => (
               <div

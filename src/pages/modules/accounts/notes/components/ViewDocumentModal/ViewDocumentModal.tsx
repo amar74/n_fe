@@ -75,7 +75,6 @@ export function ViewDocumentModal({ isOpen, document, onClose }: ViewDocumentMod
           </div>
         </div>
 
-        
         <div className="p-6 space-y-6">
           
           <div className="flex gap-8">
@@ -97,7 +96,6 @@ export function ViewDocumentModal({ isOpen, document, onClose }: ViewDocumentMod
             </div>
           </div>
 
-          
           <div>
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 font-['Outfit']">
               Document Name
@@ -107,7 +105,6 @@ export function ViewDocumentModal({ isOpen, document, onClose }: ViewDocumentMod
             </h3>
           </div>
 
-          
           <div>
             <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 font-['Outfit']">
               Preview

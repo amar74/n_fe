@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useAccountNotes } from '@/hooks/useAccountNotes';
+import { useAccountNotes } from '@/hooks/accounts';
 import { NoteFormData } from './NotesTab.types';
 import { AccountNoteResponse } from '@/types/accountNotes';
 import { AxiosError } from 'axios';

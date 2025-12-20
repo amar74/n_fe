@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AISkillsGapWidget } from './components/AISkillsGapWidget';
 import { UtilizationAnalytics } from './components/UtilizationAnalytics';
 import { PerformanceAnalytics } from './components/PerformanceAnalytics';
-import { useEmployees, useEmployeeAnalytics } from '@/hooks/useEmployees';
+import { useEmployees, useEmployeeAnalytics } from '@/hooks/resources';
 import { Loader2 } from 'lucide-react';
 
 function AnalyticsPage() {

@@ -1,6 +1,5 @@
 import { ClientType } from '@/types/accounts';
 
-
 export interface AccountStatsData {
   totalAccounts: number;
   aiHealthScore: number;

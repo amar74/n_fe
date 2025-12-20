@@ -16,7 +16,7 @@ import {
   PlayCircle,
   CheckCircle
 } from 'lucide-react';
-import { useStaffPlanning } from '../../../hooks/useStaffPlanning';
+import { useStaffPlanning } from '@/hooks/resources';
 import { extractErrorMessage } from '@/utils/errorUtils';
 
 const ViewStaffPlan: React.FC = () => {

@@ -16,7 +16,6 @@ export default function AccountInformationEdit() {
           </p>
         </div>
 
-        
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-1">
             <Label className="text-[11px] text-[#A7A7A7]">Account Id</Label>
@@ -31,7 +30,6 @@ export default function AccountInformationEdit() {
           </div>
         </div>
 
-        
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-[11px] text-[#A7A7A7]">Client Type</Label>
@@ -43,13 +41,11 @@ export default function AccountInformationEdit() {
           </div>
         </div>
 
-        
         <div>
           <Label className="text-[11px] text-[#A7A7A7]">Address</Label>
           <Input placeholder="Transportation" className="bg-[#F3F3F3] h-8 text-xs border-[#E6E6E6] placeholder:text-black font-medium focus:border-[#FF7B00] focus:outline-none focus:ring-0 focus-visible:ring-0" />
         </div>
 
-        
         <div className="grid grid-cols-5 gap-3">
           <div className="col-span-2">
             <Label className="text-[11px] text-[#A7A7A7]">Website</Label>
@@ -69,7 +65,6 @@ export default function AccountInformationEdit() {
           </div>
         </div>
 
-        
         <div className="grid grid-cols-2 gap-3">
           <div >
             <Label className="text-[11px] text-[#A7A7A7]">Account Approver</Label>
@@ -80,8 +75,7 @@ export default function AccountInformationEdit() {
             <Input placeholder="December 15, 2024 at 2:30 PM PST" className="bg-[#F3F3F3] h-8 text-xs border-[#E6E6E6] placeholder:text-black font-medium focus:border-[#FF7B00] focus:outline-none focus:ring-0 focus-visible:ring-0" />
           </div>
         </div>
-        
-        
+
         <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-between">
             <Button variant="outline" className="px-6 py-2 text-sm order-2 sm:order-1">
                 Cancel

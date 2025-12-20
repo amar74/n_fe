@@ -28,7 +28,6 @@ export default function SignInPage() {
         `}
       </style>
 
-      
       <div className="flex sm:ml-10 sm:mb-5 items-center justify-center bg-white">
         <Card className="w-full max-w-md shadow-none border-0">
           <CardHeader className="space-y-2">
@@ -69,7 +68,6 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              
               <div className="space-y-2.5">
                 <Label htmlFor="password" className="text-sm">
                   Password *
@@ -105,7 +103,6 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="keep-logged" className="border-[#ED8A09]" />
@@ -116,7 +113,6 @@ export default function SignInPage() {
                 <ResetPasswordDialog />
               </div>
 
-              
               <Button
                 type="submit"
                 className="w-full bg-black text-white py-2 rounded-xl"
@@ -125,7 +121,6 @@ export default function SignInPage() {
               </Button>
             </form>
 
-            
             <p className="text-sm text-gray-500">
               Don’t have an account?{" "}
               <a
@@ -139,7 +134,6 @@ export default function SignInPage() {
         </Card>
       </div>
 
-      
       <div className="hidden md:flex flex-row justify-end items-center relative overflow-hidden">
         <img
           src={Frame}

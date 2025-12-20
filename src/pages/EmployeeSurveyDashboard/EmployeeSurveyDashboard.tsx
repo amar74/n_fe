@@ -81,7 +81,6 @@ export default function EmployeeSurveyDashboard() {
   return (
     <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -112,7 +111,6 @@ export default function EmployeeSurveyDashboard() {
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="p-6 bg-white rounded-2xl border border-gray-200">
             <div className="flex items-center justify-between mb-2">
@@ -147,7 +145,6 @@ export default function EmployeeSurveyDashboard() {
           </div>
         </div>
 
-        {/* Analytics Chart */}
         <div className="p-6 bg-white rounded-2xl border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit">Survey Status Distribution</h2>
@@ -155,7 +152,6 @@ export default function EmployeeSurveyDashboard() {
           </div>
           
           <div className="space-y-4">
-            {/* Draft Surveys Bar */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">Draft</span>
@@ -169,7 +165,6 @@ export default function EmployeeSurveyDashboard() {
               </div>
             </div>
 
-            {/* Active Surveys Bar */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">Active</span>
@@ -183,7 +178,6 @@ export default function EmployeeSurveyDashboard() {
               </div>
             </div>
 
-            {/* Completed Surveys Bar */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">Completed</span>
@@ -205,7 +199,6 @@ export default function EmployeeSurveyDashboard() {
           </div>
         </div>
 
-        {/* Recent Employee Surveys */}
         <div className="p-6 bg-white rounded-2xl border border-gray-200">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit">Recent Employee Surveys</h2>

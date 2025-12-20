@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDataEnrichment, useProgressiveEnhancement } from '@/hooks/useDataEnrichment';
+import { useDataEnrichment, useProgressiveEnhancement } from '@/hooks/ai';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -214,7 +214,6 @@ export function AccountFormWithAI() {
             )}
           </div>
 
-          
           <div className="space-y-2">
             <Label htmlFor="clientName">Client Name *</Label>
             <Input
@@ -226,7 +225,6 @@ export function AccountFormWithAI() {
             />
           </div>
 
-          
           <div className="space-y-2">
             <Label htmlFor="industry">Industry/Sector</Label>
             <Input
@@ -238,7 +236,6 @@ export function AccountFormWithAI() {
             />
           </div>
 
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="address1">Address Line 1 *</Label>
@@ -302,7 +299,6 @@ export function AccountFormWithAI() {
             </div>
           </div>
 
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="contactName">Primary Contact Name</Label>
@@ -355,7 +351,6 @@ export function AccountFormWithAI() {
             </div>
           </div>
 
-          
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2 text-red-800">
@@ -374,7 +369,6 @@ export function AccountFormWithAI() {
             </div>
           )}
 
-          
           {showSuggestions && suggestions.length > 0 && (
             <Card className="border-purple-200 bg-purple-50">
               <CardHeader className="pb-3">
@@ -477,7 +471,6 @@ export function AccountFormWithAI() {
             </Card>
           )}
 
-          
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => setFormData({
               companyWebsite: '',

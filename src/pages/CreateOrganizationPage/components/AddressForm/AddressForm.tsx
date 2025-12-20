@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PlacesAutocomplete } from '@/components/ui/places-autocomplete';
 import { useFormContext } from 'react-hook-form';
 import { useState } from 'react';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
 import type { AddressFormProps } from '../../CreateOrganizationPage.types';
 
@@ -160,7 +160,6 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
           )}
         />
 
-        
         <FormField
           control={control}
           name="address.line2"
@@ -184,7 +183,6 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
         />
       </div>
 
-      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         <FormField
@@ -220,7 +218,6 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
           )}
         />
 
-        
         <FormField
           control={control}
           name="address.state"
@@ -255,7 +252,6 @@ export function AddressForm({ isSubmitting, showAISuggestions }: Omit<AddressFor
           )}
         />
 
-        
         <FormField
           control={control}
           name="address.pincode"

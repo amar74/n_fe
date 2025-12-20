@@ -10,7 +10,7 @@ import { ViewDocumentModal } from './components/ViewDocumentModal';
 import { useNotesTab } from './useNotesTab';
 import { NotesTabProps } from './NotesTab.types';
 import { AccountNoteResponse } from '@/types/accountNotes';
-import { useAccountDocuments } from '@/hooks/useAccountDocuments';
+import { useAccountDocuments } from '@/hooks/accounts';
 import { AccountDocument } from '@/services/api/accountDocumentsApi';
 
 type SubTab = 'notes' | 'documents';
@@ -127,7 +127,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
         </button>
       </div>
 
-      
       {activeSubTab === 'notes' && (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -141,7 +140,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
             </button>
           </div>
 
-          
           <NotesList
             notes={notes}
             onView={handleViewNote}
@@ -152,7 +150,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
         </div>
       )}
 
-      
       {activeSubTab === 'documents' && (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -168,7 +165,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
             </button>
           </div>
 
-          
           <DocumentsList
             documents={documents}
             onView={handleViewDocument}
@@ -178,7 +174,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
         </div>
       )}
 
-      
       <AddNoteModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -206,7 +201,6 @@ export function NotesTab({ accountId }: NotesTabProps) {
         errors={updateErrors}
       />
 
-      
       <AddDocumentModal
         isOpen={showAddDocumentModal}
         onClose={() => setShowAddDocumentModal(false)}

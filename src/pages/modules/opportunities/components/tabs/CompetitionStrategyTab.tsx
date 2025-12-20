@@ -6,7 +6,7 @@ import {
   useCreateOpportunityCompetitor,
   useOpportunityStrategies,
   useCreateOpportunityStrategy 
-} from '@/hooks/useOpportunityTabs';
+} from '@/hooks/opportunities';
 import { Competitor, Strategy } from '@/types/opportunityTabs';
 import {
   Dialog,
@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 
 const CompetitionStrategyTab = memo(({ opportunity }: TabProps) => {
   const { data: competitors = [], isLoading: competitorsLoading } = useOpportunityCompetitors(opportunity?.id || '');

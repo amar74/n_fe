@@ -54,7 +54,6 @@ const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
         </div>
       </div>
 
-      
         <div className="flex items-center space-x-2 mb-2">
         <div
           className={`flex items-center space-x-2 px-2 py-0.5 rounded-full border ${account.borderColor} ${account.growthBg}`}
@@ -76,7 +75,6 @@ const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
         </div>
       </div>
 
-      
       <div className="flex items-center space-x-1 mb-3 text-gray-400 text-xs">
         <div className="flex items-center space-x-0 border-r border-gray-200 pr-2">
           <User size={16} className="text-gray-400" />
@@ -92,17 +90,14 @@ const AccountCard: React.FC<AccountCardProps> = ({ account }) => {
         </div>
       </div>
 
-      
       <div className="flex items-center space-x-3 mb-3">
         <span className={`font-semibold text-sm ${account.growthColor}`}>{account.tier}</span>
         <span className="text-gray-300">|</span>
         <span className="text-gray-900 font-semibold text-sm">{account.category}</span>
       </div>
 
-      
       <div className="border-t border-gray-200 mb-2"></div>
 
-      
       <div className="flex items-end justify-between">
         <div>
           <div className={`text-xl xl:text-xl font-bold mb-1 ${account.valueColor}`}>

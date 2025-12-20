@@ -55,7 +55,6 @@ export function AddContactModal({
             </button>
           </div>
 
-          
           <div className="p-6">
             <ContactsForm
               onSubmit={handleSubmit}

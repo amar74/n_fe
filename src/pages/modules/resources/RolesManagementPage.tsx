@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { useRoles, type Role } from '@/hooks/useRoles';
+import { useRoles, type Role } from '@/hooks/user-management';
 
 const AVAILABLE_PERMISSIONS = [
   { id: 'view_projects', label: 'View Projects', category: 'Projects' },
@@ -41,7 +41,7 @@ const SYSTEM_ROLES: Role[] = [
     description: 'Manages team members and projects',
     permissions: ['view_projects', 'edit_projects', 'view_accounts', 'edit_accounts', 'view_resources', 'manage_team', 'view_reports'],
     isSystem: true,
-    color: 'bg-purple-100 text-purple-700 border-purple-200',
+    color: 'bg-[#161950]/10 text-[#161950] border-[#161950]/20',
   },
   {
     id: 'manager',
@@ -98,7 +98,6 @@ function RolesManagementPage() {
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2">
           <Link to="/" className="text-gray-500 text-sm hover:text-gray-900">Dashboard</Link>
           <span className="text-gray-500">/</span>
@@ -107,7 +106,6 @@ function RolesManagementPage() {
           <span className="text-gray-900 text-sm font-semibold">Roles Management</span>
         </div>
 
-        {/* Header */}
         <div className="flex justify-between items-end">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Roles Management</h1>
@@ -124,7 +122,6 @@ function RolesManagementPage() {
           </Button>
         </div>
 
-        {/* Loading State */}
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-4">
@@ -134,7 +131,6 @@ function RolesManagementPage() {
           </div>
         )}
 
-        {/* System Roles */}
         {!isLoading && systemRoles && (
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -154,7 +150,6 @@ function RolesManagementPage() {
           </div>
         )}
 
-        {/* Custom Roles */}
         {!isLoading && customRoles && customRoles.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Custom Roles</h2>
@@ -171,7 +166,6 @@ function RolesManagementPage() {
           </div>
         )}
 
-        {/* Permissions Reference */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Available Permissions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -198,7 +192,6 @@ function RolesManagementPage() {
         </div>
       </div>
 
-      {/* Create/Edit Role Modal */}
       {(isCreateModalOpen || editingRole) && (
         <RoleModal
           role={editingRole}
@@ -283,7 +276,7 @@ function RoleModal({
   const [name, setName] = useState(role?.name || '');
   const [description, setDescription] = useState(role?.description || '');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>(role?.permissions || []);
-  const [color, setColor] = useState(role?.color || 'bg-indigo-100 text-indigo-700 border-indigo-200');
+  const [color, setColor] = useState(role?.color || 'bg-[#161950]/10 text-[#161950] border-[#161950]/20');
 
   const togglePermission = (permId: string) => {
     setSelectedPermissions(prev =>

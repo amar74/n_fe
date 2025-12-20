@@ -30,8 +30,7 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
                   <IconComponent className="h-7 w-7 text-[#6c6c6c]" />
                 </div>
               </div>
-              
-              
+
               <div className="absolute left-[91.21px] top-5">
                 <div className="font-outfit font-medium text-[#a7a7a7] text-[14px] tracking-[-0.28px] leading-[24px]">
                   {stat.title}

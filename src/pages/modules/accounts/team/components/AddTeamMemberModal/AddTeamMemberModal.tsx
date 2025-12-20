@@ -7,8 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAccountTeam } from '@/hooks/useAccountTeam';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useAccountTeam } from '@/hooks/accounts';
+import { useEmployees } from '@/hooks/resources';
 import { Search, Briefcase, Mail, MapPin, CheckCircle2 } from 'lucide-react';
 
 export interface AddTeamMemberModalProps {
@@ -88,7 +88,6 @@ export function AddTeamMemberModal({ isOpen, onClose, accountId }: AddTeamMember
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col space-y-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
@@ -100,7 +99,6 @@ export function AddTeamMemberModal({ isOpen, onClose, accountId }: AddTeamMember
             />
           </div>
 
-          {/* Selected Employee Info */}
           {selectedEmployee && (
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
               <p className="text-sm font-medium text-indigo-900 mb-2">Selected Employee:</p>
@@ -117,7 +115,6 @@ export function AddTeamMemberModal({ isOpen, onClose, accountId }: AddTeamMember
                 </div>
               </div>
 
-              {/* Role in Account Input */}
               <div className="mt-4">
                 <Label htmlFor="role">Role in This Account (Optional)</Label>
                 <Input
@@ -135,7 +132,6 @@ export function AddTeamMemberModal({ isOpen, onClose, accountId }: AddTeamMember
             </div>
           )}
 
-          {/* Employee List */}
           <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg">
             {isLoadingEmployees ? (
               <div className="flex items-center justify-center py-12">

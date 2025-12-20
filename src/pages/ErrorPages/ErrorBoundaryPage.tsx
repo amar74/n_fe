@@ -47,10 +47,8 @@ function ErrorBoundaryPage() {
   return (
     <div className="min-h-screen bg-[#F5F3F2] flex items-center justify-center px-4 py-8">
       <div className="max-w-4xl w-full">
-        {/* Main Error Card */}
         <Card className="border-0 shadow-sm mb-6">
           <CardContent className="p-8 md:p-12">
-            {/* Error Icon and Code */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
                 <AlertTriangle className="h-10 w-10 text-red-600" />
@@ -59,7 +57,6 @@ function ErrorBoundaryPage() {
               <div className="h-1 w-20 bg-red-600 mx-auto"></div>
             </div>
 
-            {/* Error Message */}
             <div className="text-center mb-6">
               <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
                 Oops! Something went wrong
@@ -72,7 +69,6 @@ function ErrorBoundaryPage() {
               </p>
             </div>
 
-            {/* Development Mode - Show Full Error */}
             {isDevelopment && error instanceof Error && (
               <details className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <summary className="cursor-pointer text-sm font-semibold text-gray-700 mb-2">
@@ -84,7 +80,6 @@ function ErrorBoundaryPage() {
               </details>
             )}
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button
                 onClick={handleRefresh}
@@ -115,7 +110,6 @@ function ErrorBoundaryPage() {
           </CardContent>
         </Card>
 
-        {/* Help Section */}
         <Card className="border-0 shadow-sm mb-6">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-gray-900">
@@ -144,7 +138,6 @@ function ErrorBoundaryPage() {
           </CardContent>
         </Card>
 
-        {/* Quick Links */}
         <Card className="border-0 shadow-sm bg-gray-50">
           <CardContent className="p-6">
             <p className="text-sm font-medium text-gray-700 mb-3 text-center">

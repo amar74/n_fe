@@ -23,7 +23,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <img src={logo} alt="Logo" className="w-36 h-10" />
       </div>
 
-      
       <div className="flex-1 max-w-md mx-8">
         <div className="relative">
           <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800" size={16} />
@@ -35,7 +34,6 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         </div>
       </div>
 
-      
       <div className="flex items-center space-x-4 ">
         <button className=" text-gray-600  hover:text-gray-800 relative bg-[#f8f7f6]  rounded-full p-3">
           <Bell  size={20} />

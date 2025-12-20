@@ -20,10 +20,8 @@ export function RecentActivity({ activities = [], isLoading = false }: RecentAct
         </div>
       </div>
 
-      
       <div className="self-stretch h-0 outline outline-1 outline-offset-[-0.50px] outline-black/10"></div>
 
-      
       {isLoading ? (
         <div className="self-stretch flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
@@ -59,7 +57,6 @@ export function RecentActivity({ activities = [], isLoading = false }: RecentAct
                 </svg>
               </div>
 
-              
               <div className="flex-1 inline-flex flex-col justify-start items-start gap-2">
                 <div className="self-stretch justify-start text-slate-800 text-lg font-semibold font-['Outfit']">
                   {activity.title}

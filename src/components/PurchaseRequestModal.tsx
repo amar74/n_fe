@@ -28,7 +28,7 @@ import {
   Calendar,
   DollarSign,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 
 interface PurchaseRequestFormData {
   purchaseType: 'overhead' | 'project' | '';
@@ -219,7 +219,6 @@ export default function PurchaseRequestModal({
             )}
           </div>
 
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             <div className="space-y-4">
@@ -294,7 +293,6 @@ export default function PurchaseRequestModal({
               </div>
             </div>
 
-            
             <div className="space-y-4">
               <div>
                 <Label htmlFor="department">Department</Label>
@@ -322,7 +320,6 @@ export default function PurchaseRequestModal({
                 )}
               </div>
 
-              
               {formData.purchaseType === 'project' && (
                 <div>
                   <Label htmlFor="projectCode">Project Code</Label>
@@ -398,7 +395,6 @@ export default function PurchaseRequestModal({
             </div>
           </div>
 
-          
           <div>
             <Label htmlFor="justification">Business Justification</Label>
             <Textarea
@@ -413,7 +409,6 @@ export default function PurchaseRequestModal({
             )}
           </div>
 
-          
           {formData.purchaseType && (
             <div
               className={`p-4 rounded-lg border-2 ${

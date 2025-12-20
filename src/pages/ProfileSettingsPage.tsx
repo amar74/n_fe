@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import { apiClient } from '@/services/api/client';
 import { authManager } from '@/services/auth';
 import { loadGoogleMaps } from '@/lib/google-maps-loader';
@@ -356,7 +356,6 @@ export default function ProfileSettingsPage() {
                 </CardContent>
               </Card>
 
-              
               <Card className="border border-gray-100 shadow-md">
                 <CardContent className="p-6">
                   <div className="space-y-4">
@@ -383,7 +382,6 @@ export default function ProfileSettingsPage() {
             </div>
           </div>
 
-          
           <div className="lg:col-span-2 space-y-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               
@@ -411,7 +409,6 @@ export default function ProfileSettingsPage() {
                       />
                     </div>
 
-                    
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                         Email Address
@@ -431,7 +428,6 @@ export default function ProfileSettingsPage() {
                       </p>
                     </div>
 
-                    
                     <div className="space-y-2 md:col-span-2">
                       <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
                         Brief Description
@@ -449,7 +445,6 @@ export default function ProfileSettingsPage() {
                       </p>
                     </div>
 
-                    
                     <div className="space-y-2">
                       <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
                         Phone Number (USA)
@@ -471,7 +466,6 @@ export default function ProfileSettingsPage() {
                       </p>
                     </div>
 
-                    
                     <div className="space-y-2">
                       <Label htmlFor="role" className="text-sm font-medium text-gray-700">
                         Role
@@ -494,7 +488,6 @@ export default function ProfileSettingsPage() {
                 </CardContent>
               </Card>
 
-              {/* Address Information Card */}
               <Card className="border border-gray-100 shadow-md">
                 <CardHeader className="border-b border-gray-100">
                   <CardTitle className="text-xl font-bold flex items-center gap-2 tracking-tight leading-tight">
@@ -524,7 +517,6 @@ export default function ProfileSettingsPage() {
                       </p>
                     </div>
 
-                    
                     <div className="space-y-2">
                       <Label htmlFor="city" className="text-sm font-medium text-gray-700">
                         City
@@ -539,7 +531,6 @@ export default function ProfileSettingsPage() {
                       />
                     </div>
 
-                    
                     <div className="space-y-2">
                       <Label htmlFor="state" className="text-sm font-medium text-gray-700">
                         State
@@ -558,7 +549,6 @@ export default function ProfileSettingsPage() {
                       </p>
                     </div>
 
-                    
                     <div className="space-y-2">
                       <Label htmlFor="zipCode" className="text-sm font-medium text-gray-700">
                         ZIP Code
@@ -577,7 +567,6 @@ export default function ProfileSettingsPage() {
                       </p>
                     </div>
 
-                    
                     <div className="space-y-2">
                       <Label htmlFor="country" className="text-sm font-medium text-gray-700">
                         Country
@@ -597,7 +586,6 @@ export default function ProfileSettingsPage() {
                 </CardContent>
               </Card>
 
-              
               <Card className="border border-gray-100 shadow-md">
                 <CardHeader className="border-b border-gray-100">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2 tracking-tight">
@@ -631,7 +619,6 @@ export default function ProfileSettingsPage() {
                       </div>
                     </div>
 
-                    
                     <div className="space-y-2">
                       <Label htmlFor="language" className="text-sm font-medium text-gray-700">
                         Language
@@ -657,7 +644,6 @@ export default function ProfileSettingsPage() {
                 </CardContent>
               </Card>
 
-              
               <Card className="border border-gray-100 shadow-md">
                 <CardHeader className="border-b border-gray-100">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2 tracking-tight">
@@ -690,7 +676,6 @@ export default function ProfileSettingsPage() {
                 </CardContent>
               </Card>
 
-              
               <div className="flex items-center justify-end gap-4 pt-4">
                 <Link to="/profile">
                   <Button type="button" variant="outline" className="border-gray-300">
@@ -714,7 +699,6 @@ export default function ProfileSettingsPage() {
               </div>
             </form>
 
-            
             <Card className="border border-gray-100 shadow-md">
               <CardHeader className="border-b border-gray-100">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2 tracking-tight">
@@ -738,7 +722,6 @@ export default function ProfileSettingsPage() {
                     <ChangePasswordDialog />
                   </div>
 
-                  
                   <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-[#161950] transition-colors">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
@@ -757,7 +740,6 @@ export default function ProfileSettingsPage() {
               </CardContent>
             </Card>
 
-            
             <Card className="border border-red-200 shadow-md">
               <CardHeader className="border-b border-red-100 bg-red-50">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2 text-red-700 tracking-tight">
@@ -795,7 +777,6 @@ export default function ProfileSettingsPage() {
         </div>
       </div>
 
-      {/* Change Profile Picture Dialog */}
       {backendUser && (
         <ChangeProfilePictureDialog
           open={isProfilePictureDialogOpen}

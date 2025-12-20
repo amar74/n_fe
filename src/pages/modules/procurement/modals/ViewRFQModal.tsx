@@ -10,8 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RFQ } from '../types';
 import { FileText, Calendar, DollarSign, Building2, User, CheckCircle, Clock, Loader2, X } from 'lucide-react';
-import { useProcurement } from '@/hooks/useProcurement';
-import { useProcurementVendors } from '@/hooks/useProcurementVendors';
+import { useProcurement } from '@/hooks/procurement';
+import { useProcurementVendors } from '@/hooks/procurement';
 
 interface ViewRFQModalProps {
   open: boolean;

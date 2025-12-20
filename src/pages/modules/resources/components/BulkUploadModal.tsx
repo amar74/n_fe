@@ -168,7 +168,6 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-[#151950] to-[#1e2570] px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div className="flex items-center gap-3">
             <Upload className="w-6 h-6 text-white" />
@@ -182,9 +181,7 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Instructions */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -196,7 +193,6 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
             </div>
           </div>
 
-          {/* Download Template Buttons */}
           <div>
             <p className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <Download className="w-4 h-4" />
@@ -227,18 +223,17 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
               
               <button
                 onClick={() => handleDownloadTemplate('construction')}
-                className="flex flex-col items-center gap-2 px-4 py-3 bg-purple-50 border-2 border-purple-300 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors"
+                className="flex flex-col items-center gap-2 px-4 py-3 bg-[#161950]/10 border-2 border-[#161950]/30 text-[#161950] rounded-lg hover:bg-[#161950]/20 transition-colors"
               >
                 <FileText className="w-5 h-5" />
                 <div className="text-center">
                   <p className="text-xs font-bold">Construction (10 employees)</p>
-                  <p className="text-[10px] text-purple-600">Engineering & Construction</p>
+                  <p className="text-[10px] text-[#161950]">Engineering & Construction</p>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* Upload Area */}
           <div
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -294,26 +289,25 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
             </div>
           </div>
 
-          {/* AI Enrichment Option */}
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div className="bg-[#161950]/10 border border-[#161950]/20 rounded-lg p-4">
             <label className="flex items-center gap-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={aiEnrich}
                 onChange={(e) => setAiEnrich(e.target.checked)}
-                className="w-5 h-5 rounded border-purple-300 text-purple-600 focus:ring-purple-500 focus:ring-offset-0"
+                className="w-5 h-5 rounded border-[#161950]/30 text-[#161950] focus:ring-[#161950] focus:ring-offset-0"
               />
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-600" />
-                  <span className="font-semibold text-purple-900">Enable AI Enrichment</span>
-                  <span className="text-xs px-2 py-0.5 bg-purple-200 text-purple-800 rounded-full">Powered by Gemini AI</span>
+                  <Sparkles className="w-4 h-4 text-[#161950]" />
+                  <span className="font-semibold text-[#161950]">Enable AI Enrichment</span>
+                  <span className="text-xs px-2 py-0.5 bg-[#161950]/20 text-[#161950] rounded-full">Powered by Gemini AI</span>
                 </div>
-                <p className="text-sm text-purple-700 mt-1">
+                <p className="text-sm text-[#161950] mt-1">
                   AI will automatically suggest roles, skills, departments, and bill rates based on job titles and experience
                 </p>
                 {aiEnrich && (
-                  <p className="text-xs text-purple-600 mt-2 flex items-center gap-1">
+                  <p className="text-xs text-[#161950] mt-2 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
                     Processing may take 1-2 minutes depending on file size
                   </p>
@@ -322,7 +316,6 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
             </label>
           </div>
 
-          {/* Processing Indicator */}
           {isUploading && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 animate-pulse">
               <div className="flex items-center gap-3">
@@ -341,7 +334,6 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
             </div>
           )}
 
-          {/* Upload Result */}
           {uploadResult && (
             <div className="space-y-3">
               {uploadResult.success_count > 0 && (
@@ -382,7 +374,6 @@ export function BulkUploadModal({ isOpen, onClose, onSuccess }: BulkUploadModalP
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
             <button
               onClick={handleClose}

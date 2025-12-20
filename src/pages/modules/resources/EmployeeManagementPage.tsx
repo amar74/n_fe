@@ -1,8 +1,8 @@
 import { memo, useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Download, Eye, Filter, Users, TrendingUp, Clock, CheckCircle, DollarSign, Mail, Phone, MapPin, Briefcase, Award, Star, Plus, Edit, Trash2, Loader2, Save, X } from 'lucide-react';
-import { useEmployees } from '@/hooks/useEmployees';
-import { useRoles } from '@/hooks/useRoles';
+import { useEmployees } from '@/hooks/resources';
+import { useRoles } from '@/hooks/user-management';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
 import { toast } from 'sonner';
@@ -148,7 +148,7 @@ function EmployeeManagementPage() {
     return (
       <div className="w-full min-h-screen bg-[#F5F3F2] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#161950]" />
           <p className="text-gray-600">Loading employees...</p>
         </div>
       </div>
@@ -186,14 +186,14 @@ function EmployeeManagementPage() {
             <button 
               onClick={handleExport}
               disabled={employees.length === 0}
-              className="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:border-blue-500 hover:text-blue-600 transition-all duration-200 shadow-sm hover:shadow-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:border-[#161950] hover:text-[#161950] transition-all duration-200 shadow-sm hover:shadow-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               title={employees.length === 0 ? 'No employees to export' : 'Export to CSV'}
             >
               <Download className="w-4 h-4" />
               Export CSV
             </button>
             <Link to="/module/resources/onboarding">
-              <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold">
+              <button className="flex items-center gap-2 px-6 py-3 bg-[#161950] hover:bg-[#1E2B5B] text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold">
                 <Plus className="w-5 h-5" />
                 Add Employee
               </button>
@@ -202,18 +202,18 @@ function EmployeeManagementPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-200 shadow-lg hover:shadow-xl transition-all">
+          <div className="bg-gradient-to-br from-[#161950]/10 to-[#1E2B5B]/10 rounded-2xl p-5 border border-[#161950]/20 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-bold text-gray-900 mb-1">{stats.total}</div>
                 <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Total Employees</div>
               </div>
               <div className="p-3 bg-white rounded-xl shadow-sm">
-                <Users className="w-7 h-7 text-blue-600" />
+                <Users className="w-7 h-7 text-[#161950]" />
               </div>
             </div>
-            <div className="w-full bg-blue-200 rounded-full h-1.5 mt-4">
-              <div className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" style={{ width: '100%' }}></div>
+            <div className="w-full bg-[#161950]/20 rounded-full h-1.5 mt-4">
+              <div className="h-1.5 rounded-full bg-[#161950]" style={{ width: '100%' }}></div>
             </div>
           </div>
 
@@ -232,18 +232,18 @@ function EmployeeManagementPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-5 border border-purple-200 shadow-lg hover:shadow-xl transition-all">
+          <div className="bg-gradient-to-br from-[#161950]/10 to-[#1E2B5B]/10 rounded-2xl p-5 border border-[#161950]/20 shadow-lg hover:shadow-xl transition-all">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-bold text-gray-900 mb-1">${stats.avgBillRate}</div>
                 <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Avg Rate/Hour</div>
               </div>
               <div className="p-3 bg-white rounded-xl shadow-sm">
-                <DollarSign className="w-7 h-7 text-purple-600" />
+                <DollarSign className="w-7 h-7 text-[#161950]" />
               </div>
             </div>
-            <div className="w-full bg-purple-200 rounded-full h-1.5 mt-4">
-              <div className="h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-600" style={{ width: '60%' }}></div>
+            <div className="w-full bg-[#161950]/20 rounded-full h-1.5 mt-4">
+              <div className="h-1.5 rounded-full bg-[#161950]" style={{ width: '60%' }}></div>
             </div>
           </div>
 
@@ -263,7 +263,6 @@ function EmployeeManagementPage() {
           </div>
         </div>
 
-        {/* Search and Filters */}
         <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
@@ -273,7 +272,7 @@ function EmployeeManagementPage() {
                 placeholder="Search by name, email, department, or employee number..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-14 pl-12 pr-4 rounded-xl border border-gray-300 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium"
+                className="w-full h-14 pl-12 pr-4 rounded-xl border border-gray-300 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#161950] focus:ring-2 focus:ring-[#161950]/20 transition-all font-medium"
               />
             </div>
             
@@ -297,7 +296,7 @@ function EmployeeManagementPage() {
                 : 'No activated employees yet. Accept and activate employees from the Onboarding page first.'}
             </p>
             <Link to="/module/resources/onboarding">
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              <button className="px-6 py-3 bg-[#161950] hover:bg-[#1E2B5B] text-white rounded-lg font-semibold transition-colors">
                 <Plus className="w-5 h-5 inline mr-2" />
                 Onboard Employee
               </button>
@@ -328,8 +327,8 @@ function EmployeeManagementPage() {
                     <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-xl flex items-center justify-center shadow-md">
-                            <span className="text-blue-600 font-bold text-lg">
+                          <div className="w-12 h-12 bg-[#161950]/10 rounded-xl flex items-center justify-center shadow-md border border-[#161950]/20">
+                            <span className="text-[#161950] font-bold text-lg">
                               {employee.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                             </span>
                           </div>
@@ -355,7 +354,7 @@ function EmployeeManagementPage() {
                       </td>
                       <td className="px-6 py-4">
                         {employee.department ? (
-                          <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                          <span className="px-3 py-1 bg-[#161950]/10 text-[#161950] text-xs font-bold rounded-full border border-[#161950]/20">
                             {employee.department}
                           </span>
                         ) : (
@@ -375,7 +374,7 @@ function EmployeeManagementPage() {
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${
                           employee.status === 'active' ? 'bg-green-100 text-green-700' :
-                          employee.status === 'accepted' ? 'bg-blue-100 text-blue-700' :
+                          employee.status === 'accepted' ? 'bg-[#161950]/10 text-[#161950] border border-[#161950]/20' :
                           'bg-gray-100 text-gray-700'
                         }`}>
                           {employee.status}
@@ -385,17 +384,17 @@ function EmployeeManagementPage() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => navigate(`/module/resources/management/profile/${employee.id}`)}
-                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
+                            className="p-2 hover:bg-[#161950]/10 rounded-lg transition-colors group"
                             title="View Full Profile"
                           >
-                            <Eye className="w-4 h-4 text-blue-600 group-hover:scale-110 transition-transform" />
+                            <Eye className="w-4 h-4 text-[#161950] group-hover:scale-110 transition-transform" />
                           </button>
                           <button
                             onClick={() => setEditingEmployee(employee)}
-                            className="p-2 hover:bg-indigo-50 rounded-lg transition-colors group"
+                            className="p-2 hover:bg-[#161950]/10 rounded-lg transition-colors group"
                             title="Edit Employee"
                           >
-                            <Edit className="w-4 h-4 text-indigo-600 group-hover:scale-110 transition-transform" />
+                            <Edit className="w-4 h-4 text-[#161950] group-hover:scale-110 transition-transform" />
                           </button>
                           {employee.status === 'accepted' && (
                             <button
@@ -454,7 +453,7 @@ function EmployeeManagementPage() {
                   .slice(0, 12);
                 
                 return topSkills.length > 0 ? topSkills.map(([skill, count]: any, idx) => (
-                  <div key={idx} className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 text-center">
+                  <div key={idx} className="p-4 bg-[#161950]/10 rounded-xl border border-[#161950]/20 text-center">
                     <p className="text-2xl font-bold text-gray-900">{count}</p>
                     <p className="text-xs text-gray-600 font-medium mt-1">{skill}</p>
                   </div>
@@ -472,11 +471,11 @@ function EmployeeManagementPage() {
       {selectedEmployee && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedEmployee(null)}>
           <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+            <div className="sticky top-0 bg-[#161950]/10 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl flex items-center justify-center shadow-lg">
-                    <span className="text-blue-600 font-bold text-2xl">
+                  <div className="w-16 h-16 bg-[#161950]/10 rounded-2xl flex items-center justify-center shadow-lg border border-[#161950]/20">
+                    <span className="text-[#161950] font-bold text-2xl">
                       {selectedEmployee.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                     </span>
                   </div>
@@ -529,7 +528,7 @@ function EmployeeManagementPage() {
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Contact Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <Mail className="w-5 h-5 text-blue-600" />
+                    <Mail className="w-5 h-5 text-[#161950]" />
                     <div>
                       <p className="text-xs text-gray-500 font-medium">Email</p>
                       <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.email}</p>
@@ -546,7 +545,7 @@ function EmployeeManagementPage() {
                   )}
                   {selectedEmployee.location && (
                     <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                      <MapPin className="w-5 h-5 text-purple-600" />
+                      <MapPin className="w-5 h-5 text-[#161950]" />
                       <div>
                         <p className="text-xs text-gray-500 font-medium">Location</p>
                         <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.location}</p>
@@ -570,7 +569,7 @@ function EmployeeManagementPage() {
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Skills & Expertise</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedEmployee.skills.map((skill, idx) => (
-                      <span key={idx} className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 text-sm font-semibold rounded-lg">
+                      <span key={idx} className="px-4 py-2 bg-[#161950]/10 border border-[#161950]/20 text-[#161950] text-sm font-semibold rounded-lg">
                         {skill}
                       </span>
                     ))}
@@ -582,7 +581,7 @@ function EmployeeManagementPage() {
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Employment Details</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <Award className="w-5 h-5 text-indigo-600" />
+                    <Award className="w-5 h-5 text-[#161950]" />
                     <div>
                       <p className="text-xs text-gray-500 font-medium">Employee Number</p>
                       <p className="text-sm text-gray-900 font-semibold">{selectedEmployee.employee_number}</p>
@@ -596,7 +595,7 @@ function EmployeeManagementPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <Clock className="w-5 h-5 text-blue-600" />
+                    <Clock className="w-5 h-5 text-[#161950]" />
                     <div>
                       <p className="text-xs text-gray-500 font-medium">Joined Date</p>
                       <p className="text-sm text-gray-900 font-semibold">
@@ -851,11 +850,11 @@ function EditEmployeeModal({
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+        <div className="sticky top-0 bg-[#161950]/10 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-purple-200 rounded-xl flex items-center justify-center">
-                <Edit className="w-6 h-6 text-indigo-600" />
+              <div className="w-12 h-12 bg-[#161950]/10 rounded-xl flex items-center justify-center border border-[#161950]/20">
+                <Edit className="w-6 h-6 text-[#161950]" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Edit Employee</h2>
@@ -929,7 +928,7 @@ function EditEmployeeModal({
                 id="role"
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-[#161950] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">Select role</option>
                 {isLoadingRoles ? (
@@ -950,7 +949,7 @@ function EditEmployeeModal({
                 id="department"
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-[#161950] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <option value="">Select department</option>
                 {isLoadingDepartments ? (
@@ -1020,7 +1019,7 @@ function EditEmployeeModal({
                         key={idx}
                         type="button"
                         onClick={() => handleSkillSelect(skill)}
-                        className="w-full text-left px-4 py-2 hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none text-sm"
+                        className="w-full text-left px-4 py-2 hover:bg-[#161950]/10 focus:bg-[#161950]/10 focus:outline-none text-sm"
                       >
                         {skill}
                       </button>
@@ -1043,7 +1042,7 @@ function EditEmployeeModal({
             <button
               type="submit"
               disabled={isUpdating}
-              className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-3 bg-[#161950] hover:bg-[#1E2B5B] text-white rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isUpdating ? (
                 <>

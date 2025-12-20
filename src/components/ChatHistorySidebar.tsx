@@ -18,8 +18,8 @@ import {
   Sparkles,
   Tag,
 } from 'lucide-react';
-import { useChatSessions, useDeleteChatSession, type ChatSession } from '@/hooks/useChat';
-import { useToast } from '@/hooks/use-toast';
+import { useChatSessions, useDeleteChatSession, type ChatSession } from '@/hooks/ai';
+import { useToast } from '@/hooks/shared';
 
 interface ChatHistorySidebarProps {
   currentModule?: string;
@@ -95,7 +95,6 @@ export default function ChatHistorySidebar({
       </SheetTrigger>
       <SheetContent side="left" className="w-[420px] sm:w-[480px] font-['Outfit',sans-serif] bg-gradient-to-b from-gray-50 to-white p-0">
         <div className="h-full flex flex-col">
-          {/* Header */}
           <SheetHeader className="px-6 py-5 border-b bg-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -114,9 +113,7 @@ export default function ChatHistorySidebar({
             </div>
           </SheetHeader>
 
-          {/* Content */}
           <div className="flex-1 overflow-y-auto px-6 py-4">
-            {/* Create New Button */}
             <Button
               onClick={() => {
                 onCreateNew();
@@ -128,7 +125,6 @@ export default function ChatHistorySidebar({
               Create New Chat
             </Button>
 
-            {/* Sessions List */}
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="w-8 h-8 border-4 border-[#161950] border-t-transparent rounded-full animate-spin mb-3"></div>
@@ -157,14 +153,12 @@ export default function ChatHistorySidebar({
                         : 'border-gray-200 bg-white hover:border-[#161950]/30'
                     }`}
                   >
-                    {/* Selected Indicator */}
                     {selectedSessionId === session.id && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#161950] to-[#8B5CF6] rounded-l-xl"></div>
                     )}
 
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        {/* Title */}
                         <div className="flex items-start gap-2 mb-2">
                           <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
                             selectedSessionId === session.id
@@ -189,7 +183,6 @@ export default function ChatHistorySidebar({
                           </div>
                         </div>
 
-                        {/* Metadata */}
                         <div className="flex items-center gap-3 mt-3 text-xs font-['Outfit',sans-serif]">
                           <span className="flex items-center gap-1 text-gray-500">
                             <Clock className="h-3 w-3" />
@@ -209,7 +202,6 @@ export default function ChatHistorySidebar({
                           )}
                         </div>
 
-                        {/* Topics */}
                         {session.selected_topics && session.selected_topics.length > 0 && (
                           <div className="flex flex-wrap gap-1.5 mt-3">
                             {session.selected_topics.slice(0, 2).map((topic) => (
@@ -242,7 +234,6 @@ export default function ChatHistorySidebar({
                         )}
                       </div>
 
-                      {/* Delete Button */}
                       <Button
                         variant="ghost"
                         size="sm"

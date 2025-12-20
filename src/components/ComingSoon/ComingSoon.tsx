@@ -77,7 +77,6 @@ function ComingSoon({ moduleId, moduleName }: ComingSoonProps) {
             </div>
           </div>
 
-          
           <div className="space-y-4">
             <h1 className="text-4xl font-bold text-[#0f0901]">
               {moduleName}
@@ -87,7 +86,6 @@ function ComingSoon({ moduleId, moduleName }: ComingSoonProps) {
             </p>
           </div>
 
-          
           {features.length > 0 && (
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
               <h3 className="text-xl font-semibold text-[#0f0901] mb-6">
@@ -104,7 +102,6 @@ function ComingSoon({ moduleId, moduleName }: ComingSoonProps) {
             </div>
           )}
 
-          
           <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-8 border border-orange-200">
             <h3 className="text-lg font-semibold text-[#0f0901] mb-2">
               Stay Tuned!

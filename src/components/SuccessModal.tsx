@@ -36,7 +36,6 @@ export function SuccessModal({
         onClick={onClose}
       />
 
-      
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div 
           className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform transition-all duration-300 scale-100 opacity-100 animate-in fade-in zoom-in"
@@ -51,7 +50,6 @@ export function SuccessModal({
             <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
           </button>
 
-          
           <div className="p-8 text-center">
             
             <div className="mx-auto w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mb-6 animate-in zoom-in duration-500">
@@ -60,17 +58,14 @@ export function SuccessModal({
               </div>
             </div>
 
-            
             <h3 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">
               {title}
             </h3>
 
-            
             <p className="text-base text-gray-600 mb-6 leading-relaxed">
               {message}
             </p>
 
-            
             <button
               onClick={onClose}
               className="w-full px-6 py-3 bg-[#161950] text-white font-semibold rounded-lg hover:bg-[#161950]/90 transition-all duration-200 hover:shadow-lg"
@@ -79,7 +74,6 @@ export function SuccessModal({
             </button>
           </div>
 
-          
           {autoCloseDuration > 0 && (
             <div className="h-1 bg-gray-100 rounded-b-2xl overflow-hidden">
               <div 

@@ -10,8 +10,7 @@ const Dashboard: React.FC = () => {
     <div className="h-screen flex flex-col overflow-hidden" style={{ backgroundColor: '#F5F3F2' }}>
       
       <Header onMenuClick={() => setSidebarOpen(true)} />
-      
-      
+
       <div className="flex flex-1 min-h-0">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="flex-1 overflow-y-auto overflow-x-hidden">

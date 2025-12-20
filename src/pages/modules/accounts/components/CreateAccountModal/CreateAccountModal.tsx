@@ -3,11 +3,11 @@ import { X, Sparkles, MapPin } from 'lucide-react';
 import { MARKET_SECTORS, CLIENT_TYPES, HOSTING_AREAS, US_STATES, MSA_OPTIONS, STATE_ABBREVIATION_TO_NAME } from './CreateAccountModal.constants';
 import { CreateAccountModalProps } from './CreateAccountModal.types';
 import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
-import { useAuth } from '@/hooks/useAuth';
-import { useDataEnrichment } from '@/hooks/useDataEnrichment';
+import { useAuth } from '@/hooks/auth';
+import { useDataEnrichment } from '@/hooks/ai';
 import { PlacesAutocomplete } from '@/components/ui/places-autocomplete';
 import { apiClient } from '@/services/api/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 
 const CLIENT_TYPE_DISPLAY: Record<string, string> = {
   'tier_1': 'Tier 1',
@@ -673,10 +673,8 @@ export function CreateAccountModal({
             </button>
           </div>
 
-          
           <div className="self-stretch h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
 
-          
           <form onSubmit={handleSubmit} className="self-stretch flex flex-col gap-6">
             
             <div className="self-stretch">
@@ -686,8 +684,7 @@ export function CreateAccountModal({
                 </svg>
                 Business Information
               </h3>
-              
-              
+
               <div className="self-stretch flex gap-5">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <div className="flex items-center gap-3">
@@ -744,7 +741,6 @@ export function CreateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-gray-900 text-lg font-semibold font-['Outfit'] leading-tight flex items-center gap-2">
@@ -759,8 +755,7 @@ export function CreateAccountModal({
                   <span className="text-xs font-semibold text-blue-700">USA Only</span>
                 </div>
               </div>
-              
-              
+
               <div className="self-stretch flex gap-5 mb-5">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -794,7 +789,6 @@ export function CreateAccountModal({
                 </div>
               </div>
 
-              
               <div className="self-stretch mb-5">
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
@@ -870,7 +864,6 @@ export function CreateAccountModal({
                 </div>
               </div>
 
-              
               <div className="self-stretch flex gap-5">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
@@ -962,7 +955,6 @@ export function CreateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch">
               <h3 className="text-gray-900 text-lg font-semibold font-['Outfit'] leading-tight mb-4 flex items-center gap-2">
                 <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -970,8 +962,7 @@ export function CreateAccountModal({
                 </svg>
                 Contact Information
               </h3>
-              
-              
+
               <div className="self-stretch flex gap-5 mb-5">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -1003,7 +994,6 @@ export function CreateAccountModal({
                 </div>
               </div>
 
-              
               <div className="self-stretch flex gap-5">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -1041,7 +1031,6 @@ export function CreateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch">
               <h3 className="text-gray-900 text-lg font-semibold font-['Outfit'] leading-tight mb-4 flex items-center gap-2">
                 <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1049,8 +1038,7 @@ export function CreateAccountModal({
                 </svg>
                 Business Classification
               </h3>
-              
-              
+
               <div className="self-stretch flex gap-5 mb-5">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -1107,7 +1095,6 @@ export function CreateAccountModal({
                 </div>
               </div>
 
-              
               <div className="self-stretch flex gap-5">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -1157,7 +1144,6 @@ export function CreateAccountModal({
                 </div>
               </div>
 
-              
               <div className="self-stretch flex gap-5">
                 <div className="flex-1 flex flex-col gap-1.5">
                   <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -1185,7 +1171,6 @@ export function CreateAccountModal({
               </div>
             </div>
 
-            
             {showAISuggestions && aiSuggestions && (
               <div className="self-stretch bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -1289,7 +1274,6 @@ export function CreateAccountModal({
               </div>
             )}
 
-            
             <div className="self-stretch flex justify-end items-center gap-3 pt-6 border-t border-gray-200">
               <button
                 type="button"

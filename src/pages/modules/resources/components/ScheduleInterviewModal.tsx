@@ -90,8 +90,7 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Header */}
-        <div className="sticky top-0 p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl z-10">
+        <div className="sticky top-0 p-6 border-b border-gray-200 bg-[#161950]/10 rounded-t-2xl z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-white rounded-xl shadow-sm text-blue-600">
@@ -111,17 +110,14 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-6">
-          {/* AI Suggestion */}
           {isGenerating && (
-            <div className="flex items-center gap-3 p-4 bg-purple-50 border border-purple-200 rounded-xl">
-              <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
-              <span className="text-sm font-medium text-purple-900">AI is preparing interview schedule...</span>
+            <div className="flex items-center gap-3 p-4 bg-[#161950]/10 border border-[#161950]/20 rounded-xl">
+              <Loader2 className="w-5 h-5 text-[#161950] animate-spin" />
+              <span className="text-sm font-medium text-[#161950]">AI is preparing interview schedule...</span>
             </div>
           )}
 
-          {/* Date & Time */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -149,7 +145,6 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
             </div>
           </div>
 
-          {/* Platform Selection */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               <Video className="w-4 h-4 inline mr-1" />
@@ -174,7 +169,6 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
             </div>
           </div>
 
-          {/* Interview Link */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               <LinkIcon className="w-4 h-4 inline mr-1" />
@@ -190,10 +184,9 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
             <p className="text-xs text-gray-500 mt-1">Paste the meeting link from Zoom, Google Meet, or Teams</p>
           </div>
 
-          {/* Interviewer Details */}
-          <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl space-y-4">
+          <div className="p-6 bg-[#161950]/10 border border-[#161950]/20 rounded-xl space-y-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-5 h-5 text-indigo-600" />
+              <Users className="w-5 h-5 text-[#161950]" />
               Interviewer Details
             </h3>
             
@@ -207,7 +200,7 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
                   value={schedule.interviewerName}
                   onChange={(e) => setSchedule(prev => ({ ...prev, interviewerName: e.target.value }))}
                   placeholder="John Smith"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-[#161950] focus:ring-2 focus:ring-[#161950]/20"
                 />
               </div>
               <div>
@@ -220,13 +213,12 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
                   value={schedule.interviewerEmail}
                   onChange={(e) => setSchedule(prev => ({ ...prev, interviewerEmail: e.target.value }))}
                   placeholder="interviewer@company.com"
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-[#161950] focus:ring-2 focus:ring-[#161950]/20"
                 />
               </div>
             </div>
           </div>
 
-          {/* Notes */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               <Sparkles className="w-4 h-4 inline mr-1" />
@@ -240,7 +232,6 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
             />
           </div>
 
-          {/* Send Email Confirmation */}
           <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
             <input
               type="checkbox"
@@ -256,7 +247,6 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
           </div>
         </div>
 
-        {/* Footer */}
         <div className="sticky bottom-0 p-6 bg-gray-50 border-t border-gray-200 flex items-center justify-between rounded-b-2xl">
           <p className="text-xs text-gray-500">* Required fields</p>
           <div className="flex items-center gap-3">
@@ -269,7 +259,7 @@ export function ScheduleInterviewModal({ isOpen, employeeName, employeeEmail, on
             <button
               onClick={handleConfirm}
               disabled={!isFormValid}
-              className="px-6 py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+              className="px-6 py-3 rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-[#161950] hover:bg-[#1E2B5B] text-white"
             >
               <Calendar className="w-5 h-5" />
               Schedule Interview

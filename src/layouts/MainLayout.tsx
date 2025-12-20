@@ -1,10 +1,9 @@
 import { Outlet } from 'react-router-dom';
-import { useAuth } from '@hooks/useAuth';
+import { useAuth } from '@/hooks/auth';
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navigation from '@components/Navigation';
-import { Toaster } from '@/components/ui/toaster';
-import { useMyOrganization } from '@/hooks/useOrganizations';
+import { useMyOrganization } from '@/hooks/organization';
 import ChatbotSelector from '@/components/ChatbotSelector';
 
 // @author abhishek.softication
@@ -121,7 +120,6 @@ export default function MainLayout() {
     <>
       <Navigation />
       <ChatbotSelector />
-      <Toaster />
     </>
   );
 }

@@ -3,15 +3,15 @@ import { Plus, Building2, DollarSign, Clock, Eye, Edit3, Brain, AlertCircle, Ale
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getStatusBadge } from '../utils';
-import type { ProcurementVendor, ProcurementVendorStats, ProcurementVendorListResponse } from '@/hooks/useProcurementVendors';
-import { useProcurementVendors } from '@/hooks/useProcurementVendors';
+import type { ProcurementVendor, ProcurementVendorStats, ProcurementVendorListResponse } from '@/hooks/procurement';
+import { useProcurementVendors } from '@/hooks/procurement';
 import { AddVendorModal, ViewVendorModal, EditVendorModal, VendorQualificationModal } from '../modals';
 import { useState, useMemo } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useMyOrganization } from '@/hooks/useOrganizations';
+import { useAuth } from '@/hooks/auth';
+import { useMyOrganization } from '@/hooks/organization';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { procurementApi, type VendorQualificationResponse, type VendorPerformanceResponse } from '@/services/api/procurementApi';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -569,7 +569,6 @@ export function VendorsTab({ stats, isStatsLoading, vendorsData, isLoadingVendor
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
                           <Badge className={`${statusBadge.className} font-outfit text-xs`}>{statusBadge.label}</Badge>
-                          {/* Approval button - more prominent for pending vendors */}
                           {canApprove && vendor.status === 'pending' && (
                             <Button 
                               size="sm" 

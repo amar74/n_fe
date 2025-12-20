@@ -47,7 +47,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300">
         <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50">
           <div className="flex items-center justify-between">
@@ -78,9 +77,7 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         </div>
       </div>
 
-      {/* Top Summary Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Project Summary */}
         <div className="bg-white rounded-lg shadow-xl border border-gray-300">
           <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="flex items-center gap-3">
@@ -136,7 +133,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
           </div>
         </div>
 
-        {/* Financial Breakdown */}
         <div className="bg-white rounded-lg shadow-xl border border-gray-300">
           <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
             <div className="flex items-center gap-3">
@@ -198,7 +194,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
               </span>
             </div>
 
-            {/* ROI Indicator */}
             <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-700 font-semibold">Return on Investment (ROI)</span>
@@ -211,7 +206,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         </div>
       </div>
 
-      {/* Team Composition Table */}
         <div className="bg-white rounded-lg shadow-xl border border-gray-300">
           <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-indigo-50">
             <div className="flex items-center justify-between">
@@ -283,7 +277,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         </div>
       </div>
 
-      {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="bg-white rounded-lg shadow-lg border border-gray-300 p-5 text-center">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
@@ -326,7 +319,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         </div>
       </div>
 
-      {/* Detailed Financial Breakdown */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200" style={{ backgroundColor: '#161950' }}>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -337,7 +329,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         
         <div className="p-6">
           <div className="space-y-3">
-            {/* Labor */}
             <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -356,7 +347,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
               </div>
             </div>
 
-            {/* Overhead */}
             <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
@@ -375,7 +365,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
               </div>
             </div>
 
-            {/* Total Cost */}
             <div className="flex items-center justify-between p-4 bg-gray-100 rounded-lg border-2 border-gray-300">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center">
@@ -393,7 +382,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
               </div>
             </div>
 
-            {/* Profit */}
             <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
@@ -412,7 +400,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
               </div>
             </div>
 
-            {/* Total Price - Featured */}
             <div className="flex items-center justify-between p-6 rounded-xl shadow-xl" style={{ backgroundColor: '#161950' }}>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
@@ -433,7 +420,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         </div>
       </div>
 
-      {/* Ready to Save Banner */}
       <div className="rounded-xl shadow-2xl border-2 p-6" style={{ backgroundColor: '#161950', borderColor: '#161950' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -472,7 +458,6 @@ export default function PlanSummary({ projectInfo, staffMembers, onSave, onExpor
         </div>
       </div>
 
-      {/* Navigation */}
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}

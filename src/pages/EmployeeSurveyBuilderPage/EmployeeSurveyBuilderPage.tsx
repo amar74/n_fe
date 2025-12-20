@@ -327,7 +327,6 @@ export default function EmployeeSurveyBuilderPage() {
   return (
     <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -353,9 +352,7 @@ export default function EmployeeSurveyBuilderPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Survey Details and Questions */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Survey Details */}
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Survey Details</h2>
               <div className="flex flex-col gap-4">
@@ -381,7 +378,6 @@ export default function EmployeeSurveyBuilderPage() {
               </div>
             </div>
 
-            {/* Add Question */}
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Add Question</h2>
               <div className="grid grid-cols-2 gap-3">
@@ -399,7 +395,6 @@ export default function EmployeeSurveyBuilderPage() {
               </div>
             </div>
 
-            {/* Questions List */}
             {formData.questions.length > 0 && (
               <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
                 <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Questions ({formData.questions.length})</h2>
@@ -480,9 +475,7 @@ export default function EmployeeSurveyBuilderPage() {
             )}
           </div>
 
-          {/* Right Column - Employee Selection */}
           <div className="space-y-6">
-            {/* Employee Selection */}
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <div className="flex justify-between items-start gap-6">
                 <div className="flex-1 flex flex-col gap-1">
@@ -503,7 +496,6 @@ export default function EmployeeSurveyBuilderPage() {
               </div>
               
               <div className="flex flex-col gap-4">
-                {/* Select All Checkbox */}
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <Checkbox
                     id="select-all"
@@ -558,7 +550,6 @@ export default function EmployeeSurveyBuilderPage() {
               </div>
             </div>
 
-            {/* Save & Publish Section */}
             <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col gap-6">
               <h2 className="text-[#1A1A1A] text-lg font-semibold font-outfit leading-7">Save & Publish</h2>
               <div className="flex flex-col gap-4">

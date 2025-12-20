@@ -79,15 +79,13 @@ function CreateOrganizationPage() {
                 </defs>
               </svg>
             </div>
-            
-            
+
             <div className="flex flex-col leading-tight">
               <div className="text-[#0F0901] text-base font-semibold font-poppins">Megapolis</div>
               <div className="text-stone-400 text-base font-medium font-poppins">Advisory</div>
             </div>
           </div>
 
-          
           <div className="flex items-center gap-4">
             <button className="relative p-2 hover:bg-gray-100 rounded-full transition-colors">
               <Bell className="w-5 h-5 text-gray-600" />
@@ -107,7 +105,6 @@ function CreateOrganizationPage() {
         </div>
       </header>
 
-      
       <main className="flex-1 w-full bg-white py-12">
         <div className="max-w-6xl mx-auto px-6">
           
@@ -117,7 +114,6 @@ function CreateOrganizationPage() {
             <span className="text-gray-900 font-medium">Create Organization</span>
           </div>
 
-          
           <div className="text-center mb-12 flex flex-col items-center justify-center">
             <h1 className="text-[36px] font-bold text-gray-900 mb-4 font-outfit tracking-tight">
               Create Your Organization
@@ -127,7 +123,6 @@ function CreateOrganizationPage() {
             </p>
           </div>
 
-          
           <div className="max-w-4xl mx-auto bg-white rounded-[20px] p-10 border border-gray-200 shadow-sm">
             <Form {...form}>
               <form onSubmit={handleSubmit} className="space-y-7">
@@ -171,7 +166,6 @@ function CreateOrganizationPage() {
                   )}
                 />
 
-                
                 <FormField
                   control={control}
                   name="name"
@@ -196,20 +190,17 @@ function CreateOrganizationPage() {
                 />
               </div>
 
-              
               <AddressForm 
                 isSubmitting={isSubmitting}
                 showAISuggestions={showAISuggestions}
               />
 
-              
               <ContactForm
                 control={control}
                 isSubmitting={isSubmitting}
                 userEmail={user?.email}
               />
 
-              
               {showAISuggestions && aiSuggestions && aiSuggestions.suggestions && (
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -322,7 +313,6 @@ function CreateOrganizationPage() {
                 </div>
               )}
 
-              
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
                 <Button 
                   type="button"

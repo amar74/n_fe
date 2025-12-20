@@ -97,7 +97,6 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border-2" style={{ borderColor: '#161950' }}>
-        {/* Header */}
         <div className="p-6 border-b border-gray-200" style={{ backgroundColor: '#f0f5ff' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -120,9 +119,7 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6 space-y-4">
-          {/* Stage Change Visual */}
           <div className="flex items-center gap-3">
             <div className="flex-1 p-3 bg-gray-100 rounded-lg text-center">
               <p className="text-xs text-gray-600 mb-1">From</p>
@@ -135,7 +132,6 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
             </div>
           </div>
 
-          {/* Reverse Move Warning */}
           {isReverseMove() && (
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
               <p className="text-xs text-orange-800 font-medium">
@@ -144,25 +140,23 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
             </div>
           )}
 
-          {/* AI Suggestion */}
           {isGenerating && (
-            <div className="flex items-center gap-3 p-4 bg-purple-50 border border-purple-200 rounded-xl">
-              <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
-              <span className="text-sm font-medium text-purple-900">AI is generating review notes...</span>
+            <div className="flex items-center gap-3 p-4 bg-[#161950]/10 border border-[#161950]/20 rounded-xl">
+              <Loader2 className="w-5 h-5 text-[#161950] animate-spin" />
+              <span className="text-sm font-medium text-[#161950]">AI is generating review notes...</span>
             </div>
           )}
 
           {!isGenerating && (
-            <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
+            <div className="p-4 bg-[#161950]/10 border border-[#161950]/20 rounded-xl">
               <div className="flex items-start gap-2 mb-2">
-                <Sparkles className="w-4 h-4 text-purple-600 mt-0.5" />
+                <Sparkles className="w-4 h-4 text-[#161950] mt-0.5" />
                 <p className="text-xs font-semibold text-gray-700">AI-Suggested Review Notes:</p>
               </div>
               <p className="text-xs text-gray-600 italic">Click in the text area below to customize</p>
             </div>
           )}
 
-          {/* Review Notes */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Review Notes {isReverseMove() ? '(Required for reverse move)' : targetStage === 'accepted' ? '(Add interview feedback)' : '(Optional)'}
@@ -182,7 +176,6 @@ export function StageChangeModal({ isOpen, employeeName, currentStage, targetSta
           </div>
         </div>
 
-        {/* Footer */}
         <div className="p-6 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-3 rounded-b-2xl">
           <button
             onClick={onClose}

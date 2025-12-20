@@ -48,8 +48,8 @@ const stages = [
     title: 'Under Review', 
     subtitle: 'Interview Process',
     color: 'bg-white border-l-4 border-l-blue-500', 
-    headerBg: 'bg-gradient-to-r from-blue-50 to-indigo-50',
-    badgeColor: 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg',
+    headerBg: 'bg-[#161950]/10',
+    badgeColor: 'bg-[#161950] text-white shadow-lg',
     icon: Users,
     iconColor: 'text-blue-600',
     description: 'Candidates in active interview process'
@@ -123,9 +123,7 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, stage.id)}
           >
-            {/* Enhanced Stage Header */}
             <div className={`p-5 ${stage.headerBg} border-b border-gray-200 rounded-t-xl relative overflow-hidden`}>
-              {/* Background Pattern */}
               <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gray-400 rounded-full transform translate-x-8 -translate-y-8"></div>
                 <div className="absolute bottom-0 left-0 w-16 h-16 bg-gray-400 rounded-full transform -translate-x-6 translate-y-6"></div>
@@ -150,7 +148,6 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
               </div>
             </div>
 
-            {/* Enhanced Employee Cards */}
             <div className="flex-1 p-4 space-y-4 min-h-[450px] max-h-[650px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {employees.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 text-gray-400">
@@ -169,7 +166,6 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
                     className={`${stage.color} rounded-xl p-5 shadow-lg border border-gray-200 cursor-move hover:shadow-xl transition-all duration-300 group relative transform hover:scale-[1.02] hover:-translate-y-1`}
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    {/* Enhanced Drag Handle */}
                     <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="p-1 bg-gray-100 rounded-md">
                         <GripVertical className="w-4 h-4 text-gray-400" />
@@ -177,19 +173,16 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
                     </div>
                     
                     <div className="pr-8">
-                      {/* Employee Number Badge with Gradient */}
                       <div className="inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full text-xs font-bold text-gray-700 mb-4 shadow-sm">
                         <Award className="w-3 h-3" />
                         #{employee.number}
                       </div>
                       
-                      {/* Enhanced Avatar and Name */}
                       <div className="flex items-center gap-3 mb-4">
                         <div className="relative">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                          <div className="w-12 h-12 bg-[#161950]/10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md border border-[#161950]/20">
                             <User className="w-6 h-6 text-blue-600" />
                           </div>
-                          {/* Status Indicator */}
                           <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
                             stage.id === 'accepted' ? 'bg-green-500' :
                             stage.id === 'rejected' ? 'bg-red-500' :
@@ -208,7 +201,6 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
                         </div>
                       </div>
                       
-                      {/* Enhanced Contact Info */}
                       <div className="space-y-2.5 mb-4">
                         <div className="flex items-center gap-2.5 text-sm text-gray-600">
                           <div className="p-1 bg-gray-100 rounded">
@@ -244,7 +236,6 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
                         )}
                       </div>
 
-                      {/* Skills Tags */}
                       {employee.skills && employee.skills.length > 0 && (
                         <div className="mb-4">
                           <div className="flex flex-wrap gap-1">
@@ -262,7 +253,6 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
                         </div>
                       )}
 
-                      {/* Rating */}
                       {employee.rating && (
                         <div className="flex items-center gap-2 mb-4">
                           <div className="flex items-center gap-1">
@@ -281,9 +271,7 @@ export function KanbanBoard({ employeesByStage, onStageChange, onEmployeeClick, 
                         </div>
                       )}
 
-                      {/* Enhanced Actions */}
                       <div className="flex flex-col gap-2 pt-4 border-t border-gray-100">
-                        {/* Activate Button for Accepted Employees */}
                         {stage.id === 'accepted' && onActivateEmployee && (
                           <button
                             onClick={(e) => {

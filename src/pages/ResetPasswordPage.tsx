@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { apiClient } from '@/services/api/client';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import { Eye, EyeOff, CheckCircle2, ArrowLeft } from 'lucide-react';
 
 const ResetPasswordSchema = z.object({

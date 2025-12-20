@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { getStatusBadge } from '../utils';
 import { ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useMemo, useState } from 'react';
-import { useFinancePlanningAnnual } from '@/hooks/useFinance';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
-import { useProcurement } from '@/hooks/useProcurement';
+import { useFinancePlanningAnnual } from '@/hooks/finance';
+import { useExpenseCategories } from '@/hooks/finance';
+import { useProcurement } from '@/hooks/procurement';
 
 interface Activity {
   id: string;
@@ -620,7 +620,6 @@ export function DashboardTab({ allActivities, metricCards, budgetsData, dashboar
               </div>
             </div>
           </div>
-          {/* Budget Distribution Section */}
           {(isLoading || budgetLoading) ? (
             <div className="h-64 flex flex-col items-center justify-center text-gray-500 font-outfit gap-3">
               <div>Loading budget data...</div>
@@ -643,7 +642,6 @@ export function DashboardTab({ allActivities, metricCards, budgetsData, dashboar
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-gray-200">
-              {/* Budget Distribution Pie Chart */}
               <div className="rounded-xl border border-gray-200 bg-white p-6">
                 <div className="mb-4">
                   <h4 className="text-base font-semibold text-[#1A1A1A] font-outfit mb-1">Budget Distribution</h4>
@@ -691,7 +689,6 @@ export function DashboardTab({ allActivities, metricCards, budgetsData, dashboar
                 </div>
               </div>
               
-              {/* Expense Categories List */}
               <div className="rounded-xl border border-gray-200 bg-white p-6">
                 <div className="mb-4">
                   <h4 className="text-base font-semibold text-[#1A1A1A] font-outfit mb-1">Expense Categories</h4>

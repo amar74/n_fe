@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, TrendingUp, AlertCircle, CheckCircle2, Loader2, RefreshCw, Info } from 'lucide-react';
 import { aiApiClient } from '@/services/api/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 
 interface TierSuggestion {
   account_id: string;
@@ -146,7 +146,6 @@ export function AITieringWidget({ accountId, currentTier }: AITieringWidgetProps
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -168,7 +167,6 @@ export function AITieringWidget({ accountId, currentTier }: AITieringWidgetProps
           </button>
         </div>
 
-        {/* Current vs Suggested */}
         <div className="grid grid-cols-2 gap-4">
           <div className={`p-4 rounded-lg border-2 ${currentTierColor.border} ${currentTierColor.bg}`}>
             <p className="text-xs font-semibold text-gray-600 mb-2">Current Tier</p>
@@ -184,7 +182,6 @@ export function AITieringWidget({ accountId, currentTier }: AITieringWidgetProps
           </div>
         </div>
 
-        {/* Confidence Score */}
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-700">Confidence:</span>
@@ -205,7 +202,6 @@ export function AITieringWidget({ accountId, currentTier }: AITieringWidgetProps
         </div>
       </div>
 
-      {/* Analysis Breakdown */}
       <div className="p-6 space-y-4">
         <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-indigo-600" />
@@ -239,7 +235,6 @@ export function AITieringWidget({ accountId, currentTier }: AITieringWidgetProps
         </div>
       </div>
 
-      {/* Reasoning */}
       <div className="p-6 bg-gray-50 border-t border-gray-200">
         <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
           <Info className="w-5 h-5 text-indigo-600" />
@@ -250,7 +245,6 @@ export function AITieringWidget({ accountId, currentTier }: AITieringWidgetProps
         </p>
       </div>
 
-      {/* Recommendation */}
       {suggestion.recommendation && (
         <div className="p-6 bg-indigo-50 border-t border-indigo-100">
           <div className="flex items-start gap-3">

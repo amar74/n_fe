@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { useAccountDetail, useAccounts } from '@/hooks/useAccounts';
+import { useToast } from '@/hooks/shared';
+import { useAccountDetail, useAccounts } from '@/hooks/accounts';
 import { TabType, AccountFormData, AccountStatsCard, RecentActivityItem } from './AccountDetailsPage.types';
 import { MOCK_RECENT_ACTIVITY } from './AccountDetailsPage.constants';
 import { STATE_ABBREVIATION_TO_NAME } from './components/CreateAccountModal/CreateAccountModal.constants';
@@ -45,7 +45,6 @@ export function useAccountDetailsPage() {
       navigate(newUrl, { replace: true });
     }
   }, [account, id, navigate]);
-
 
   // Fetch account activities
   useEffect(() => {

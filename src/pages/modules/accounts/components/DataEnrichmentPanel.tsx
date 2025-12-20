@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, CheckCircle2, AlertTriangle, Loader2, RefreshCw, ExternalLink } from 'lucide-react';
 import { aiApiClient } from '@/services/api/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 
 interface EnrichmentUpdate {
   field: string;
@@ -79,7 +79,6 @@ export function DataEnrichmentPanel({ accountId, accountName, onEnrichmentComple
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -112,7 +111,6 @@ export function DataEnrichmentPanel({ accountId, accountName, onEnrichmentComple
         </button>
       </div>
 
-      {/* Results */}
       {enrichmentResult && (
         <div className="p-6 space-y-4">
           {enrichmentResult.error ? (
@@ -225,7 +223,6 @@ export function DataEnrichmentPanel({ accountId, accountName, onEnrichmentComple
         </div>
       )}
 
-      {/* Info */}
       {!enrichmentResult && !isEnriching && (
         <div className="p-6 bg-gray-50 border-t border-gray-200">
           <p className="text-sm text-gray-600">

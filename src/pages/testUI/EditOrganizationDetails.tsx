@@ -33,7 +33,6 @@ export default function EditOrganizationDetails() {
       
       <Header2 />
 
-      
       <main className="p-2">
         <div className="max-w-5xl mx-auto px-4 md:px-8">
           
@@ -43,7 +42,6 @@ export default function EditOrganizationDetails() {
             <CaretRight size={16} className="text-gray-700" /> Organization Detail
           </div>
 
-          
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-[#ED8A09]">
               Edit Organization Details
@@ -74,7 +72,6 @@ export default function EditOrganizationDetails() {
                   </div>
                 </div>
 
-                
                 <div className="flex flex-col sm:flex-row rounded-2xl bg-[#FEC89A33] text-sm text-gray-700 w-full lg:w-auto">
                   <div className="px-6 py-3 border-b sm:border-b-0 sm:border-r border-gray-200 text-center sm:text-left">
                     <span className="font-medium text-[#ED8A09] block">
@@ -97,7 +94,6 @@ export default function EditOrganizationDetails() {
                 </div>
               </div>
 
-              
               <div className="space-y-4">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -130,7 +126,6 @@ export default function EditOrganizationDetails() {
                     </div>
                   </div>
 
-                  
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
                       <Label htmlFor="website" className="font-semibold text-lg">
@@ -159,7 +154,6 @@ export default function EditOrganizationDetails() {
                   </div>
                 </div>
 
-                
                 <div className="space-y-2">
                   <Label htmlFor="address" className="font-semibold">
                     Address
@@ -184,7 +178,6 @@ export default function EditOrganizationDetails() {
                   </div>
                 </div>
 
-                
                 <div className="space-y-3">
                   <h4 className="font-semibold">Contact Information</h4>
                   <div className="flex flex-col md:flex-row items-center gap-4">
@@ -226,7 +219,6 @@ export default function EditOrganizationDetails() {
                   </div>
                 </div>
 
-                
                 <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-between">
                   <Button
                     variant="outline"

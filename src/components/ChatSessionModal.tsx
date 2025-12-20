@@ -20,9 +20,9 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, X, Plus, Tag } from 'lucide-react';
-import { useCreateChatSession, type ChatSessionCreate } from '@/hooks/useChat';
-import { useAIAgenticTemplates, type AIAgenticTemplate } from '@/hooks/useAIAgentic';
-import { useToast } from '@/hooks/use-toast';
+import { useCreateChatSession, type ChatSessionCreate } from '@/hooks/ai';
+import { useAIAgenticTemplates, type AIAgenticTemplate } from '@/hooks/ai';
+import { useToast } from '@/hooks/shared';
 
 interface ChatSessionModalProps {
   isOpen: boolean;
@@ -188,7 +188,6 @@ export default function ChatSessionModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
           <div>
             <Label htmlFor="title" className="font-['Outfit',sans-serif] font-medium">
               Session Title <span className="text-red-500">*</span>
@@ -203,7 +202,6 @@ export default function ChatSessionModal({
             />
           </div>
 
-          {/* Description */}
           <div>
             <Label htmlFor="description" className="font-['Outfit',sans-serif] font-medium">
               Description (Optional)
@@ -218,7 +216,6 @@ export default function ChatSessionModal({
             />
           </div>
 
-          {/* Template Selection */}
           {templates.length > 0 && (
             <div>
               <Label htmlFor="template" className="font-['Outfit',sans-serif] font-medium">
@@ -245,7 +242,6 @@ export default function ChatSessionModal({
             </div>
           )}
 
-          {/* Topics Selection */}
           <div>
             <Label className="font-['Outfit',sans-serif] font-medium mb-2 block">
               Topics
@@ -268,7 +264,6 @@ export default function ChatSessionModal({
                 ))}
               </div>
               
-              {/* Custom Topic Input */}
               <div className="flex gap-2">
                 <Input
                   value={customTopic}
@@ -288,7 +283,6 @@ export default function ChatSessionModal({
                 </Button>
               </div>
 
-              {/* Selected Topics */}
               {formData.selected_topics && formData.selected_topics.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.selected_topics.map((topic) => (
@@ -312,7 +306,6 @@ export default function ChatSessionModal({
             </div>
           </div>
 
-          {/* Prompts Selection */}
           <div>
             <Label className="font-['Outfit',sans-serif] font-medium mb-2 block">
               Prompts
@@ -335,7 +328,6 @@ export default function ChatSessionModal({
                 ))}
               </div>
               
-              {/* Custom Prompt Input */}
               <div className="flex gap-2">
                 <Input
                   value={customPrompt}
@@ -355,7 +347,6 @@ export default function ChatSessionModal({
                 </Button>
               </div>
 
-              {/* Selected Prompts */}
               {formData.selected_prompts && formData.selected_prompts.length > 0 && (
                 <div className="flex flex-col gap-2 mt-2">
                   {formData.selected_prompts.map((prompt) => (

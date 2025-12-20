@@ -2,11 +2,10 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useOrganizations } from '@/hooks/useOrganizations';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { useDataEnrichment } from '@/hooks/useDataEnrichment';
-import { supabase } from '@/lib/supabase';
+import { useOrganizations } from '@/hooks/organization';
+import { useAuth } from '@/hooks/auth';
+import { useToast } from '@/hooks/shared';
+import { useDataEnrichment } from '@/hooks/ai';
 import { apiClient } from '@/services/api/client';
 import { authApi } from '@/services/api/authApi';
 import { authManager } from '@/services/auth/AuthManager';
@@ -30,8 +29,7 @@ export function useCreateOrganizationPage() {
   useEffect(() => {
     if (initialAuthComplete && backendUser?.org_id) {
       console.log('[CreateOrgPage] User already has organization, redirecting to dashboard');
-      toast({
-        title: 'Organization Already Exists',
+      toast.info('Organization Already Exists', {
         description: 'You already have an organization. Redirecting to dashboard.',
       });
       navigate('/', { replace: true });
@@ -190,26 +188,26 @@ export function useCreateOrganizationPage() {
       console.log('📥 Processing AI suggestions for organization:', result);
       
       // Lower threshold (0.6 instead of 0.85) for better auto-apply
-      Object.entries(result.suggestions).forEach(([field, suggestion]: [string, any]) => {
-        if (suggestion.confidence >= 0.6 && suggestion.value) {
-          console.log(`✅ Auto-applying ${field}: ${suggestion.value} (confidence: ${suggestion.confidence})`);
-          applySuggestion(field, suggestion.value);
-          autoApplied.push(field);
-        } else {
-          console.log(`⚠️ Skipped ${field}: ${!suggestion.value ? 'empty value' : `low confidence (${suggestion.confidence})`}`);
-        }
-      });
+      if (result.enhanced_data) {
+        Object.entries(result.enhanced_data).forEach(([field, suggestion]: [string, any]) => {
+          if (suggestion.confidence >= 0.6 && suggestion.value) {
+            console.log(`✅ Auto-applying ${field}: ${suggestion.value} (confidence: ${suggestion.confidence})`);
+            applySuggestion(field, suggestion.value);
+            autoApplied.push(field);
+          } else {
+            console.log(`⚠️ Skipped ${field}: ${!suggestion.value ? 'empty value' : `low confidence (${suggestion.confidence})`}`);
+          }
+        });
+      }
 
       if (autoApplied.length > 0) {
         setAppliedSuggestions(autoApplied);
-        toast({
-          title: '🎉 AI Enhancement Complete',
+        toast.success('🎉 AI Enhancement Complete', {
           description: `Auto-filled ${autoApplied.length} fields with data from your website.`,
         });
         console.log(`📊 Auto-applied fields: ${autoApplied.join(', ')}`);
       } else {
-        toast({
-          title: '🔍 AI Analysis Complete',
+        toast.info('🔍 AI Analysis Complete', {
           description: 'AI suggestions available but below confidence threshold. Check suggestions panel.',
         });
         console.log('⚠️ No fields met confidence threshold for auto-apply');
@@ -224,10 +222,8 @@ export function useCreateOrganizationPage() {
         errorMessage = error.message;
       }
       
-      toast({
-        title: 'AI Analysis Failed',
+      toast.error('AI Analysis Failed', {
         description: errorMessage,
-        variant: 'destructive',
       });
     } finally {
       setIsAnalyzing(false);
@@ -307,7 +303,7 @@ export function useCreateOrganizationPage() {
 
   const handleSignOut = useCallback(async () => {
     try {
-      await supabase.auth.signOut();
+      // Supabase removed - using backend-only authentication
       localStorage.clear();
       delete apiClient.defaults.headers.common['Authorization'];
       navigate('/auth/login', { replace: true });

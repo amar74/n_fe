@@ -5,7 +5,7 @@ import {
   TrendingUp, Building2, CheckCircle2, XCircle, Loader2, 
   CalendarDays, BarChart3, Wallet, AlertCircle, Target, Eye, EyeOff, Key, Copy
 } from 'lucide-react';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useEmployees } from '@/hooks/resources';
 import { copyToClipboard } from '@/utils/clipboard';
 import { toast } from 'sonner';
 import { useState } from 'react';
@@ -166,7 +166,6 @@ export default function EmployeeProfilePage() {
   
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
@@ -203,11 +202,8 @@ export default function EmployeeProfilePage() {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Employee Details */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Profile Card */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-              {/* Profile Header */}
               <div className="text-center mb-6">
                 <div className="w-24 h-24 bg-gradient-to-br from-[#151950] to-[#1e2570] rounded-full flex items-center justify-center mx-auto mb-4 text-white text-3xl font-bold">
                   {employee.name.charAt(0).toUpperCase()}
@@ -231,13 +227,13 @@ export default function EmployeeProfilePage() {
                   {employee.user_id && (
                     <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
                       <span className="uppercase text-xs tracking-wide text-gray-500">User ID</span>
-                      <span className="font-mono text-xs sm:text-sm text-gray-900 bg-purple-50 border border-purple-200 px-2 py-1 rounded-md break-all">
+                      <span className="font-mono text-xs sm:text-sm text-gray-900 bg-[#161950]/10 border border-[#161950]/20 px-2 py-1 rounded-md break-all">
                         {employee.user_id}
                       </span>
                       <button
                         type="button"
                         onClick={handleCopyUserId}
-                        className="p-2 rounded-md border border-purple-200 text-purple-600 hover:bg-purple-50 transition-colors"
+                        className="p-2 rounded-md border border-[#161950]/20 text-[#161950] hover:bg-[#161950]/10 transition-colors"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
@@ -255,7 +251,6 @@ export default function EmployeeProfilePage() {
                 </div>
               </div>
 
-              {/* Contact Information */}
               <div className="space-y-3 border-t border-gray-200 pt-4">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Contact Information</h3>
                 
@@ -283,7 +278,6 @@ export default function EmployeeProfilePage() {
                 )}
               </div>
 
-              {/* Employment Details */}
               <div className="space-y-3 border-t border-gray-200 pt-4 mt-4">
                 <h3 className="text-sm font-semibold text-gray-500 uppercase mb-3">Employment Details</h3>
                 
@@ -330,7 +324,6 @@ export default function EmployeeProfilePage() {
                 )}
               </div>
 
-              {/* Actions */}
               <div className="border-t border-gray-200 pt-4 mt-4 flex gap-2">
                 <button
                   onClick={handleDownloadCV}
@@ -346,7 +339,6 @@ export default function EmployeeProfilePage() {
               </div>
             </div>
 
-            {/* Skills */}
             {employee.skills && employee.skills.length > 0 && (
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -366,7 +358,6 @@ export default function EmployeeProfilePage() {
               </div>
             )}
 
-            {/* Earnings Breakdown */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Wallet className="w-5 h-5 text-[#151950]" />
@@ -389,14 +380,13 @@ export default function EmployeeProfilePage() {
                   <span className="text-sm text-green-700 font-medium">Monthly (160 hrs)</span>
                   <span className="font-bold text-green-900">${monthlyEarnings.toLocaleString()}</span>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg border border-purple-200">
-                  <span className="text-sm text-purple-700 font-medium">Yearly (Est.)</span>
-                  <span className="font-bold text-purple-900">${yearlyEarnings.toLocaleString()}</span>
+                <div className="flex items-center justify-between p-3 bg-[#161950]/10 rounded-lg border border-[#161950]/20">
+                  <span className="text-sm text-[#161950] font-medium">Yearly (Est.)</span>
+                  <span className="font-bold text-[#161950]">${yearlyEarnings.toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
-            {/* Payment Terms & Availability */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-[#151950]" />
@@ -419,14 +409,14 @@ export default function EmployeeProfilePage() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-2">Working Days</p>
-                  <div className="p-3 bg-purple-50 rounded-lg">
+                  <div className="p-3 bg-[#161950]/10 rounded-lg border border-[#161950]/20">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-purple-700">Per Week</span>
-                      <span className="font-bold text-purple-900">{workingDaysPerWeek} days</span>
+                      <span className="text-sm text-[#161950]">Per Week</span>
+                      <span className="font-bold text-[#161950]">{workingDaysPerWeek} days</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-purple-700">Per Month</span>
-                      <span className="font-bold text-purple-900">{workingDaysPerMonth} days</span>
+                      <span className="text-sm text-[#161950]">Per Month</span>
+                      <span className="font-bold text-[#161950]">{workingDaysPerMonth} days</span>
                     </div>
                   </div>
                 </div>
@@ -441,15 +431,13 @@ export default function EmployeeProfilePage() {
             </div>
           </div>
 
-          {/* Right Column - Stats & Details */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Enhanced Financial Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
-                <DollarSign className="w-6 h-6 text-purple-600 mb-2" />
-                <p className="text-xs text-purple-700 font-medium mb-1">Hourly Rate</p>
-                <p className="text-2xl font-bold text-purple-900">${billRate}</p>
-                <p className="text-xs text-purple-600 mt-1">per hour</p>
+              <div className="bg-[#161950]/10 rounded-xl p-4 border border-[#161950]/20">
+                <DollarSign className="w-6 h-6 text-[#161950] mb-2" />
+                <p className="text-xs text-[#161950] font-medium mb-1">Hourly Rate</p>
+                <p className="text-2xl font-bold text-[#161950]">${billRate}</p>
+                <p className="text-xs text-[#161950] mt-1">per hour</p>
               </div>
 
               <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
@@ -474,7 +462,6 @@ export default function EmployeeProfilePage() {
               </div>
             </div>
 
-            {/* Performance & Attendance Stats */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -499,13 +486,12 @@ export default function EmployeeProfilePage() {
                   <p className="text-3xl font-bold text-blue-700">{leaveDays}</p>
                   <p className="text-xs text-gray-600 mt-1">Leave Days</p>
                 </div>
-                <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <p className="text-3xl font-bold text-purple-700">{attendancePercentage}%</p>
+                <div className="text-center p-4 bg-[#161950]/10 rounded-lg border border-[#161950]/20">
+                  <p className="text-3xl font-bold text-[#161950]">{attendancePercentage}%</p>
                   <p className="text-xs text-gray-600 mt-1">Attendance</p>
                 </div>
               </div>
 
-              {/* Attendance Calendar */}
               <div className="border-t border-gray-200 pt-6">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -542,7 +528,6 @@ export default function EmployeeProfilePage() {
                   </div>
                 </div>
 
-                {/* Calendar Grid */}
                 <div className="grid grid-cols-7 gap-2">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                     <div key={day} className="text-center text-xs font-semibold text-gray-600 py-2">
@@ -571,7 +556,6 @@ export default function EmployeeProfilePage() {
                   ))}
                 </div>
 
-                {/* Legend */}
                 <div className="flex flex-wrap gap-4 mt-4 text-xs">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
@@ -593,7 +577,6 @@ export default function EmployeeProfilePage() {
               </div>
             </div>
 
-            {/* Working Availability - Only show if real schedule data exists */}
             {employee.schedule && (
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -608,7 +591,6 @@ export default function EmployeeProfilePage() {
               </div>
             )}
 
-            {/* Projects & Accounts - Real data from backend */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -647,7 +629,6 @@ export default function EmployeeProfilePage() {
               </div>
             </div>
 
-            {/* User Credentials */}
             {employee.user_id && (
               <div className="bg-gradient-to-r from-[#151950] to-[#1e2570] rounded-2xl shadow-lg p-6 text-white">
                 <h3 className="text-lg font-bold mb-4 flex items-center gap-2">

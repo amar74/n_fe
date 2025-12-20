@@ -80,10 +80,8 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
           </button>
         </div>
 
-        
         <div className="self-stretch h-0 outline outline-1 outline-offset-[-0.50px] outline-black/10"></div>
 
-        
         <form onSubmit={handleSubmit} className="self-stretch flex flex-col justify-start items-start gap-5">
           
           <div className="self-stretch flex flex-col justify-start items-start gap-1.5">
@@ -101,7 +99,6 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
             />
           </div>
 
-          
           <div className="self-stretch inline-flex justify-start items-start gap-5">
             
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
@@ -118,7 +115,6 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
               />
             </div>
 
-            
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
               <div className="justify-start">
                 <span className="text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Category</span>
@@ -146,7 +142,6 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
             </div>
           </div>
 
-          
           <div className="self-stretch inline-flex justify-start items-center gap-5">
             <div className="flex-1 inline-flex flex-col justify-start items-start gap-1.5">
               <div className="justify-start text-slate-800 text-sm font-medium font-['Outfit'] leading-tight">Attachments</div>
@@ -175,7 +170,6 @@ export function AddDocumentModal({ isOpen, onClose, onSubmit, isLoading = false 
             </div>
           </div>
 
-          
           <div className="self-stretch inline-flex justify-start items-start gap-5">
             <button
               type="button"

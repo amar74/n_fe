@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import { Eye, EyeOff, Key, Copy, Check, Phone, Mail, User, ArrowLeft } from 'lucide-react';
 
 // Country codes for phone number
@@ -193,7 +193,6 @@ export default function CreateVendorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Back Button */}
         <button
           onClick={() => navigate('/super-admin')}
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition-colors group"
@@ -220,7 +219,6 @@ export default function CreateVendorPage() {
             
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name Field */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <User className="w-4 h-4 text-indigo-600" />
@@ -241,7 +239,6 @@ export default function CreateVendorPage() {
                   )}
                 </div>
 
-                {/* Email Field */}
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <Mail className="w-4 h-4 text-indigo-600" />
@@ -276,7 +273,6 @@ export default function CreateVendorPage() {
                   )}
                 </div>
 
-                {/* Contact Number with Country Code */}
                 <div className="space-y-2">
                   <Label htmlFor="contact_number" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <Phone className="w-4 h-4 text-indigo-600" />
@@ -324,7 +320,6 @@ export default function CreateVendorPage() {
                   <p className="text-xs text-gray-500">Format: (XXX) XXX-XXXX (10 digits)</p>
                 </div>
 
-                {/* Password Field with Toggle */}
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <Key className="w-4 h-4 text-indigo-600" />
@@ -356,7 +351,6 @@ export default function CreateVendorPage() {
                   <p className="text-xs text-gray-500">Must be at least 8 characters long</p>
                 </div>
 
-                {/* Submit Button */}
                 <div className="pt-4">
                   <Button
                     type="submit"
@@ -407,7 +401,6 @@ export default function CreateVendorPage() {
               </Alert>
 
               <div className="space-y-4">
-                {/* Vendor ID */}
                 <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -438,7 +431,6 @@ export default function CreateVendorPage() {
                   </div>
                 </div>
 
-                {/* Email */}
                 <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -470,7 +462,6 @@ export default function CreateVendorPage() {
                   </div>
                 </div>
 
-                {/* Password */}
                 <div className="bg-white rounded-xl p-5 border-2 border-red-200 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">

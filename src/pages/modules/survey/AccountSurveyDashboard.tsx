@@ -92,7 +92,6 @@ function AccountSurveyDashboard() {
   return (
     <div className="min-h-full bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
@@ -110,7 +109,6 @@ function AccountSurveyDashboard() {
           </div>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
@@ -142,7 +140,6 @@ function AccountSurveyDashboard() {
           })}
         </div>
 
-        {/* Recent Surveys */}
         <Card className="border-0 shadow-sm">
           <CardHeader>
             <CardTitle className="text-xl font-semibold">Recent Account Surveys</CardTitle>

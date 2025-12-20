@@ -8,9 +8,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 // Removed ClientType enum import to avoid initialization issues
 
-import { useAccounts } from '@/hooks/useAccounts';
+import { useAccounts } from '@/hooks/accounts';
 import { exportToCSV, exportToExcel } from '@/utils/exportUtils';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import { Link } from 'react-router-dom';
 
 type AccountsHeaderProps = {
@@ -60,7 +60,6 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
             </div>
           </div>
 
-          
           <div className="flex flex-wrap gap-3 items-start justify-start">
             
             <DropdownMenu>
@@ -84,7 +83,6 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
               </DropdownMenuContent>
             </DropdownMenu>
 
-            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <div className="bg-white box-border flex h-[46px] items-center justify-between px-5 py-3 relative rounded-[24px] min-w-[140px] cursor-pointer hover:shadow-md transition-shadow">
@@ -105,7 +103,6 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
               </DropdownMenuContent>
             </DropdownMenu>
 
-            
             <Link to="/client-surveys" className="bg-[rgba(255,255,255,0)] box-border flex gap-2.5 h-[46px] items-center justify-center px-4 py-2 relative rounded-[100px] min-w-[150px] cursor-pointer hover:shadow-md transition-shadow">
               <div aria-hidden="true" className="absolute border border-black border-solid inset-0 pointer-events-none rounded-[100px]" />
               <FileText className="relative shrink-0 size-6 text-black" />
@@ -114,7 +111,6 @@ export function AccountsHeader({ onCreateAccount, onFilterChange }: AccountsHead
               </div>
             </Link>
 
-            
             <div 
               onClick={onCreateAccount}
               className="bg-[#0f0901] box-border flex gap-2.5 h-[46px] items-center justify-center px-4 py-2 relative rounded-[100px] min-w-[150px] cursor-pointer hover:shadow-md transition-shadow"

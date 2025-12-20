@@ -8,8 +8,8 @@ import { ActivateEmployeeModal } from './components/ActivateEmployeeModal';
 import { BulkUploadModal } from './components/BulkUploadModal';
 import { RolePermissionConfig } from './components/RolePermissionConfig';
 import { AISkillsGapWidget } from './components/AISkillsGapWidget';
-import { useEmployees } from '@/hooks/useEmployees';
-import { useEmployeeActivation } from '@/hooks/useEmployeeActivation';
+import { useEmployees } from '@/hooks/resources';
+import { useEmployeeActivation } from '@/hooks/resources';
 import { toast } from 'sonner';
 
 type TabType = 'onboarding' | 'permissions' | 'analytics';
@@ -213,10 +213,8 @@ function OnboardingPage() {
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
-            {/* Breadcrumb */}
             <div className="flex items-center gap-2">
               <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
                 Dashboard
@@ -237,7 +235,6 @@ function OnboardingPage() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => window.location.href = '/staffing-plan'}
@@ -262,7 +259,7 @@ function OnboardingPage() {
 
             <button 
               onClick={() => setIsBulkUploadOpen(true)}
-              className="h-11 px-5 py-2 bg-purple-600 rounded-lg flex items-center gap-2.5 hover:bg-purple-700 transition-all shadow-lg"
+              className="h-11 px-5 py-2 bg-[#161950] rounded-lg flex items-center gap-2.5 hover:bg-[#1E2B5B] transition-all shadow-lg"
             >
               <Upload className="w-5 h-5 text-white" />
               <span className="text-white text-sm font-semibold font-outfit leading-normal">
@@ -283,7 +280,6 @@ function OnboardingPage() {
           </div>
         </div>
 
-        {/* Section Tabs */}
         <div className="flex items-center bg-white rounded-xl p-2 border border-gray-200 shadow-lg">
           <button
             onClick={() => setActiveTab('onboarding')}
@@ -322,7 +318,6 @@ function OnboardingPage() {
 
         {activeTab === 'onboarding' && (
           <>
-            {/* Enhanced Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               {stats.map((stat, index) => (
                 <div key={index} className={`${stat.color} rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105`}>
@@ -340,7 +335,7 @@ function OnboardingPage() {
                       className={`h-2 rounded-full transition-all duration-500 ${
                         index === 0 ? 'bg-gradient-to-r from-slate-500 to-slate-600' :
                         index === 1 ? 'bg-gradient-to-r from-amber-500 to-orange-500' :
-                        index === 2 ? 'bg-gradient-to-r from-blue-500 to-indigo-500' :
+                        index === 2 ? 'bg-[#161950]' :
                         index === 3 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
                         'bg-gradient-to-r from-red-500 to-pink-500'
                       }`}
@@ -355,7 +350,6 @@ function OnboardingPage() {
 
         {activeTab === 'onboarding' && (
           <>
-            {/* Enhanced Search Bar */}
             <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
               <div className="flex items-center gap-4">
                 <div className="relative flex-1">
@@ -369,7 +363,6 @@ function OnboardingPage() {
                   />
                 </div>
                 
-                {/* View Toggle */}
                 <div className="flex items-center bg-gray-100 rounded-xl p-1">
                   <button
                     onClick={() => setViewMode('kanban')}
@@ -395,7 +388,6 @@ function OnboardingPage() {
               </div>
             </div>
 
-            {/* Kanban Board or List View */}
             {viewMode === 'kanban' ? (
           <KanbanBoard
             employeesByStage={employeesByStage}
@@ -475,10 +467,8 @@ function OnboardingPage() {
           </>
         )}
 
-        {/* Role & Permission Configuration Section */}
         {activeTab === 'permissions' && (
           <div className="space-y-4">
-            {/* Activated Employees Count Badge */}
             {(() => {
               const activatedEmployees = employees.filter((emp: any) => emp.status === 'active' && emp.user_id != null);
               return activatedEmployees.length > 0 ? (
@@ -516,14 +506,12 @@ function OnboardingPage() {
         )}
       </div>
 
-      {/* Add Employee Wizard Modal */}
       <AddEmployeeWizard
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddEmployee}
       />
 
-      {/* Bulk Upload Modal */}
       <BulkUploadModal
         isOpen={isBulkUploadOpen}
         onClose={() => setIsBulkUploadOpen(false)}
@@ -532,7 +520,6 @@ function OnboardingPage() {
         }}
       />
 
-      {/* Employee Details Modal */}
       <EmployeeDetailsModal
         employee={selectedEmployee}
         isOpen={!!selectedEmployee}
@@ -541,7 +528,6 @@ function OnboardingPage() {
         onDownloadCV={handleDownloadCV}
       />
 
-      {/* Activate Employee Modal */}
       <ActivateEmployeeModal
         employee={employeeToActivate}
         isOpen={!!employeeToActivate}

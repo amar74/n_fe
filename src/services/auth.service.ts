@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { apiClient } from './api/client';
 
 export interface SignupRequest {
   email: string;
@@ -12,38 +12,22 @@ export interface SignupResult {
 }
 
 export const authService = {
-  /**
-   * Sign up a new user with Supabase
-   */
   async signup({ email, password }: SignupRequest): Promise<SignupResult> {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const response = await apiClient.post('/auth/signup', {
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/login`,
-        },
       });
-
-      if (error) {
-        return {
-          success: false,
-          requiresConfirmation: false,
-          error: error.message,
-        };
-      }
-
-      const requiresConfirmation = data?.user && !data.session;
 
       return {
         success: true,
-        requiresConfirmation: Boolean(requiresConfirmation),
+        requiresConfirmation: false,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         requiresConfirmation: false,
-        error: 'An unexpected error occurred during signup.',
+        error: error.response?.data?.detail || error.message || 'An unexpected error occurred during signup.',
       };
     }
   },

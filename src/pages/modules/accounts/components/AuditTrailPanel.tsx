@@ -120,7 +120,6 @@ export function AuditTrailPanel({ accountId }: AuditTrailPanelProps) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-gray-50 to-indigo-50 border-b border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -142,7 +141,6 @@ export function AuditTrailPanel({ accountId }: AuditTrailPanelProps) {
           </button>
         </div>
 
-        {/* Filter */}
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-gray-700">Filter:</span>
           <select
@@ -160,7 +158,6 @@ export function AuditTrailPanel({ accountId }: AuditTrailPanelProps) {
         </div>
       </div>
 
-      {/* Audit Logs */}
       <div className="p-6">
         {auditLogs.length === 0 ? (
           <div className="text-center py-12">
@@ -202,7 +199,6 @@ export function AuditTrailPanel({ accountId }: AuditTrailPanelProps) {
                   </div>
                 </div>
 
-                {/* Field Changes */}
                 {log.changes && Object.keys(log.changes).length > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">Field Changes:</h4>

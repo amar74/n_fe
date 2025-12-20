@@ -106,7 +106,6 @@ export function AnnualBudgetTab({
           ))}
         </div>
         
-        {/* AI Highlights - Display in one row */}
         {aiHighlights && aiHighlights.length > 0 && (
           <div className="mt-6">
             <h4 className="mb-3 text-base font-semibold text-slate-900">AI Insights</h4>
@@ -337,8 +336,6 @@ export function AnnualBudgetTab({
             <History className="h-4 w-4 text-[#161950] transition group-hover:text-white" />
             Review Previous Year
           </button>
-          {/* Submit for Approval Button - Show if budget exists and is in draft status (or status unknown) */}
-          {/* Show button if: budgetId exists OR we have budget data, AND status is NOT already submitted/approved/active/rejected, AND handler exists */}
           {(() => {
             const hasBudgetData = !!(budgetId || revenueTotals.totalTarget > 0 || expenseTotals.totalTarget > 0 || totalRevenueTarget > 0 || totalExpenseBudget > 0);
             const submittedStates = ['pending', 'submitted', 'in_review', 'approved', 'active', 'rejected'];

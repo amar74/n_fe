@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useNotes } from '@/hooks/useNotes';
+import { useNotes } from '@/hooks/notes';
 import { Note } from '@/types/notes';
 import { Button } from '@/components/ui/button';
 import {
@@ -79,7 +79,6 @@ export default function NotesPage() {
         </Button>
       </div>
 
-      
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
@@ -90,7 +89,6 @@ export default function NotesPage() {
         />
       </div>
 
-      
       {filteredNotes.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>
@@ -124,7 +122,6 @@ export default function NotesPage() {
         </div>
       )}
 
-      
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-2">
           <Button

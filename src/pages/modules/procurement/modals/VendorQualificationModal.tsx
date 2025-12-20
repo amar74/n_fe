@@ -164,7 +164,6 @@ export function VendorQualificationModal({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Financial Stability */}
             <div className="space-y-2">
               <Label htmlFor="financial_stability" className="text-sm font-medium text-gray-700 font-outfit">
                 Financial Stability
@@ -185,7 +184,6 @@ export function VendorQualificationModal({
               </Select>
             </div>
 
-            {/* Risk Level */}
             <div className="space-y-2">
               <Label htmlFor="risk_level" className="text-sm font-medium text-gray-700 font-outfit">
                 Risk Level
@@ -205,7 +203,6 @@ export function VendorQualificationModal({
               </Select>
             </div>
 
-            {/* Qualification Score */}
             <div className="space-y-2">
               <Label htmlFor="qualification_score" className="text-sm font-medium text-gray-700 font-outfit">
                 Qualification Score (0-100)
@@ -225,7 +222,6 @@ export function VendorQualificationModal({
               )}
             </div>
 
-            {/* Credentials Verified */}
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700 font-outfit flex items-center space-x-2">
                 <input
@@ -239,7 +235,6 @@ export function VendorQualificationModal({
             </div>
           </div>
 
-          {/* Certifications */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 font-outfit">Certifications</Label>
             <div className="flex gap-2">
@@ -286,7 +281,6 @@ export function VendorQualificationModal({
             )}
           </div>
 
-          {/* Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes" className="text-sm font-medium text-gray-700 font-outfit">
               Notes

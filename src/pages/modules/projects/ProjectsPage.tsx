@@ -18,12 +18,10 @@ function ProjectsPage() {
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Projects</span>
             </div>
-            
-            
+
             <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">Projects</h1>
           </div>
 
-          
           <div className="flex items-start gap-3">
             
             <button 
@@ -35,7 +33,6 @@ function ProjectsPage() {
           </div>
         </div>
 
-        
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[
             { label: 'Total Projects', value: '0', icon: FolderKanban, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -55,7 +52,6 @@ function ProjectsPage() {
           ))}
         </div>
 
-        
         <div className="bg-white rounded-2xl border border-gray-200 p-6 flex flex-col gap-6">
           
           <div className="flex items-center gap-4">
@@ -73,7 +69,6 @@ function ProjectsPage() {
             </button>
           </div>
 
-          
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <div className="p-4 bg-slate-50 rounded-full">
               <FolderKanban className="w-12 h-12 text-slate-600" />

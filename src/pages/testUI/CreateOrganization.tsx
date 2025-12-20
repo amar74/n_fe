@@ -20,7 +20,6 @@ export default function CreateOrganization() {
       
       <Header2 />
 
-      
       <main className="flex-1 flex flex-col items-center px-6 py-4 pt-2 ">
         
         <div className="text-center mb-3 max-w-xl">
@@ -33,7 +32,6 @@ export default function CreateOrganization() {
           </p>
         </div>
 
-        
         <div className="w-full max-w-3xl p-6 rounded-3xl bg-white shadow-md">
           
           <div className="flex items-center justify-center gap-4 mb-8">
@@ -52,7 +50,6 @@ export default function CreateOrganization() {
             </div>
           </div>
 
-          
           <div className="space-y-6">
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-1">Organization Details</h2>
@@ -91,7 +88,6 @@ export default function CreateOrganization() {
                 </div>
               </div>
 
-              
               <div className="space-y-2">
                 <div className="flex items-center">
                   <Label htmlFor="organizationName" className="text-sm font-medium">
@@ -116,7 +112,6 @@ export default function CreateOrganization() {
               </div>
             </div>
 
-            
             <div className="space-y-2">
               <Label htmlFor="address" className="text-sm font-medium">
                 Address
@@ -139,7 +134,6 @@ export default function CreateOrganization() {
               </div>
             </div>
 
-            
             <div>
               <h3 className="font-semibold mb-2">Contact Information</h3>
               <div className="flex items-center gap-4">
@@ -173,7 +167,6 @@ export default function CreateOrganization() {
               </div>
             </div>
 
-            
             <div className="flex gap-6 pt-2 justify-between">
               <Button variant="outline" className=" py-2 text-sm mx-2">
                 Back to Sign-In

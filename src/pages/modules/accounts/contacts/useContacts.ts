@@ -1,10 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useAccountContacts } from '@/hooks/useAccountContacts';
+import { useAccountContacts } from '@/hooks/accounts';
 import { ContactCreate, ContactResponse, ContactUpdateRequest } from '@/types/accounts';
 import { AxiosError } from 'axios';
 import { parseBackendErrors } from '@/utils/errorParser';
 import { HTTPValidationError } from '@/types/validationError';
-import { useAccountDetail } from '@/hooks/useAccounts';
+import { useAccountDetail } from '@/hooks/accounts';
 
 export function useContacts(accountId: string) {
   const {
@@ -51,7 +51,6 @@ export function useContacts(accountId: string) {
   const [editingContact, setEditingContact] = useState<ContactResponse | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
-
   // Actions
   const createContact = async (contactData: ContactCreate) => {
     await addContact({accountId, contact: contactData});
@@ -74,7 +73,6 @@ export function useContacts(accountId: string) {
     setEditingContact(null);
     setShowEditModal(false);
   };
-
 
   useEffect(() => {
     if (addContactError && (addContactError as AxiosError)?.response?.data) {

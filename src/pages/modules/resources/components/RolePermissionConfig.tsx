@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
 import { toast } from 'sonner';
-import { useRoles } from '@/hooks/useRoles';
+import { useRoles } from '@/hooks/user-management';
 import type { Employee } from './KanbanBoard';
 
 type Permission = {
@@ -137,7 +137,6 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl" style={{ backgroundColor: '#f0f0ff' }}>
@@ -150,7 +149,6 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
         </div>
       </div>
 
-      {/* Search */}
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         <input
@@ -171,7 +169,6 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
         />
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -215,7 +212,6 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
 
                   return (
                     <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
-                      {/* Employee Name & Email */}
                       <td className="px-6 py-4">
                         <div>
                           <p className="text-sm font-semibold text-gray-900">{employee.name}</p>
@@ -223,14 +219,12 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
                         </div>
                       </td>
                       
-                      {/* Designation (Job Title) */}
                       <td className="px-6 py-4">
                         <span className="text-sm text-gray-700 font-medium">
                           {employee.position || 'N/A'}
                         </span>
                       </td>
                       
-                      {/* Department */}
                       <td className="px-6 py-4">
                         {isEditing ? (
                           <select
@@ -261,7 +255,6 @@ export function RolePermissionConfig({ employees, onUpdatePermissions }: RolePer
                         )}
                       </td>
                       
-                      {/* Role (System Role: Employee, Admin, Manager, etc.) */}
                       <td className="px-6 py-4">
                         {isEditing ? (
                           <select

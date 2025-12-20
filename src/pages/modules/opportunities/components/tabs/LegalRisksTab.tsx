@@ -27,7 +27,7 @@ import {
   useCreateOpportunityLegalChecklistItem,
   useUpdateOpportunityLegalChecklistItem,
   useDeleteOpportunityLegalChecklistItem,
-} from '@/hooks/useOpportunityTabs';
+} from '@/hooks/opportunities';
 import type { LegalChecklistItem, Risk } from '@/types/opportunityTabs';
 
 interface LegalRisksTabProps {

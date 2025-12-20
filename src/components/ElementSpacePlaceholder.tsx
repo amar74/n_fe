@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 const DEFUALT_STYLES = { height: 0, width: 0 };
 
-
 function ElementSpacePlaceholder({
   elementId,
   className,

@@ -94,10 +94,8 @@ export function NotesForm({
           </p>
         </div>
 
-        
         <div className="h-px w-full bg-[#e6e6e6]" />
 
-        
         <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full">
           
           <div className="flex gap-4 w-full">
@@ -121,7 +119,6 @@ export function NotesForm({
               </div>
             </div>
 
-            
             <div className="w-[200px] flex flex-col gap-3">
               <label className="font-outfit font-medium text-[#a7a7a7] text-[16px] leading-normal flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -142,7 +139,6 @@ export function NotesForm({
             </div>
           </div>
 
-          
           <div className="flex flex-col gap-3 w-full">
             <label className="font-outfit font-medium text-[#a7a7a7] text-[16px] leading-normal">
               Note Content *
@@ -162,7 +158,6 @@ export function NotesForm({
             </div>
           </div>
 
-          
           <div className="flex items-center justify-end gap-4 pt-4">
             {onCancel && (
               <button

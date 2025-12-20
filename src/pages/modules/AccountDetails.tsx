@@ -25,8 +25,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
-import { useAccountContacts, useAccountDetail, useAccounts } from '@/hooks/useAccounts';
+import { useToast } from '@/hooks/shared';
+import { useAccountContacts, useAccountDetail, useAccounts } from '@/hooks/accounts';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import {
   AccountDetailResponse,
   ContactFormData,
@@ -73,6 +74,7 @@ const AccountDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { canEdit, canDelete } = useRolePermissions();
 
   const {
     deleteAccount,
@@ -237,7 +239,6 @@ const AccountDetails: React.FC = () => {
           </div>
         </div>
 
-        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -268,7 +269,6 @@ const AccountDetails: React.FC = () => {
           </div>
         </div>
 
-        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="mx-auto h-12 w-12 text-red-500 mb-4">
@@ -305,7 +305,6 @@ const AccountDetails: React.FC = () => {
           </div>
         </div>
 
-        
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -338,12 +337,14 @@ const AccountDetails: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Link to={`/module/accounts/${account?.custom_id || account.account_id}/edit`}>
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </Link>
+            {canEdit && (
+              <Link to={`/module/accounts/${account?.custom_id || account.account_id}/edit`}>
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              </Link>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
@@ -355,23 +356,26 @@ const AccountDetails: React.FC = () => {
                   <Activity className="h-4 w-4 mr-2" />
                   View Activity
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Users className="h-4 w-4 mr-2" />
-                  Manage Contacts
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-red-600"
-                  onClick={() => setShowDeleteDialog(true)}
-                >
-                  Delete Account
-                </DropdownMenuItem>
+                {canEdit && (
+                  <DropdownMenuItem>
+                    <Users className="h-4 w-4 mr-2" />
+                    Manage Contacts
+                  </DropdownMenuItem>
+                )}
+                {canDelete && (
+                  <DropdownMenuItem
+                    className="text-red-600"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    Delete Account
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
       </div>
 
-      
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
@@ -444,13 +448,11 @@ const AccountDetails: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
-                  
+
                 </div>
               </CardContent>
             </Card>
 
-            
             {(account.primary_contact || contactsResponse?.contacts) &&
               (account.primary_contact ||
                 (contactsResponse?.contacts && contactsResponse.contacts.length > 0)) && (
@@ -519,24 +521,24 @@ const AccountDetails: React.FC = () => {
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                if (account.primary_contact) {
-                                  handleEditContact(account.primary_contact);
-                                }
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            
-                          </div>
+                          {canEdit && (
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  if (account.primary_contact) {
+                                    handleEditContact(account.primary_contact);
+                                  }
+                                }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      
                       {contactsResponse?.contacts &&
                         contactsResponse.contacts.length > 0 &&
                         contactsResponse.contacts
@@ -586,90 +588,94 @@ const AccountDetails: React.FC = () => {
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    handleEditContact(contact);
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    handlePromoteContactToPrimary(contact.contact_id, contact.name);
-                                  }}
-                                  disabled={isPromotingContact}
-                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                  title="Promote to Primary Contact"
-                                >
-                                  {isPromotingContact ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                  ) : (
-                                    <Award className="h-4 w-4" />
+                              {canEdit && (
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      handleEditContact(contact);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  {canDelete && (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          handlePromoteContactToPrimary(contact.contact_id, contact.name);
+                                        }}
+                                        disabled={isPromotingContact}
+                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                        title="Promote to Primary Contact"
+                                      >
+                                        {isPromotingContact ? (
+                                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                        ) : (
+                                          <Award className="h-4 w-4" />
+                                        )}
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={async () => {
+                                          // Ensure we're not trying to delete the primary contact
+                                          if (
+                                            account.primary_contact &&
+                                            contact.contact_id === account.primary_contact.contact_id
+                                          ) {
+                                            toast({
+                                              title: 'Error',
+                                              description:
+                                                'Cannot delete the primary contact. Please assign a new primary contact first.',
+                                              variant: 'destructive',
+                                            });
+                                            return;
+                                          }
+
+                                          if (
+                                            confirm(
+                                              `Are you sure you want to delete contact "${contact.name}"?`
+                                            )
+                                          ) {
+                                            try {
+                                              await deleteContact({
+                                                accountId: id!,
+                                                contactId: contact.contact_id,
+                                              });
+
+                                              toast({
+                                                title: '✅ Contact Deleted',
+                                                description:
+                                                  'Secondary contact has been deleted successfully.',
+                                              });
+                                            } catch (e: any) {
+                                              toast({
+                                                title: 'Error',
+                                                description:
+                                                  error.response?.data?.detail?.message ||
+                                                  'delete failed. Please try again.',
+                                                variant: 'destructive',
+                                              });
+                                            }
+                                          }
+                                        }}
+                                        disabled={isDeletingContact}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </>
                                   )}
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={async () => {
-                                    // Ensure we're not trying to delete the primary contact
-                                    if (
-                                      account.primary_contact &&
-                                      contact.contact_id === account.primary_contact.contact_id
-                                    ) {
-                                      toast({
-                                        title: 'Error',
-                                        description:
-                                          'Cannot delete the primary contact. Please assign a new primary contact first.',
-                                        variant: 'destructive',
-                                      });
-                                      return;
-                                    }
-
-                                    if (
-                                      confirm(
-                                        `Are you sure you want to delete contact "${contact.name}"?`
-                                      )
-                                    ) {
-                                      try {
-                                        await deleteContact({
-                                          accountId: id!,
-                                          contactId: contact.contact_id,
-                                        });
-
-                                        toast({
-                                          title: '✅ Contact Deleted',
-                                          description:
-                                            'Secondary contact has been deleted successfully.',
-                                        });
-                                      } catch (e: any) {
-                                        toast({
-                                          title: 'Error',
-                                          description:
-                                            error.response?.data?.detail?.message ||
-                                            'delete failed. Please try again.',
-                                          variant: 'destructive',
-                                        });
-                                      }
-                                    }
-                                  }}
-                                  disabled={isDeletingContact}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
+                                </div>
+                              )}
                           ))}
                     </div>
                   </CardContent>
                 </Card>
               )}
 
-            
             {account.notes && (
               <Card>
                 <CardHeader>
@@ -682,7 +688,6 @@ const AccountDetails: React.FC = () => {
             )}
           </div>
 
-          
           <div className="space-y-6">
             
             <Card>
@@ -729,7 +734,6 @@ const AccountDetails: React.FC = () => {
               </CardContent>
             </Card>
 
-            
             <Card>
               <CardHeader>
                 <CardTitle>Account Timeline</CardTitle>
@@ -750,8 +754,7 @@ const AccountDetails: React.FC = () => {
                     </div>
                   </div>
                 )}
-                
-                
+
                 {(() => {
                   // Use approval status from backend account data
                   const approvalStatus = (account as any).approval_status || 'pending';
@@ -811,7 +814,6 @@ const AccountDetails: React.FC = () => {
         </div>
       </div>
 
-      
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -841,7 +843,6 @@ const AccountDetails: React.FC = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      
       <Dialog open={showEditContactModal} onOpenChange={setShowEditContactModal}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

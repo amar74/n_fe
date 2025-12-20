@@ -97,13 +97,10 @@ function AccountDetailsPage() {
           </div>
         </div>
 
-        
         <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-        
         <AccountStatsCards stats={statsCards} />
 
-        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-7 w-full">
           
           <div className="lg:col-span-2 space-y-7">
@@ -117,14 +114,12 @@ function AccountDetailsPage() {
               onCancel={handleEditToggle}
             />
 
-            
             <AIInsightsPanel 
               accountId={account.account_id} 
               accountName={account.client_name}
             />
           </div>
 
-          
           <div className="space-y-7">
             <AIHealthScoreWidget 
               accountId={account.account_id}

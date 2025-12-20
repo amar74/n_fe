@@ -11,7 +11,7 @@ import {
   Brain,
   BarChart3
 } from 'lucide-react';
-import { useFinanceDashboardSummary, useFinanceBookings, useFinanceOverhead, useFinanceRevenue } from '@/hooks/useFinance';
+import { useFinanceDashboardSummary, useFinanceBookings, useFinanceOverhead, useFinanceRevenue } from '@/hooks/finance';
 
 type FinanceTabProps = {
   accountId: string;
@@ -159,7 +159,6 @@ export function FinanceTab({ accountId, accountName }: FinanceTabProps) {
 
   return (
     <div className="w-full space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-slate-900">Financial Overview</h2>
@@ -169,7 +168,6 @@ export function FinanceTab({ accountId, accountName }: FinanceTabProps) {
         </div>
       </div>
 
-      {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {accountMetrics.map((metric) => (
           <div
@@ -196,7 +194,6 @@ export function FinanceTab({ accountId, accountName }: FinanceTabProps) {
         ))}
       </div>
 
-      {/* Bookings Progress */}
       {accountFinancialData?.bookings?.records && accountFinancialData.bookings.records.length > 0 && (
         <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.3)]">
           <div className="flex items-center justify-between mb-4">
@@ -249,7 +246,6 @@ export function FinanceTab({ accountId, accountName }: FinanceTabProps) {
         </div>
       )}
 
-      {/* Financial Summary */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.3)]">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">Revenue Summary</h3>
@@ -334,7 +330,6 @@ export function FinanceTab({ accountId, accountName }: FinanceTabProps) {
         </div>
       </div>
 
-      {/* Empty State */}
       {(!accountFinancialData?.bookings?.records || accountFinancialData.bookings.records.length === 0) && (
         <div className="rounded-2xl border border-slate-100 bg-white p-12 shadow-[0_24px_48px_-24px_rgba(15,23,42,0.3)]">
           <div className="flex flex-col items-center justify-center text-center">

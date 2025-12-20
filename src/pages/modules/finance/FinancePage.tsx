@@ -17,7 +17,7 @@ import {
   TrendingDown,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { useFinanceDashboardSummary, useFinanceOverhead, useFinanceRevenue, useFinanceBookings, useFinanceTrends, useFinanceAIAnalysis } from '@/hooks/useFinance';
+import { useFinanceDashboardSummary, useFinanceOverhead, useFinanceRevenue, useFinanceBookings, useFinanceTrends, useFinanceAIAnalysis } from '@/hooks/finance';
 import {
   Dialog,
   DialogContent,
@@ -926,7 +926,6 @@ function FinancePage() {
           })}
         </div>
 
-        {/* Loading State */}
         {(isLoadingSummary || isLoadingOverhead || isLoadingBookings) && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-[#161950]" />
@@ -934,7 +933,6 @@ function FinancePage() {
           </div>
         )}
 
-        {/* Error State */}
         {summaryError && (
           <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
             <p className="text-sm font-semibold text-rose-600">Failed to load finance dashboard data</p>
@@ -1744,7 +1742,6 @@ function FinancePage() {
         </section>
       </div>
 
-      {/* Comprehensive AI Analysis Modal */}
       <Dialog open={isAnalysisModalOpen} onOpenChange={setIsAnalysisModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto border-[#E5E7EB]">
           <DialogHeader>
@@ -1765,7 +1762,6 @@ function FinancePage() {
             </div>
           ) : comprehensiveAnalysis ? (
             <div className="space-y-6 mt-4">
-              {/* Financial Health Score */}
               <div className="rounded-xl border border-[#E5E7EB] bg-gradient-to-br from-[#161950] to-[#0f1440] p-6 text-white">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Financial Health Score</h3>
@@ -1782,7 +1778,6 @@ function FinancePage() {
                 </div>
               </div>
 
-              {/* Executive Summary */}
               <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-[#161950] mb-3 flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
@@ -1793,7 +1788,6 @@ function FinancePage() {
                 </p>
               </div>
 
-              {/* Key Insights */}
               <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-[#161950] mb-4 flex items-center gap-2">
                   <Lightbulb className="h-5 w-5" />
@@ -1809,7 +1803,6 @@ function FinancePage() {
                 </ul>
               </div>
 
-              {/* Recommendations */}
               <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-[#161950] mb-4 flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
@@ -1827,7 +1820,6 @@ function FinancePage() {
                 </ul>
               </div>
 
-              {/* Risk Factors */}
               {comprehensiveAnalysis.risk_factors && comprehensiveAnalysis.risk_factors.length > 0 && (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
                   <h3 className="text-lg font-semibold text-amber-800 mb-4 flex items-center gap-2">
@@ -1845,7 +1837,6 @@ function FinancePage() {
                 </div>
               )}
 
-              {/* Opportunities */}
               {comprehensiveAnalysis.opportunities && comprehensiveAnalysis.opportunities.length > 0 && (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
                   <h3 className="text-lg font-semibold text-emerald-800 mb-4 flex items-center gap-2">
@@ -1863,7 +1854,6 @@ function FinancePage() {
                 </div>
               )}
 
-              {/* Detailed Analysis Sections */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {comprehensiveAnalysis.trends_analysis && (
                   <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
@@ -1902,7 +1892,6 @@ function FinancePage() {
                 )}
               </div>
 
-              {/* Detailed Breakdown */}
               {comprehensiveAnalysis.detailed_breakdown && Object.keys(comprehensiveAnalysis.detailed_breakdown).length > 0 && (
                 <div className="rounded-xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
                   <h3 className="text-lg font-semibold text-[#161950] mb-4">Detailed Breakdown</h3>

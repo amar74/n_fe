@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNotes } from '@/hooks/useNotes';
+import { useNotes } from '@/hooks/notes';
 import { NoteCreateFormData, NoteCreateFormSchema } from '@/types/notes';
 import { Button } from '@/components/ui/button';
 import {
@@ -74,7 +74,6 @@ export default function NoteCreatePage() {
         </Button>
       </div>
 
-      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -110,7 +109,6 @@ export default function NoteCreatePage() {
                 )}
               />
 
-              
               <FormField
                 control={form.control}
                 name="meeting_datetime"
@@ -136,7 +134,6 @@ export default function NoteCreatePage() {
                 )}
               />
 
-              
               <FormField
                 control={form.control}
                 name="meeting_notes"
@@ -168,7 +165,6 @@ Be as detailed as necessary for future reference.`}
                 )}
               />
 
-              
               <div className="flex items-center justify-end gap-4 pt-6">
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Cancel
@@ -192,7 +188,6 @@ Be as detailed as necessary for future reference.`}
         </CardContent>
       </Card>
 
-      
       <Card className="bg-muted/50">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">

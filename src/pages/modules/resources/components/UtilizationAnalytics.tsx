@@ -52,8 +52,8 @@ export function UtilizationAnalytics({ employees }: UtilizationAnalyticsProps) {
       label: 'Active Employees',
       value: `${activeEmployees}`,
       icon: Users,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
+      color: 'text-[#161950]',
+      bgColor: 'bg-[#161950]/10',
       trend: 'up',
     },
   ];

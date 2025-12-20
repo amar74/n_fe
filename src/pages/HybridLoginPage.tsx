@@ -2,13 +2,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useHybridAuth } from '@/hooks/useHybridAuth';
+import { useHybridAuth } from '@/hooks/auth';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import LogoIcon from '@assets/Asset 2 1.svg';
 import VectorGrid1 from '@assets/Vector.svg';
 import VectorGrid2 from '@assets/Vector-1.svg';
@@ -92,7 +92,6 @@ export default function HybridLoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Login Form */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
@@ -193,7 +192,6 @@ export default function HybridLoginPage() {
         </div>
       </div>
 
-      {/* Right side - Branding */}
       <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center bg-gradient-to-br from-blue-900 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -232,13 +230,13 @@ export default function HybridLoginPage() {
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useHybridAuth } from '@/hooks/useHybridAuth';
+import { useHybridAuth } from '@/hooks/auth';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import LogoIcon from '@assets/Asset 2 1.svg';
 import VectorGrid1 from '@assets/Vector.svg';
 import VectorGrid2 from '@assets/Vector-1.svg';
@@ -322,7 +320,6 @@ export default function HybridLoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Login Form */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
@@ -423,7 +420,6 @@ export default function HybridLoginPage() {
         </div>
       </div>
 
-      {/* Right side - Branding */}
       <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-center bg-gradient-to-br from-blue-900 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0">
           <img

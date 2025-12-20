@@ -9,7 +9,7 @@ import {
   useDeleteOpportunityStakeholder,
   useOpportunityDrivers,
   useCreateOpportunityDriver 
-} from '@/hooks/useOpportunityTabs';
+} from '@/hooks/opportunities';
 import { Stakeholder, Driver } from '@/types/opportunityTabs';
 import {
   Dialog,
@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 
 const ClientStakeholderTab = memo(({ opportunity }: TabProps) => {
   const { data: stakeholders = [], isLoading: stakeholdersLoading } = useOpportunityStakeholders(opportunity?.id || '');

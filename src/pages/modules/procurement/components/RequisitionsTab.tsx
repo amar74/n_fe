@@ -18,8 +18,8 @@ import {
 import { PurchaseRequisition } from '../types';
 import { getStatusBadge } from '../utils';
 import { CreatePurchaseRequestModal, ViewRequisitionModal, ApproveRequisitionModal } from '../modals';
-import { useProcurement } from '@/hooks/useProcurement';
-import { useAuth } from '@/hooks/useAuth';
+import { useProcurement } from '@/hooks/procurement';
+import { useAuth } from '@/hooks/auth';
 import {
   AlertDialog,
   AlertDialogAction,

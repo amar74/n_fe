@@ -17,10 +17,10 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { useProcurementVendors } from '@/hooks/useProcurementVendors';
-import { useProcurement } from '@/hooks/useProcurement';
-import { useAuth } from '@/hooks/useAuth';
-import type { ProcurementVendorListResponse } from '@/hooks/useProcurementVendors';
+import { useProcurementVendors } from '@/hooks/procurement';
+import { useProcurement } from '@/hooks/procurement';
+import { useAuth } from '@/hooks/auth';
+import type { ProcurementVendorListResponse } from '@/hooks/procurement';
 import {
   DashboardTab,
   RequisitionsTab,

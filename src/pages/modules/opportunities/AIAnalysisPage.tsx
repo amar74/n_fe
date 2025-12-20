@@ -9,7 +9,7 @@ import {
   KeyAnalysisSummaryCard,
   OpportunitiesAnalyticsChart
 } from './components';
-import { useOpportunitiesAnalysis } from '../../../hooks/useOpportunitiesAnalysis';
+import { useOpportunitiesAnalysis } from '@/hooks/opportunities';
 import { opportunitiesApi } from '../../../services/api/opportunitiesApi';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
@@ -179,16 +179,14 @@ function AIAnalysisPage() {
                 </>
               )}
             </div>
-            
-            
+
             <h1 className="text-[#111827] text-[28px] font-bold font-['Inter'] tracking-tight">
               AI Opportunity Analysis
             </h1>
             <p className="text-[#6B7280] text-lg font-['Inter']">
               Comprehensive AI-powered analysis and insights for your opportunities
             </p>
-            
-            
+
             {opportunities.length > 1 && (
               <div className="flex items-center gap-4 mt-4">
                 <div className="flex items-center gap-2">
@@ -219,7 +217,6 @@ function AIAnalysisPage() {
             )}
           </div>
 
-          
           <div className="flex items-center gap-3">
             {opportunityId && (
               <button 
@@ -251,7 +248,6 @@ function AIAnalysisPage() {
           </div>
         </div>
 
-        
         <div className="mx-8 my-6 flex flex-col gap-8">
           
           {isLoading && (
@@ -263,7 +259,6 @@ function AIAnalysisPage() {
             </div>
           )}
 
-          
           {isError && (
             <div className="bg-white rounded-2xl border border-red-200 shadow-lg p-8">
               <div className="flex items-center gap-4">
@@ -280,7 +275,6 @@ function AIAnalysisPage() {
             </div>
           )}
 
-          
           {!isLoading && !isError && (
             <div className="space-y-8">
               
@@ -302,8 +296,7 @@ function AIAnalysisPage() {
                   </Link>
                 </div>
               )}
-              
-              
+
               {opportunities.length > 0 && opportunityId && !currentOpportunity && (
                 <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg p-8 text-center">
                   <div className="w-16 h-16 bg-[#FEF3C7] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -322,8 +315,7 @@ function AIAnalysisPage() {
                   </Link>
                 </div>
               )}
-              
-              
+
               {opportunities.length > 0 && currentOpportunity && (
                 <>
               
@@ -446,12 +438,10 @@ function AIAnalysisPage() {
                 </div>
               )}
 
-              
               <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg overflow-hidden">
                 <OpportunityOverviewCard data={opportunityData} />
               </div>
 
-              
               <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg overflow-hidden">
                 <AnalysisTabsCard 
                   analytics={analytics}
@@ -460,7 +450,6 @@ function AIAnalysisPage() {
                 />
               </div>
 
-              
               <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg overflow-hidden">
                 <KeyAnalysisSummaryCard 
                   analytics={analytics}
@@ -468,7 +457,6 @@ function AIAnalysisPage() {
                 />
               </div>
 
-              
               <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg overflow-hidden">
                 <OpportunitiesAnalyticsChart 
                   analytics={analytics}

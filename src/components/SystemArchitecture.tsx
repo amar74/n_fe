@@ -66,7 +66,6 @@ export default function SystemArchitecture() {
           </p>
         </div>
 
-        
         <div className="space-y-8">
           
           <div className="text-center">
@@ -92,12 +91,10 @@ export default function SystemArchitecture() {
             </div>
           </div>
 
-          
           <div className="flex justify-center">
             <ConnectionLine direction="vertical" className="h-8" />
           </div>
 
-          
           <div className="text-center">
             <Badge
               variant="outline"
@@ -122,12 +119,10 @@ export default function SystemArchitecture() {
             </div>
           </div>
 
-          
           <div className="flex justify-center">
             <ConnectionLine direction="vertical" className="h-8" />
           </div>
 
-          
           <div className="text-center">
             <Badge
               variant="outline"
@@ -169,12 +164,10 @@ export default function SystemArchitecture() {
             </div>
           </div>
 
-          
           <div className="flex justify-center">
             <ConnectionLine direction="vertical" className="h-8" />
           </div>
 
-          
           <div className="text-center">
             <Badge
               variant="outline"
@@ -207,7 +200,6 @@ export default function SystemArchitecture() {
             </div>
           </div>
 
-          
           <div className="text-center mt-12">
             <Badge
               variant="outline"
@@ -233,7 +225,6 @@ export default function SystemArchitecture() {
           </div>
         </div>
 
-        
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <h3 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">

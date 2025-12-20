@@ -219,7 +219,6 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
         </div>
       </div>
 
-      
       <div className="px-8 py-8 bg-gradient-to-b from-white to-[#FAFBFC] border-b border-[#E5E7EB]">
         <div className="mb-6">
           <h2 className="text-[#0F172A] text-xl font-bold font-['Inter'] tracking-tight mb-2">
@@ -277,7 +276,6 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
         </div>
       </div>
 
-      
       <div className="px-8 py-6 border-b border-[#E5E7EB] bg-gradient-to-r from-[#FAFBFC] to-[#F8FAFC]">
         <div className="mb-4">
           <h3 className="text-[#0F172A] text-lg font-bold font-['Inter'] tracking-tight">
@@ -314,7 +312,6 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
         </div>
       </div>
 
-      
       <div className="p-8 bg-gradient-to-b from-white to-[#FAFBFC]">
         {activeTab === 'overview' && (
           <div className="space-y-10">
@@ -429,7 +426,6 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
                 </div>
               </div>
 
-              
               <div className="bg-white rounded-2xl p-8 border border-[#E2E8F0] hover:shadow-xl transition-all duration-300 shadow-sm">
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-14 h-14 bg-gradient-to-br from-[#10B981] to-[#059669] rounded-2xl flex items-center justify-center shadow-lg">
@@ -469,7 +465,6 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
               </div>
             </div>
 
-            
             {pipelineData.length > 0 && (
               <div className="bg-white rounded-2xl p-8 border border-[#E2E8F0] hover:shadow-xl transition-all duration-300 shadow-sm">
                 <div className="flex items-center gap-4 mb-8">
@@ -566,7 +561,6 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
                 </div>
               </div>
 
-              
               <div className="bg-[#F9FAFB] rounded-xl p-6 border border-[#E5E7EB]">
                 <h4 className="text-[#111827] text-lg font-bold mb-6 flex items-center gap-2">
                   <Target className="w-5 h-5 text-[#161950]" />
@@ -641,7 +635,6 @@ export const OpportunitiesAnalyticsChart = memo<OpportunitiesAnalyticsChartProps
           </div>
         )}
 
-        
         {enhancedStageData.length === 0 && sectorData.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-24 h-24 bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] rounded-3xl flex items-center justify-center mb-8 shadow-lg">

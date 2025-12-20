@@ -313,7 +313,6 @@ export default function SurveyResponsesPage() {
   return (
     <div className="w-full h-full bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
             <Button
@@ -353,7 +352,6 @@ export default function SurveyResponsesPage() {
           </div>
         </div>
 
-        {/* Survey Link Section */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -397,7 +395,6 @@ export default function SurveyResponsesPage() {
           </div>
         </div>
 
-        {/* Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="border border-gray-200 bg-white">
             <CardContent className="p-6">
@@ -456,7 +453,6 @@ export default function SurveyResponsesPage() {
           </Card>
         </div>
 
-        {/* Search and Filter */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
@@ -483,7 +479,6 @@ export default function SurveyResponsesPage() {
           </div>
         </div>
 
-        {/* Responses Section */}
         {filteredResponses.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
             <div className="mx-auto w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@hooks/useAuth';
-import { useGlobalLoading } from '@hooks/useGlobalLoading';
+import { useAuth } from '@/hooks/auth';
+import { useGlobalLoading } from '@/hooks/shared';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useStaffPlanning } from '@/hooks/useStaffPlanning';
+import { useStaffPlanning } from '@/hooks/resources';
 import { extractErrorMessage } from '@/utils/errorUtils';
 import { 
   Plus, 
@@ -312,10 +312,8 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Enhanced Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
-            {/* Breadcrumb */}
             <div className="flex items-center gap-2">
               <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900">
                 Dashboard
@@ -336,7 +334,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-3">
             <button 
               onClick={handleExportReport}
@@ -361,7 +358,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
           </div>
         </div>
 
-        {/* Enhanced Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {stats.map((stat, index) => (
             <div
@@ -397,7 +393,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
           ))}
         </div>
 
-        {/* Quick Insights */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {quickInsights.map((insight, index) => (
             <div
@@ -417,9 +412,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
           ))}
         </div>
 
-        {/* Plans Section */}
         <div className="bg-white rounded-lg border border-gray-300 shadow-lg">
-          {/* Enhanced Header */}
           <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -436,7 +429,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
               </div>
               
               <div className="flex items-center gap-3">
-                {/* Search */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -448,7 +440,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                   />
                 </div>
 
-                {/* Filter */}
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
@@ -461,7 +452,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                   <option value="archived">Archived</option>
                 </select>
                 
-                {/* Refresh Button */}
                 <button
                   onClick={() => refetch()}
                   disabled={isLoading}
@@ -471,7 +461,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                   <RefreshCw className={`w-4 h-4 text-gray-600 ${isLoading ? 'animate-spin' : ''}`} />
                 </button>
 
-                {/* View Toggle */}
                 <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
                   <button
                     onClick={() => setViewMode('grid')}
@@ -498,7 +487,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
             </div>
           </div>
 
-          {/* Plans Content */}
           <div className="p-6">
             {apiError ? (
               <div className="text-center py-16">
@@ -548,7 +536,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                       key={plan.id}
                       className="bg-white rounded-lg border border-gray-300 hover:shadow-xl hover:scale-[1.02] transition-all group"
                     >
-                      {/* Card Header */}
                       <div className="p-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
@@ -571,9 +558,7 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                         </div>
                       </div>
 
-                      {/* Card Body */}
                       <div className="p-5">
-                        {/* Key Metrics */}
                         <div className="grid grid-cols-2 gap-4 mb-4">
                           <div className="flex items-center gap-2">
                             <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -596,7 +581,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                           </div>
                         </div>
 
-                        {/* Total Cost */}
                         <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-gray-600 font-semibold">Total Budget</span>
@@ -606,7 +590,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                           </div>
                         </div>
 
-                        {/* Departments */}
                         {plan.departments && (
                           <div className="mb-4">
                             <p className="text-xs text-gray-500 mb-2">Departments</p>
@@ -625,12 +608,10 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                           </div>
                         )}
 
-                        {/* Meta Info */}
                         <div className="flex items-center gap-3 text-xs text-gray-500 mb-4">
                           <span>Start: {new Date(plan.startDate).toLocaleDateString()}</span>
                         </div>
 
-                        {/* Action Buttons */}
                         <div className="flex items-center gap-2">
                           <Link 
                             to={`/staffing-plan/${plan.id}`}
@@ -680,7 +661,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                       className="bg-white rounded-lg border border-gray-300 hover:shadow-lg transition-all p-5"
                     >
                       <div className="flex items-center gap-6">
-                        {/* Project Info */}
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-base font-bold text-[#1A1A1A]">
@@ -716,7 +696,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
                           </div>
                         </div>
                         
-                        {/* Actions */}
                         <div className="flex items-center gap-2">
                           <Link 
                             to={`/staffing-plan/${plan.id}`}
@@ -749,7 +728,6 @@ ${staffPlans.length < 5 ? '• Create more plans to better track resource utiliz
           </div>
         </div>
 
-        {/* AI Recommendations Section */}
         <div className="rounded-lg shadow-xl border p-6" style={{ backgroundColor: '#161950', borderColor: '#161950' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

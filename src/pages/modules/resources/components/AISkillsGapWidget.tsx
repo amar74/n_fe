@@ -1,5 +1,5 @@
 import { TrendingUp, AlertTriangle, Users, Briefcase, Sparkles, Target, CheckCircle2, Loader2 } from 'lucide-react';
-import { useEmployeeAnalytics } from '@/hooks/useEmployees';
+import { useEmployeeAnalytics } from '@/hooks/resources';
 
 type SkillGap = {
   skill: string;
@@ -184,7 +184,7 @@ export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGa
               <p className="text-sm text-gray-600 mt-1">
                 {skillsGap?.skill_gaps ? (
                   <>
-                    <span className="font-semibold text-purple-600">AI-Powered</span> - Skills suggested based on active opportunities/projects
+                    <span className="font-semibold text-[#161950]">AI-Powered</span> - Skills suggested based on active opportunities/projects
                   </>
                 ) : (
                   'Analyzing opportunities to suggest required skills...'
@@ -199,7 +199,6 @@ export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGa
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-gray-200">
         <div className="p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-xl border border-red-200">
           <div className="flex items-center justify-between mb-2">
@@ -237,12 +236,11 @@ export function AISkillsGapWidget({ totalEmployees, employees = [] }: AISkillsGa
         </div>
       </div>
 
-      {/* Skills Breakdown */}
       <div className="p-6 space-y-4">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-sm font-bold text-gray-900">AI-Suggested Skills (Based on Active Projects)</h4>
           {skillsGap?.skill_gaps && (
-            <span className="text-xs text-purple-600 font-semibold bg-purple-50 px-2 py-1 rounded">
+            <span className="text-xs text-[#161950] font-semibold bg-[#161950]/10 px-2 py-1 rounded border border-[#161950]/20">
               {skillsGap.skill_gaps.length} skills identified
             </span>
           )}

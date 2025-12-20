@@ -65,7 +65,6 @@ export function AccountCard({ account, onClick }: AccountCardProps) {
               </div>
             </div>
 
-            
             <div className="flex flex-wrap gap-3 items-center w-full">
               
               <div className={`${colors.bg} flex gap-2 items-center px-3 py-1 rounded-full border-[1px] border-[#5f936f] relative`}>
@@ -82,7 +81,6 @@ export function AccountCard({ account, onClick }: AccountCardProps) {
                 </div>
               </div>
 
-              
               <div className={`${colors.bg} flex gap-2 items-center px-3 py-1 border-[1px] border-[#5f936f] rounded-full relative`}>
                 <div aria-hidden="true" className={`absolute ${colors.border} border-solid inset-0 pointer-events-none rounded-full`} />
                 <span className={`font-['Inter:Semi_Bold',_sans-serif] font-semibold ${colors.text} text-[14px] whitespace-nowrap capitalize`}>
@@ -106,7 +104,6 @@ export function AccountCard({ account, onClick }: AccountCardProps) {
             )}
           </div>
 
-          
           <div className="flex flex-wrap items-center gap-3 w-full">
             {account.primary_contact_name && (
               <>
@@ -140,7 +137,6 @@ export function AccountCard({ account, onClick }: AccountCardProps) {
             </div>
           </div>
 
-          
           <div className="flex flex-wrap gap-3 items-center w-full">
             <span className={`font-['Inter:Semi_Bold',_sans-serif] font-semibold ${colors.text} text-[16px] whitespace-nowrap capitalize`}>
               {account.client_type.replace('_', ' ')}
@@ -156,12 +152,10 @@ export function AccountCard({ account, onClick }: AccountCardProps) {
           </div>
         </div>
 
-        
         <div className="flex flex-col gap-5 w-full mt-auto">
           
           <div className="w-full border-t border-gray-200" />
 
-          
           <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center justify-between w-full">
               <span className={`font-['Inter:Semi_Bold',_sans-serif] font-semibold ${colors.text} text-[28px] whitespace-nowrap`}>
@@ -183,7 +177,6 @@ export function AccountCard({ account, onClick }: AccountCardProps) {
         </div>
       </div>
 
-      
       <div 
         aria-hidden="true" 
         className="absolute border-[0px_0px_4px] border-solid bottom-[-4px] left-0 pointer-events-none right-0 rounded-[28px] top-0"

@@ -3,7 +3,7 @@
  * Displays and manages team members assigned to an account
  */
 import React, { useState } from 'react';
-import { useAccountTeam, type AccountTeamMember } from '@/hooks/useAccountTeam';
+import { useAccountTeam, type AccountTeamMember } from '@/hooks/accounts';
 import { Button } from '@/components/ui/button';
 import { Plus, Mail, Phone, MapPin, Briefcase, DollarSign, X, LayoutGrid, List } from 'lucide-react';
 import { AddTeamMemberModal } from './components/AddTeamMemberModal';
@@ -46,7 +46,6 @@ export function TeamTab({ accountId }: TeamTabProps) {
 
   return (
     <div className="w-full">
-      {/* Header with improved styling */}
       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Team Members</h2>
@@ -56,7 +55,6 @@ export function TeamTab({ accountId }: TeamTabProps) {
         </div>
         
         <div className="flex items-center gap-3">
-          {/* View Toggle */}
           <div className="flex items-center bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode('grid')}
@@ -82,7 +80,6 @@ export function TeamTab({ accountId }: TeamTabProps) {
             </button>
           </div>
           
-          {/* Add Team Member Button */}
           <Button
             onClick={() => setIsAddModalOpen(true)}
             className="bg-indigo-950 hover:bg-indigo-900 text-white"
@@ -93,7 +90,6 @@ export function TeamTab({ accountId }: TeamTabProps) {
         </div>
       </div>
 
-      {/* Team Members Display */}
       {teamMembers.length === 0 ? (
         <div className="bg-gradient-to-br from-gray-50 to-white border-2 border-dashed border-gray-300 rounded-2xl p-16 text-center">
           <div className="flex flex-col items-center justify-center">
@@ -137,7 +133,6 @@ export function TeamTab({ accountId }: TeamTabProps) {
         </div>
       )}
 
-      {/* Add Team Member Modal */}
       <AddTeamMemberModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
@@ -162,7 +157,6 @@ function TeamMemberCard({ member, onRemove, isRemoving }: TeamMemberCardProps) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl hover:border-gray-300 transition-all duration-200 relative group">
-      {/* Remove Button */}
       <button
         onClick={onRemove}
         disabled={isRemoving}
@@ -172,7 +166,6 @@ function TeamMemberCard({ member, onRemove, isRemoving }: TeamMemberCardProps) {
         <X className="w-4 h-4" />
       </button>
 
-      {/* Header */}
       <div className="flex items-start space-x-4 mb-5">
         <div className="w-14 h-14 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-indigo-100">
           <span className="text-lg font-bold text-indigo-900">
@@ -189,7 +182,6 @@ function TeamMemberCard({ member, onRemove, isRemoving }: TeamMemberCardProps) {
         </div>
       </div>
 
-      {/* Role in Account */}
       {member.role_in_account && (
         <div className="mb-5 pb-4 border-b border-gray-100">
           <div className="flex items-center space-x-2 bg-indigo-50 px-3 py-2 rounded-lg">
@@ -200,7 +192,6 @@ function TeamMemberCard({ member, onRemove, isRemoving }: TeamMemberCardProps) {
         </div>
       )}
 
-      {/* Employee Details */}
       <div className="space-y-3.5">
         {employee.job_title && (
           <div className="flex items-center space-x-2 text-sm">
@@ -285,7 +276,6 @@ function TeamMemberCard({ member, onRemove, isRemoving }: TeamMemberCardProps) {
         )}
       </div>
 
-      {/* Status Badge */}
       <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
         <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold ${
           employee.status === 'active'
@@ -319,14 +309,12 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg hover:border-gray-300 transition-all duration-200 relative group">
       <div className="flex items-center gap-4">
-        {/* Avatar */}
         <div className="w-12 h-12 bg-gradient-to-br from-indigo-100 to-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-indigo-100">
           <span className="text-base font-bold text-indigo-900">
             {employee.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
           </span>
         </div>
 
-        {/* Name & Employee Number */}
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 truncate">
             {employee.name}
@@ -336,7 +324,6 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
           </p>
         </div>
 
-        {/* Role in Account */}
         {member.role_in_account && (
           <div className="hidden md:flex items-center px-3 py-1.5 bg-indigo-50 rounded-lg border border-indigo-100">
             <Briefcase className="w-4 h-4 text-indigo-900 mr-1.5" />
@@ -344,7 +331,6 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
           </div>
         )}
 
-        {/* Job Title */}
         {employee.job_title && (
           <div className="hidden lg:flex items-center text-sm text-gray-700 min-w-[150px]">
             <Briefcase className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
@@ -352,7 +338,6 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
           </div>
         )}
 
-        {/* Contact Info */}
         <div className="hidden xl:flex items-center gap-4">
           {employee.email && (
             <a
@@ -375,7 +360,6 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
           )}
         </div>
 
-        {/* Location */}
         {employee.location && (
           <div className="hidden lg:flex items-center text-sm text-gray-600 min-w-[120px]">
             <MapPin className="w-4 h-4 mr-1.5 flex-shrink-0" />
@@ -383,7 +367,6 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
           </div>
         )}
 
-        {/* Bill Rate */}
         {employee.bill_rate && (
           <div className="hidden xl:flex items-center text-sm font-medium text-green-700 min-w-[80px]">
             <DollarSign className="w-4 h-4 mr-0.5" />
@@ -391,7 +374,6 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
           </div>
         )}
 
-        {/* Status Badge */}
         <span className={`hidden md:inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold ${
           employee.status === 'active'
             ? 'bg-green-50 text-green-800 border border-green-200'
@@ -404,7 +386,6 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
           {employee.status.charAt(0).toUpperCase() + employee.status.slice(1)}
         </span>
 
-        {/* Remove Button */}
         <button
           onClick={onRemove}
           disabled={isRemoving}
@@ -415,7 +396,6 @@ function TeamMemberListItem({ member, onRemove, isRemoving }: TeamMemberListItem
         </button>
       </div>
 
-      {/* Skills (Below on mobile) */}
       {employee.skills && employee.skills.length > 0 && (
         <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-1.5">
           {employee.skills.slice(0, 4).map((skill, index) => (

@@ -53,10 +53,8 @@ export function ApprovalModal({ isOpen, onClose, onApprove, accountName, isLoadi
             </button>
           </div>
 
-          
           <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
 
-          
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             
             <div className="flex flex-col gap-2">
@@ -72,7 +70,6 @@ export function ApprovalModal({ isOpen, onClose, onApprove, accountName, isLoadi
               />
             </div>
 
-            
             <div className="flex justify-end items-center gap-3 pt-2">
               <button
                 type="button"

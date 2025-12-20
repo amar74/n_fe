@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, TrendingUp, AlertTriangle, Target, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
-import { useAccountHealth, HealthInsights } from '@/hooks/useAccountHealth';
+import { useAccountHealth, HealthInsights } from '@/hooks/accounts';
 
 interface AIInsightsPanelProps {
   accountId: string;
@@ -57,7 +57,6 @@ export function AIInsightsPanel({ accountId, accountName }: AIInsightsPanelProps
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-200 p-6">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
@@ -69,13 +68,11 @@ export function AIInsightsPanel({ accountId, accountName }: AIInsightsPanelProps
           </div>
         </div>
 
-        {/* Priority Badge */}
         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 ${getPriorityColor(insights.priority_score)}`}>
           <span className="font-semibold">Priority Score: {insights.priority_score}/10</span>
         </div>
       </div>
 
-      {/* Summary */}
       <div className="p-6 border-b border-gray-200 bg-gray-50">
         <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
           <Target className="w-4 h-4" />
@@ -84,9 +81,7 @@ export function AIInsightsPanel({ accountId, accountName }: AIInsightsPanelProps
         <p className="text-gray-700 leading-relaxed">{insights.health_summary}</p>
       </div>
 
-      {/* Sections Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-        {/* Strengths */}
         {insights.strengths.length > 0 && (
           <div className="space-y-3">
             <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -104,7 +99,6 @@ export function AIInsightsPanel({ accountId, accountName }: AIInsightsPanelProps
           </div>
         )}
 
-        {/* Weaknesses */}
         {insights.weaknesses.length > 0 && (
           <div className="space-y-3">
             <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -122,7 +116,6 @@ export function AIInsightsPanel({ accountId, accountName }: AIInsightsPanelProps
           </div>
         )}
 
-        {/* Opportunities */}
         {insights.opportunities.length > 0 && (
           <div className="space-y-3">
             <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -140,7 +133,6 @@ export function AIInsightsPanel({ accountId, accountName }: AIInsightsPanelProps
           </div>
         )}
 
-        {/* Risks */}
         {insights.risks.length > 0 && (
           <div className="space-y-3">
             <h4 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -159,7 +151,6 @@ export function AIInsightsPanel({ accountId, accountName }: AIInsightsPanelProps
         )}
       </div>
 
-      {/* Action Items */}
       {insights.action_items.length > 0 && (
         <div className="p-6 bg-indigo-50 border-t border-indigo-100">
           <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -182,7 +173,6 @@ export function AIInsightsPanel({ accountId, accountName }: AIInsightsPanelProps
         </div>
       )}
 
-      {/* Next Review Date */}
       {insights.next_review_date && (
         <div className="p-4 bg-gray-50 border-t border-gray-200 text-center">
           <p className="text-sm text-gray-600">

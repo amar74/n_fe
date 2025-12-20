@@ -175,7 +175,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
 
   return (
     <div className="space-y-6">
-      {/* Enhanced Header */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300">
         <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
@@ -206,7 +205,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         </div>
       </div>
 
-      {/* Enhanced Yearly Cost Visualization with AI Insights */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200" style={{ backgroundColor: '#161950' }}>
           <div className="flex items-center justify-between">
@@ -235,7 +233,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         </div>
 
         <div className="p-6">
-          {/* Professional Cost Bars */}
           <div className="space-y-5">
             {yearlyBreakdown.map((year, index) => {
               const prevYear = index > 0 ? yearlyBreakdown[index - 1] : null;
@@ -286,9 +283,7 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                     </div>
                   </div>
                   
-                  {/* Stacked Bar Chart - Thin with Hover Effects */}
                   <div className="h-4 bg-gray-100 rounded-lg overflow-hidden relative flex group cursor-pointer">
-                    {/* Labor Segment */}
                     <div
                       className="h-full bg-gradient-to-r from-blue-500 to-blue-600 relative hover:opacity-90 transition-opacity"
                       style={{ width: `${(year.laborCost / year.totalPrice) * 100}%` }}
@@ -300,7 +295,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                       </div>
                     </div>
                     
-                    {/* Overhead Segment */}
                     <div
                       className="h-full bg-gradient-to-r from-orange-500 to-orange-600 relative hover:opacity-90 transition-opacity"
                       style={{ width: `${(year.overhead / year.totalPrice) * 100}%` }}
@@ -312,7 +306,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                       </div>
                     </div>
                     
-                    {/* Profit Segment */}
                     <div
                       className="h-full bg-gradient-to-r from-green-500 to-green-600 relative hover:opacity-90 transition-opacity"
                       style={{ width: `${(year.profit / year.totalPrice) * 100}%` }}
@@ -325,7 +318,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                     </div>
                   </div>
                   
-                  {/* Compact Legend - Always Visible */}
                   <div className="flex items-center gap-4 mt-2 text-xs">
                     <div className="flex items-center gap-1.5">
                       <div className="w-3 h-3 bg-blue-500 rounded"></div>
@@ -345,7 +337,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
             })}
           </div>
 
-          {/* AI-Powered Cost Analysis Explanation */}
           <div className="mt-6 p-5 rounded-xl border-2" style={{ backgroundColor: '#f8f9ff', borderColor: '#e0e7ff' }}>
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#161950' }}>
@@ -423,7 +414,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         </div>
       </div>
 
-      {/* Enhanced Table */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -491,7 +481,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
                 </tr>
               ))}
               
-              {/* Enhanced Total Row */}
               <tr className="text-white" style={{ backgroundColor: '#161950' }}>
                 <td className="px-6 py-5 text-sm font-bold">
                   <div className="flex items-center gap-2">
@@ -520,7 +509,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         </div>
       </div>
 
-      {/* Enhanced Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
         <div className="bg-white rounded-lg shadow-xl border border-gray-300 p-5 hover:shadow-2xl transition-all">
           <div className="flex items-center gap-3 mb-4">
@@ -603,7 +591,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         </div>
       </div>
 
-      {/* Team Composition */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300 p-6">
         <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
           <Users className="w-5 h-5 text-purple-600" />
@@ -653,7 +640,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         </div>
       </div>
 
-      {/* Info Box */}
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200 p-5">
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-indigo-600 mt-0.5" />
@@ -683,7 +669,6 @@ export default function CostAnalysis({ projectInfo, staffMembers, onNext, onBack
         </div>
       </div>
 
-      {/* Navigation Buttons */}
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}

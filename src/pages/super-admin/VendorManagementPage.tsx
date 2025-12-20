@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSuperAdminVendors, type Vendor } from '@/hooks/useSuperAdminVendors';
+import { useSuperAdminVendors, type Vendor } from '@/hooks/user-management';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
@@ -242,7 +242,6 @@ export default function VendorManagementPage() {
         </div>
       </div>
 
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">

@@ -31,7 +31,6 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
                 </svg>
               </div>
 
-              
               <div className="inline-flex flex-col justify-center items-end gap-3.5">
                 <div className="justify-start text-[#667085] text-sm font-normal font-['Outfit'] leading-tight">
                   {stat.title}
@@ -44,7 +43,6 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
           ))}
         </div>
 
-        
         <div className="flex-1 h-44 inline-flex flex-col justify-start items-start gap-3">
           {rightStats.map((stat) => (
             <div
@@ -62,7 +60,6 @@ export function AccountStatsCards({ stats }: AccountStatsCardsProps) {
                 </svg>
               </div>
 
-              
               <div className="inline-flex flex-col justify-center items-end gap-3.5">
                 <div className="justify-start text-[#667085] text-sm font-normal font-['Outfit'] leading-tight">
                   {stat.title}

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
+import { useExpenseCategories } from '@/hooks/finance';
 import { PurchaseRequisition } from '../types';
 
 interface CreateRFQModalProps {

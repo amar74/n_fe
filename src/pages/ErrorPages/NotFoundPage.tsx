@@ -62,16 +62,13 @@ function NotFoundPage() {
   return (
     <div className="min-h-screen bg-[#F5F3F2] flex items-center justify-center px-4 py-8">
       <div className="max-w-4xl w-full">
-        {/* Main Error Card */}
         <Card className="border-0 shadow-sm mb-6">
           <CardContent className="p-12 text-center">
-            {/* 404 Large Text */}
             <div className="mb-6">
               <h1 className="text-8xl md:text-9xl font-bold text-gray-900 mb-3">404</h1>
               <div className="h-1 w-20 bg-gray-900 mx-auto"></div>
             </div>
 
-            {/* Error Message */}
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
               Page Not Found
             </h2>
@@ -82,7 +79,6 @@ function NotFoundPage() {
               The page you are trying to access doesn't exist or has been moved.
             </p>
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Button
                 onClick={() => navigate(-1)}
@@ -104,7 +100,6 @@ function NotFoundPage() {
           </CardContent>
         </Card>
 
-        {/* Quick Links Section */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
             Quick Navigation
@@ -132,7 +127,6 @@ function NotFoundPage() {
           </div>
         </div>
 
-        {/* Help Text */}
         <Card className="border-0 shadow-sm bg-gray-50">
           <CardContent className="p-6 text-center">
             <p className="text-sm text-gray-600">

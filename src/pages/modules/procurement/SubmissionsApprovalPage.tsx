@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useProcurement } from '@/hooks/useProcurement';
-import { useAuth } from '@/hooks/useAuth';
+import { useProcurement } from '@/hooks/procurement';
+import { useAuth } from '@/hooks/auth';
 import { ApproveRequisitionModal, ViewRequisitionModal, ViewPurchaseOrderModal, ViewRFQModal, ViewExpenseModal } from './modals';
 import { getStatusBadge } from './utils';
 import { PurchaseRequisition, PurchaseOrder, RFQ, EmployeeExpense } from './types';
@@ -437,13 +437,11 @@ export function SubmissionsApprovalPage() {
   return (
     <div className="min-h-screen bg-gray-50 font-outfit">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[#1A1A1A] font-outfit mb-2">Submissions Approval</h1>
           <p className="text-gray-600 font-outfit">Manage and approve Purchase Requisitions, Purchase Orders, RFQs, and Expenses</p>
         </div>
 
-        {/* Filter Section */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <h2 className="text-lg font-semibold text-[#1A1A1A] font-outfit mb-4">Filter Submissions</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -505,7 +503,6 @@ export function SubmissionsApprovalPage() {
           )}
         </div>
 
-        {/* Status Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SubmissionStatus)} className="mb-6">
           <TabsList className="bg-white border border-gray-200 font-outfit">
             <TabsTrigger value="pending" className="font-outfit">
@@ -710,7 +707,6 @@ export function SubmissionsApprovalPage() {
         </Tabs>
       </div>
 
-      {/* Modals */}
       {selectedSubmission && selectedSubmission.type === 'requisition' && (
         <ViewRequisitionModal
           open={isViewModalOpen}
@@ -733,7 +729,6 @@ export function SubmissionsApprovalPage() {
         />
       )}
 
-      {/* Approve Requisition Modal */}
       {approveRequisitionId && (
         <ApproveRequisitionModal
           open={isApproveModalOpen}
@@ -762,7 +757,6 @@ export function SubmissionsApprovalPage() {
         />
       )}
 
-      {/* Reject Requisition Modal - Use same modal but with default action 'rejected' */}
       {rejectRequisitionId && (
         <ApproveRequisitionModal
           open={isRejectModalOpen}

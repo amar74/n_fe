@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useStaffPlanning } from '@/hooks/useStaffPlanning';
-import { useToast } from '@/hooks/use-toast';
+import { useStaffPlanning } from '@/hooks/resources';
+import { useToast } from '@/hooks/shared';
 import { 
   FileText, 
   Users, 

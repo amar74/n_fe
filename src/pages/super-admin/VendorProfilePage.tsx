@@ -108,7 +108,6 @@ export default function VendorProfilePage() {
         </div>
       </div>
 
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
@@ -192,7 +191,6 @@ export default function VendorProfilePage() {
             </CardContent>
           </Card>
 
-          
           <Card>
             <CardHeader>
               <CardTitle>Organization Information</CardTitle>
@@ -266,7 +264,6 @@ export default function VendorProfilePage() {
             </CardContent>
           </Card>
 
-          
           {vendor.org_id && organization?.address && (
             <Card>
               <CardHeader>
@@ -314,7 +311,6 @@ export default function VendorProfilePage() {
             </Card>
           )}
 
-          
           {vendor.org_id && organization?.contact && (
             <Card>
               <CardHeader>
@@ -371,7 +367,6 @@ export default function VendorProfilePage() {
             </Card>
           )}
 
-          
           <Card>
             <CardHeader>
               <CardTitle>Account Statistics</CardTitle>
@@ -399,7 +394,6 @@ export default function VendorProfilePage() {
             </CardContent>
           </Card>
 
-          
           <Card>
             <CardHeader>
               <CardTitle>Access Information</CardTitle>

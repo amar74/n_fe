@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNote } from '@/hooks/useNotes';
+import { useNote } from '@/hooks/notes';
 import { NoteUpdateFormData, NoteUpdateFormSchema } from '@/types/notes';
 import { Button } from '@/components/ui/button';
 import {
@@ -138,7 +138,6 @@ export default function NoteEditPage() {
         </Button>
       </div>
 
-      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -174,7 +173,6 @@ export default function NoteEditPage() {
                 )}
               />
 
-              
               <FormField
                 control={form.control}
                 name="meeting_datetime"
@@ -200,7 +198,6 @@ export default function NoteEditPage() {
                 )}
               />
 
-              
               <FormField
                 control={form.control}
                 name="meeting_notes"
@@ -223,7 +220,6 @@ export default function NoteEditPage() {
                 )}
               />
 
-              
               <div className="flex items-center justify-end gap-4 pt-6">
                 <Button type="button" variant="outline" onClick={handleCancel}>
                   Cancel

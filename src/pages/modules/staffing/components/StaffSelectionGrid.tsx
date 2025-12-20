@@ -17,7 +17,7 @@ import {
   Sparkles,
   ArrowUpRight
 } from 'lucide-react';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useEmployees } from '@/hooks/resources';
 import { AddStaffModal } from './AddStaffModal';
 import { apiClient } from '@/services/api/client';
 
@@ -184,7 +184,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
 
   return (
     <div className="space-y-6">
-      {/* Header Card with Summary */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300">
         <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
@@ -214,7 +213,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
           </div>
         </div>
 
-        {/* Project Summary Bar */}
         <div className="px-6 py-4 bg-blue-50 border-b border-blue-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -248,7 +246,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
         </div>
       </div>
 
-      {/* AI Recommendations Section - Top - Always Visible */}
       <div className="bg-white rounded-lg shadow-xl border-2 p-6" style={{ borderColor: '#161950', backgroundColor: '#f0f5ff' }}>
         <div>
           <div className="flex items-center justify-between">
@@ -286,7 +283,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
         </div>
       </div>
 
-      {/* Added Staff Members */}
       {staff.length > 0 && (
         <div className="bg-white rounded-lg shadow-xl border border-gray-300">
           <div className="px-6 py-4 border-b border-gray-200 bg-green-50">
@@ -385,7 +381,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
               })}
             </div>
 
-            {/* Cost Summary */}
             <div className="mt-5 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
               <div className="grid grid-cols-4 gap-4">
                 <div className="text-center">
@@ -412,9 +407,7 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
         </div>
       )}
 
-      {/* Available Employees */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300">
-        {/* Search & Filter Bar */}
         <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -430,7 +423,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
             </div>
             
             <div className="flex items-center gap-3">
-              {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -442,7 +434,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                 />
               </div>
 
-              {/* Role Filter */}
               <select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
@@ -454,7 +445,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                 ))}
               </select>
               
-              {/* View Toggle */}
               <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
@@ -481,7 +471,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
           </div>
         </div>
 
-        {/* Employees Grid/List */}
         <div className="p-6">
           {isLoading ? (
             <div className="text-center py-16">
@@ -519,7 +508,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                     )}
                     
                     <div className="p-4">
-                      {/* Header */}
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
                           <Users className="w-6 h-6 text-white" />
@@ -530,7 +518,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                         </div>
                       </div>
                       
-                      {/* Details */}
                       <div className="space-y-2 mb-3">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-600">Level</span>
@@ -560,7 +547,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                         </div>
                       </div>
                       
-                      {/* Skills */}
                       <div className="flex flex-wrap gap-1 mb-3">
                         {emp.skills.slice(0, 2).map((skill, idx) => (
                           <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded border border-gray-200">
@@ -574,7 +560,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
                         )}
                       </div>
                       
-                      {/* Action Button */}
                       <button
                         onClick={() => handleOpenAddModal(emp)}
                         disabled={isAlreadyAdded}
@@ -661,7 +646,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
         </div>
       </div>
 
-      {/* AI Suggestion Banner */}
       <div className="rounded-lg shadow-xl border p-5" style={{ backgroundColor: '#161950', borderColor: '#161950' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -696,7 +680,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
         </div>
       </div>
 
-      {/* AI Recommendations Panel */}
       {showAIRecommendations && aiRecommendations && (
         <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
@@ -720,7 +703,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
           </div>
 
           <div className="p-6 space-y-6">
-            {/* AI Analysis */}
             {aiRecommendations.analysis && (
               <div className="p-4 rounded-lg" style={{ backgroundColor: aiRecommendations.error ? '#fef2f2' : '#f8f9ff', borderWidth: '1px', borderColor: aiRecommendations.error ? '#fecaca' : '#e0e7ff' }}>
                 <p className="text-sm leading-relaxed" style={{ color: aiRecommendations.error ? '#991b1b' : '#374151' }}>
@@ -738,7 +720,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
               </div>
             )}
 
-            {/* Recommended Employees */}
             {aiRecommendations.recommended_employees?.length > 0 && (
               <div>
                 <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -778,7 +759,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
               </div>
             )}
 
-            {/* Suggested New Roles */}
             {aiRecommendations.suggested_new_roles?.length > 0 && (
               <div>
                 <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -818,7 +798,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
               </div>
             )}
 
-            {/* Team Composition Summary */}
             {aiRecommendations.team_composition && (
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-xs font-bold text-blue-900 mb-1">Recommended Team Structure:</p>
@@ -829,7 +808,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
         </div>
       )}
 
-      {/* Navigation Buttons */}
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
@@ -857,7 +835,6 @@ export default function StaffSelectionGrid({ projectInfo, selectedStaff, onCompl
         </div>
       </div>
 
-      {/* Add/Edit Staff Modal */}
       {isAddModalOpen && (
         <AddStaffModal
           employee={selectedEmployee}

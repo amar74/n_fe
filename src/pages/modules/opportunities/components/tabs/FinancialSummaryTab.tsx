@@ -6,8 +6,8 @@ import {
   useOpportunityDeliveryModel,
   useOpportunityFinancialSummary,
   useOpportunityTeamMembers,
-} from '@/hooks/useOpportunityTabs';
-import { useAccountTeam } from '@/hooks/useAccountTeam';
+} from '@/hooks/opportunities';
+import { useAccountTeam } from '@/hooks/accounts';
 import type { DeliveryModelEntry, DeliveryModelPhase, FinancialSummaryData } from '@/types/opportunityTabs';
 
 interface FinancialSummaryTabProps {

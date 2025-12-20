@@ -2,8 +2,8 @@ import { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { X, Sparkles, Calendar, DollarSign, Building, Target, User, FileText, MapPin } from 'lucide-react';
 import { accountsApi } from '../services/api/accountsApi';
 import { AccountListItem } from '../types/accounts';
-import { useDataEnrichment } from '../hooks/useDataEnrichment';
-import { useAuth } from '../hooks/useAuth';
+import { useDataEnrichment } from '@/hooks/ai';
+import { useAuth } from '@/hooks/auth';
 import { loadGoogleMaps } from '@/lib/google-maps-loader';
 import { toast } from 'react-hot-toast';
 
@@ -520,7 +520,6 @@ export const CreateOpportunityModal = memo(({
           </div>
         </div>
 
-        
         <div className="flex-1 overflow-y-auto">
           <form id="opportunity-form" onSubmit={handleSubmit} className="px-8 py-6 space-y-8">
           
@@ -529,8 +528,7 @@ export const CreateOpportunityModal = memo(({
               <div className="w-1 h-6 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full"></div>
               <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
             </div>
-            
-            
+
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700">
                 Company Website <span className="text-red-500">*</span>
@@ -581,7 +579,6 @@ export const CreateOpportunityModal = memo(({
               )}
             </div>
 
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
@@ -649,7 +646,6 @@ export const CreateOpportunityModal = memo(({
               </div>
             </div>
 
-            
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
@@ -774,14 +770,12 @@ export const CreateOpportunityModal = memo(({
             </div>
           </div>
 
-          
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-6 bg-gradient-to-b from-emerald-600 to-teal-600 rounded-full"></div>
               <h3 className="text-lg font-semibold text-gray-900">Opportunity Details</h3>
             </div>
 
-            
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700">
                 Sales Stage
@@ -805,14 +799,12 @@ export const CreateOpportunityModal = memo(({
             </div>
           </div>
 
-          
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-1 h-6 bg-gradient-to-b from-amber-600 to-orange-600 rounded-full"></div>
               <h3 className="text-lg font-semibold text-gray-900">Additional Information</h3>
             </div>
 
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
@@ -856,7 +848,6 @@ export const CreateOpportunityModal = memo(({
               </div>
             </div>
 
-            
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700">
                 Project Description
@@ -879,7 +870,6 @@ export const CreateOpportunityModal = memo(({
             </div>
           </div>
 
-          
           {showEnhancementPanel && aiEnhancementResults && (
             <div className="mt-8 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
             <div className="flex items-center justify-between mb-3">
@@ -966,7 +956,6 @@ export const CreateOpportunityModal = memo(({
           </form>
         </div>
 
-        
         <div className="px-8 py-6 border-t border-gray-200 bg-gray-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600">

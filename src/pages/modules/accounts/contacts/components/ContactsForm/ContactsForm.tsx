@@ -170,7 +170,6 @@ export function ContactsForm({
             )}
           </div>
 
-          
           <div className="flex-1 flex flex-col gap-1.5">
             <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
               Contact Name<span className="text-red-600">*</span>
@@ -191,7 +190,6 @@ export function ContactsForm({
           </div>
         </div>
 
-        
         <div className="flex gap-5 w-full">
           
           <div className="flex-1 flex flex-col gap-1.5">
@@ -213,7 +211,6 @@ export function ContactsForm({
             )}
           </div>
 
-          
           <div className="flex-1 flex flex-col gap-1.5">
             <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
               Phone Number<span className="text-red-600">*</span>
@@ -231,8 +228,7 @@ export function ContactsForm({
                   </option>
                 ))}
               </select>
-              
-              
+
               <input
                 type="tel"
                 value={phoneNumber}
@@ -257,7 +253,6 @@ export function ContactsForm({
           </div>
         </div>
 
-        
         <div className="flex items-center justify-end gap-4 pt-5">
           {onCancel && (
             <button

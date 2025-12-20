@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -141,7 +141,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Section with dashboard theme */}
       <div className="relative bg-[#161950] overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -170,13 +169,10 @@ export default function ProfilePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-8 pb-16">
-        {/* Main Profile Card */}
         <Card className="mb-8 shadow-2xl border-0 overflow-hidden bg-white">
           <CardContent className="p-0">
-            {/* Profile Header */}
             <div className="p-10 bg-white">
               <div className="flex flex-col md:flex-row md:items-start gap-8">
-                {/* Avatar */}
                 <div className="relative group flex-shrink-0">
                   {backendUser?.profile_picture_url ? (
                     <div className="w-40 h-40 rounded-3xl overflow-hidden border-4 border-white shadow-xl ring-4 ring-gray-100">
@@ -200,7 +196,6 @@ export default function ProfilePage() {
                   </button>
                 </div>
 
-                {/* Profile Info */}
                 <div className="flex-1 space-y-4 min-w-0">
                   <div>
                     <div className="flex flex-wrap items-center gap-4 mb-3">
@@ -240,7 +235,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Enhanced Stats Section - Icon Left, Value Top, Label Bottom */}
             <div className="border-t-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white px-10 py-8">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, index) => {
@@ -256,12 +250,10 @@ export default function ProfilePage() {
                       key={stat.label} 
                       className="group cursor-pointer p-6 rounded-2xl bg-white border border-gray-100 hover:border-[#161950] hover:shadow-xl transition-all duration-200 hover:-translate-y-1 flex items-center gap-4"
                     >
-                      {/* Left Side - Icon */}
                       <div className={`w-14 h-14 ${iconColors[index % iconColors.length]} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-200`}>
                         <Icon className="h-7 w-7 text-white" />
                       </div>
                       
-                      {/* Right Side - Value and Label */}
                       <div className="flex-1 min-w-0">
                         <div className="text-3xl font-extrabold text-gray-900 mb-1" style={{ fontFamily: "'Outfit', sans-serif" }}>{stat.value}</div>
                         <div className="text-xs text-gray-600 font-semibold uppercase tracking-wider leading-tight" style={{ fontFamily: "'Outfit', sans-serif" }}>{stat.label}</div>
@@ -275,9 +267,7 @@ export default function ProfilePage() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Personal Information Card */}
             <Card className="shadow-xl border-0 overflow-hidden">
               <CardHeader className="border-b-2 border-gray-100 bg-white pb-6">
                 <CardTitle className="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -316,7 +306,6 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Quick Actions Grid */}
             <div>
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -349,9 +338,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Right Column - Account Details & Activity */}
           <div className="space-y-8">
-            {/* Account Details Card */}
             <Card className="shadow-xl border-0 overflow-hidden">
               <CardHeader className="border-b-2 border-gray-100 bg-white pb-6">
                 <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-3">
@@ -394,7 +381,6 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Help Card */}
             <Card className="shadow-xl border-0 bg-[#161950] overflow-hidden !text-white" style={{ color: 'white' }}>
               <CardContent className="p-8 !text-white" style={{ color: 'white' }}>
                 <div className="mb-6">
@@ -417,7 +403,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Change Profile Picture Dialog */}
       {backendUser && (
         <ChangeProfilePictureDialog
           open={isProfilePictureDialogOpen}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FileText, Calendar, DollarSign, TrendingUp, Building2, Clock, Target, Sparkles, Info, CheckCircle, ArrowUpRight, Brain, Lightbulb, X } from 'lucide-react';
 import { apiClient } from '@/services/api/client';
-import { useStaffPlanning } from '@/hooks/useStaffPlanning';
+import { useStaffPlanning } from '@/hooks/resources';
 
 interface ProjectInfo {
   projectId?: string;  // UUID
@@ -184,9 +184,7 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
 
   return (
     <div className="flex gap-6">
-      {/* Left Column - Main Form */}
       <div className="flex-1 space-y-6">
-      {/* Success Alert */}
       {isAutoFilled && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3 animate-fade-in">
           <CheckCircle className="w-5 h-5 text-green-600" />
@@ -197,9 +195,7 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
         </div>
       )}
 
-      {/* Main Form Card */}
       <div className="bg-white rounded-lg shadow-xl border border-gray-300">
-        {/* Enhanced Header */}
         <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
@@ -225,9 +221,7 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
-          {/* Opportunity Selection - Featured */}
           <div className={`mb-8 p-5 rounded-lg border-2 ${isEditMode ? 'bg-gray-100 border-gray-300' : 'bg-gray-50 border-gray-200'}`}>
             <div className="flex items-start gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: isEditMode ? '#6b7280' : '#161950' }}>
@@ -294,7 +288,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column - Project Details */}
             <div className="space-y-6">
               <div className="p-5 bg-gray-50 rounded-lg border border-gray-200">
                 <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -302,7 +295,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                   Project Details
                 </h3>
 
-                {/* Project Name */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Project Name * {isEditMode && <span className="text-xs text-gray-500">(Locked)</span>}
@@ -322,7 +314,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                   />
                 </div>
 
-                {/* Project Description */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Project Description {isEditMode && <span className="text-xs text-gray-500">(Locked)</span>}
@@ -346,7 +337,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                   )}
                 </div>
 
-                {/* Project Start Date */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-blue-600" />
@@ -363,7 +353,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
               </div>
             </div>
 
-            {/* Right Column - Financial Parameters */}
             <div className="space-y-6">
               <div className="p-5 bg-green-50 rounded-lg border border-green-200">
                 <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -371,7 +360,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                   Financial Parameters
                 </h3>
 
-                {/* Duration */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-gray-600" />
@@ -394,7 +382,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                   </div>
                 </div>
 
-                {/* Overhead Rate */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <Target className="w-4 h-4 text-gray-600" />
@@ -429,7 +416,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
                   </p>
                 </div>
 
-                {/* Profit Margin */}
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-gray-600" />
@@ -468,7 +454,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
             </div>
           </div>
 
-          {/* Quick Calculator Preview */}
           {formData.durationMonths && formData.overheadRate && formData.profitMargin && (
             <div className="mt-6 p-5 bg-blue-50 rounded-lg border-2 border-blue-200">
               <div className="flex items-center gap-2 mb-3">
@@ -495,7 +480,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
             </div>
           )}
 
-          {/* Info Box */}
           <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-indigo-600 mt-0.5" />
@@ -513,7 +497,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="mt-8 flex justify-end">
             <button
               type="submit"
@@ -528,10 +511,8 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
       </div>
       </div>
 
-      {/* Right Column - AI Recommendations Side Panel */}
       <div className="w-96 flex-shrink-0">
         <div className="sticky top-6 space-y-4">
-          {/* AI Helper Card */}
           <div className="bg-white rounded-lg border-2 border-gray-300 p-5" style={{ borderColor: '#161950', backgroundColor: '#f0f5ff' }}>
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ backgroundColor: '#161950' }}>
@@ -567,7 +548,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
             </div>
           </div>
 
-          {/* AI Recommendations Panel */}
           {showAIRecommendations && aiRecommendations && (
         <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
@@ -591,14 +571,12 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
           </div>
 
           <div className="p-6 space-y-6">
-            {/* AI Analysis */}
             <div className="p-4 rounded-lg" style={{ backgroundColor: '#f8f9ff', borderWidth: '1px', borderColor: '#e0e7ff' }}>
               <p className="text-sm text-gray-700 leading-relaxed">
                 {aiRecommendations.analysis}
               </p>
             </div>
 
-            {/* Recommended Parameters */}
             <div>
               <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Target className="w-4 h-4" style={{ color: '#161950' }} />
@@ -651,7 +629,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
               </div>
             </div>
 
-            {/* Market Insights */}
             {aiRecommendations.market_insights?.length > 0 && (
               <div>
                 <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -669,7 +646,6 @@ export default function ProjectInfoForm({ initialData, onSubmit, isEditMode = fa
               </div>
             )}
 
-            {/* Apply Button */}
             <div className="flex items-center justify-between pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-600">
                 These recommendations are based on industry standards and current market conditions

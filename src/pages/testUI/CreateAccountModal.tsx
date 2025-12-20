@@ -32,7 +32,6 @@ export default function CreateAccountModal() {
           </DialogDescription>
         </DialogHeader>
 
-        
         <div className="mb-2">
             <div className="flex items-center gap-2 mb-2">
              <Sparkle className="bg-[#EEEEEE] text-orange-400 rounded-full p-2 size-8"/>
@@ -49,7 +48,6 @@ export default function CreateAccountModal() {
           </div>
         </div>
 
-        
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Client Name *</Label>
@@ -104,7 +102,6 @@ export default function CreateAccountModal() {
           </div>
         </div>
 
-        
          <div className="flex flex-col sm:flex-row gap-4 pt-2 justify-between">
             <Button variant="outline" className="px-6 py-2 text-sm order-2 sm:order-1">
                 Cancel

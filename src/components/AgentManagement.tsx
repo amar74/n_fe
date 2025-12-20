@@ -35,7 +35,7 @@ import {
   CheckCircle,
   X,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/shared";
 
 interface Agent {
   id: string;
@@ -255,7 +255,6 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
         </div>
       </div>
 
-      
       <Dialog open={agentPanelOpen} onOpenChange={setAgentPanelOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -304,7 +303,6 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
               </Card>
             </div>
 
-            
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Your AI Agents</h3>
               <Button
@@ -316,7 +314,6 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
               </Button>
             </div>
 
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {agents.map((agent) => (
                 <Card
@@ -417,7 +414,6 @@ export default function AgentManagement({ moduleContext = "General" }: AgentMana
         </DialogContent>
       </Dialog>
 
-      
       <Dialog open={createAgentOpen} onOpenChange={setCreateAgentOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>

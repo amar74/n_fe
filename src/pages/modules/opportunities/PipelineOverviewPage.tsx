@@ -1,7 +1,7 @@
 import { memo, useState, Suspense, lazy } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useOpportunity } from '@/hooks/useOpportunity';
-import { useOpportunityOverview } from '@/hooks/useOpportunityTabs';
+import { useOpportunity } from '@/hooks/opportunities';
+import { useOpportunityOverview } from '@/hooks/opportunities';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Bot } from 'lucide-react';
 

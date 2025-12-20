@@ -1,0 +1,285 @@
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  ArrowLeft,
+  Megaphone,
+  Calendar,
+  Brain,
+  CheckCircle,
+  TrendingUp,
+  BarChart3,
+  Eye,
+  Download,
+  FileText,
+} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/shared';
+import { useProposals } from '@/hooks/proposals';
+
+export default function CompletedCampaignsPage() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [sortBy, setSortBy] = useState('completedDate');
+  const [filterBy, setFilterBy] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const { useProposalsList } = useProposals();
+  
+  // Fetch completed campaigns
+  const { data: campaignsData, isLoading } = useProposalsList({
+    type_filter: 'campaign',
+    page: 1,
+    size: 100,
+    search: searchTerm || undefined,
+  });
+
+  const allCampaigns = campaignsData?.items || [];
+  
+  // Filter completed campaigns
+  const completedCampaigns = useMemo(() => {
+    return allCampaigns
+      .filter((c: any) => ['won', 'lost', 'archived'].includes(c.status))
+      .map((c: any) => ({
+        id: c.id,
+        name: c.title || 'Untitled Campaign',
+        client: c.account_name || 'Unknown Client',
+        type: 'Email Marketing',
+        completedDate: c.submission_date ? new Date(c.submission_date).toLocaleDateString() : 'N/A',
+        status: c.status === 'archived' ? 'Archived' : 'Completed',
+        finalScore: c.ai_compliance_score || 85,
+        actualReach: '98K',
+        engagement: 12.5,
+      }));
+  }, [allCampaigns]);
+
+  const filteredCampaigns = useMemo(() => {
+    return completedCampaigns
+      .filter(campaign => {
+        const matchesSearch = 
+          campaign.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          campaign.client.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesFilter = 
+          filterBy === 'all' || 
+          (filterBy === 'completed' && campaign.status === 'Completed') ||
+          (filterBy === 'archived' && campaign.status === 'Archived');
+        return matchesSearch && matchesFilter;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'completedDate') return new Date(b.completedDate).getTime() - new Date(a.completedDate).getTime();
+        if (sortBy === 'score') return b.finalScore - a.finalScore;
+        if (sortBy === 'reach') {
+          const aReach = parseFloat(a.actualReach.replace(/[K,M]/g, ''));
+          const bReach = parseFloat(b.actualReach.replace(/[K,M]/g, ''));
+          return bReach - aReach;
+        }
+        return 0;
+      });
+  }, [completedCampaigns, searchTerm, filterBy, sortBy]);
+
+  const totalCampaigns = useMemo(() => completedCampaigns.length, [completedCampaigns]);
+  const avgScore = useMemo(() => completedCampaigns.length > 0 ? Math.round(completedCampaigns.reduce((sum, c) => sum + c.finalScore, 0) / completedCampaigns.length) : 0, [completedCampaigns]);
+  const totalReach = useMemo(() => completedCampaigns.reduce((sum, c) => {
+    const reach = parseFloat(c.actualReach.replace(/[K,M]/g, ''));
+    const multiplier = c.actualReach.includes('M') ? 1000000 : 1000;
+    return sum + (reach * multiplier);
+  }, 0), [completedCampaigns]);
+
+  return (
+    <div className="w-full h-full bg-white font-outfit">
+      <div className="flex flex-col w-full p-6 gap-6">
+      <div className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/module/proposals/campaigns')}
+          className="font-outfit"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold font-outfit text-[#1A1A1A] mb-2 flex items-center gap-2">
+            <Megaphone className="h-8 w-8 text-[#161950]" />
+            Completed Campaigns
+          </h1>
+          <p className="text-gray-600 font-outfit">
+            Review completed campaigns and performance analytics
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-[#161950]/10 p-2 rounded-lg">
+              <Megaphone className="h-5 w-5 text-[#161950]" />
+            </div>
+            <span className="text-sm font-semibold font-outfit text-gray-600 uppercase tracking-wide">Total</span>
+          </div>
+          <div className="text-3xl font-bold font-outfit text-[#1A1A1A]">{totalCampaigns}</div>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-[#161950]/10 p-2 rounded-lg">
+              <Brain className="h-5 w-5 text-[#161950]" />
+            </div>
+            <span className="text-sm font-semibold font-outfit text-gray-600 uppercase tracking-wide">Avg Score</span>
+          </div>
+          <div className="text-3xl font-bold font-outfit text-[#161950]">{avgScore}%</div>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-[#161950]/10 p-2 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-[#161950]" />
+            </div>
+            <span className="text-sm font-semibold font-outfit text-gray-600 uppercase tracking-wide">Total Reach</span>
+          </div>
+          <div className="text-3xl font-bold font-outfit text-[#161950]">
+            {(totalReach / 1000).toFixed(0)}K
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold font-outfit text-[#1A1A1A]">Completed Campaigns</h2>
+          <div className="flex items-center gap-3">
+            <Input
+              placeholder="Search campaigns..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 font-outfit"
+            />
+            <Select value={filterBy} onValueChange={setFilterBy}>
+              <SelectTrigger className="w-40 font-outfit">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-40 font-outfit">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="completedDate">Date</SelectItem>
+                <SelectItem value="score">Score</SelectItem>
+                <SelectItem value="reach">Reach</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#161950] mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading campaigns...</p>
+              </div>
+            </div>
+          ) : filteredCampaigns.length > 0 ? (
+            filteredCampaigns.map((campaign) => (
+            <Card
+              key={campaign.id}
+              className="border-2 hover:shadow-md transition-all"
+            >
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className="bg-[#161950]/10 p-3 rounded-lg">
+                      <CheckCircle className="h-6 w-6 text-[#161950]" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold font-outfit text-[#1A1A1A]">
+                          {campaign.name}
+                        </h3>
+                        <Badge
+                          variant="outline"
+                          className="bg-[#161950]/5 text-[#161950] border-[#161950]/20 font-outfit"
+                        >
+                          {campaign.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 font-outfit mb-3">
+                        <span>{campaign.client}</span>
+                        <span>•</span>
+                        <span>{campaign.type}</span>
+                        <span>•</span>
+                        <span>Completed: {campaign.completedDate}</span>
+                      </div>
+                      <div className="flex items-center gap-4 text-sm font-outfit">
+                        <div className="flex items-center gap-2">
+                          <Brain className="h-4 w-4 text-[#161950]" />
+                          <span className="text-gray-600">Score: </span>
+                          <span className="font-semibold text-[#1A1A1A]">{campaign.finalScore}%</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-[#161950]" />
+                          <span className="text-gray-600">Reach: </span>
+                          <span className="font-semibold text-[#1A1A1A]">{campaign.actualReach}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-600">Engagement: </span>
+                          <span className="font-semibold text-[#1A1A1A]">{campaign.engagement}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/module/proposals/campaigns/${campaign.id}/view`)}
+                      className="font-outfit"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toast.info('Downloading campaign report...')}
+                      className="font-outfit"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Report
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="p-4 bg-gray-50 rounded-full">
+                <FileText className="w-12 h-12 text-gray-400" />
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <h3 className="text-[#1A1A1A] text-xl font-semibold font-outfit">No completed campaigns</h3>
+                <p className="text-gray-500 text-sm font-outfit text-center max-w-md">
+                  No campaigns have been completed yet.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      </div>
+    </div>
+  );
+}
+

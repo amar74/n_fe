@@ -1,10 +1,10 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@hooks/useAuth';
+import { useAuth } from '@/hooks/auth';
 import { useEffect } from 'react';
 import { LogOut, Users, LayoutDashboard } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Toaster } from '@/components/ui/toaster';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 
 export default function SuperAdminLayout() {
   const { user, backendUser, isAuthenticated, initialAuthComplete, signOut } = useAuth();
@@ -99,15 +99,12 @@ export default function SuperAdminLayout() {
 
   return (
     <div className="flex h-screen bg-[#F5F3F2]">
-      {/* Sidebar */}
       <div className="bg-white box-border flex flex-col gap-44 items-start justify-between overflow-clip pb-7 pt-0 px-0 rounded-br-[28px] rounded-tr-[28px] w-[260px] h-screen fixed left-0 shadow-sm">
-        {/* Logo/Brand */}
         <div className="w-full pt-8 px-7">
           <h1 className="text-2xl font-bold text-[#161950]">Megapolis</h1>
           <p className="text-sm text-gray-500 mt-1">Super Admin Panel</p>
         </div>
 
-        {/* Navigation Items */}
         <div className="flex-1 flex flex-col gap-2 w-full overflow-y-auto">
           {superAdminMenuItems.map((item) => {
             const Icon = item.icon;
@@ -132,7 +129,6 @@ export default function SuperAdminLayout() {
           })}
         </div>
 
-        {/* Logout Button */}
         <button
           onClick={handleLogout}
           className="box-border flex gap-3 h-[60px] items-center justify-start px-7 py-5 w-full transition-colors duration-200 hover:bg-gray-50"
@@ -142,9 +138,7 @@ export default function SuperAdminLayout() {
         </button>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 ml-[260px] flex flex-col">
-        {/* Top Bar */}
         <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
           <h2 className="text-2xl font-semibold text-gray-800">Super Admin Dashboard</h2>
           
@@ -161,7 +155,6 @@ export default function SuperAdminLayout() {
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 overflow-auto p-8">
           <Outlet />
         </main>

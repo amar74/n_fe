@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Users, Target, Award, Briefcase, MapPin, Clock, CheckCircle, XCircle, AlertCircle, Sparkles, Filter, List, UserCheck, Calendar, Eye, Loader2 } from 'lucide-react';
-import { useEmployees } from '@/hooks/useEmployees';
+import { useEmployees } from '@/hooks/resources';
 import { apiClient } from '@/services/api/client';
 import { toast } from 'sonner';
 import { EmployeeDetailsModal } from './components/EmployeeDetailsModal';
@@ -341,10 +341,8 @@ export default function EmployeeSearchPage() {
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-6">
-        {/* Header - Match Dashboard Style */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
-            {/* Breadcrumb */}
             <div className="flex items-center gap-2">
               <span className="text-gray-500 text-sm font-normal font-outfit leading-tight">Dashboard</span>
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
@@ -363,7 +361,6 @@ export default function EmployeeSearchPage() {
             </div>
           </div>
 
-          {/* Stats Cards */}
           <div className="flex items-center gap-4">
             <div className="h-16 px-6 bg-white rounded-lg border border-gray-300 flex flex-col justify-center">
               <p className="text-gray-500 text-xs font-medium">Total Candidates</p>
@@ -376,27 +373,23 @@ export default function EmployeeSearchPage() {
           </div>
         </div>
 
-        {/* Main Content - Match Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Panel - Enhanced Search Filters */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg border border-gray-300">
-              {/* Header */}
               <div className="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-[#1A1A1A] text-lg font-bold font-outfit">Search & Filter</h2>
                     <p className="text-gray-600 text-xs font-medium mt-1">Refine candidate list</p>
                   </div>
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-purple-50 rounded-full border border-purple-200">
-                    <div className="w-2 h-2 bg-[#7C3AED] rounded-full animate-pulse"></div>
-                    <span className="text-xs text-[#7C3AED] font-semibold">Live</span>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#161950]/10 rounded-full border border-[#161950]/20">
+                    <div className="w-2 h-2 bg-[#161950] rounded-full animate-pulse"></div>
+                    <span className="text-xs text-[#161950] font-semibold">Live</span>
                   </div>
                 </div>
               </div>
 
               <div className="p-5">
-                {/* Search Mode Toggle */}
                 <div className="mb-6 grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setSearchMode('filters')}
@@ -424,7 +417,6 @@ export default function EmployeeSearchPage() {
                   </button>
                 </div>
 
-                {/* Quick Stats */}
                 <div className="mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-600 font-medium">Active Filters:</span>
@@ -467,7 +459,6 @@ export default function EmployeeSearchPage() {
                         </div>
                       </div>
 
-                      {/* Quick AI Suggestions */}
                       <div>
                         <p className="text-xs font-semibold text-gray-700 mb-2">Quick Suggestions:</p>
                         <div className="grid grid-cols-1 gap-2">
@@ -507,7 +498,6 @@ export default function EmployeeSearchPage() {
                         )}
                       </button>
                       
-                      {/* Show AI-extracted filters if available */}
                       {aiFilters && Object.keys(aiFilters).length > 0 && (
                         <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                           <p className="text-xs font-semibold text-blue-900 mb-2">AI Extracted Filters:</p>
@@ -527,7 +517,6 @@ export default function EmployeeSearchPage() {
                   ) : (
                     /* Enhanced Filter-Based Search */
                     <div className="space-y-5">
-                      {/* Basic Search */}
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <label className="text-[#344054] text-xs font-semibold font-outfit">
@@ -551,7 +540,6 @@ export default function EmployeeSearchPage() {
                         />
                       </div>
 
-                      {/* Experience Filter */}
                       <div>
                         <label className="block text-[#344054] text-xs font-semibold font-outfit mb-2">
                           Experience Level
@@ -569,7 +557,6 @@ export default function EmployeeSearchPage() {
                         </select>
                       </div>
 
-                      {/* Location Filter */}
                       <div>
                         <label className="block text-[#344054] text-xs font-semibold font-outfit mb-2">
                           Location
@@ -583,9 +570,8 @@ export default function EmployeeSearchPage() {
                         />
                       </div>
 
-                      {/* Advanced Filters */}
                       <div className="border-t border-gray-200 pt-4 mt-4">
-                        <div className="flex items-center justify-between mb-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+                        <div className="flex items-center justify-between mb-4 p-3 bg-[#161950]/10 rounded-lg border border-[#161950]/20">
                           <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#161950' }}>
                               <Filter className="w-4 h-4 text-white" />
@@ -604,8 +590,7 @@ export default function EmployeeSearchPage() {
                           </div>
                         </div>
 
-                        {/* Skill Set Matrix */}
-                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#161950]/30 transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Target className="w-4 h-4" style={{ color: '#161950' }} />
@@ -634,7 +619,7 @@ export default function EmployeeSearchPage() {
                               ...prev,
                               skills: Array.from(e.target.selectedOptions, option => option.value)
                             }))}
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-100 text-xs h-24 bg-white"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#161950]/20 text-xs h-24 bg-white"
                             style={{ borderColor: '#ccc' }}
                             onFocus={(e) => e.target.style.borderColor = '#161950'}
                             onBlur={(e) => e.target.style.borderColor = '#ccc'}
@@ -651,8 +636,7 @@ export default function EmployeeSearchPage() {
                           </div>
                         </div>
 
-                        {/* Sectors Matrix */}
-                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#161950]/30 transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Briefcase className="w-4 h-4" style={{ color: '#161950' }} />
@@ -681,7 +665,7 @@ export default function EmployeeSearchPage() {
                               ...prev,
                               sectors: Array.from(e.target.selectedOptions, option => option.value)
                             }))}
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-100 text-xs h-24 bg-white"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#161950]/20 text-xs h-24 bg-white"
                             style={{ borderColor: '#ccc' }}
                             onFocus={(e) => e.target.style.borderColor = '#161950'}
                             onBlur={(e) => e.target.style.borderColor = '#ccc'}
@@ -698,8 +682,7 @@ export default function EmployeeSearchPage() {
                           </div>
                         </div>
 
-                        {/* Services Matrix */}
-                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#161950]/30 transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <Award className="w-4 h-4" style={{ color: '#161950' }} />
@@ -728,7 +711,7 @@ export default function EmployeeSearchPage() {
                               ...prev,
                               services: Array.from(e.target.selectedOptions, option => option.value)
                             }))}
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-100 text-xs h-24 bg-white"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#161950]/20 text-xs h-24 bg-white"
                             style={{ borderColor: '#ccc' }}
                             onFocus={(e) => e.target.style.borderColor = '#161950'}
                             onBlur={(e) => e.target.style.borderColor = '#ccc'}
@@ -745,8 +728,7 @@ export default function EmployeeSearchPage() {
                           </div>
                         </div>
 
-                        {/* Project Types */}
-                        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#161950]/30 transition-all">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <List className="w-4 h-4" style={{ color: '#161950' }} />
@@ -775,7 +757,7 @@ export default function EmployeeSearchPage() {
                               ...prev,
                               projectTypes: Array.from(e.target.selectedOptions, option => option.value)
                             }))}
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-100 text-xs h-24 bg-white"
+                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#161950]/20 text-xs h-24 bg-white"
                             style={{ borderColor: '#ccc' }}
                             onFocus={(e) => e.target.style.borderColor = '#161950'}
                             onBlur={(e) => e.target.style.borderColor = '#ccc'}
@@ -793,7 +775,6 @@ export default function EmployeeSearchPage() {
                         </div>
                       </div>
 
-                      {/* Reset All Filters */}
                       <div className="mt-5 pt-4 border-t-2 border-gray-200">
                         <div className="p-3 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border border-red-200 mb-3">
                           <p className="text-xs text-gray-700 font-medium mb-1">
@@ -831,11 +812,10 @@ export default function EmployeeSearchPage() {
                   )}
                 </div>
 
-                {/* Filter Info */}
                 {searchMode === 'filters' && (
-                  <div className="mt-5 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="mt-5 p-3 bg-[#161950]/10 rounded-lg border border-[#161950]/20">
                     <div className="flex items-center gap-2 mb-1">
-                      <div className="w-2 h-2 bg-[#7C3AED] rounded-full animate-pulse"></div>
+                      <div className="w-2 h-2 bg-[#161950] rounded-full animate-pulse"></div>
                       <p className="text-xs font-semibold text-[#1A1A1A]">Live Filtering Active</p>
                     </div>
                     <p className="text-xs text-gray-600">
@@ -847,10 +827,8 @@ export default function EmployeeSearchPage() {
             </div>
           </div>
 
-          {/* Right Panel - Candidate Results */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg border border-gray-300">
-              {/* Header */}
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
@@ -871,7 +849,6 @@ export default function EmployeeSearchPage() {
                 </div>
               </div>
 
-              {/* Results Grid */}
               <div className="p-6">
                 {displayResults.length === 0 ? (
                   <div className="text-center py-16 bg-white border-2 border-gray-300">
@@ -895,11 +872,9 @@ export default function EmployeeSearchPage() {
                           <div className="p-5">
                             <div className="flex items-start justify-between mb-4">
                               <div className="flex-1">
-                                {/* Name and Stage Badge */}
                                 <div className="flex items-center gap-2 mb-3">
                                   <h3 className="text-[#1A1A1A] text-base font-bold font-outfit">{candidate.name}</h3>
                                   
-                                  {/* Current Stage Badge */}
                                   <span className={`px-2.5 py-1 rounded text-xs font-semibold font-outfit ${
                                     candidate.currentStage === 'review'
                                       ? 'bg-blue-100 text-blue-700'
@@ -909,13 +884,11 @@ export default function EmployeeSearchPage() {
                                   </span>
                                 </div>
 
-                                {/* Role */}
                                 <div className="flex items-center gap-2 mb-3">
                                   <Briefcase className="w-4 h-4 text-gray-400" />
                                   <p className="text-sm font-medium text-gray-700 font-outfit">{candidate.role}</p>
                                 </div>
 
-                                {/* Location & Experience */}
                                 <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 font-outfit">
                                   <div className="flex items-center gap-1">
                                     <MapPin className="w-4 h-4 text-gray-400" />
@@ -927,7 +900,6 @@ export default function EmployeeSearchPage() {
                                   </div>
                                 </div>
 
-                                {/* Skills */}
                                 {candidate.skills.length > 0 && (
                                   <div className="flex flex-wrap gap-2">
                                     {candidate.skills.slice(0, 4).map((skill, idx) => (
@@ -944,7 +916,6 @@ export default function EmployeeSearchPage() {
                                 )}
                               </div>
 
-                              {/* Match Percentage */}
                               <div className="ml-4">
                                 <div className={`w-24 h-24 rounded-lg flex flex-col items-center justify-center ${
                                   candidate.matchPercentage >= 70 ? 'bg-green-600' :
@@ -956,7 +927,6 @@ export default function EmployeeSearchPage() {
                               </div>
                             </div>
 
-                            {/* Action Buttons */}
                             <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
                               <button
                                 onClick={() => handleViewDetails(candidate)}
@@ -997,7 +967,6 @@ export default function EmployeeSearchPage() {
         </div>
       </div>
 
-      {/* Modals */}
       <EmployeeDetailsModal
         employee={selectedCandidate}
         isOpen={isDetailsModalOpen}

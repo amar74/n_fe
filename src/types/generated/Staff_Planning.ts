@@ -486,8 +486,6 @@ Suggests optimal Duration, Overhead, Profit Margin, and Escalation Rate`,
   },
 ]);
 
-
-
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);
 }

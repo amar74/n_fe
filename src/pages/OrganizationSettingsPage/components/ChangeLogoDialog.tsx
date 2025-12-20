@@ -10,10 +10,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Camera, Upload, Loader2, X } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import { orgsApi } from '@/services/api/orgsApi';
 import { useQueryClient } from '@tanstack/react-query';
-import { organizationsQueryKeys } from '@/hooks/useOrganizations';
+import { organizationsQueryKeys } from '@/hooks/organization';
 
 interface ChangeLogoDialogProps {
   open: boolean;
@@ -154,7 +154,6 @@ export function ChangeLogoDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Preview Section */}
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               {previewUrl ? (
@@ -180,7 +179,6 @@ export function ChangeLogoDialog({
               )}
             </div>
 
-            {/* File Input with Drag and Drop */}
             <div className="w-full">
               <Input
                 ref={fileInputRef}
@@ -191,7 +189,6 @@ export function ChangeLogoDialog({
                 id="logo-upload"
               />
               
-              {/* Drag and Drop Area */}
               <div
                 className={`w-full border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer ${
                   dragActive

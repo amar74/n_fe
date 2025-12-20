@@ -3,7 +3,6 @@ import { TrendingUp, Users, Award, Target, BarChart3, Activity } from 'lucide-re
 export default function ResourceOptimizationPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Resource Optimization</h1>
@@ -11,10 +10,8 @@ export default function ResourceOptimizationPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="p-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Utilization Analysis */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-blue-50 rounded-xl">
@@ -35,7 +32,7 @@ export default function ResourceOptimizationPage() {
                 <span className="px-4 py-2 bg-green-100 text-green-700 font-bold rounded-lg">92% Utilized</span>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+              <div className="flex items-center justify-between p-4 bg-[#161950]/10 border border-[#161950]/20 rounded-xl">
                 <div>
                   <p className="font-semibold text-gray-900">Southeast Office</p>
                   <p className="text-sm text-gray-600">Atlanta, Miami</p>
@@ -61,11 +58,10 @@ export default function ResourceOptimizationPage() {
             </div>
           </div>
 
-          {/* Skills in Demand */}
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-purple-50 rounded-xl">
-                <Target className="w-6 h-6 text-purple-600" />
+              <div className="p-3 bg-[#161950]/10 rounded-xl border border-[#161950]/20">
+                <Target className="w-6 h-6 text-[#161950]" />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Skills in Demand</h2>
@@ -108,7 +104,6 @@ export default function ResourceOptimizationPage() {
             </div>
           </div>
 
-          {/* AI Recommendations */}
           <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-3 bg-green-50 rounded-xl">
@@ -135,7 +130,7 @@ export default function ResourceOptimizationPage() {
                 </p>
               </div>
 
-              <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-lg">
+              <div className="p-4 bg-[#161950]/10 border-l-4 border-[#161950] rounded-lg">
                 <p className="font-semibold text-gray-900 mb-2">💡 Skill gap identified</p>
                 <p className="text-sm text-gray-600">
                   3 designers available but 2 missing for upcoming project deadlines

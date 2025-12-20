@@ -196,17 +196,15 @@ ${feedback.notes}
   return (
     <div className="fixed inset-0 bg-white/10 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
+        <div className="sticky top-0 bg-[#161950]/10 border-b border-gray-200 px-8 py-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl flex items-center justify-center shadow-lg">
-                <Award className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-[#161950]/10 rounded-2xl flex items-center justify-center shadow-lg border border-[#161950]/20">
+                <Award className="w-8 h-8 text-[#161950]" />
               </div>
               <div>
                 <div className="flex items-center gap-3">
                   <h2 className="text-2xl font-bold text-gray-900">{employee.name}</h2>
-                  {/* Selection Score Badge */}
                   {scoreStatus.color === 'green' && <CheckCircle className="w-6 h-6 text-green-500" />}
                   {scoreStatus.color === 'yellow' && <CheckCircle className="w-6 h-6 text-yellow-500" />}
                   {scoreStatus.color === 'red' && <XCircle className="w-6 h-6 text-red-500" />}
@@ -216,7 +214,6 @@ ${feedback.notes}
             </div>
             
             <div className="flex items-center gap-4">
-              {/* Selection Score Card */}
               <div className={`px-6 py-4 rounded-xl border-2 ${scoreStatus.borderColor} ${scoreStatus.bgColor} shadow-lg`}>
                 <div className="flex items-center gap-3">
                   <div>
@@ -244,14 +241,12 @@ ${feedback.notes}
 
         <div className="p-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
-              {/* AI Profile Verification */}
               {aiVerifications.length > 0 && (
-                <div className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl">
+                <div className="p-6 bg-[#161950]/10 border border-[#161950]/20 rounded-xl">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="p-2 bg-white rounded-lg shadow-sm">
-                      <Sparkles className="w-5 h-5 text-purple-600" />
+                      <Sparkles className="w-5 h-5 text-[#161950]" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">🔍 Resume Parsed for {employee.name}</h3>
@@ -265,7 +260,7 @@ ${feedback.notes}
                       
                       return (
                         <div key={idx} className={`p-4 rounded-xl border transition-all ${
-                          isApproved ? 'bg-green-50 border-green-300' : 'bg-white border-purple-200'
+                          isApproved ? 'bg-green-50 border-green-300' : 'bg-white border-[#161950]/20'
                         }`}>
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex-1">
@@ -287,7 +282,7 @@ ${feedback.notes}
                                   <span className="font-medium">Current:</span> {verification.current}
                                 </p>
                                 <p className="text-sm text-gray-900">
-                                  <span className="font-medium text-purple-600">Suggested:</span> {verification.suggested}
+                                  <span className="font-medium text-[#161950]">Suggested:</span> {verification.suggested}
                                 </p>
                               </div>
                             </div>
@@ -324,7 +319,6 @@ ${feedback.notes}
                 </div>
               )}
 
-              {/* Contact Information */}
               <div className="p-6 bg-white border border-gray-200 rounded-xl">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Contact Information</h3>
                 <div className="space-y-4">
@@ -348,8 +342,8 @@ ${feedback.notes}
                   </div>
                   {employee.location && (
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-50 rounded-lg">
-                        <MapPin className="w-5 h-5 text-purple-600" />
+                      <div className="p-2 bg-[#161950]/10 rounded-lg border border-[#161950]/20">
+                        <MapPin className="w-5 h-5 text-[#161950]" />
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 font-medium">Location</p>
@@ -360,13 +354,12 @@ ${feedback.notes}
                 </div>
               </div>
 
-              {/* Skills & Experience */}
               {employee.skills && employee.skills.length > 0 && (
                 <div className="p-6 bg-white border border-gray-200 rounded-xl">
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Skills & Expertise</h3>
                   <div className="flex flex-wrap gap-2">
                     {employee.skills.map((skill, idx) => (
-                      <span key={idx} className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 text-sm font-semibold rounded-lg">
+                      <span key={idx} className="px-4 py-2 bg-[#161950]/10 border border-[#161950]/20 text-[#161950] text-sm font-semibold rounded-lg">
                         {skill}
                       </span>
                     ))}
@@ -381,29 +374,26 @@ ${feedback.notes}
                 </div>
               )}
 
-              {/* AI-Generated Review Notes & Rating */}
-              <div className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl">
+              <div className="p-6 bg-[#161950]/10 border-2 border-[#161950]/20 rounded-xl">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    <Sparkles className="w-5 h-5 text-[#161950]" />
                     <h3 className="text-lg font-bold text-gray-900">AI-Generated Review & Rating</h3>
                   </div>
-                  <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                  <span className="px-3 py-1 bg-[#161950]/20 text-[#161950] text-xs font-semibold rounded-full">
                     Auto-Generated
                   </span>
                 </div>
                 <textarea
                   value={reviewNotes || generateAINotes()}
                   onChange={(e) => setReviewNotes(e.target.value)}
-                  className="w-full h-48 px-4 py-3 rounded-xl border border-purple-300 text-gray-900 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all resize-none bg-white font-mono text-sm"
+                  className="w-full h-48 px-4 py-3 rounded-xl border border-[#161950]/30 text-gray-900 focus:outline-none focus:border-[#161950] focus:ring-2 focus:ring-[#161950]/20 transition-all resize-none bg-white font-mono text-sm"
                   placeholder="AI-generated notes will appear here..."
                 />
               </div>
             </div>
 
-            {/* Sidebar */}
             <div className="space-y-6">
-              {/* Current Stage */}
               <div className="p-6 bg-white border border-gray-200 rounded-xl">
                 <h3 className="text-sm font-bold text-gray-900 mb-4">Current Stage</h3>
                 <div className={`px-4 py-3 rounded-xl text-center font-bold ${
@@ -416,7 +406,6 @@ ${feedback.notes}
                 </div>
               </div>
 
-              {/* Change Stage */}
               <div className="p-6 bg-white border border-gray-200 rounded-xl">
                 <h3 className="text-sm font-bold text-gray-900 mb-4">Move to Stage</h3>
                 {(employee.stage === 'accepted' || employee.stage === 'rejected') && (
@@ -454,9 +443,8 @@ ${feedback.notes}
                 </div>
               </div>
 
-              {/* Interview Details (if scheduled or completed) */}
               {(employee.stage === 'review' || employee.stage === 'accepted' || employee.stage === 'rejected') && interviewSchedule && (
-                <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
+                <div className="p-6 bg-[#161950]/10 border-2 border-[#161950]/20 rounded-xl">
                   <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Video className="w-5 h-5 text-blue-600" />
                     Interview Details
@@ -496,7 +484,6 @@ ${feedback.notes}
                 </div>
               )}
 
-              {/* Application Info */}
               <div className="p-6 bg-white border border-gray-200 rounded-xl">
                 <h3 className="text-sm font-bold text-gray-900 mb-4">Application Info</h3>
                 <div className="space-y-3">
@@ -523,7 +510,6 @@ ${feedback.notes}
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="p-6 bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-xl">
                 <h3 className="text-sm font-bold text-gray-900 mb-4">Actions</h3>
                 <div className="space-y-2">
@@ -546,7 +532,6 @@ ${feedback.notes}
           </div>
         </div>
 
-        {/* Footer */}
         <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-4 flex items-center justify-end gap-3 rounded-b-2xl">
           <button
             onClick={onClose}
@@ -557,7 +542,6 @@ ${feedback.notes}
         </div>
       </div>
 
-      {/* Stage Change Modal */}
       <StageChangeModal
         isOpen={isStageModalOpen}
         employeeName={employee?.name || ''}

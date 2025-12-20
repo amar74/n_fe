@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Activity, TrendingUp, TrendingDown, Minus, RefreshCw, AlertTriangle, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useAccountHealth, HealthScoreResponse } from '@/hooks/useAccountHealth';
+import { useAccountHealth, HealthScoreResponse } from '@/hooks/accounts';
 
 interface AIHealthScoreWidgetProps {
   accountId: string;
@@ -177,7 +177,6 @@ export function AIHealthScoreWidget({ accountId, initialScore, initialRiskLevel 
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-[#151950] to-[#1e2570] p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -201,7 +200,6 @@ export function AIHealthScoreWidget({ accountId, initialScore, initialRiskLevel 
           </button>
         </div>
 
-        {/* Score Display */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className={`text-6xl font-bold text-white`}>
@@ -216,7 +214,6 @@ export function AIHealthScoreWidget({ accountId, initialScore, initialRiskLevel 
             </div>
           </div>
 
-          {/* Risk Badge */}
           <div className={`${riskConfig.bg} ${riskConfig.border} border-2 rounded-xl px-4 py-3 flex items-center gap-2`}>
             <RiskIcon className={`w-5 h-5 ${riskConfig.text}`} />
             <span className={`${riskConfig.text} font-semibold`}>{riskConfig.label}</span>
@@ -224,7 +221,6 @@ export function AIHealthScoreWidget({ accountId, initialScore, initialRiskLevel 
         </div>
       </div>
 
-      {/* Score Breakdown */}
       <div className="p-6">
         <button
           onClick={() => setShowDetails(!showDetails)}

@@ -36,7 +36,6 @@ The ${companyName} Team
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
-      {/* Header */}
       <div className="p-6 border-b border-gray-200" style={{ backgroundColor: '#e8f5e9' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -55,7 +54,6 @@ The ${companyName} Team
         </div>
       </div>
 
-      {/* Email Stats */}
       <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-100 rounded-lg">
@@ -86,7 +84,6 @@ The ${companyName} Team
         </div>
       </div>
 
-      {/* Email Preview */}
       <div className="p-6">
         <div className="mb-4">
           <label className="text-xs font-bold text-gray-700 uppercase tracking-wide">Email Subject</label>
@@ -107,7 +104,6 @@ The ${companyName} Team
         </div>
       </div>
 
-      {/* AI Features */}
       <div className="p-6 border-t border-gray-200" style={{ backgroundColor: '#f0f0ff' }}>
         <div className="flex items-start gap-3 mb-4">
           <Sparkles className="w-5 h-5 mt-0.5" style={{ color: '#161950' }} />
@@ -135,7 +131,6 @@ The ${companyName} Team
         </div>
       </div>
 
-      {/* Action Footer */}
       <div className="p-6 bg-white border-t border-gray-200 flex items-center justify-between">
         <div>
           <p className="text-sm font-bold text-gray-900">Ready to send welcome email?</p>

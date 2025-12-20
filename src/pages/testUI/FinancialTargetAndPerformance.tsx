@@ -28,7 +28,6 @@ export function FinancialTargetAndPerformance() {
             />
           </div>
 
-          
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-700">
               Quarterly Target
@@ -40,7 +39,6 @@ export function FinancialTargetAndPerformance() {
             />
           </div>
 
-          
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-700">
               Current Year Actual
@@ -52,7 +50,6 @@ export function FinancialTargetAndPerformance() {
             />
           </div>
 
-          
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-700">
               Growth Target
@@ -65,7 +62,6 @@ export function FinancialTargetAndPerformance() {
         </CardContent>
       </Card>
 
-      
       <Card className="rounded-xl shadow-sm border border-gray-200 bg-white">
         <CardHeader className="py-2 px-4">
           <CardTitle className="text-xl font-bold">Account Documents</CardTitle>

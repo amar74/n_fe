@@ -793,8 +793,6 @@ Automatically moves to next stage based on recommendation`,
   },
 ]);
 
-
-
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);
 }

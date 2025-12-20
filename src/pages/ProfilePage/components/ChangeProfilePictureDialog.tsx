@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Camera, Upload, Loader2, X } from 'lucide-react';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
 import { apiClient } from '@/services/api/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { extractErrorMessage } from '@/utils/errorUtils';
@@ -158,7 +158,6 @@ export function ChangeProfilePictureDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Preview Section */}
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               {previewUrl ? (
@@ -184,7 +183,6 @@ export function ChangeProfilePictureDialog({
               )}
             </div>
 
-            {/* File Input with Drag and Drop */}
             <div className="w-full">
               <Input
                 ref={fileInputRef}
@@ -195,7 +193,6 @@ export function ChangeProfilePictureDialog({
                 id="profile-picture-upload"
               />
               
-              {/* Drag and Drop Area */}
               <div
                 className={`w-full border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer ${
                   dragActive

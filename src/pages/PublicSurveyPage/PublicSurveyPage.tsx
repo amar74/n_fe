@@ -323,7 +323,6 @@ export default function PublicSurveyPage() {
   return (
     <div className="min-h-screen bg-[#F5F3F2] py-12 px-6">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-[#1A1A1A] mb-3">{survey.title}</h1>
           {survey.description && (
@@ -336,7 +335,6 @@ export default function PublicSurveyPage() {
           </div>
         </div>
 
-        {/* Contact Information */}
         <Card className="border border-gray-200 bg-white shadow-sm mb-6">
           <CardContent className="p-8">
             <div className="mb-6">
@@ -394,7 +392,6 @@ export default function PublicSurveyPage() {
           </CardContent>
         </Card>
 
-        {/* Survey Form */}
         <Card className="border border-gray-200 bg-white shadow-sm">
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
@@ -432,7 +429,6 @@ export default function PublicSurveyPage() {
           </CardContent>
         </Card>
 
-        {/* Footer */}
         <div className="mt-8 text-center text-sm text-gray-500">
           <p>Powered by Megapolis Advisory</p>
         </div>

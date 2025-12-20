@@ -33,7 +33,6 @@ export function LogoSimple({ className = "h-6 w-6" }: LogoProps) {
         strokeLinejoin="round"
       />
 
-      
       <path
         d="M12,16 Q14,8 16,12 Q18,16 20,8"
         stroke="currentColor"

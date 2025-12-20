@@ -42,7 +42,6 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                   />
                 </div>
 
-                
                 <div className="flex flex-col gap-1 flex-1 min-w-0 h-full">
                   <h3 className="font-outfit font-semibold text-[#0f0901] text-[16px] leading-snug break-words">
                     {activity.title}

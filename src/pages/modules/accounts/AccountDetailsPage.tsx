@@ -79,7 +79,6 @@ function AccountDetailsPage() {
 
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] overflow-x-hidden">
-      {/* Universal Chatbot for Account Module */}
       <ChatbotSelector />
       
       <main className="py-6 px-6 lg:px-8">
@@ -95,15 +94,12 @@ function AccountDetailsPage() {
             <div className="justify-start text-slate-800 text-xs font-medium font-['Inter']">Accounts</div>
           </div>
 
-          
           <h1 className="text-slate-800 text-[32px] sm:text-4xl font-semibold font-['Outfit'] mb-8 pb-4 truncate">
             {account.client_name}
           </h1>
 
-          
           <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
 
-          
           <div className={`w-full mt-6 ${activeTab === 'overview' ? 'flex gap-7 items-start justify-start' : ''}`}>
             
             <div className={activeTab === 'overview' ? 'flex-1 min-w-0' : 'w-full'}>
@@ -153,8 +149,7 @@ function AccountDetailsPage() {
               {activeTab === 'financial' && (
                 <FinanceTab accountId={account.account_id} accountName={account.client_name} />
               )}
-              
-              
+
               {!['overview', 'notes', 'contacts', 'team', 'opportunities', 'financial'].includes(activeTab) && (
                 <div className="bg-neutral-50 border border-[#f0f0f0] rounded-[28px] p-6 w-full">
                   <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -169,7 +164,6 @@ function AccountDetailsPage() {
               )}
             </div>
 
-            
             {activeTab === 'overview' && (
               <div className="flex flex-col gap-7 flex-shrink-0 w-full max-w-[501px]">
                 

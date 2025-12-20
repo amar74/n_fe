@@ -24,7 +24,6 @@ export default function OrganizationDetailsView() {
       
       <Header2 />
 
-      
       <main className="p-2">
         <div className="max-w-5xl mx-auto px-4 md:px-20">
           
@@ -72,7 +71,6 @@ export default function OrganizationDetailsView() {
                 </div>
               </div>
 
-              
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
                 <Badge className="bg-[#ED8A091A] text-[#ED8A09] rounded-2xl px-3 py-2 flex items-center gap-1">
                   <ShieldCheckered className="w-4 h-4" />
@@ -85,7 +83,6 @@ export default function OrganizationDetailsView() {
                 </div>
               </div>
 
-              
               <div className="flex flex-col md:flex-row gap-8">
                 
                 <div className="w-full flex-1 space-y-4 rounded-3xl p-6 border-gray-200 border">
@@ -131,7 +128,6 @@ export default function OrganizationDetailsView() {
                   </div>
                 </div>
 
-                
                 <div className="w-full md:w-1/2 rounded-3xl p-6 border-gray-200 border">
                   <h3 className="font-semibold text-xl mb-4 border-b pb-4 border-gray-200">
                     Quick Actions

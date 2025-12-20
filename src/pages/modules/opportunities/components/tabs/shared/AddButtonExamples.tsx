@@ -54,25 +54,20 @@ const handleAddProjectPhase = () => {
 export const AddButtonUsageExamples = () => {
   return (
     <div className="space-y-4">
-      {/* Basic usage with different text */}
       <AddButton onClick={handleAddDocument}>Add Documents</AddButton>
       <AddButton onClick={handleAddStakeholder}>Add Stakeholder</AddButton>
       <AddButton onClick={handleAddTeamMember}>Add Team Member</AddButton>
       
-      {/* With loading state */}
       <AddButton onClick={handleAddBudgetCategory} loading={true}>
         Add Budget Category
       </AddButton>
       
-      {/* With disabled state */}
       <AddButton onClick={handleAddRiskAssessment} disabled={true}>
         Add Risk Assessment
       </AddButton>
       
-      {/* Default text */}
       <AddButton onClick={handleAddCompetitor} />
       
-      {/* Custom styling */}
       <AddButton 
         onClick={handleAddProjectPhase} 
         className="bg-green-600 hover:bg-green-700"

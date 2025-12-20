@@ -57,10 +57,8 @@ export function DeclineModal({ isOpen, onClose, onDecline, accountName, isLoadin
             </button>
           </div>
 
-          
           <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
 
-          
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             
             <div className="flex flex-col gap-2">
@@ -77,14 +75,12 @@ export function DeclineModal({ isOpen, onClose, onDecline, accountName, isLoadin
               />
             </div>
 
-            
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-800 text-sm font-medium font-['Outfit']">
                 ⚠️ This action will mark the account as declined. The account creator will be notified.
               </p>
             </div>
 
-            
             <div className="flex justify-end items-center gap-3 pt-2">
               <button
                 type="button"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useUserPermissions } from '@/hooks/useUserPermissions';
+import { useUserPermissions } from '@/hooks/user-management';
 import type { 
 // @author harsh.pawar
   UserPermissionUpdateRequest, 
@@ -149,7 +149,6 @@ export default function UserPermissionsSection() {
           </Link>
         </div>
 
-        
         <div className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-4xl font-medium text-[#1D1D1F] mb-4 text-center overflow-wrap-break-word">
@@ -160,7 +159,6 @@ export default function UserPermissionsSection() {
             </p>
           </div>
 
-          
           <div className="flex items-center space-x-6">
             <Button
               variant="outline"
@@ -173,7 +171,6 @@ export default function UserPermissionsSection() {
           </div>
         </div>
 
-        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           <Card className={`border border-[#EFF1F3] bg-[#FCFCFC] rounded-md shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out hover:transform hover:-translate-y-0.5 hover:shadow-lg ${isAnyUserSaving ? 'opacity-75' : ''}`}>
             <CardContent className="p-8 text-center flex flex-col items-center justify-center h-full">
@@ -208,7 +205,6 @@ export default function UserPermissionsSection() {
           </Card>
         </div>
 
-        
         <Card className="border border-[#EFF1F3] bg-[#FCFCFC] rounded-md shadow-[0_4px_16px_rgba(0,0,0,0.08)]">
           <CardHeader className="p-8">
             <CardTitle className="text-2xl font-medium text-[#1D1D1F] flex items-center">

@@ -7,6 +7,7 @@ import { stage } from "./common";
 
 const AgentFrequency = z.enum(["12h", "24h", "72h", "168h"]);
 const AgentStatus = z.enum(["active", "paused", "disabled"]);
+const AgentRunStatus = z.enum(["running", "succeeded", "failed"]);
 const OpportunityAgentCreate = z
   .object({
     name: z.string().max(255),
@@ -33,6 +34,19 @@ const OpportunityAgentResponse = z
     last_run_at: z.union([z.string(), z.null()]).optional(),
     created_at: z.string().datetime({ offset: true }),
     updated_at: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+const OpportunityAgentRunResponse = z
+  .object({
+    id: z.string().uuid(),
+    agent_id: z.string().uuid(),
+    org_id: z.string().uuid(),
+    status: AgentRunStatus,
+    started_at: z.string().datetime({ offset: true }),
+    finished_at: z.union([z.string().datetime({ offset: true }), z.null()]).optional(),
+    new_opportunities: z.number().int(),
+    error_message: z.union([z.string(), z.null()]).optional(),
+    metadata: z.union([z.object({}).partial().passthrough(), z.null()]).optional(),
   })
   .passthrough();
 const OpportunityAgentUpdate = z
@@ -167,6 +181,7 @@ const OpportunityPipelineResponse = z
   .passthrough();
 const SourceFrequency = z.enum(["daily", "weekly", "monthly", "manual"]);
 const SourceStatus = z.enum(["active", "paused", "archived"]);
+const ScrapeStatus = z.enum(["queued", "running", "success", "error", "skipped"]);
 const OpportunitySourceCreate = z
   .object({
     name: z.string().max(255),
@@ -271,6 +286,21 @@ const OpportunityTempUpdate = z
   })
   .partial()
   .passthrough();
+const ScrapeHistoryResponse = z
+  .object({
+    id: z.string().uuid(),
+    source_id: z.string().uuid(),
+    agent_id: z.union([z.string().uuid(), z.null()]).optional(),
+    url: z.string(),
+    status: ScrapeStatus,
+    error_message: z.union([z.string(), z.null()]).optional(),
+    scraped_at: z.string().datetime({ offset: true }),
+    completed_at: z.union([z.string().datetime({ offset: true }), z.null()]).optional(),
+    ai_summary: z.union([z.string(), z.null()]).optional(),
+    extracted_data: z.union([z.object({}).partial().passthrough(), z.null()]).optional(),
+    metadata: z.union([z.object({}).partial().passthrough(), z.null()]).optional(),
+  })
+  .passthrough();
 const OpportunityUpdate = z
   .object({
     project_name: z.union([z.string(), z.null()]),
@@ -312,6 +342,13 @@ const OpportunitySearchRequest = z
     limit: z.number().int().gte(1).lte(100).optional().default(10),
   })
   .passthrough();
+const OpportunitySearchResult = z
+  .object({
+    opportunity: OpportunityResponse,
+    relevance_score: z.number().gte(0).lte(100),
+    match_reasons: z.array(z.string()).optional().default([]),
+  })
+  .passthrough();
 const status = z.union([TempStatus, z.null()]).optional();
 const OpportunityTempCreate = z
   .object({
@@ -335,14 +372,21 @@ const OpportunityTempCreate = z
     history_id: z.union([z.string(), z.null()]).optional(),
   })
   .passthrough();
+const TempOpportunityPromoteRequest = z
+  .object({
+    account_id: z.union([z.string().uuid(), z.null()]).optional(),
+  })
+  .passthrough();
 const promote_temp_opportunity_api_opportunities_ingestion_temp__temp_id__promote_post_Body =
   z.union([TempOpportunityPromoteRequest, z.null()]);
 
 export const schemas = {
   AgentFrequency,
   AgentStatus,
+  AgentRunStatus,
   OpportunityAgentCreate,
   OpportunityAgentResponse,
+  OpportunityAgentRunResponse,
   OpportunityAgentUpdate,
   OpportunityStage,
   RiskLevel,
@@ -357,6 +401,8 @@ export const schemas = {
   OpportunityPipelineResponse,
   SourceFrequency,
   SourceStatus,
+  ScrapeStatus,
+  ScrapeHistoryResponse,
   OpportunitySourceCreate,
   OpportunitySourceResponse,
   OpportunitySourceUpdate,
@@ -367,8 +413,10 @@ export const schemas = {
   OpportunityUpdate,
   OpportunityAnalytics,
   OpportunitySearchRequest,
+  OpportunitySearchResult,
   status,
   OpportunityTempCreate,
+  TempOpportunityPromoteRequest,
   promote_temp_opportunity_api_opportunities_ingestion_temp__temp_id__promote_post_Body,
 };
 
@@ -1058,8 +1106,6 @@ const endpoints = makeApi([
     ],
   },
 ]);
-
-
 
 export function createApiClient(baseUrl: string, options?: ZodiosOptions) {
   return new Zodios(baseUrl, endpoints, options);

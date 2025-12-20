@@ -20,9 +20,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Users, FileText, DollarSign, Calendar, AlertCircle } from 'lucide-react';
-import { useExpenseCategories } from '@/hooks/useExpenseCategories';
-import { useProcurementVendors } from '@/hooks/useProcurementVendors';
-import { useAuth } from '@/hooks/useAuth';
+import { useExpenseCategories } from '@/hooks/finance';
+import { useProcurementVendors } from '@/hooks/procurement';
+import { useAuth } from '@/hooks/auth';
 
 interface CreatePurchaseRequestModalProps {
   open: boolean;

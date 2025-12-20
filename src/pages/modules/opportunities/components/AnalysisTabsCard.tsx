@@ -72,7 +72,6 @@ export const AnalysisTabsCard = memo<AnalysisTabsCardProps>(({ analytics, pipeli
         ))}
       </div>
 
-      
       <div className="grid grid-cols-4 gap-4">
         {metrics.map((metric, index) => {
           const Icon = metric.icon;
@@ -88,13 +87,11 @@ export const AnalysisTabsCard = memo<AnalysisTabsCardProps>(({ analytics, pipeli
                   <Icon className="w-7 h-7 text-[#0F0901] stroke-[2]" />
                 </div>
 
-                
                 <div className="text-[#1A1A1A] text-2xl font-bold font-['Outfit'] leading-7 tracking-[-0.4px]">
                   {metric.value}
                 </div>
               </div>
 
-              
               <div className="text-[#667085] text-sm font-medium font-['Outfit'] leading-5">
                 {metric.label}
               </div>

@@ -78,7 +78,6 @@ export function EditNoteModal({
           </button>
         </div>
 
-        
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           
           <div className="flex gap-5">
@@ -100,7 +99,6 @@ export function EditNoteModal({
               )}
             </div>
 
-            
             <div className="w-48">
               <label className="block text-sm font-medium text-gray-700 mb-2 font-['Outfit']">
                 Date <span className="text-red-500">*</span>
@@ -118,7 +116,6 @@ export function EditNoteModal({
             </div>
           </div>
 
-          
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2 font-['Outfit']">
               Note Content <span className="text-red-500">*</span>
@@ -136,7 +133,6 @@ export function EditNoteModal({
             )}
           </div>
 
-          
           <div className="flex items-center justify-end gap-3 pt-4">
             <button
               type="button"

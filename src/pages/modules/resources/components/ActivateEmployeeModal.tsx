@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { copyToClipboard } from '@/utils/clipboard';
-import { useRoles } from '@/hooks/useRoles';
+import { useRoles } from '@/hooks/user-management';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/services/api/client';
 
@@ -29,7 +29,6 @@ export interface ActivationData {
   userRole: string;
   department?: string;
 }
-
 
 const getEmployeeLoginId = (employee: ActivateEmployeeModalProps['employee']) => {
   return employee?.employee_number?.trim() ?? '';
@@ -157,11 +156,9 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
     }
   };
 
-
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-[#151950] to-[#1e2570] text-white px-8 py-6 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -183,10 +180,9 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
         </div>
 
         <div className="p-8 space-y-6">
-          {/* Quick Activate Toggle */}
-          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
+          <div className="flex items-center justify-between p-4 bg-[#161950]/10 rounded-xl border border-[#161950]/20">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-[#161950] rounded-full flex items-center justify-center">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -201,7 +197,7 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
                 onChange={(e) => setUseQuickActivate(e.target.checked)}
                 className="sr-only peer"
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#161950]/30 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#161950]"></div>
             </label>
           </div>
 
@@ -233,7 +229,6 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
             </div>
           )}
 
-          {/* Employee Login ID */}
           <div className="space-y-3">
             <Label className="flex items-center gap-2 text-base font-semibold">
               <Mail className="w-4 h-4" />
@@ -263,7 +258,6 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
             </p>
           </div>
 
-          {/* Employee Record ID */}
           <div className="space-y-3">
             <Label className="flex items-center gap-2 text-base font-semibold">
               <IdCard className="w-4 h-4" />
@@ -275,7 +269,7 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
                 value={employeeRecordId}
                 placeholder="Will be generated during activation"
                 readOnly
-                className="flex-1 bg-purple-50 border-purple-300 font-mono"
+                className="flex-1 bg-[#161950]/10 border-[#161950]/30 font-mono"
               />
               <Button
                 type="button"
@@ -293,7 +287,6 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
             </p>
           </div>
 
-          {/* Password Generation */}
           <div className="space-y-3">
             <Label className="flex items-center gap-2 text-base font-semibold">
               <Lock className="w-4 h-4" />
@@ -324,7 +317,6 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
 
           {!useQuickActivate && (
             <>
-              {/* User Role */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 text-base font-semibold">
                   <Shield className="w-4 h-4" />
@@ -352,7 +344,6 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
                 </p>
               </div>
 
-              {/* Department */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 text-base font-semibold">
                   <Shield className="w-4 h-4" />
@@ -378,7 +369,6 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
             </>
           )}
 
-          {/* Email Option */}
           <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
             <input
               type="checkbox"
@@ -395,12 +385,11 @@ export function ActivateEmployeeModal({ employee, isOpen, onClose, onActivate }:
             </label>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-200">
             <Button
               onClick={() => setUseQuickActivate(!useQuickActivate)}
               variant="outline"
-              className="text-purple-600 border-purple-300 hover:bg-purple-50"
+              className="text-[#161950] border-[#161950]/30 hover:bg-[#161950]/10"
             >
               {useQuickActivate ? '⚙️ Customize Settings' : '⚡ Use Quick Activate'}
             </Button>

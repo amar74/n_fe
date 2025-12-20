@@ -13,8 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { EnvelopeSimple } from 'phosphor-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/useToast';
+import { useAuth } from '@/hooks/auth';
+import { useToast } from '@/hooks/shared';
 import type { ResetPasswordRequest } from '@/types/auth';
 import { ResetPasswordFormSchema } from '@/types/auth';
 
@@ -160,7 +160,6 @@ export function ResetPasswordDialog() {
           />
         </Form>
 
-        
         <div className="flex flex-col space-y-3">
           <Button
             type="submit"
@@ -191,7 +190,6 @@ export function ResetPasswordDialog() {
         </button>
       </DialogTrigger>
 
-      
       {success ? renderSuccessContent() : renderFormContent()}
     </Dialog>
   );

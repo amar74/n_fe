@@ -26,8 +26,8 @@ import {
   useCreateOpportunityReference,
   useDeleteOpportunityTeamMember,
   useDeleteOpportunityReference,
-} from '@/hooks/useOpportunityTabs';
-import { useAccountTeam } from '@/hooks/useAccountTeam';
+} from '@/hooks/opportunities';
+import { useAccountTeam } from '@/hooks/accounts';
 import type { TeamMember, Reference } from '@/types/opportunityTabs';
 
 interface TeamReferencesTabProps {

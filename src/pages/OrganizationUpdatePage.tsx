@@ -22,9 +22,9 @@ import {
   Phone,
   Sparkle,
 } from 'phosphor-react';
-import { useToast } from '@/hooks/useToast';
-import { useMyOrganization, useOrganizations } from '@/hooks/useOrganizations';
-import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/shared';
+import { useMyOrganization, useOrganizations } from '@/hooks/organization';
+import { useAuth } from '@/hooks/auth';
 import type { UpdateOrgFormData } from '@/types/orgs';
 import image from '@/assets/image.png';
 import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
@@ -480,7 +480,6 @@ export default function OrganizationUpdatePage() {
                 </div>
               </div>
 
-              
               <Form {...form}>
                 <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col justify-start items-start gap-5">
                   
@@ -521,7 +520,6 @@ export default function OrganizationUpdatePage() {
                       )}
                     />
 
-                    
                     <FormField
                       control={form.control}
                       name="name"
@@ -552,7 +550,6 @@ export default function OrganizationUpdatePage() {
                     />
                   </div>
 
-                  
                   <div className="self-stretch flex justify-start items-start gap-5">
                     
                     <FormField
@@ -582,7 +579,6 @@ export default function OrganizationUpdatePage() {
                       )}
                     />
 
-                    
                     <FormField
                       control={form.control}
                       name="address.line2"
@@ -611,7 +607,6 @@ export default function OrganizationUpdatePage() {
                     />
                   </div>
 
-                  
                   <div className="self-stretch flex justify-start items-start gap-5">
                     
                     <FormField
@@ -651,7 +646,6 @@ export default function OrganizationUpdatePage() {
                       )}
                     />
 
-                    
                     <FormField
                       control={form.control}
                       name="address.state"
@@ -689,7 +683,6 @@ export default function OrganizationUpdatePage() {
                       )}
                     />
 
-                    
                     <FormField
                       control={form.control}
                       name="address.pincode"
@@ -724,7 +717,6 @@ export default function OrganizationUpdatePage() {
                     />
                   </div>
 
-                  
                   <div className="self-stretch flex justify-start items-center gap-5">
                     
                     <FormField
@@ -757,7 +749,6 @@ export default function OrganizationUpdatePage() {
                       )}
                     />
 
-                    
                     <FormField
                       control={form.control}
                       name="contact.phone"
@@ -790,7 +781,6 @@ export default function OrganizationUpdatePage() {
                               </SelectContent>
                             </Select>
 
-                            
                             <FormControl>
                               <Input
                                 {...field}
@@ -812,7 +802,6 @@ export default function OrganizationUpdatePage() {
                     />
                   </div>
 
-                  
                   <div className="self-stretch flex justify-start items-start gap-5">
                     <div className="flex-1 flex flex-col justify-start items-start gap-5">
                       <Button

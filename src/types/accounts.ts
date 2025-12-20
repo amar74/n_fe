@@ -58,7 +58,6 @@ export interface CreateAccountFormData {
   contacts?: ContactFormData[]; // First contact becomes primary, rest become secondary
 }
 
-
 // API Response types
 export interface CreateAccountResponse {
   status_code: number;

@@ -12,6 +12,9 @@ import {
   Layers,
   Database,
   Bot,
+  Book,
+  MessageSquare,
+  Megaphone,
 } from 'lucide-react';
 import { NavigationItem } from './DashboardSidebar.types';
 
@@ -47,6 +50,32 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     name: 'Proposals',
     path: '/module/proposals',
     icon: FileText,
+    children: [
+      {
+        id: 'proposals-dashboard',
+        name: 'Dashboard',
+        path: '/module/proposals',
+        icon: FileText,
+      },
+      {
+        id: 'proposals-brochures',
+        name: 'Brochures',
+        path: '/module/proposals/brochures',
+        icon: Book,
+      },
+      {
+        id: 'proposals-interviews',
+        name: 'Interviews',
+        path: '/module/proposals/interviews',
+        icon: MessageSquare,
+      },
+      {
+        id: 'proposals-campaigns',
+        name: 'Campaigns',
+        path: '/module/proposals/campaigns',
+        icon: Megaphone,
+      },
+    ],
   },
   {
     id: 'resources',

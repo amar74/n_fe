@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useEmployees, useEmployeeAnalytics } from '@/hooks/useEmployees';
+import { useEmployees, useEmployeeAnalytics } from '@/hooks/resources';
 
 /**
  * Test component to verify backend integration

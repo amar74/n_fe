@@ -28,7 +28,7 @@ import {
   useInitializeDefaultCategories,
   type ExpenseCategory,
   type ExpenseCategoryCreate,
-} from '@/hooks/useExpenseCategories';
+} from '@/hooks/finance';
 import {
   FolderTree,
   Plus,
@@ -41,7 +41,7 @@ import {
   Save,
   X,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 

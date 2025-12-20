@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RFQ, PurchaseRequisition } from '../types';
 import { CreateRFQModal, ViewRFQModal } from '../modals';
-import { useProcurement } from '@/hooks/useProcurement';
-import { useAuth } from '@/hooks/useAuth';
+import { useProcurement } from '@/hooks/procurement';
+import { useAuth } from '@/hooks/auth';
 import {
   AlertDialog,
   AlertDialogAction,

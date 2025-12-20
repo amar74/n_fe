@@ -550,9 +550,22 @@ class ProcurementApiService {
   }
 
   async listExpenses(params?: { page?: number; size?: number; status?: string; search?: string }): Promise<EmployeeExpenseListResponse> {
+    // Map frontend params to backend params
+    const backendParams: Record<string, any> = {};
+    if (params?.page !== undefined) backendParams.page = params.page;
+    if (params?.size !== undefined) {
+      // Backend max size is 100, so cap it
+      backendParams.size = Math.min(params.size, 100);
+    }
+    if (params?.status !== undefined) {
+      // Backend expects 'status_filter' not 'status'
+      backendParams.status_filter = params.status;
+    }
+    if (params?.search !== undefined) backendParams.search = params.search;
+    
     const response: AxiosResponse<EmployeeExpenseListResponse> = await apiClient.get(
       `${this.baseUrl}/expenses`,
-      { params }
+      { params: backendParams }
     );
     return response.data;
   }

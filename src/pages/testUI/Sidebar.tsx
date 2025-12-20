@@ -43,7 +43,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         />
       )}
 
-      
       <div
         className={`
         fixed lg:static top-0 bottom-0 left-0 z-30 w-64 bg-white border-r-0 border-t-0 rounded-tr-2xl border-gray-200 
@@ -61,7 +60,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        
         <nav className="flex-1 px-4 py-6">
           <ul className="space-y-1">
             {navigationItems.map((item, index) => {
@@ -92,7 +90,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </ul>
         </nav>
 
-        
         <div className="p-4 border-gray-200">
           <button className="w-full flex items-center space-x-3 px-3 py-10 text-black rounded-lg transition-colors">
             <SignOut size={18} weight="bold" className="text-black" />

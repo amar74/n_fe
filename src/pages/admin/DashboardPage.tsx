@@ -1,4 +1,4 @@
-import { useSuperAdmin } from "@/hooks/useSuperAdmin";
+import { useSuperAdmin } from "@/hooks/user-management";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -71,5 +71,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
 

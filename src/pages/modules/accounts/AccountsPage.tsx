@@ -5,7 +5,8 @@ import { CreateAccountModal } from './components/CreateAccountModal';
 import { AccountsMap } from './components/AccountsMap';
 import { useAccountsPage } from './useAccountsPage';
 import { SuccessModal } from '@/components/SuccessModal';
-import { useToast } from '@/hooks/useToast';
+import { useToast } from '@/hooks/shared';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 import { AccountListItem } from '@/types/accounts';
 import { apiClient } from '@/services/api/client';
 
@@ -22,6 +23,7 @@ interface PaginationData {
 function AccountsPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { canCreate } = useRolePermissions();
   const {
     accounts: originalAccounts,
     stats,
@@ -94,12 +96,10 @@ function AccountsPage() {
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">/</span>
               <span className="text-[#344054] text-sm font-normal font-outfit leading-tight">Organization details</span>
             </div>
-            
-            
+
             <h1 className="text-[#1A1A1A] text-3xl font-semibold font-outfit leading-loose">My Accounts</h1>
           </div>
 
-          
           <div className="flex items-start gap-3">
             
             <button 
@@ -112,20 +112,20 @@ function AccountsPage() {
               <span className="text-black text-xs font-medium font-outfit leading-normal">Client Survey</span>
             </button>
 
-            
-            <button 
-              onClick={handleCreateAccount}
-              className="h-11 px-5 py-2 bg-indigo-950 rounded-lg flex items-center gap-2.5 hover:bg-indigo-900 transition-colors"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21.375 12C21.375 12.2984 21.2565 12.5845 21.0455 12.7955C20.8345 13.0065 20.5484 13.125 20.25 13.125H13.125V20.25C13.125 20.5484 13.0065 20.8345 12.7955 21.0455C12.5845 21.2565 12.2984 21.375 12 21.375C11.7016 21.375 11.4155 21.2565 11.2045 21.0455C10.9935 20.8345 10.875 20.5484 10.875 20.25V13.125H3.75C3.45163 13.125 3.16548 13.0065 2.9545 12.7955C2.74353 12.5845 2.625 12.2984 2.625 12C2.625 11.7016 2.74353 11.4155 2.9545 11.2045C3.16548 10.9935 3.45163 10.875 3.75 10.875H10.875V3.75C10.875 3.45163 10.9935 3.16548 11.2045 2.9545C11.4155 2.74353 11.7016 2.625 12 2.625C12.2984 2.625 12.5845 2.74353 12.7955 2.9545C13.0065 3.16548 13.125 3.45163 13.125 3.75V10.875H20.25C20.5484 10.875 20.8345 10.9935 21.0455 11.2045C21.2565 11.4155 21.375 11.7016 21.375 12Z" fill="white"/>
-              </svg>
-              <span className="text-white text-xs font-medium font-outfit leading-normal">Create Account</span>
-            </button>
+            {canCreate && (
+              <button 
+                onClick={handleCreateAccount}
+                className="h-11 px-5 py-2 bg-indigo-950 rounded-lg flex items-center gap-2.5 hover:bg-indigo-900 transition-colors"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21.375 12C21.375 12.2984 21.2565 12.5845 21.0455 12.7955C20.8345 13.0065 20.5484 13.125 20.25 13.125H13.125V20.25C13.125 20.5484 13.0065 20.8345 12.7955 21.0455C12.5845 21.2565 12.2984 21.375 12 21.375C11.7016 21.375 11.4155 21.2565 11.2045 21.0455C10.9935 20.8345 10.875 20.5484 10.875 20.25V13.125H3.75C3.45163 13.125 3.16548 13.0065 2.9545 12.7955C2.74353 12.5845 2.625 12.2984 2.625 12C2.625 11.7016 2.74353 11.4155 2.9545 11.2045C3.16548 10.9935 3.45163 10.875 3.75 10.875H10.875V3.75C10.875 3.45163 10.9935 3.16548 11.2045 2.9545C11.4155 2.74353 11.7016 2.625 12 2.625C12.2984 2.625 12.5845 2.74353 12.7955 2.9545C13.0065 3.16548 13.125 3.45163 13.125 3.75V10.875H20.25C20.5484 10.875 20.8345 10.9935 21.0455 11.2045C21.2565 11.4155 21.375 11.7016 21.375 12Z" fill="white"/>
+                </svg>
+                <span className="text-white text-xs font-medium font-outfit leading-normal">Create Account</span>
+              </button>
+            )}
           </div>
         </div>
 
-        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           <div className="lg:col-span-2">
@@ -139,12 +139,10 @@ function AccountsPage() {
                 </div>
               </div>
 
-              
               <div className="flex flex-col gap-6">
                 
                 <AccountsMap accounts={accounts} />
 
-                
                 <div className="flex justify-start items-center gap-4">
                   <div className="flex items-center gap-2">
                     <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -169,7 +167,6 @@ function AccountsPage() {
             </div>
           </div>
 
-          
           <div className="p-6 bg-white rounded-2xl border border-gray-200 flex flex-col justify-between gap-3">
             
             <div className="h-20 p-5 bg-[#F9FAFB] rounded-2xl border border-gray-200 flex justify-between items-center">
@@ -184,7 +181,6 @@ function AccountsPage() {
               </div>
             </div>
 
-            
             <div className="h-20 p-5 bg-[#F9FAFB] rounded-2xl border border-gray-200 flex justify-between items-center">
               <div className="w-14 h-14 p-3 bg-[#EAECF0] rounded-xl flex justify-center items-center overflow-hidden">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -200,7 +196,6 @@ function AccountsPage() {
               </div>
             </div>
 
-            
             <div className="h-20 p-5 bg-[#F9FAFB] rounded-2xl border border-gray-200 flex justify-between items-center">
               <div className="w-14 h-14 p-3 bg-[#EAECF0] rounded-xl flex justify-center items-center overflow-hidden">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -215,7 +210,6 @@ function AccountsPage() {
               </div>
             </div>
 
-            
             <div className="h-20 p-5 bg-[#F9FAFB] rounded-2xl border border-gray-200 flex justify-between items-center">
               <div className="w-14 h-14 p-3 bg-[#EAECF0] rounded-xl flex justify-center items-center overflow-hidden">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -233,7 +227,6 @@ function AccountsPage() {
           </div>
         </div>
 
-        
         <div className="mt-6">
           <AccountsList 
             accounts={accounts}
@@ -247,7 +240,6 @@ function AccountsPage() {
         </div>
       </div>
 
-      
       <CreateAccountModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
@@ -256,7 +248,6 @@ function AccountsPage() {
         errors={createErrors}
       />
 
-      
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}

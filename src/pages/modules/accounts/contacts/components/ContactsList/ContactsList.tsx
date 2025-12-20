@@ -2,7 +2,7 @@ import React from 'react';
 import { Edit, Trash2, MoreVertical } from 'lucide-react';
 
 import { ContactResponse } from '@/types/accounts';
-import { useAccountDetail } from '@/hooks/useAccounts';
+import { useAccountDetail } from '@/hooks/accounts';
 
 type ContactsListProps = {
   contacts: ContactResponse[];
@@ -56,10 +56,8 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
         </h3>
       </div>
 
-      
       <div className="w-full h-px bg-black/10"></div>
 
-      
       <div className="w-full overflow-x-auto">
         <table className="w-full">
           
@@ -86,7 +84,6 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
             </tr>
           </thead>
 
-          
           <tbody>
             {contacts.map((contact, index) => {
               const isPrimaryContact = contact.contact_id === accountDetail?.primary_contact?.contact_id;
@@ -98,35 +95,30 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
                   className={`hover:bg-gray-50 transition-colors ${!isLastRow ? 'border-b border-gray-100' : ''}`}
                 >
                   
-                  {/* Title (Mr., Mrs., Ms., Dr.) */}
                   <td className="py-4 px-4">
                     <span className="text-slate-800 text-sm font-normal font-['Outfit']">
                       {contact.title || 'N/A'}
                     </span>
                   </td>
 
-                  {/* Name */}
                   <td className="py-4 px-4">
                     <span className="text-slate-800 text-sm font-medium font-['Outfit']">
                       {contact.name}
                     </span>
                   </td>
 
-                  
                   <td className="py-4 px-4">
                     <span className="text-slate-800 text-sm font-normal font-['Outfit'] truncate max-w-[200px] inline-block">
                       {contact.email}
                     </span>
                   </td>
 
-                  
                   <td className="py-4 px-4">
                     <span className="text-slate-800 text-sm font-normal font-['Outfit']">
                       {formatPhone(contact.phone)}
                     </span>
                   </td>
 
-                  
                   <td className="py-4 px-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium font-['Outfit'] ${
@@ -139,7 +131,6 @@ export function ContactsList({ accountId, contacts, onEdit, onDelete, isLoading 
                     </span>
                   </td>
 
-                  
                   <td className="py-4 px-4">
                     <div className="flex items-center justify-end gap-2">
                       <button

@@ -115,10 +115,8 @@ export function UpdateAccountModal({
             </button>
           </div>
 
-          
           <div className="self-stretch h-0 border-t border-black/10"></div>
 
-          
           <form onSubmit={handleSubmit} className="self-stretch flex flex-col gap-5">
             
             <div className="self-stretch flex gap-5">
@@ -155,7 +153,6 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch flex gap-5">
               <div className="w-72 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -184,7 +181,6 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch flex gap-5">
               <div className="flex-1 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -236,7 +232,6 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch flex gap-5">
               <div className="w-72 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -265,7 +260,6 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch flex gap-5">
               <div className="flex-1 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -316,7 +310,6 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch flex gap-5">
               <div className="flex-1 flex flex-col gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
@@ -363,7 +356,6 @@ export function UpdateAccountModal({
               </div>
             </div>
 
-            
             <div className="self-stretch flex gap-5 mt-2">
               <button
                 type="button"

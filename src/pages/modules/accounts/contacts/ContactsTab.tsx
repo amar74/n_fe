@@ -60,7 +60,6 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
         </button>
       </div>
 
-      
       <ContactsList
         accountId={accountId}
         contacts={contacts}
@@ -69,7 +68,6 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
         isLoading={isLoading}
       />
 
-      
       <AddContactModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
@@ -78,7 +76,6 @@ export function ContactsTab({ accountId }: ContactsTabProps) {
         errors={createErrors}
       />
 
-      
       <EditContactModal
         isOpen={showEditModal}
         contact={editingContact}

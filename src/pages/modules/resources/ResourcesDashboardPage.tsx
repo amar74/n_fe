@@ -12,7 +12,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-react';
-import { useEmployees, useEmployeeAnalytics } from '@/hooks/useEmployees';
+import { useEmployees, useEmployeeAnalytics } from '@/hooks/resources';
 
 function ResourcesDashboardPage() {
   // Fetch real stats from API
@@ -132,7 +132,7 @@ function ResourcesDashboardPage() {
   const teamDistribution = useMemo(() => {
     if (!employees?.length) return [];
 
-    const palette = ['from-blue-500 to-indigo-600', 'from-purple-500 to-pink-600', 'from-green-500 to-emerald-600', 'from-amber-500 to-orange-600'];
+    const palette = ['from-[#161950] to-[#1E2B5B]', 'from-[#161950] to-[#1E2B5B]', 'from-green-500 to-emerald-600', 'from-amber-500 to-orange-600'];
 
     const departmentCounts = employees.reduce((acc: Record<string, number>, emp: any) => {
       const dept = emp.department?.trim() || emp.location?.trim() || 'General';
@@ -219,8 +219,8 @@ function ResourcesDashboardPage() {
       title: 'Employee Onboarding',
       description: 'Manage candidate pipeline, AI resume parsing, and hiring workflow',
       icon: UserPlus,
-      color: 'from-blue-500 to-indigo-600',
-      bgColor: 'from-blue-50 to-indigo-50',
+      color: 'from-[#161950] to-[#1E2B5B]',
+      bgColor: 'from-[#161950]/10 to-[#1E2B5B]/10',
       iconColor: 'text-blue-600',
       stats: [
         { label: 'Pending', value: stats.pendingCandidates, icon: Clock, color: 'text-amber-600' },
@@ -235,13 +235,13 @@ function ResourcesDashboardPage() {
       title: 'Employee Management',
       description: 'Track active employees, utilization, skills matrix, and performance',
       icon: Users,
-      color: 'from-purple-500 to-pink-600',
-      bgColor: 'from-purple-50 to-pink-50',
-      iconColor: 'text-purple-600',
+      color: 'from-[#161950] to-[#1E2B5B]',
+      bgColor: 'from-[#161950]/10 to-[#1E2B5B]/10',
+      iconColor: 'text-[#161950]',
       stats: [
         { label: 'Active', value: stats.activeEmployees, icon: CheckCircle, color: 'text-green-600' },
         { label: 'On Bench', value: stats.onBench, icon: Clock, color: 'text-amber-600' },
-        { label: 'Utilization', value: `${stats.avgUtilization}%`, icon: TrendingUp, color: 'text-indigo-600' },
+        { label: 'Utilization', value: `${stats.avgUtilization}%`, icon: TrendingUp, color: 'text-[#161950]' },
       ],
       path: '/module/resources/management',
       cta: 'Manage Workforce',
@@ -271,7 +271,7 @@ function ResourcesDashboardPage() {
       iconColor: 'text-green-600',
       stats: [
         { label: 'Critical Gaps', value: analyticsSummary.criticalGaps, icon: AlertTriangle, color: 'text-red-600' },
-        { label: 'High Priority Insights', value: analyticsSummary.highPriorityInsights, icon: Sparkles, color: 'text-purple-600' },
+        { label: 'High Priority Insights', value: analyticsSummary.highPriorityInsights, icon: Sparkles, color: 'text-[#161950]' },
       ],
       path: '/module/resources/analytics',
       cta: 'View Analytics',
@@ -293,10 +293,8 @@ function ResourcesDashboardPage() {
   return (
     <div className="w-full min-h-screen bg-[#F5F3F2] font-outfit">
       <div className="flex flex-col w-full p-6 gap-8">
-        {/* Header */}
         <div className="flex justify-between items-end">
           <div className="flex flex-col gap-3">
-            {/* Breadcrumb */}
             <div className="flex items-center gap-2">
               <Link to="/" className="text-gray-500 text-sm font-normal font-outfit leading-tight hover:text-gray-900 transition-colors">
                 Dashboard
@@ -316,9 +314,8 @@ function ResourcesDashboardPage() {
           </div>
         </div>
 
-        {/* Key Metrics Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200 shadow-lg">
+          <div className="bg-[#161950]/10 rounded-2xl p-6 border border-[#161950]/20 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-white rounded-xl shadow-md">
                 <Users className="w-6 h-6 text-blue-600" />
@@ -329,7 +326,7 @@ function ResourcesDashboardPage() {
               </div>
             </div>
             <div className="w-full bg-blue-200 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" style={{ width: '100%' }}></div>
+              <div className="h-2 rounded-full bg-[#161950]" style={{ width: '100%' }}></div>
             </div>
           </div>
 
@@ -348,18 +345,18 @@ function ResourcesDashboardPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200 shadow-lg">
+          <div className="bg-[#161950]/10 rounded-2xl p-6 border border-[#161950]/20 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-white rounded-xl shadow-md">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
+                <TrendingUp className="w-6 h-6 text-[#161950]" />
               </div>
               <div className="text-right">
                 <p className="text-3xl font-bold text-gray-900">{stats.avgUtilization}%</p>
                 <p className="text-sm font-medium text-gray-600">Utilization</p>
               </div>
             </div>
-            <div className="w-full bg-purple-200 rounded-full h-2">
-              <div className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-600" style={{ width: '82%' }}></div>
+            <div className="w-full bg-[#161950]/20 rounded-full h-2">
+              <div className="h-2 rounded-full bg-[#161950]" style={{ width: '82%' }}></div>
             </div>
           </div>
 
@@ -379,7 +376,6 @@ function ResourcesDashboardPage() {
           </div>
         </div>
 
-        {/* Module Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {modules.map((module) => {
             const IconComponent = module.icon;
@@ -439,11 +435,10 @@ function ResourcesDashboardPage() {
           })}
         </div>
 
-        {/* Quick Insights */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
-              <Sparkles className="w-6 h-6 text-purple-600" />
+            <div className="p-3 bg-[#161950]/10 rounded-xl border border-[#161950]/20">
+              <Sparkles className="w-6 h-6 text-[#161950]" />
             </div>
             <div>
               <h3 className="text-2xl font-bold text-gray-900">AI-Powered Insights</h3>
@@ -454,8 +449,8 @@ function ResourcesDashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {aiInsightCards.map((card, index) => {
               const InsightIcon = card.icon;
-              const gradientPalette = ['from-amber-50 to-orange-50', 'from-blue-50 to-indigo-50', 'from-green-50 to-emerald-50'];
-              const borderPalette = ['border-amber-200', 'border-blue-200', 'border-green-200'];
+              const gradientPalette = ['from-amber-50 to-orange-50', 'from-[#161950]/10 to-[#1E2B5B]/10', 'from-green-50 to-emerald-50'];
+              const borderPalette = ['border-amber-200', 'border-[#161950]/20', 'border-green-200'];
 
               return (
                 <div
@@ -483,7 +478,6 @@ function ResourcesDashboardPage() {
           </div>
         </div>
 
-        {/* Revenue Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8">
             <h3 className="text-xl font-bold text-gray-900 mb-6">Monthly Billable Value</h3>

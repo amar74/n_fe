@@ -26,14 +26,14 @@ import {
 import {
   useOpportunityDeliveryModel,
   useUpdateOpportunityDeliveryModel,
-} from '@/hooks/useOpportunityTabs';
-import { useDeliveryModelTemplates } from '@/hooks/useDeliveryModels';
+} from '@/hooks/opportunities';
+import { useDeliveryModelTemplates } from '@/hooks/delivery-models';
 import type {
   DeliveryModelData,
   DeliveryModelEntry,
   DeliveryModelPhase,
 } from '@/types/opportunityTabs';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/shared';
 import { cn } from '@/lib/utils';
 
 interface DeliveryModelTabProps {

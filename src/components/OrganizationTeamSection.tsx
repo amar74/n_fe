@@ -22,9 +22,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Users, UserPlus, Shield, User, Crown, Loader2 } from 'lucide-react';
-import { useOrganization } from '@/hooks/useOrganization';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { useOrganization } from '@/hooks/organization';
+import { useAuth } from '@/hooks/auth';
+import { useToast } from '@/hooks/shared';
 import type { OrgMemberResponse } from '@/types/orgs';
 
 const getRoleIcon = (role: string) => {

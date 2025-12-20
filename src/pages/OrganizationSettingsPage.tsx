@@ -1,4 +1,4 @@
-import { useMyOrganization } from '@/hooks/useOrganizations';
+import { useMyOrganization } from '@/hooks/organization';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -209,7 +209,6 @@ export default function OrganizationSettingsPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-6">
               
-              {/* Enhanced Logo Card */}
               <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-[#161950]"></div>
                 <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
@@ -273,8 +272,6 @@ export default function OrganizationSettingsPage() {
                 </CardContent>
               </Card>
 
-              
-              {/* Enhanced Profile Completion Card */}
               <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-600"></div>
                 <CardContent className="p-6">
@@ -324,8 +321,6 @@ export default function OrganizationSettingsPage() {
                 </CardContent>
               </Card>
 
-              
-              {/* Enhanced Quick Stats Card */}
               <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600"></div>
                 <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
@@ -359,8 +354,6 @@ export default function OrganizationSettingsPage() {
                 </CardContent>
               </Card>
 
-              
-              {/* Enhanced Quick Actions Card */}
               <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 via-pink-500 to-rose-600"></div>
                 <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
@@ -405,10 +398,8 @@ export default function OrganizationSettingsPage() {
             </div>
           </div>
 
-          
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Enhanced Organization Information Card */}
             <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#161950] via-blue-600 to-indigo-600"></div>
               <CardHeader className="border-b border-gray-100/50 bg-white/50 backdrop-blur-sm">
@@ -510,16 +501,12 @@ export default function OrganizationSettingsPage() {
               </CardContent>
             </Card>
 
-            
             <ExpenseCategoryManagement />
 
-            
             <DepartmentManagement />
 
-            
             <RoleManagement />
 
-            
             {recentActivity && recentActivity.length > 0 && (
               <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50/50 overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-600"></div>
@@ -558,7 +545,6 @@ export default function OrganizationSettingsPage() {
         </div>
       </div>
 
-      {/* Change Logo Dialog */}
       {organization && (
         <ChangeLogoDialog
           open={isLogoDialogOpen}

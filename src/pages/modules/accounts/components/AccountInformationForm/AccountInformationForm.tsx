@@ -3,7 +3,7 @@ import { AccountFormData } from '../../AccountDetailsPage.types';
 import { CLIENT_TYPES, FORM_FIELD_LABELS } from '../../AccountDetailsPage.constants';
 import { MARKET_SECTORS, US_STATES, HOSTING_AREAS } from '../CreateAccountModal/CreateAccountModal.constants';
 import { lookupByZipCode, getCitiesByState } from '@/utils/addressUtils';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth';
 
 type AccountInformationFormProps = {
   formData: AccountFormData;
@@ -365,17 +365,14 @@ export function AccountInformationForm({
         )}
       </div>
 
-      
       <div className="self-stretch h-0 outline outline-1 outline-offset-[-0.50px] outline-black/10"></div>
 
-      
       <div className="w-full flex flex-col justify-start items-start gap-5">
         
         <div className="self-stretch flex flex-col justify-start items-start gap-5">
           
           <div className="self-stretch flex flex-col justify-start items-start gap-5">
-            
-            
+
             <div className="self-stretch flex justify-start items-start gap-5">
               
               <div className="w-36 flex flex-col justify-start items-start gap-1.5">
@@ -389,7 +386,6 @@ export function AccountInformationForm({
                 </div>
               </div>
 
-              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Client name<span className="text-red-600">*</span>
@@ -409,7 +405,6 @@ export function AccountInformationForm({
               </div>
             </div>
 
-            
             <div className="self-stretch flex justify-start items-start gap-5">
               
               <div className="w-64 flex flex-col justify-start items-start gap-1.5">
@@ -438,7 +433,6 @@ export function AccountInformationForm({
                 </div>
               </div>
 
-              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Market sector
@@ -464,7 +458,6 @@ export function AccountInformationForm({
               </div>
             </div>
 
-            
             <div className="self-stretch flex justify-start items-start gap-5">
               
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
@@ -485,7 +478,6 @@ export function AccountInformationForm({
                 )}
               </div>
 
-              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Address 2
@@ -501,7 +493,6 @@ export function AccountInformationForm({
               </div>
             </div>
 
-            
             <div className="self-stretch flex justify-start items-start gap-5">
               
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
@@ -526,7 +517,6 @@ export function AccountInformationForm({
                 {zipAutoFilled && !validationErrors.client_address_zip_code && <p className="text-xs text-green-600 mt-1">✓ City and State auto-filled</p>}
               </div>
 
-              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   State<span className="text-red-600">*</span>
@@ -562,7 +552,6 @@ export function AccountInformationForm({
                 )}
               </div>
 
-              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   City<span className="text-red-600">*</span>
@@ -604,7 +593,6 @@ export function AccountInformationForm({
               </div>
             </div>
 
-            
             <div className="self-stretch flex justify-start items-start gap-5">
               
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
@@ -626,7 +614,6 @@ export function AccountInformationForm({
                 )}
               </div>
 
-              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Hosting area
@@ -652,7 +639,6 @@ export function AccountInformationForm({
                 </div>
               </div>
 
-              
               <div className="w-28 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   MSA in place
@@ -676,7 +662,6 @@ export function AccountInformationForm({
               </div>
             </div>
 
-            
             <div className="self-stretch flex justify-start items-start gap-5">
               
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
@@ -696,7 +681,6 @@ export function AccountInformationForm({
                 </div>
               </div>
 
-              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   {accountId ? 'Date Updated' : 'Date Created'}
@@ -713,7 +697,6 @@ export function AccountInformationForm({
               </div>
             </div>
 
-            
             <div className="self-stretch flex justify-start items-start gap-5">
               
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
@@ -735,7 +718,6 @@ export function AccountInformationForm({
                 )}
               </div>
 
-              
               <div className="flex-1 flex flex-col justify-start items-start gap-1.5">
                 <label className="text-[#344054] text-sm font-medium font-['Outfit'] leading-tight">
                   Approval date & time
@@ -766,7 +748,6 @@ export function AccountInformationForm({
         </div>
         </div>
 
-        
         {isEditing && (
           <div className="flex items-center justify-between w-full pt-4">
             <button

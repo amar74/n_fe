@@ -6,10 +6,11 @@ import { MyOpportunityContent } from './components/MyOpportunityContent';
 import { SourceOpportunitiesContent } from './components/SourceOpportunitiesContent';
 import { ErrorBoundary } from '../../../components/ErrorBoundary';
 import { CreateOpportunityModal } from '../../../components/CreateOpportunityModal';
-import { useOpportunities, useCreateOpportunity, useOpportunityPipeline } from '../../../hooks/useOpportunities';
-import { useAccounts } from '../../../hooks/useAccounts';
+import { useOpportunities, useCreateOpportunity, useOpportunityPipeline } from '@/hooks/opportunities';
+import { useAccounts } from '@/hooks/accounts';
 import { Opportunity, OpportunityStage, RiskLevel } from '../../../types/opportunities';
 import { parseProjectValue } from '@/utils/opportunityUtils';
+import { useRolePermissions } from '@/hooks/useRolePermissions';
 
 type TabType = 'source' | 'pipeline' | 'myOpportunity';
 
@@ -35,6 +36,7 @@ function OpportunitiesDashboardPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
+  const { canCreate } = useRolePermissions();
 
   const { data: opportunitiesData, isLoading, error } = useOpportunities({
     page: currentPage,
@@ -159,35 +161,34 @@ function OpportunitiesDashboardPage() {
                 Opportunity
               </span>
             </div>
-            
-            
+
             <h1 className="text-[#111827] text-[28px] font-bold font-['Inter'] tracking-tight">
               Opportunity Management
             </h1>
           </div>
 
-          
           <div className="flex items-center gap-3">
-                
-                <button 
-                  onClick={handleOpenCreateModal}
-                  className="h-10 px-4 py-2.5 bg-[#161950] rounded-lg flex items-center gap-2 hover:bg-[#0f1440] transition-all shadow-sm"
-                >
-                  <Plus className="w-5 h-5 text-white stroke-[2]" />
-                  <span className="text-white text-sm font-semibold font-['Inter']">Create Opportunity</span>
-                </button>
+                {canCreate && (
+                  <button 
+                    onClick={handleOpenCreateModal}
+                    className="h-10 px-4 py-2.5 bg-[#161950] rounded-lg flex items-center gap-2 hover:bg-[#0f1440] transition-all shadow-sm"
+                  >
+                    <Plus className="w-5 h-5 text-white stroke-[2]" />
+                    <span className="text-white text-sm font-semibold font-['Inter']">Create Opportunity</span>
+                  </button>
+                )}
             
-            
-            <button 
-              className="h-10 px-4 py-2.5 bg-white rounded-lg border border-[#D1D5DB] flex items-center gap-2 hover:bg-gray-50 transition-all shadow-sm"
-            >
-              <Scan className="w-5 h-5 text-[#374151] stroke-[2]" />
-              <span className="text-[#374151] text-sm font-semibold font-['Inter']">AI Proactive Scan</span>
-            </button>
+            {canCreate && (
+              <button 
+                className="h-10 px-4 py-2.5 bg-white rounded-lg border border-[#D1D5DB] flex items-center gap-2 hover:bg-gray-50 transition-all shadow-sm"
+              >
+                <Scan className="w-5 h-5 text-[#374151] stroke-[2]" />
+                <span className="text-[#374151] text-sm font-semibold font-['Inter']">AI Proactive Scan</span>
+              </button>
+            )}
           </div>
         </div>
 
-        
         <div className="mx-8 my-6 bg-white rounded-2xl border border-[#E5E7EB] shadow-lg overflow-hidden">
           <div className="p-8">
             <div className="flex flex-col gap-8">
@@ -313,8 +314,7 @@ function OpportunitiesDashboardPage() {
                     className="flex-1 text-[#667085] text-sm font-normal font-['Outfit'] leading-tight focus:outline-none"
                   />
                 </div>
-                
-                
+
                 <button className="w-32 h-14 px-4 py-2 bg-[#0F0901] rounded-xl flex items-center justify-center gap-2.5 hover:bg-black transition-all shadow-md">
                   <Search className="w-5 h-5 text-white stroke-[2]" />
                   <span className="text-white text-sm font-medium font-['Outfit'] leading-tight">Search</span>
@@ -342,7 +342,6 @@ function OpportunitiesDashboardPage() {
                 
                 <div className="h-px bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200"></div>
 
-                
                 <div className="grid grid-cols-5 gap-6">
                   {['Sector', 'Client Type', 'Project Value', 'Service type', 'Timeline'].map((label, index) => (
                     <div key={index} className="flex flex-col gap-2">
@@ -363,7 +362,6 @@ function OpportunitiesDashboardPage() {
                   ))}
                 </div>
 
-                
                 <div className="flex items-center justify-end gap-4">
                   <button className="px-6 py-3 bg-white rounded-xl border border-[#0F0901] hover:bg-gray-50 transition-all shadow-sm">
                     <span className="text-[#0F0901] text-sm font-medium font-['Outfit'] leading-tight">Clear Filter</span>
@@ -377,7 +375,6 @@ function OpportunitiesDashboardPage() {
           </div>
         </div>
 
-        
         <div className="px-8 pb-8">
           <div className="w-full bg-white rounded-2xl border border-[#E5E7EB] flex flex-col overflow-hidden shadow-[0_1px_3px_0_rgba(0,0,0,0.04)]">
             
@@ -387,7 +384,6 @@ function OpportunitiesDashboardPage() {
               </h3>
             </div>
 
-            
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -486,7 +482,6 @@ function OpportunitiesDashboardPage() {
           </>
         )}
 
-        
         {activeTab === 'pipeline' && (
           <PipelineManagementContent
             opportunities={opportunities}
@@ -495,7 +490,6 @@ function OpportunitiesDashboardPage() {
           />
         )}
 
-        
         {activeTab === 'myOpportunity' && (
           <ErrorBoundary>
             <MyOpportunityContent
@@ -507,7 +501,6 @@ function OpportunitiesDashboardPage() {
         )}
       </div>
 
-      
       <CreateOpportunityModal
         isOpen={isCreateModalOpen}
         onClose={handleCloseCreateModal}

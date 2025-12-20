@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Sliders, Eye, MapPin, Users, TrendingUp, AlertCircle, Loader2, DollarSign, Clock, Trash2 } from 'lucide-react';
 import { Opportunity, OpportunityPipelineResponse, OpportunityStage as OpportunityStageMap } from '@/types/opportunities';
 import { formatProjectValue } from '@/utils/opportunityUtils';
-import { useDeleteOpportunity } from '@/hooks/useOpportunities';
+import { useDeleteOpportunity } from '@/hooks/opportunities';
 import {
   Dialog,
   DialogContent,
@@ -431,8 +431,7 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
     // Load Google Maps script if not already loaded
     if (!window.google) {
       const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      
-      
+
       if (!apiKey || apiKey === 'YOUR_API_KEY') {
         setMapError('Google Maps API key not found');
         setMapLoading(false);
@@ -487,7 +486,6 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
           ))}
         </div>
 
-        
         <div className="col-span-6">
           <div className="p-6 bg-white rounded-2xl border border-[#E5E7EB] shadow-sm h-full">
             <div className="flex items-center justify-between mb-6">
@@ -507,7 +505,6 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
               </div>
             </div>
 
-            
             <div className="relative h-[320px] rounded-xl mb-6 overflow-hidden border border-[#E5E7EB] shadow-lg">
               
               <div 
@@ -515,8 +512,7 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
                 className="w-full h-full rounded-xl"
                 style={{ minHeight: '320px' }}
               />
-              
-              
+
               <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg border border-[#E5E7EB]">
                 <div className="flex items-center gap-2 mb-1">
                   <MapPin className="w-4 h-4 text-[#161950]" />
@@ -525,7 +521,6 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
                 <div className="text-xs text-[#6B7280]">{mapLocations.length} Active Opportunities</div>
               </div>
 
-              
               {(mapLoading || mapError || !window.google) && (
                 <div className="absolute inset-0 bg-gradient-to-br from-[#F0F9FF] to-[#E0F2FE] flex items-center justify-center">
                   <div className="text-center p-6">
@@ -567,7 +562,6 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
               )}
             </div>
 
-            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
@@ -602,7 +596,6 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
         </div>
       </div>
 
-      
       <div className="bg-white rounded-2xl border border-[#E5E7EB] shadow-lg overflow-hidden">
         
         <div className="px-8 py-6 border-b border-[#E5E7EB] bg-gradient-to-r from-[#FAFAFA] to-[#F9FAFB]">
@@ -624,7 +617,6 @@ export const PipelineManagementContent = memo(({ opportunities, pipelineData, is
           </div>
         </div>
 
-        
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#F8FAFC]">

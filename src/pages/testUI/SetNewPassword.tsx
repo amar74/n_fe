@@ -29,7 +29,6 @@ export default function SetNewPassword() {
         `}
       </style>
 
-      
       <div className="flex items-start justify-center md:ml-6 bg-white p-8 sm:py-34 h-full">
         <Card className="w-full max-w-md shadow-none border-0">
           <CardHeader>
@@ -88,7 +87,6 @@ export default function SetNewPassword() {
                 </p>
               </div>
 
-              
               <div className="space-y-2.5">
                 <Label htmlFor="confirmPassword">Confirm Password *</Label>
                 <div className="relative mt-2">
@@ -137,7 +135,6 @@ export default function SetNewPassword() {
                 </div>
               </div>
 
-              
               <Button className="w-full bg-black text-white py-5 rounded-xl text-center">
                 Update Password
               </Button>
@@ -152,7 +149,6 @@ export default function SetNewPassword() {
         </Card>
       </div>
 
-      
       <div className="hidden lg:flex mr-22 items-start justify-center p-0 pt-0 h-full relative">
         <div className="w-full h-screen flex items-end justify-end">
           <img
