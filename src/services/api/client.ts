@@ -15,10 +15,25 @@ const LOCAL_DEFAULT_BASE = 'http://127.0.0.1:8000';
 const looksLikeLiveIp =
   typeof RESOLVED_BASE_FROM_ENV === 'string' && /52\.55\.26\.148/.test(RESOLVED_BASE_FROM_ENV);
 
-export const API_BASE_URL =
-  (isLocalHostRuntime && (!RESOLVED_BASE_FROM_ENV || looksLikeLiveIp))
-    ? LOCAL_DEFAULT_BASE
-    : (RESOLVED_BASE_FROM_ENV || LOCAL_DEFAULT_BASE);
+// Use relative URL in production if no env var is set (works with any domain)
+const getApiBaseUrl = () => {
+  if (isLocalHostRuntime && (!RESOLVED_BASE_FROM_ENV || looksLikeLiveIp)) {
+    return LOCAL_DEFAULT_BASE;
+  }
+  
+  if (RESOLVED_BASE_FROM_ENV) {
+    return RESOLVED_BASE_FROM_ENV;
+  }
+  
+  // In production, use relative URL (empty string means same origin)
+  if (typeof window !== 'undefined') {
+    return ''; // Relative URL - will use current domain
+  }
+  
+  return LOCAL_DEFAULT_BASE;
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 // API Base URL with /api prefix for generated clients
 export const API_BASE_URL_WITH_PREFIX = `${API_BASE_URL}/api`;
