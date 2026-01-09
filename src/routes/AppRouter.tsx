@@ -68,8 +68,19 @@ import AnalyticsPage from '@/pages/modules/resources/AnalyticsPage';
 import TestIntegration from '@/pages/modules/resources/TestIntegration';
 import { StaffingDashboard, CreateStaffPlan } from '@/pages/modules/staffing';
 import ViewStaffPlan from '@/pages/modules/staffing/ViewStaffPlan';
-import ContractsPage from '@/pages/modules/contracts/ContractsPage';
-import ProjectsPage from '@/pages/modules/projects/ProjectsPage';
+import {
+  ContractsPage,
+  ContractManagementPage,
+  ContractDetailPage,
+  ContractCreatePage,
+  ContractEditPage,
+} from '@/pages/modules/contracts';
+import {
+  ProjectManagementPage,
+  ProjectDetailPage,
+  ProjectCreatePage,
+  ProjectEditPage,
+} from '@/pages/modules/projects';
 import FinancePage from '@/pages/modules/finance/FinancePage';
 import FinancePlanningPage from '@/pages/modules/finance/FinancePlanningPage';
 import ProcurementPage from '@/pages/modules/procurement/ProcurementPage';
@@ -314,11 +325,39 @@ const router = createBrowserRouter([
       },
       {
         path: 'module/contracts',
+        element: <ContractManagementPage />,
+      },
+      {
+        path: 'module/contracts/list',
         element: <ContractsPage />,
       },
       {
+        path: 'module/contracts/create',
+        element: <ContractCreatePage />,
+      },
+      {
+        path: 'module/contracts/:id',
+        element: <ContractDetailPage />,
+      },
+      {
+        path: 'module/contracts/:id/edit',
+        element: <ContractEditPage />,
+      },
+      {
         path: 'module/projects',
-        element: <ProjectsPage />,
+        element: <ProjectManagementPage />,
+      },
+      {
+        path: 'module/projects/create',
+        element: <ProjectCreatePage />,
+      },
+      {
+        path: 'module/projects/:id',
+        element: <ProjectDetailPage />,
+      },
+      {
+        path: 'module/projects/:id/edit',
+        element: <ProjectEditPage />,
       },
       {
         path: 'module/finance',

@@ -125,7 +125,6 @@ export function PreviewTab({
         </div>
       </div>
 
-      {/* AI Generation Prompt */}
       {!aiGeneratedBrochure && (
         <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-xl border-2 border-purple-200">
           <div className="flex items-start gap-4">
@@ -184,10 +183,8 @@ export function PreviewTab({
         </div>
       )}
 
-      {/* AI Generated Brochure Preview */}
       {aiGeneratedBrochure && (
         <div className="space-y-8">
-          {/* Professional Cover Page */}
           {aiGeneratedBrochure.sections
             .filter((s: any) => s.type === 'cover')
             .map((coverSection: any, index: number) => {
@@ -208,7 +205,6 @@ export function PreviewTab({
                     aspectRatio: '16/9',
                   }}
                 >
-                  {/* Subtle background pattern overlay */}
                   <div className="absolute inset-0 opacity-10">
                     {aiGeneratedBrochure.cover.backgroundImage && (
                       <div
@@ -224,7 +220,6 @@ export function PreviewTab({
 
                   <div className="absolute inset-0 flex items-center justify-center p-12 relative z-10">
                     <div className="max-w-5xl mx-auto text-center text-white">
-                      {/* Badge */}
                       <div className="mb-8">
                         <div 
                           className="inline-block px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wider mb-8"
@@ -238,25 +233,20 @@ export function PreviewTab({
                         </div>
                       </div>
                       
-                      {/* Main Title */}
                       <h1 className="text-6xl md:text-7xl font-bold font-outfit mb-8 leading-tight drop-shadow-lg">
                         {aiGeneratedBrochure.cover.title}
                       </h1>
                       
-                      {/* Decorative Line */}
                       <div className="w-32 h-1 bg-white mx-auto mb-10 opacity-90"></div>
                       
-                      {/* Subtitle */}
                       <p className="text-3xl md:text-4xl font-semibold font-outfit mb-6 opacity-95">
                         {aiGeneratedBrochure.cover.subtitle}
                       </p>
                       
-                      {/* Tagline */}
                       <p className="text-xl md:text-2xl font-outfit opacity-90 mb-12 max-w-3xl mx-auto">
                         {aiGeneratedBrochure.cover.tagline}
                       </p>
                       
-                      {/* Project Info */}
                       {(aiGeneratedBrochure.cover.projectValue || aiGeneratedBrochure.cover.deadline) && (
                         <div className="flex items-center justify-center gap-12 mt-16 pt-12 border-t border-white/30">
                           {aiGeneratedBrochure.cover.projectValue && (
@@ -276,7 +266,6 @@ export function PreviewTab({
                     </div>
                   </div>
                   
-                  {/* Footer */}
                   <div className="absolute bottom-8 left-8 right-8 flex justify-between items-center text-white/70 text-sm font-outfit">
                     <div>Service Capabilities Brochure</div>
                     <div>{new Date().getFullYear()}</div>
@@ -285,7 +274,6 @@ export function PreviewTab({
               );
             })}
 
-          {/* Professional Brochure Sections */}
           {aiGeneratedBrochure.sections
             .filter((s: any) => s.type !== 'cover')
             .sort((a: any, b: any) => a.order - b.order)
@@ -299,7 +287,6 @@ export function PreviewTab({
                   backgroundColor: section.backgroundColor || aiGeneratedBrochure.design.backgroundColor || '#FFFFFF',
                 }}
               >
-                {/* Section Header */}
                 <div 
                   className="px-8 py-6 border-b-4"
                   style={{ 
@@ -327,9 +314,7 @@ export function PreviewTab({
                   </div>
                 </div>
 
-                {/* Section Content */}
                 <div className="p-10 relative">
-                  {/* Background Image */}
                   {section.imageIndex !== null && section.imageIndex !== undefined && uploadedImages[section.imageIndex] && (
                     <div 
                       className="absolute inset-0 opacity-10 pointer-events-none"
@@ -348,7 +333,6 @@ export function PreviewTab({
                       section.textAlign === 'right' ? 'text-right' : 'text-left'
                     }`}
                   >
-                    {/* Featured Image */}
                     {section.imageIndex !== null && section.imageIndex !== undefined && uploadedImages[section.imageIndex] && (
                       <div className={`mb-6 ${section.textAlign === 'center' ? 'flex justify-center' : section.textAlign === 'right' ? 'flex justify-end' : 'flex justify-start'}`}>
                         <img 
@@ -471,7 +455,6 @@ export function PreviewTab({
                   </div>
                 </div>
 
-                {/* Section Footer */}
                 <div className="px-8 py-4 bg-gray-50 border-t border-gray-200">
                   <div className="flex items-center justify-between text-sm text-gray-600 font-outfit">
                     <div>{aiGeneratedBrochure.metadata.generatedAt ? new Date(aiGeneratedBrochure.metadata.generatedAt).toLocaleDateString() : ''}</div>
@@ -489,7 +472,6 @@ export function PreviewTab({
         </div>
       )}
 
-      {/* Manual Preview (fallback) */}
       {!aiGeneratedBrochure && (
         <div className="border-2 border-gray-200 rounded-xl overflow-hidden">
           <div className="bg-gray-50 border-b border-gray-200 p-4 flex items-center justify-between">
@@ -576,7 +558,6 @@ export function PreviewTab({
         </div>
       )}
 
-      {/* Next Button */}
       <div className="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 mt-6">
         <Button
           onClick={onNext}

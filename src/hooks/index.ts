@@ -11,5 +11,6 @@ export * from './auth';
 export * from './organization';
 export * from './user-management';
 export * from './notes';
+export * from './projects';
 export * from './shared';
 
